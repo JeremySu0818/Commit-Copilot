@@ -1,6 +1,7 @@
 import os
 from google import genai
 from google.genai import types
+from google.genai.errors import APIError, ClientError
 from auto_commit.config import (
     SYSTEM_PROMPT,
     GEMINI_API_KEY,
@@ -8,15 +9,65 @@ from auto_commit.config import (
 )
 
 
+class LLMClientError(Exception):
+    """Base exception for LLM client errors."""
+
+    def __init__(self, message: str, error_code: str = "UNKNOWN"):
+        super().__init__(message)
+        self.error_code = error_code
+
+
+class APIKeyMissingError(LLMClientError):
+    """Raised when the API key is not set."""
+
+    def __init__(self, provider: str):
+        super().__init__(
+            f"{provider.upper()}_API_KEY is not set. Please configure your API key.",
+            error_code="API_KEY_MISSING",
+        )
+
+
+class APIKeyInvalidError(LLMClientError):
+    """Raised when the API key is invalid (401/403)."""
+
+    def __init__(self, message: str):
+        super().__init__(
+            f"Invalid API Key: {message}",
+            error_code="API_KEY_INVALID",
+        )
+
+
+class APIQuotaExceededError(LLMClientError):
+    """Raised when API quota is exceeded (429)."""
+
+    def __init__(self, message: str):
+        super().__init__(
+            f"API quota exceeded: {message}",
+            error_code="QUOTA_EXCEEDED",
+        )
+
+
+class APIRequestError(LLMClientError):
+    """Raised for general API request errors."""
+
+    def __init__(self, message: str):
+        super().__init__(
+            f"API request failed: {message}",
+            error_code="API_ERROR",
+        )
+
+
 class LLMClient:
-    def __init__(self, provider: str = "gemini", model: str = None, api_key: str = None):
+    def __init__(
+        self, provider: str = "gemini", model: str = None, api_key: str = None
+    ):
         self.provider = provider.lower()
         self.model = model
 
         if self.provider == "gemini":
             key = api_key or GEMINI_API_KEY
             if not key:
-                raise ValueError("GEMINI_API_KEY is not set.")
+                raise APIKeyMissingError(provider)
             # Initialize the new Gen AI client
             self.client = genai.Client(api_key=key)
             self.model = model or DEFAULT_GEMINI_MODEL
@@ -26,7 +77,10 @@ class LLMClient:
 
     def generate_commit_message(self, diff: str) -> str:
         if not diff.strip():
-            return "No changes detected to generate a commit for."
+            raise LLMClientError(
+                "No changes detected to generate a commit for.",
+                error_code="NO_CHANGES",
+            )
 
         prompt_content = f"Here is the git diff:\n\n{diff}"
 
@@ -42,6 +96,19 @@ class LLMClient:
                 )
                 return response.text.strip()
 
+        except ClientError as e:
+            error_msg = str(e)
+            # Check for specific error codes
+            if "401" in error_msg or "403" in error_msg:
+                raise APIKeyInvalidError(error_msg)
+            elif "429" in error_msg:
+                raise APIQuotaExceededError(error_msg)
+            else:
+                raise APIRequestError(error_msg)
+        except APIError as e:
+            error_msg = str(e)
+            if "429" in error_msg:
+                raise APIQuotaExceededError(error_msg)
+            raise APIRequestError(error_msg)
         except Exception as e:
-            return f"Error generating commit message: {str(e)}"
-
+            raise APIRequestError(str(e))
