@@ -3,3 +3,4 @@ rich
 google-genai
 openai
 python-dotenv
+pyinstaller
