@@ -3,7 +3,7 @@ from typing import Optional
 from rich.console import Console
 from rich.panel import Panel
 from rich.prompt import Confirm
-from .git_ops import get_git_diff, is_git_repo, commit_changes
+from .git_ops import get_git_diff, is_git_repo, commit_changes, stage_all_changes
 from .llm_client import LLMClient
 
 app = typer.Typer(
@@ -32,12 +32,17 @@ def generate(
         console.print("[bold red]Error:[/bold red] Not a git repository.")
         raise typer.Exit(code=1)
 
+    with console.status("[bold green]Staging all changes...[/bold green]"):
+        if not stage_all_changes():
+            console.print("[bold red]Error:[/bold red] Failed to stage changes.")
+            raise typer.Exit(code=1)
+
     with console.status("[bold green]Reading staged changes...[/bold green]"):
         diff = get_git_diff(staged=True)
 
     if not diff:
         console.print(
-            "[yellow]No staged changes found.[/yellow] Stage some files with `git add` first."
+            "[yellow]No changes found.[/yellow] Make sure you have modified files in the repository."
         )
         raise typer.Exit(code=0)
 
