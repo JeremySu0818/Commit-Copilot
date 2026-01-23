@@ -2,7 +2,8 @@ import typer
 from typing import Optional
 from rich.console import Console
 from rich.panel import Panel
-from rich.prompt import Confirm
+from rich.prompt import Confirm, Prompt
+from auto_commit.config import GEMINI_API_KEY, OPENAI_API_KEY, save_key_to_env
 from auto_commit.git_ops import (
     get_git_diff,
     is_git_repo,
@@ -58,11 +59,25 @@ def generate(
 
     console.print(f"[blue]Using provider: {provider}[/blue]")
 
+    # API Key check and prompt
+    current_key = GEMINI_API_KEY if provider == "gemini" else OPENAI_API_KEY
+    key_name = "GEMINI_API_KEY" if provider == "gemini" else "OPENAI_API_KEY"
+
+    if not current_key:
+        console.print(f"[yellow]Missing {key_name}.[/yellow]")
+        current_key = Prompt.ask(f"Please enter your {provider} API Key", password=True)
+        if current_key:
+            save_key_to_env(key_name, current_key)
+            console.print("[green]API Key saved successfully to .env[/green]")
+        else:
+            console.print(f"[bold red]Error:[/bold red] {key_name} is required to use {provider}.")
+            raise typer.Exit(code=1)
+
     try:
         with console.status(
             f"[bold green]Generating commit message with {provider}...[/bold green]"
         ):
-            client = LLMClient(provider=provider, model=model)
+            client = LLMClient(provider=provider, model=model, api_key=current_key)
             message = client.generate_commit_message(diff)
 
         console.print(

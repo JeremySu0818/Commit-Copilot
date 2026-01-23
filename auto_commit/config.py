@@ -17,6 +17,31 @@ load_dotenv(env_path)
 # Also load from current working directory as fallback
 load_dotenv()
 
+
+def save_key_to_env(key_name: str, key_value: str):
+    """Saves or updates a key in the .env file in the base path."""
+    lines = []
+    if os.path.exists(env_path):
+        with open(env_path, "r", encoding="utf-8") as f:
+            lines = f.readlines()
+
+    updated = False
+    new_lines = []
+    for line in lines:
+        if line.strip().startswith(f"{key_name}="):
+            new_lines.append(f"{key_name}={key_value}\n")
+            updated = True
+        else:
+            new_lines.append(line)
+
+    if not updated:
+        if new_lines and not new_lines[-1].endswith("\n"):
+            new_lines.append("\n")
+        new_lines.append(f"{key_name}={key_value}\n")
+
+    with open(env_path, "w", encoding="utf-8") as f:
+        f.writelines(new_lines)
+
 SYSTEM_PROMPT = """You are a senior software engineer acting as an autonomous commit message generator.
 Your task is to generate a clean, concise, and meaningful content for a git commit based on the provided diff.
 

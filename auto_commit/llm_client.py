@@ -12,21 +12,23 @@ from auto_commit.config import (
 
 
 class LLMClient:
-    def __init__(self, provider: str = "gemini", model: str = None):
+    def __init__(self, provider: str = "gemini", model: str = None, api_key: str = None):
         self.provider = provider.lower()
         self.model = model
 
         if self.provider == "gemini":
-            if not GEMINI_API_KEY:
-                raise ValueError("GEMINI_API_KEY is not set in environment variables.")
+            key = api_key or GEMINI_API_KEY
+            if not key:
+                raise ValueError("GEMINI_API_KEY is not set.")
             # Initialize the new Gen AI client
-            self.client = genai.Client(api_key=GEMINI_API_KEY)
+            self.client = genai.Client(api_key=key)
             self.model = model or DEFAULT_GEMINI_MODEL
 
         elif self.provider == "openai":
-            if not OPENAI_API_KEY:
-                raise ValueError("OPENAI_API_KEY is not set in environment variables.")
-            self.client = OpenAI(api_key=OPENAI_API_KEY)
+            key = api_key or OPENAI_API_KEY
+            if not key:
+                raise ValueError("OPENAI_API_KEY is not set.")
+            self.client = OpenAI(api_key=key)
             self.model = model or DEFAULT_OPENAI_MODEL
 
         else:
