@@ -1,7 +1,7 @@
 @echo off
 setlocal enabledelayedexpansion
 
-echo [*] Starting setup process for InstaSend...
+echo [*] Starting setup process for Auto-Commit...
 
 :: 檢查 uv 是否安裝
 where uv >nul 2>nul
@@ -46,11 +46,14 @@ echo [*] Creating a new virtual environment...
 uv venv --clear
 
 :: 安裝依賴項
-if exist "requirements.txt" (
+if exist "pyproject.toml" (
+    echo [*] Installing dependencies from pyproject.toml...
+    uv pip install -e .
+) else if exist "requirements.txt" (
     echo [*] Installing dependencies from requirements.txt...
     uv pip install -r requirements.txt
 ) else (
-    echo [^!] Warning: requirements.txt not found.
+    echo [^!] Warning: No dependency file found.
 )
 
 echo.

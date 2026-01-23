@@ -1,0 +1,14 @@
+README.md
+pyproject.toml
+auto_commit/__init__.py
+auto_commit/__main__.py
+auto_commit/cli.py
+auto_commit/config.py
+auto_commit/git_ops.py
+auto_commit/llm_client.py
+auto_commit.egg-info/PKG-INFO
+auto_commit.egg-info/SOURCES.txt
+auto_commit.egg-info/dependency_links.txt
+auto_commit.egg-info/entry_points.txt
+auto_commit.egg-info/requires.txt
+auto_commit.egg-info/top_level.txt

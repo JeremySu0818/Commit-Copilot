@@ -1,0 +1,8 @@
+typer[all]
+rich
+python-dotenv
+google-genai
+openai
+gitpython
+pyinstaller
+setuptools

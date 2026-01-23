@@ -2,7 +2,7 @@ import os
 from google import genai
 from google.genai import types
 from openai import OpenAI
-from .config import (
+from auto_commit.config import (
     SYSTEM_PROMPT,
     GEMINI_API_KEY,
     OPENAI_API_KEY,
