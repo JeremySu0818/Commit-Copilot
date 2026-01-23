@@ -3,8 +3,13 @@ from typing import Optional
 from rich.console import Console
 from rich.panel import Panel
 from rich.prompt import Confirm
-from .git_ops import get_git_diff, is_git_repo, commit_changes, stage_all_changes
-from .llm_client import LLMClient
+from auto_commit.git_ops import (
+    get_git_diff,
+    is_git_repo,
+    commit_changes,
+    stage_all_changes,
+)
+from auto_commit.llm_client import LLMClient
 
 app = typer.Typer(
     help="Auto-Commit CLI: Generate conventional commit messages using LLMs.",

@@ -11,22 +11,11 @@ echo.
 uv run pyinstaller ^
     --noconfirm ^
     --onefile ^
-    --windowed ^
+    --console ^
     --icon="assets/icon.ico" ^
     --add-data "assets;assets" ^
-    --paths "src" ^
-    --name "Auto-Commit" ^
-    auto-commit.py
-
-echo.
-echo.
-echo.
-echo [*] Building Inno Setup script...
-echo.
-echo.
-echo.
-
-iscc "installer.iss"
+    --name "auto-commit" ^
+    main.py
 
 echo.
 echo.

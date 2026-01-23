@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "auto-commit"
+version = "1.0.0"
+description = "Auto-Commit CLI: Generate conventional commit messages using LLMs."
+readme = "README.md"
+authors = [{ name = "JeremySu0818" }]
+requires-python = ">=3.11"
+dependencies = [
+    "typer[all]",
+    "rich",
+    "python-dotenv",
+    "google-genai",
+    "openai",
+    "gitpython",
+    "pyinstaller",
+    "setuptools"
+]
+
+[project.scripts]
+auto-commit = "auto_commit.cli:app"
+
+[tool.setuptools]
+packages = ["auto_commit"]

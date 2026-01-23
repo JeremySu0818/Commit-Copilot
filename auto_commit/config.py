@@ -1,6 +1,20 @@
 import os
+import sys
 from dotenv import load_dotenv
 
+
+def get_base_path():
+    if getattr(sys, "frozen", False):
+        # If the application is run as a bundled executable
+        return os.path.dirname(sys.executable)
+    # If the application is run as a normal python script
+    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+# Load .env from the base path (where the script or exe is)
+env_path = os.path.join(get_base_path(), ".env")
+load_dotenv(env_path)
+# Also load from current working directory as fallback
 load_dotenv()
 
 SYSTEM_PROMPT = """You are a senior software engineer acting as an autonomous commit message generator.
