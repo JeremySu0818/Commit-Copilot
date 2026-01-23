@@ -1,6 +1,6 @@
-
 import subprocess
 import sys
+
 
 def get_git_diff(staged: bool = True) -> str:
     """
@@ -11,9 +11,11 @@ def get_git_diff(staged: bool = True) -> str:
     cmd = ["git", "diff"]
     if staged:
         cmd.append("--cached")
-    
+
     try:
-        result = subprocess.run(cmd, capture_output=True, text=True, check=True, encoding='utf-8')
+        result = subprocess.run(
+            cmd, capture_output=True, text=True, check=True, encoding="utf-8"
+        )
         return result.stdout
     except subprocess.CalledProcessError as e:
         print(f"Error running git diff: {e}")
@@ -22,12 +24,18 @@ def get_git_diff(staged: bool = True) -> str:
         print(f"Unexpected error: {e}")
         return ""
 
+
 def is_git_repo() -> bool:
     try:
-        subprocess.run(["git", "rev-parse", "--is-inside-work-tree"], capture_output=True, check=True)
+        subprocess.run(
+            ["git", "rev-parse", "--is-inside-work-tree"],
+            capture_output=True,
+            check=True,
+        )
         return True
     except subprocess.CalledProcessError:
         return False
+
 
 def commit_changes(message: str) -> bool:
     """
@@ -38,4 +46,16 @@ def commit_changes(message: str) -> bool:
         return True
     except subprocess.CalledProcessError as e:
         print(f"Error committing changes: {e}")
+        return False
+
+
+def stage_all_changes() -> bool:
+    """
+    Stage all changes in the current repository (git add .).
+    """
+    try:
+        subprocess.run(["git", "add", "."], check=True)
+        return True
+    except subprocess.CalledProcessError as e:
+        print(f"Error staging changes: {e}")
         return False
