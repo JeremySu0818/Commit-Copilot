@@ -4,6 +4,10 @@
   "description": "Generate conventional commit messages using LLMs.",
   "version": "1.0.0",
   "publisher": "JeremySu0818",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JeremySu0818/Auto-Commit"
+  },
   "engines": {
     "vscode": "^1.80.0"
   },
