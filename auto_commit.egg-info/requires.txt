@@ -1,7 +1,0 @@
-typer[all]
-rich
-python-dotenv
-google-genai
-gitpython
-pyinstaller
-setuptools
