@@ -9,6 +9,42 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
     private readonly _context: vscode.ExtensionContext,
   ) {}
 
+  /**
+   * Validate the API Key by testing it against the Gemini API models endpoint.
+   * This operation only calls the model catalog and does not consume quota.
+   */
+  private async validateApiKey(apiKey: string): Promise<{ valid: boolean; error?: string }> {
+    try {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.ok) {
+        return { valid: true };
+      }
+
+      const errorData = await response.json().catch(() => ({})) as { error?: { message?: string } };
+      const errorMessage = errorData?.error?.message || response.statusText;
+
+      if (response.status === 400 || response.status === 401 || response.status === 403) {
+        return { valid: false, error: `Invalid API Key: ${errorMessage}` };
+      } else if (response.status === 429) {
+        return { valid: false, error: `API quota exceeded: ${errorMessage}` };
+      } else {
+        return { valid: false, error: `API request failed (${response.status}): ${errorMessage}` };
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      return { valid: false, error: `Connection error: ${errorMessage}` };
+    }
+  }
+
   public resolveWebviewView(
     webviewView: vscode.WebviewView,
     context: vscode.WebviewViewResolveContext,
@@ -28,17 +64,43 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
         case "saveKey": {
           if (!data.value) {
             vscode.window.showErrorMessage("API Key cannot be empty");
+            this._view?.webview.postMessage({ type: "validationResult", success: false });
             return;
           }
+          
+          // Notify UI that validation is starting
+          this._view?.webview.postMessage({ type: "validating" });
+          
+          // Validate the API Key before saving
+          const validationResult = await this.validateApiKey(data.value);
+          
+          if (!validationResult.valid) {
+            vscode.window.showWarningMessage(
+              `API Key validation failed: ${validationResult.error || "Unable to connect to Gemini API"}`
+            );
+            this._view?.webview.postMessage({
+              type: "validationResult",
+              success: false,
+              error: validationResult.error,
+            });
+            return;
+          }
+          
+          // API Key is valid, proceed to save
           try {
             await this._context.secrets.store("GEMINI_API_KEY", data.value);
-            vscode.window.showInformationMessage("API Key saved securely!");
+            vscode.window.showInformationMessage("API Key validated and saved successfully!");
             this._view?.webview.postMessage({
-              type: "status",
-              value: "Key saved",
+              type: "validationResult",
+              success: true,
+            });
+            this._view?.webview.postMessage({
+              type: "keyStatus",
+              hasKey: true,
             });
           } catch (e) {
             vscode.window.showErrorMessage("Failed to save API Key");
+            this._view?.webview.postMessage({ type: "validationResult", success: false });
           }
           break;
         }
@@ -126,8 +188,11 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
                     saveBtn.addEventListener('click', () => {
                         const key = apiKeyInput.value;
                         if(key) {
+                            saveBtn.disabled = true;
+                            saveBtn.textContent = 'Validating...';
+                            keyStatus.textContent = 'Validating API Key...';
+                            keyStatus.style.color = 'var(--vscode-descriptionForeground)';
                             vscode.postMessage({ type: 'saveKey', value: key });
-                            apiKeyInput.value = ''; // Clear input
                         }
                     });
 
@@ -149,6 +214,24 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
                                     keyStatus.style.color = 'var(--vscode-testing-iconPassed)';
                                 } else {
                                     keyStatus.textContent = 'API Key not set';
+                                    keyStatus.style.color = 'var(--vscode-testing-iconFailed)';
+                                }
+                                break;
+                            case 'validating':
+                                saveBtn.disabled = true;
+                                saveBtn.textContent = 'Validating...';
+                                keyStatus.textContent = 'Validating API Key...';
+                                keyStatus.style.color = 'var(--vscode-descriptionForeground)';
+                                break;
+                            case 'validationResult':
+                                saveBtn.disabled = false;
+                                saveBtn.textContent = 'Save Key';
+                                if (message.success) {
+                                    keyStatus.textContent = 'API Key validated and saved!';
+                                    keyStatus.style.color = 'var(--vscode-testing-iconPassed)';
+                                    apiKeyInput.value = ''; // Clear input only on success
+                                } else {
+                                    keyStatus.textContent = message.error || 'Validation failed';
                                     keyStatus.style.color = 'var(--vscode-testing-iconFailed)';
                                 }
                                 break;
