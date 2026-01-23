@@ -43,7 +43,11 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
           break;
         }
         case "generate": {
-          vscode.commands.executeCommand("auto-commit.generate");
+          try {
+            await vscode.commands.executeCommand("auto-commit.generate");
+          } finally {
+            this._view?.webview.postMessage({ type: "generationDone" });
+          }
           break;
         }
         case "checkKey": {
@@ -84,6 +88,10 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
                         cursor: pointer; 
                     }
                     button:hover { background: var(--vscode-button-hoverBackground); }
+                    button:disabled {
+                        opacity: 0.6;
+                        cursor: not-allowed;
+                    }
                     .status { font-size: 0.9em; color: var(--vscode-descriptionForeground); margin-top: 5px; }
                     hr { border: 0; border-top: 1px solid var(--vscode-widget-border); width: 100%; }
                 </style>
@@ -124,6 +132,8 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
                     });
 
                     generateBtn.addEventListener('click', () => {
+                        generateBtn.disabled = true;
+                        generateBtn.textContent = 'Generating...';
                         vscode.postMessage({ type: 'generate' });
                     });
 
@@ -141,6 +151,10 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
                                     keyStatus.textContent = 'API Key not set';
                                     keyStatus.style.color = 'var(--vscode-testing-iconFailed)';
                                 }
+                                break;
+                            case 'generationDone':
+                                generateBtn.disabled = false;
+                                generateBtn.textContent = 'Generate Commit Message';
                                 break;
                         }
                     });
