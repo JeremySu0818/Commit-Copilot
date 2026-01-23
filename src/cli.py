@@ -85,7 +85,7 @@ def generate(
 @app.command("version")
 def version():
     """Show the version of the tool."""
-    console.print("Auto-Commit CLI v0.1.0")
+    console.print("Auto-Commit v1.0.0")
 
 
 if __name__ == "__main__":
