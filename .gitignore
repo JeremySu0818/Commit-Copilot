@@ -8,3 +8,7 @@ __pycache__/
 *.exe
 *.spec
 auto_commit.egg-info
+/node_modules
+/out
+/.vscode
+*.vsix

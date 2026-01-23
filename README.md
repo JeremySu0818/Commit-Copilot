@@ -38,26 +38,32 @@ A Python-based CLI tool to automatically generate [Conventional Commits](https:/
 Basic usage:
 
 ```bash
-python -m src.cli generate
+python main.py generate
 ```
 
 Auto-commit without confirmation:
 
 ```bash
-python -m src.cli generate -y
+python main.py generate -y
 ```
 
-## System Prompt (LLM Instructions)
+## VS Code Extension
 
-The tool uses a strict system prompt to ensure consistency. You can view the full prompt in `src/config.py`.
-Summary of instructions given to LLM:
+You can now use Auto-Commit directly within VS Code!
 
-- Role: Senior Software Engineer
-- Output: strictly raw commit message string.
-- Format: `type(scope): description`
-- No Markdown, No Emojis.
+### Installation for Development
+
+1. Open this project in VS Code.
+2. Run `npm install` to install extension dependencies.
+3. Press `F5` to start the Extension Development Host.
+
+### How to Use
+
+1. Stage your changes in the **Source Control** view.
+2. Click the **Sparkle icon** (`Auto-Commit: Generate Message`) in the Source Control title bar.
+3. The generated message will be automatically filled into the commit message box.
 
 ## Development
 
-- Managed by `uv pip`.
-- Entry point: `src/cli.py`.
+- Managed by `uv`.
+- Entry point: `main.py` or `python -m auto_commit.cli`.

@@ -16,7 +16,7 @@ app = typer.Typer(
     help="Auto-Commit CLI: Generate conventional commit messages using LLMs.",
     no_args_is_help=True,
 )
-console = Console()
+console = Console(stderr=True)
 
 
 @app.command("generate")
@@ -29,6 +29,9 @@ def generate(
     staged: bool = typer.Option(
         True,
         help="Use staged changes (default) or all changes (flag not implemented yet, always True)",
+    ),
+    print_only: bool = typer.Option(
+        False, "--print-only", help="Only print the generated message to stdout"
     ),
 ):
     """
@@ -52,32 +55,37 @@ def generate(
         )
         raise typer.Exit(code=0)
 
-    if len(diff) > 10000:
-        console.print(
-            "[yellow]Warning:[/yellow] The diff is very large. The LLM might truncate it or hallucinate."
-        )
-
-    console.print(f"[blue]Using provider: {provider}[/blue]")
-
     # API Key check and prompt
     if provider == "gemini":
         current_key = GEMINI_API_KEY
         key_name = "GEMINI_API_KEY"
     else:
-        console.print(f"[bold red]Error:[/bold red] Provider {provider} is no longer supported.")
+        console.print(
+            f"[bold red]Error:[/bold red] Provider {provider} is no longer supported."
+        )
         raise typer.Exit(code=1)
 
     if not current_key:
         console.print(f"[yellow]Missing {key_name}.[/yellow]")
-        current_key = Prompt.ask(f"Please enter your {provider} API Key", password=True)
+        current_key = Prompt.ask(
+            f"Please enter your {provider} API Key", password=True, console=console
+        )
         if current_key:
             save_key_to_env(key_name, current_key)
             console.print("[green]API Key saved successfully to .env[/green]")
         else:
-            console.print(f"[bold red]Error:[/bold red] {key_name} is required to use {provider}.")
+            console.print(
+                f"[bold red]Error:[/bold red] {key_name} is required to use {provider}."
+            )
             raise typer.Exit(code=1)
 
     try:
+        if print_only:
+            client = LLMClient(provider=provider, model=model, api_key=current_key)
+            message = client.generate_commit_message(diff)
+            print(message)
+            return
+
         with console.status(
             f"[bold green]Generating commit message with {provider}...[/bold green]"
         ):
@@ -91,7 +99,9 @@ def generate(
         if yes:
             should_commit = True
         else:
-            should_commit = Confirm.ask("Do you want to commit with this message?")
+            should_commit = Confirm.ask(
+                "Do you want to commit with this message?", console=console
+            )
 
         if should_commit:
             if commit_changes(message):

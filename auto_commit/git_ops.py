@@ -18,10 +18,10 @@ def get_git_diff(staged: bool = True) -> str:
         )
         return result.stdout
     except subprocess.CalledProcessError as e:
-        print(f"Error running git diff: {e}")
+        print(f"Error running git diff: {e}", file=sys.stderr)
         return ""
     except Exception as e:
-        print(f"Unexpected error: {e}")
+        print(f"Unexpected error: {e}", file=sys.stderr)
         return ""
 
 
@@ -45,7 +45,7 @@ def commit_changes(message: str) -> bool:
         subprocess.run(["git", "commit", "-m", message], check=True)
         return True
     except subprocess.CalledProcessError as e:
-        print(f"Error committing changes: {e}")
+        print(f"Error committing changes: {e}", file=sys.stderr)
         return False
 
 
@@ -57,5 +57,5 @@ def stage_all_changes() -> bool:
         subprocess.run(["git", "add", "."], check=True)
         return True
     except subprocess.CalledProcessError as e:
-        print(f"Error staging changes: {e}")
+        print(f"Error staging changes: {e}", file=sys.stderr)
         return False
