@@ -16,7 +16,9 @@ dependencies = [
     "google-genai",
     "gitpython",
     "pyinstaller",
-    "setuptools"
+    "setuptools",
+    "vtracer>=0.6.11",
+    "pillow>=12.1.0",
 ]
 
 [project.scripts]
