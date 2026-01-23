@@ -1,69 +1,63 @@
-# Auto-Commit CLI Tool
+# Auto-Commit VS Code Extension
 
-A Python-based CLI tool to automatically generate [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) messages using Google Gemini.
+Auto-Commit is a smart VS Code extension that leverages Large Language Models (LLMs) to automatically generate meaningful, conventional commit messages based on your staged changes. It streamlines your git workflow by analyzing diffs and suggesting professional commit messages directly within your editor.
+
+> **Important Check: Platform Support**
+>
+> This tool currently **ONLY supports Windows**.
+> Please ensure you are running on a Windows environment before using or installing this tool.
 
 ## Features
 
-- Support for **Google Gemini** API.
-- Generates strict **English** conventional commits.
-- **No emojis** (professional standard).
-- Simple CLI interface using `typer` and `rich`.
+- **Seamless VS Code Integration**: Access Auto-Commit directly from the Activity Bar or Command Palette.
+- **LLM Powered**: Uses Google's Gemini models to intelligently understand your code changes.
+- **Conventional Commits**: Generates messages following the Conventional Commits specification (e.g., `feat:`, `fix:`, `docs:`).
+- **One-Click Generation**: Instantly generate commit messages for your staged changes.
+- **Preview & Edit**: Review the generated message before committing.
 
-## Installation
+## Requirements
 
-1. Create a virtual environment:
-
-   ```bash
-   uv venv .venv
-   # Windows
-   .venv\Scripts\activate
-   # Linux/Mac
-   source .venv/bin/activate
-   ```
-
-2. Install dependencies:
-
-   ```bash
-   uv pip install -r requirements.txt
-   ```
-
-3. Configure API Keys:
-   Copy `.env.example` to `.env` and fill in your keys.
-   ```bash
-   cp .env.example .env
-   ```
+- **Operating System**: Windows 10/11
+- **Editor**: Visual Studio Code v1.80.0 or higher.
+- **Git**: Installed and available in your PATH.
+- **API Key**: A valid [Google Gemini API Key](https://aistudio.google.com/api-keys).
 
 ## Usage
 
-Basic usage:
+### 1. Installation
 
-```bash
-python main.py generate
-```
+Install the `.vsix` package or download from the VS Code Marketplace (if published).
 
-Auto-commit without confirmation:
+### 2. Getting Started
 
-```bash
-python main.py generate -y
-```
+1.  Open a folder containing a Git repository in VS Code.
+2.  Make changes to your files and **stage** them (or let Auto-Commit stage them for you).
 
-## VS Code Extension
+### 3. Generate Commit Message
 
-You can now use Auto-Commit directly within VS Code!
+You can generate a commit message in two ways:
 
-### Installation for Development
+#### Method A: Activity Bar
 
-1. Open this project in VS Code.
-2. Run `npm install` to install extension dependencies.
-3. Press `F5` to start the Extension Development Host.
+1.  Click on the **Auto Commit** icon in the Activity Bar (left side).
+2.  Click the **"Generate Commit Message"** button (or Sparkle icon).
 
-### How to Use
+#### Method B: Command Palette
 
-1. Stage your changes in the **Source Control** view.
-2. Click the **Sparkle icon** (`Auto-Commit: Generate Message`) in the Source Control title bar.
-3. The generated message will be automatically filled into the commit message box.
+1.  Press `Ctrl+Shift+P` to open the Command Palette.
+2.  Type `Auto-Commit: Generate Message` and select it.
 
-## Development
+### 4. API Key Setup
 
-- Managed by `uv`.
-- Entry point: `main.py` or `python -m auto_commit.cli`.
+On your first use, you will be prompted to enter your **Google Gemini API Key**. This key is securely stored for future use.
+
+### 5. Review and Commit
+
+The generated message will appear in the input box. You can:
+
+- Edit the message if needed.
+- Click **Commit** (check mark) to commit the changes to your repository.
+
+## License
+
+This project is released into the public domain. You are free to copy, modify, publish, use, compile, sell, or distribute this software, either in source code form or as a compiled binary, for any purpose, commercial or non-commercial, and by any means.
