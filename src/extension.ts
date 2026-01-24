@@ -97,6 +97,10 @@ export function activate(context: vscode.ExtensionContext) {
                     if (result.success && result.message) {
                         outputChannel.appendLine(`Generated message: ${result.message}`);
                         repository.inputBox.value = result.message;
+                        
+                        // 自動跳轉到 Source Control 視圖
+                        await vscode.commands.executeCommand('workbench.view.scm');
+                        
                         vscode.window.showInformationMessage('Commit message generated!');
                     } else if (result.error) {
                         const error = result.error;
