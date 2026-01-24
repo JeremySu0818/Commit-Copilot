@@ -21,7 +21,7 @@ Auto-Commit is a smart VS Code extension that leverages Large Language Models (L
 
 ### 1. Installation
 
-Install the `.vsix` package or download from the VS Code Marketplace (if published).
+Download and install the `.vsix` package from [Open VSX](https://open-vsx.org/extension/JeremySu0818/auto-commit).
 
 ### 2. Getting Started
 
