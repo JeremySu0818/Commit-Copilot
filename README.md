@@ -62,15 +62,16 @@ The generated message will appear in the input box. You can:
 
 ### Building
 
+**Windows:**
+
+```cmd
+build.bat
+```
+
+**macOS / Linux:**
+
 ```bash
-# Install dependencies
-npm install
-
-# Compile TypeScript
-npm run compile
-
-# Watch mode for development
-npm run watch
+./build.sh
 ```
 
 ### Project Structure
