@@ -68,6 +68,66 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
 
     webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
 
+    const checkGitStatus = () => {
+      const gitExtension =
+        vscode.extensions.getExtension<any>("vscode.git")?.exports;
+      if (!gitExtension) {
+        return;
+      }
+
+      const git = gitExtension.getAPI(1);
+      if (git.repositories.length > 0) {
+        const repo = git.repositories[0];
+        const hasChanges =
+          repo.state.workingTreeChanges.length > 0 ||
+          repo.state.indexChanges.length > 0;
+        webviewView.webview.postMessage({ type: "repoUpdate", hasChanges });
+      } else {
+        webviewView.webview.postMessage({
+          type: "repoUpdate",
+          hasChanges: false,
+        });
+      }
+    };
+
+    const gitExtension = vscode.extensions.getExtension<any>("vscode.git");
+    if (gitExtension) {
+      const git = gitExtension.exports.getAPI(1);
+
+      const setupRepoListeners = () => {
+        if (git.repositories.length > 0) {
+          checkGitStatus(); // Check immediately
+          git.repositories.forEach((repo: any) => {
+            repo.state.onDidChange(() => {
+              checkGitStatus();
+            });
+          });
+        }
+      };
+
+      if (git.state === "initialized") {
+        setupRepoListeners();
+      } else {
+        git.onDidChangeState((state: any) => {
+          if (state === "initialized") {
+            setupRepoListeners();
+          }
+        });
+      }
+
+      git.onDidOpenRepository((repo: any) => {
+        repo.state.onDidChange(() => {
+          checkGitStatus();
+        });
+        checkGitStatus();
+      });
+
+      // Attempt to check immediately in case already initialized
+      if (git.repositories.length > 0) {
+        setupRepoListeners();
+      }
+    }
+
     webviewView.webview.onDidReceiveMessage(async (data) => {
       switch (data.type) {
         case "saveKey": {
@@ -129,6 +189,10 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
         case "checkKey": {
           const key = await this._context.secrets.get("GEMINI_API_KEY");
           this._view?.webview.postMessage({ type: "keyStatus", hasKey: !!key });
+          break;
+        }
+        case "checkGit": {
+          checkGitStatus();
           break;
         }
         case "getModels": {
@@ -201,7 +265,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
     <div class="input-group">
       <label>Gemini API Key</label>
       <input type="password" id="apiKey" placeholder="Enter your Gemini API Key">
-      <button id="saveBtn">Save Key</button>
+      <button id="saveBtn" disabled>Save Key</button>
       <span id="keyStatus" class="status">Checking key status...</span>
     </div>
 
@@ -215,7 +279,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
     <hr />
 
     <div class="input-group">
-      <button id="generateBtn">Generate Commit Message</button>
+      <button id="generateBtn" disabled>Generate Commit Message</button>
     </div>
   </div>
 
@@ -228,7 +292,33 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
     const keyStatus = document.getElementById('keyStatus');
     const modelSelect = document.getElementById('modelSelect');
 
+    let isGenerating = false;
+    let hasChanges = false;
+
+    function updateGenerateBtn() {
+      // Only enable if: NOT generating AND has changes
+      if (isGenerating) {
+        generateBtn.disabled = true;
+        generateBtn.textContent = 'Generating...';
+      } else if (!hasChanges) {
+        generateBtn.disabled = true;
+        generateBtn.textContent = 'Generate Commit Message';
+        generateBtn.title = 'No changes detected';
+      } else {
+        generateBtn.disabled = false;
+        generateBtn.textContent = 'Generate Commit Message';
+        generateBtn.title = '';
+      }
+    }
+
+    // Initial check for saved key
     vscode.postMessage({ type: 'checkKey' });
+    vscode.postMessage({ type: 'checkGit' });
+
+    // Save Button Logic
+    apiKeyInput.addEventListener('input', () => {
+      saveBtn.disabled = !apiKeyInput.value.trim();
+    });
 
     saveBtn.addEventListener('click', () => {
       const key = apiKeyInput.value;
@@ -241,9 +331,10 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
       }
     });
 
+    // Generate Button Logic
     generateBtn.addEventListener('click', () => {
-      generateBtn.disabled = true;
-      generateBtn.textContent = 'Generating...';
+      isGenerating = true;
+      updateGenerateBtn();
       vscode.postMessage({ 
         type: 'generate'
       });
@@ -252,6 +343,10 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
     window.addEventListener('message', event => {
       const message = event.data;
       switch (message.type) {
+        case 'repoUpdate':
+          hasChanges = message.hasChanges;
+          updateGenerateBtn();
+          break;
         case 'status':
           keyStatus.textContent = message.value;
           break;
@@ -275,23 +370,26 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
           keyStatus.style.color = 'var(--vscode-descriptionForeground)';
           break;
         case 'validationResult':
-          saveBtn.disabled = false;
-          saveBtn.textContent = 'Save Key';
+          // Re-evaluate button state based on input
           if (message.success) {
             keyStatus.textContent = 'API Key validated and saved!';
             keyStatus.style.color = 'var(--vscode-testing-iconPassed)';
             apiKeyInput.value = '';
+            saveBtn.disabled = true; // Input is empty now
+            saveBtn.textContent = 'Save Key';
             if (message.models) {
               populateModels(message.models);
             }
           } else {
             keyStatus.textContent = message.error || 'Validation failed';
             keyStatus.style.color = 'var(--vscode-testing-iconFailed)';
+            saveBtn.disabled = !apiKeyInput.value.trim(); // Re-enable based on input
+            saveBtn.textContent = 'Save Key';
           }
           break;
         case 'generationDone':
-          generateBtn.disabled = false;
-          generateBtn.textContent = 'Generate Commit Message';
+          isGenerating = false;
+          updateGenerateBtn();
           break;
       }
     });
