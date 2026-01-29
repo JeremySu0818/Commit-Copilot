@@ -4,84 +4,88 @@ Auto-Commit is a smart VS Code extension that leverages Large Language Models (L
 
 ## Features
 
+- **Multi-Provider Support**: Choose your preferred AI provider:
+  - **Google Gemini** (Free tier available)
+  - **OpenAI** (GPT-4o, GPT-3.5 Turbo, etc.)
+  - **Anthropic** (Claude 3.5 Sonnet, Haiku, etc.)
+  - **Ollama** (Local models like Llama 3, Mistral, etc.)
 - **Seamless VS Code Integration**: Access Auto-Commit directly from the Activity Bar or Command Palette.
-- **LLM Powered**: Uses Google's Gemini models to intelligently understand your code changes.
 - **Conventional Commits**: Generates messages following the Conventional Commits specification (e.g., `feat:`, `fix:`, `docs:`).
+- **Smart Context**: Intelligently analyzes your `git diff` to understand the intent of your changes.
+- **Secure Key Storage**: API keys are stored securely using VS Code's Secret Storage.
+- **Model Selection**: Customize which model you want to use for each provider.
 - **One-Click Generation**: Instantly generate commit messages for your staged changes.
-- **Preview & Edit**: Review the generated message before committing.
-- **Cross-Platform**: Works on Windows, macOS, and Linux.
+- **Preview & Edit**: Review the generated message in the Source Control input box before committing.
 
 ## Requirements
 
-- **Editor**: Visual Studio Code v1.80.0 or higher.
+- **VS Code**: v1.80.0 or higher.
 - **Git**: Installed and available in your PATH.
-- **API Key**: A valid [Google Gemini API Key](https://aistudio.google.com/api-keys).
+- **API Key**: A valid API key for your chosen provider (or a local Ollama instance).
 
 ## Usage
 
 ### 1. Installation
 
-Download and install the `.vsix` package from [Open VSX](https://open-vsx.org/extension/JeremySu0818/auto-commit).
+Download and install the extension from the VS Code Marketplace or Open VSX Registry.
 
-### 2. Getting Started
+### 2. Configuration
 
-1.  Open a folder containing a Git repository in VS Code.
-2.  Make changes to your files and **stage** them (or let Auto-Commit stage them for you).
+1.  Click on the **Auto Commit** icon in the Activity Bar (left side sidebar).
+2.  Select your desired **Provider** from the dropdown menu (Google, OpenAI, Anthropic, or Ollama).
+3.  Enter your **API Key** (or Host URL for Ollama).
+    - _Note: Keys are stored securely on your device._
+4.  Click **Save**. The extension will validate your key.
+5.  Once validated, you can select a specific **Model** from the dropdown if available.
 
 ### 3. Generate Commit Message
 
-You can generate a commit message in two ways:
-
 #### Method A: Activity Bar
 
-1.  Click on the **Auto Commit** icon in the Activity Bar (left side).
-2.  Click the **"Generate Commit Message"** button (or Sparkle icon).
+1.  Open the **Auto Commit** view in the Activity Bar.
+2.  Ensure you have changes in your repository (staged or unstaged).
+3.  Click the **"Generate Commit Message"** button.
 
-#### Method B: Command Palette
+#### Method B: Source Control Navigation
 
-1.  Press `Ctrl+Shift+P` to open the Command Palette.
+1.  Open the **Source Control** view (`Ctrl+Shift+G`).
+2.  Click the **Auto-Commit** icon (sparkle) in the navigation bar.
+
+#### Method C: Command Palette
+
+1.  Press `Ctrl+Shift+P` (or `Cmd+Shift+P` on Mac).
 2.  Type `Auto-Commit: Generate Commit Message` and select it.
 
-### 4. API Key Setup
+### 4. Review and Commit
 
-On your first use, you will be prompted to enter your **Google Gemini API Key**. This key is securely stored for future use.
-
-### 5. Review and Commit
-
-The generated message will appear in the input box. You can:
+The generated message will automatically populate the Source Control input box. You can:
 
 - Edit the message if needed.
-- Click **Commit** (check mark) to commit the changes to your repository.
+- Press `Ctrl+Enter` (or Click Commit) to commit your changes.
 
 ## Development
 
 ### Prerequisites
 
-- Node.js 18+
+- Node.js 20+
 - npm
 
-### Building
+### Building Locally
 
-**Windows:**
-
-```cmd
-build.bat
-```
-
-**macOS / Linux:**
-
-```bash
-./build.sh
-```
-
-### Project Structure
-
-```
-src/
-├── extension.ts      # VS Code extension entry point
-├── autoCommit.ts     # Core logic: Git operations, LLM client, error handling
-└── SidePanelProvider.ts  # Webview panel for API key configuration
-```
+1.  Clone the repository.
+2.  Install dependencies:
+    ```bash
+    npm install
+    ```
+3.  Compile the extension:
+    ```bash
+    npm run compile
+    ```
+4.  Open in VS Code:
+    ```bash
+    code .
+    ```
+5.  Press `F5` to start debugging.
 
 ## License
 

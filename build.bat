@@ -25,10 +25,7 @@ if %ERRORLEVEL% neq 0 (
 
 echo.
 echo [*] Step 3: Packaging VS Code Extension (.vsix)...
-echo.
-
-:: We use npx vsce package to create the extension bundle
-:: --no-verify can be used if you want to skip some property checks in package.json
+echo.
 call npx vsce package
 if %ERRORLEVEL% neq 0 (
     echo [!] vsce package failed
