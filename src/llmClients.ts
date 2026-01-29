@@ -145,8 +145,6 @@ export class OpenAIClient implements ILLMClient {
           { role: "system", content: SYSTEM_PROMPT },
           { role: "user", content: `Here is the git diff:\n\n${diff}` },
         ],
-        temperature: 0.7,
-        top_p: 0.95,
       });
 
       const text = completion.choices[0]?.message?.content;

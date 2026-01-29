@@ -1,7 +1,7 @@
 export type APIProvider = "google" | "openai" | "anthropic" | "ollama";
 export const PROVIDER_DISPLAY_NAMES: Record<APIProvider, string> = {
   google: "Google (Gemini)",
-  openai: "OpenAI",
+  openai: "OpenAI (ChatGPT)",
   anthropic: "Anthropic (Claude)",
   ollama: "Ollama (Local)",
 };
@@ -15,37 +15,32 @@ export const GEMINI_MODELS = [
   "gemini-3-pro-preview",
 ];
 export const OPENAI_MODELS = [
-  "gpt-4o",
-  "gpt-4o-mini",
-  "gpt-4.5-preview",
-  "gpt-4-turbo",
   "o3",
   "o3-mini",
-  "o1",
-  "o1-mini",
+  "o4-mini",
+  "gpt-4o",
+  "gpt-4o-mini",
+  "gpt-5-nano",
+  "gpt-5-mini",
+  "gpt-5",
+  "gpt-5.1",
+  "gpt-5.2",
 ];
 export const ANTHROPIC_MODELS = [
+  "claude-sonnet-4-20250514",
+  "claude-opus-4-20250514",
+  "claude-opus-4-1-20250805",
+  "claude-haiku-4-5-20251001",
   "claude-sonnet-4-5-20250929",
-  "claude-opus-4-5",
-  "claude-3-5-sonnet-20241022",
-  "claude-3-5-haiku-20241022",
-  "claude-3-opus-20240229",
+  "claude-opus-4-5-20251101",
 ];
 export const OLLAMA_MODELS = [
-  "llama4",
-  "llama3.3",
-  "llama3.2",
-  "llama3.1",
   "gemma3:1b",
-  "gemma2",
-  "phi4",
-  "phi4-mini",
-  "phi3",
-  "qwen3",
-  "qwen2.5",
-  "deepseek-coder-v2",
-  "mistral",
-  "codellama",
+  "gemma3:4b",
+  "gemma3:12b",
+  "gemma3:27b",
+  "gpt-oss:20b",
+  "gpt-oss:120b",
 ];
 export const MODELS_BY_PROVIDER: Record<APIProvider, string[]> = {
   google: GEMINI_MODELS,
@@ -55,9 +50,9 @@ export const MODELS_BY_PROVIDER: Record<APIProvider, string[]> = {
 };
 export const DEFAULT_MODELS: Record<APIProvider, string> = {
   google: "gemini-2.5-flash",
-  openai: "gpt-4o",
-  anthropic: "claude-sonnet-4-5-20250929",
-  ollama: "llama3.3",
+  openai: "gpt-5-mini",
+  anthropic: "claude-haiku-4-5-20251001",
+  ollama: "gemma3:4b",
 };
 export const DEFAULT_PROVIDER: APIProvider = "google";
 export const DEFAULT_MODEL = DEFAULT_MODELS[DEFAULT_PROVIDER];

@@ -5,10 +5,10 @@ Auto-Commit is a smart VS Code extension that leverages Large Language Models (L
 ## Features
 
 - **Multi-Provider Support**: Choose your preferred AI provider:
-  - **Google Gemini** (Free tier available)
-  - **OpenAI** (GPT-4o, GPT-3.5 Turbo, etc.)
-  - **Anthropic** (Claude 3.5 Sonnet, Haiku, etc.)
-  - **Ollama** (Local models like Llama 3, Mistral, etc.)
+  - **Google Gemini**: Support for Gemini 2.0 Flash, Gemini 2.5 Flash/Pro, and Gemini 3 Preview.
+  - **OpenAI**: Support for o3, o4-mini, GPT-4o, and the next-generation GPT-5 series.
+  - **Anthropic**: Support for Claude 4 Sonnet/Opus and Claude 4.5 series.
+  - **Ollama**: Support for local models like Gemma 3 and GPT-OSS.
 - **Seamless VS Code Integration**: Access Auto-Commit directly from the Activity Bar or Command Palette.
 - **Conventional Commits**: Generates messages following the Conventional Commits specification (e.g., `feat:`, `fix:`, `docs:`).
 - **Smart Context**: Intelligently analyzes your `git diff` to understand the intent of your changes.
