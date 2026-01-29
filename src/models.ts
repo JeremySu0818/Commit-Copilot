@@ -41,6 +41,10 @@ export const OLLAMA_MODELS = [
   "gemma3:27b",
   "gpt-oss:20b",
   "gpt-oss:120b",
+  "llama3.3:8b",
+  "llama3.3:70b",
+  "phi4:14b",
+  "mistral:7b",
 ];
 export const MODELS_BY_PROVIDER: Record<APIProvider, string[]> = {
   google: GEMINI_MODELS,
@@ -52,7 +56,7 @@ export const DEFAULT_MODELS: Record<APIProvider, string> = {
   google: "gemini-2.5-flash",
   openai: "gpt-5-mini",
   anthropic: "claude-haiku-4-5-20251001",
-  ollama: "gemma3:4b",
+  ollama: "gemma3:12b",
 };
 export const DEFAULT_PROVIDER: APIProvider = "google";
 export const DEFAULT_MODEL = DEFAULT_MODELS[DEFAULT_PROVIDER];
