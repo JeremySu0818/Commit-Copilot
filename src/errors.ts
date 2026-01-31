@@ -31,7 +31,7 @@ export const ERROR_MESSAGES: Record<
   },
   [EXIT_CODES.API_KEY_MISSING]: {
     title: "API Key not configured",
-    action: "Please set your API Key in the Commit-Drafter panel.",
+    action: "Please set your API Key in the Commit-Copilot panel.",
   },
   [EXIT_CODES.API_KEY_INVALID]: {
     title: "Invalid API Key",
@@ -53,22 +53,22 @@ export const ERROR_MESSAGES: Record<
   },
   [EXIT_CODES.UNKNOWN_ERROR]: {
     title: "An unexpected error occurred",
-    action: 'Check the "Commit-Drafter Debug" output for details.',
+    action: 'Check the "Commit-Copilot Debug" output for details.',
   },
 };
 
-export class CommitDrafterError extends Error {
+export class CommitCopilotError extends Error {
   constructor(
     message: string,
     public readonly errorCode: string = "UNKNOWN",
     public readonly exitCode: number = EXIT_CODES.UNKNOWN_ERROR,
   ) {
     super(message);
-    this.name = "CommitDrafterError";
+    this.name = "CommitCopilotError";
   }
 }
 
-export class APIKeyMissingError extends CommitDrafterError {
+export class APIKeyMissingError extends CommitCopilotError {
   constructor() {
     super(
       "API Key is not set. Please configure your API key.",
@@ -79,7 +79,7 @@ export class APIKeyMissingError extends CommitDrafterError {
   }
 }
 
-export class APIKeyInvalidError extends CommitDrafterError {
+export class APIKeyInvalidError extends CommitCopilotError {
   constructor(details?: string) {
     super(
       `Invalid API Key${details ? `: ${details}` : ""}`,
@@ -90,7 +90,7 @@ export class APIKeyInvalidError extends CommitDrafterError {
   }
 }
 
-export class APIQuotaExceededError extends CommitDrafterError {
+export class APIQuotaExceededError extends CommitCopilotError {
   constructor(details?: string) {
     super(
       `API quota exceeded${details ? `: ${details}` : ""}`,
@@ -101,7 +101,7 @@ export class APIQuotaExceededError extends CommitDrafterError {
   }
 }
 
-export class APIRequestError extends CommitDrafterError {
+export class APIRequestError extends CommitCopilotError {
   constructor(details?: string) {
     super(
       `API request failed${details ? `: ${details}` : ""}`,
@@ -112,7 +112,7 @@ export class APIRequestError extends CommitDrafterError {
   }
 }
 
-export class NoChangesError extends CommitDrafterError {
+export class NoChangesError extends CommitCopilotError {
   constructor() {
     super(
       "No changes detected to generate a commit for.",
@@ -123,7 +123,7 @@ export class NoChangesError extends CommitDrafterError {
   }
 }
 
-export class StageFailedError extends CommitDrafterError {
+export class StageFailedError extends CommitCopilotError {
   constructor(details?: string) {
     super(
       `Failed to stage changes${details ? `: ${details}` : ""}`,

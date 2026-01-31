@@ -6,7 +6,7 @@ import { APIProvider, DEFAULT_MODELS } from "./models";
 import { createLLMClient, ProgressCallback } from "./llmClients";
 import {
   EXIT_CODES,
-  CommitDrafterError,
+  CommitCopilotError,
   NoChangesError,
   StageFailedError,
 } from "./errors";
@@ -14,7 +14,7 @@ import {
 export {
   EXIT_CODES,
   ERROR_MESSAGES,
-  CommitDrafterError,
+  CommitCopilotError,
   APIKeyMissingError,
   APIKeyInvalidError,
   APIQuotaExceededError,
@@ -116,7 +116,7 @@ export interface GenerateCommitMessageOptions {
 export interface GenerateCommitMessageResult {
   success: boolean;
   message?: string;
-  error?: CommitDrafterError;
+  error?: CommitCopilotError;
 }
 
 export async function generateCommitMessage(
@@ -133,7 +133,7 @@ export async function generateCommitMessage(
   try {
     const gitOps = new GitOperations(cwd);
     if (!(await gitOps.isGitRepo())) {
-      throw new CommitDrafterError(
+      throw new CommitCopilotError(
         "Not a git repository. Please run this command inside a git repository.",
         "NOT_GIT_REPO",
         EXIT_CODES.NOT_GIT_REPO,
@@ -166,7 +166,7 @@ export async function generateCommitMessage(
       message: commitMessage,
     };
   } catch (error) {
-    if (error instanceof CommitDrafterError) {
+    if (error instanceof CommitCopilotError) {
       return {
         success: false,
         error: error,
@@ -174,7 +174,7 @@ export async function generateCommitMessage(
     }
     return {
       success: false,
-      error: new CommitDrafterError(
+      error: new CommitCopilotError(
         error instanceof Error ? error.message : String(error),
         "UNKNOWN",
         EXIT_CODES.UNKNOWN_ERROR,

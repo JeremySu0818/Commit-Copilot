@@ -6,8 +6,8 @@ import {
   generateCommitMessage,
   EXIT_CODES,
   ERROR_MESSAGES,
-  CommitDrafterError,
-} from "./commitDrafter";
+  CommitCopilotError,
+} from "./commitCopilot";
 import {
   APIProvider,
   API_KEY_STORAGE_KEYS,
@@ -16,10 +16,10 @@ import {
 } from "./models";
 
 export function activate(context: vscode.ExtensionContext) {
-  console.log("Commit-Drafter extension is now active!");
+  console.log("Commit-Copilot extension is now active!");
 
   const outputChannel = vscode.window.createOutputChannel(
-    "Commit-Drafter Debug",
+    "Commit-Copilot Debug",
   );
   context.subscriptions.push(outputChannel);
 
@@ -32,18 +32,18 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   let disposable = vscode.commands.registerCommand(
-    "commit-drafter.generate",
+    "commit-copilot.generate",
     async (arg?: vscode.SourceControl) => {
       await vscode.commands.executeCommand(
         "setContext",
-        "commit-drafter.isGenerating",
+        "commit-copilot.isGenerating",
         true,
       );
 
       try {
         outputChannel.appendLine("=".repeat(50));
         outputChannel.appendLine(
-          `[${new Date().toISOString()}] Starting commit-drafter generation...`,
+          `[${new Date().toISOString()}] Starting commit-copilot generation...`,
         );
         outputChannel.appendLine("Mode: Auto-stage all changes enabled");
 
@@ -116,12 +116,12 @@ export function activate(context: vscode.ExtensionContext) {
           );
           const setKeyAction = "Configure API Key";
           const result = await vscode.window.showWarningMessage(
-            `${PROVIDER_DISPLAY_NAMES[currentProvider]} API Key is not configured. Please set your API Key in the Commit-Drafter panel first.`,
+            `${PROVIDER_DISPLAY_NAMES[currentProvider]} API Key is not configured. Please set your API Key in the Commit-Copilot panel first.`,
             setKeyAction,
           );
 
           if (result === setKeyAction) {
-            await vscode.commands.executeCommand("commit-drafter.view.focus");
+            await vscode.commands.executeCommand("commit-copilot.view.focus");
           }
           return;
         }
@@ -188,7 +188,7 @@ export function activate(context: vscode.ExtensionContext) {
                   "Configure API Key",
                 );
                 if (action === "Configure API Key") {
-                  vscode.commands.executeCommand("commit-drafter.view.focus");
+                  vscode.commands.executeCommand("commit-copilot.view.focus");
                 }
               } else if (error.exitCode === EXIT_CODES.QUOTA_EXCEEDED) {
                 const action = await vscode.window.showErrorMessage(
@@ -223,12 +223,12 @@ export function activate(context: vscode.ExtensionContext) {
           error instanceof Error ? error.message : String(error);
         outputChannel.appendLine(`Unexpected error: ${errorMessage}`);
         vscode.window.showErrorMessage(
-          `Commit-Drafter failed: ${errorMessage}`,
+          `Commit-Copilot failed: ${errorMessage}`,
         );
       } finally {
         await vscode.commands.executeCommand(
           "setContext",
-          "commit-drafter.isGenerating",
+          "commit-copilot.isGenerating",
           false,
         );
       }

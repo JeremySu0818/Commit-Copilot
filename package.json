@@ -1,13 +1,13 @@
 {
-  "name": "commit-drafter",
-  "displayName": "Commit Drafter",
+  "name": "commit-copilot",
+  "displayName": "Commit Copilot",
   "description": "Generate conventional commit messages using LLMs.",
   "version": "1.0.0",
   "publisher": "JeremySu0818",
   "icon": "resources/icon.png",
   "repository": {
     "type": "git",
-    "url": "https://github.com/JeremySu0818/Commit-Drafter"
+    "url": "https://github.com/JeremySu0818/Commit-Copilot"
   },
   "license": "Unlicense",
   "engines": {
@@ -22,17 +22,17 @@
   "contributes": {
     "commands": [
       {
-        "command": "commit-drafter.generate",
-        "title": "Commit-Drafter: Generate Commit Message",
-        "category": "Commit-Drafter",
+        "command": "commit-copilot.generate",
+        "title": "Commit-Copilot: Generate Commit Message",
+        "category": "Commit-Copilot",
         "icon": "$(sparkle)",
-        "enablement": "!commit-drafter.isGenerating"
+        "enablement": "!commit-copilot.isGenerating"
       }
     ],
     "menus": {
       "scm/title": [
         {
-          "command": "commit-drafter.generate",
+          "command": "commit-copilot.generate",
           "group": "navigation",
           "when": "scmProvider == git"
         }
@@ -41,18 +41,18 @@
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "commit-drafter-activitybar",
-          "title": "Commit Drafter",
+          "id": "commit-copilot-activitybar",
+          "title": "Commit Copilot",
           "icon": "$(sparkle)"
         }
       ]
     },
     "views": {
-      "commit-drafter-activitybar": [
+      "commit-copilot-activitybar": [
         {
           "type": "webview",
-          "id": "commit-drafter.view",
-          "name": "Commit Drafter",
+          "id": "commit-copilot.view",
+          "name": "Commit Copilot",
           "icon": "$(sparkle)"
         }
       ]
