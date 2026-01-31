@@ -7,7 +7,6 @@ tsconfig.json
 .gitignore
 .vscodeignore
 package-lock.json
-!assets/**
 !out/**
 esbuild.js
 build.bat
