@@ -70,22 +70,23 @@ The generated message will automatically populate the Source Control input box. 
 - Node.js 20+
 - npm
 
-### Building Locally
+### Building
 
-1.  Clone the repository.
-2.  Install dependencies:
-    ```bash
-    npm install
-    ```
-3.  Compile the extension:
-    ```bash
-    npm run compile
-    ```
-4.  Open in VS Code:
-    ```bash
-    code .
-    ```
-5.  Press `F5` to start debugging.
+You can easily build the project using the provided scripts. These will handle dependency installation, compilation, and packaging automatically.
+
+**Windows:**
+
+```cmd
+build.bat
+```
+
+**Linux / macOS:**
+
+```bash
+./build.sh
+```
+
+After building, you can open the project in VS Code (`code .`) and press `F5` to start debugging.
 
 ## License
 
