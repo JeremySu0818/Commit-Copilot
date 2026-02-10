@@ -207,7 +207,7 @@ export class AnthropicClient implements ILLMClient {
       const client = new Anthropic({ apiKey: this.apiKey });
       const message = await client.messages.create({
         model: this.model,
-        max_tokens: 32768,
+        max_tokens: 65536,
         system: SYSTEM_PROMPT,
         messages: [
           { role: "user", content: `Here is the git diff:\n\n${diff}` },
