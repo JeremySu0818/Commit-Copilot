@@ -202,7 +202,7 @@ export function activate(context: vscode.ExtensionContext) {
             }
 
             let result = await generateCommitMessage({
-              cwd: repository.rootUri.fsPath,
+              repository,
               provider: currentProvider,
               apiKey: apiKey || "",
               stageChanges: false,
@@ -223,7 +223,7 @@ export function activate(context: vscode.ExtensionContext) {
 
               if (selection === "Stage & Generate") {
                 result = await generateCommitMessage({
-                  cwd: repository.rootUri.fsPath,
+                  repository,
                   provider: currentProvider,
                   apiKey: apiKey || "",
                   stageChanges: true,
