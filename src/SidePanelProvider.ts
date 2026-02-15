@@ -19,7 +19,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
   constructor(
     private readonly _extensionUri: vscode.Uri,
     private readonly _context: vscode.ExtensionContext,
-  ) {}
+  ) { }
 
   private async validateGoogleApiKey(
     apiKey: string,
@@ -859,9 +859,9 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
       let foundCurrent = false;
       models.forEach(model => {
         const option = document.createElement('option');
-        option.value = model;
-        option.textContent = model;
-        if (model === currentModel) {
+        option.value = model.id;
+        option.textContent = model.alias;
+        if (model.id === currentModel) {
           option.selected = true;
           foundCurrent = true;
         }
@@ -869,10 +869,10 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
       });
       modelSelect.disabled = false;
       if (!foundCurrent && models.length > 0) {
-        const preferredDefault = defaultModels[currentProvider] || models[0];
-        const preferred = models.find(m => m === preferredDefault) || models[0];
-        modelSelect.value = preferred;
-        vscode.postMessage({ type: 'saveModel', value: preferred, provider: currentProvider });
+        const preferredDefaultId = defaultModels[currentProvider];
+        const preferred = models.find(m => m.id === preferredDefaultId) || models[0];
+        modelSelect.value = preferred.id;
+        vscode.postMessage({ type: 'saveModel', value: preferred.id, provider: currentProvider });
       }
     }
   </script>

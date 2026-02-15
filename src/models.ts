@@ -5,54 +5,61 @@ export const PROVIDER_DISPLAY_NAMES: Record<APIProvider, string> = {
   anthropic: "Anthropic (Claude)",
   ollama: "Ollama (Local)",
 };
-export const GEMINI_MODELS = [
-  "gemini-2.0-flash",
-  "gemini-2.0-flash-lite",
-  "gemini-2.5-flash",
-  "gemini-2.5-flash-lite",
-  "gemini-2.5-pro",
-  "gemini-3-flash-preview",
-  "gemini-3-pro-preview",
+export type ModelConfig = { id: string; alias: string };
+
+export const GEMINI_MODELS: ModelConfig[] = [
+  { id: "gemini-2.0-flash", alias: "Gemini 2.0 Flash" },
+  { id: "gemini-2.0-flash-lite", alias: "Gemini 2.0 Flash Lite" },
+  { id: "gemini-2.5-flash", alias: "Gemini 2.5 Flash" },
+  { id: "gemini-2.5-flash-lite", alias: "Gemini 2.5 Flash Lite" },
+  { id: "gemini-2.5-pro", alias: "Gemini 2.5 Pro" },
+  { id: "gemini-3-flash-preview", alias: "Gemini 3 Flash" },
+  { id: "gemini-3-pro-preview", alias: "Gemini 3 Pro" },
 ];
-export const OPENAI_MODELS = [
-  "o3",
-  "o3-mini",
-  "o4-mini",
-  "gpt-4o",
-  "gpt-4o-mini",
-  "gpt-5-nano",
-  "gpt-5-mini",
-  "gpt-5",
-  "gpt-5.1",
-  "gpt-5.2",
+
+export const OPENAI_MODELS: ModelConfig[] = [
+  { id: "o3", alias: "o3" },
+  { id: "o3-mini", alias: "o3-mini" },
+  { id: "o4-mini", alias: "o4-mini" },
+  { id: "gpt-4o", alias: "GPT-4o" },
+  { id: "gpt-4o-mini", alias: "GPT-4o mini" },
+  { id: "gpt-5-nano", alias: "GPT-5 nano" },
+  { id: "gpt-5-mini", alias: "GPT-5 mini" },
+  { id: "gpt-5", alias: "GPT-5" },
+  { id: "gpt-5.1", alias: "GPT-5.1" },
+  { id: "gpt-5.2", alias: "GPT-5.2" },
 ];
-export const ANTHROPIC_MODELS = [
-  "claude-sonnet-4-20250514",
-  "claude-opus-4-20250514",
-  "claude-opus-4-1-20250805",
-  "claude-haiku-4-5-20251001",
-  "claude-sonnet-4-5-20250929",
-  "claude-opus-4-5-20251101",
-  "claude-opus-4-6-20260205",
+
+export const ANTHROPIC_MODELS: ModelConfig[] = [
+  { id: "claude-sonnet-4-20250514", alias: "Claude Sonnet 4" },
+  { id: "claude-opus-4-20250514", alias: "Claude Opus 4" },
+  { id: "claude-opus-4-1-20250805", alias: "Claude Opus 4.1" },
+  { id: "claude-haiku-4-5-20251001", alias: "Claude Haiku 4.5" },
+  { id: "claude-sonnet-4-5-20250929", alias: "Claude Sonnet 4.5" },
+  { id: "claude-opus-4-5-20251101", alias: "Claude Opus 4.5" },
+  { id: "claude-opus-4-6-20260205", alias: "Claude Opus 4.6" },
 ];
-export const OLLAMA_MODELS = [
-  "gemma3:1b",
-  "gemma3:4b",
-  "gemma3:12b",
-  "gemma3:27b",
-  "gpt-oss:20b",
-  "gpt-oss:120b",
-  "llama3.3:8b",
-  "llama3.3:70b",
-  "phi4:14b",
-  "mistral:7b",
+
+export const OLLAMA_MODELS: ModelConfig[] = [
+  { id: "gemma3:1b", alias: "Gemma 3 1B" },
+  { id: "gemma3:4b", alias: "Gemma 3 4B" },
+  { id: "gemma3:12b", alias: "Gemma 3 12B" },
+  { id: "gemma3:27b", alias: "Gemma 3 27B" },
+  { id: "gpt-oss:20b", alias: "gpt-oss-20B" },
+  { id: "gpt-oss:120b", alias: "gpt-oss-120B" },
+  { id: "llama3.3:8b", alias: "Llama 3.3 8B" },
+  { id: "llama3.3:70b", alias: "Llama 3.3 70B" },
+  { id: "phi4:14b", alias: "Phi-4 14B" },
+  { id: "mistral:7b", alias: "Mistral 7B" },
 ];
-export const MODELS_BY_PROVIDER: Record<APIProvider, string[]> = {
+
+export const MODELS_BY_PROVIDER: Record<APIProvider, ModelConfig[]> = {
   google: GEMINI_MODELS,
   openai: OPENAI_MODELS,
   anthropic: ANTHROPIC_MODELS,
   ollama: OLLAMA_MODELS,
 };
+
 export const DEFAULT_MODELS: Record<APIProvider, string> = {
   google: "gemini-2.5-flash",
   openai: "gpt-5-mini",
