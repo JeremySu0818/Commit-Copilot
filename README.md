@@ -1,6 +1,6 @@
 # Commit-Copilot VS Code Extension
 
-Commit-Copilot is a smart VS Code extension that leverages Large Language Models (LLMs) to automatically generate meaningful, conventional commit messages based on your staged changes. It streamlines your git workflow by analyzing diffs and suggesting professional commit messages directly within your editor.
+Commit-Copilot is a smart VS Code extension that leverages Large Language Models (LLMs) to automatically generate meaningful, conventional commit messages based on your local changes. It streamlines your git workflow by analyzing diffs and suggesting professional commit messages directly within your editor.
 
 ## Features
 
@@ -11,10 +11,12 @@ Commit-Copilot is a smart VS Code extension that leverages Large Language Models
   - **Ollama**: Support for local models like Gemma 3 and GPT-OSS.
 - **Seamless VS Code Integration**: Access Commit-Copilot directly from the Activity Bar or Command Palette.
 - **Conventional Commits**: Generates messages following the Conventional Commits specification (e.g., `feat:`, `fix:`, `docs:`).
-- **Smart Context**: Intelligently analyzes your `git diff` to understand the intent of your changes.
+- **One-Click Generation**: Instantly generate commit messages for your staged or unstaged changes.
+- **Smart Context**: Intelligently analyzes your `git diff` to understand the intent of your changes, prioritizing staged files.
+- **Auto-Staging Support**: Automatically detects untracked files and offers to stage them before generating the message.
+- **Respects Staging**: No longer forces `git add .` automatically, giving you full control over your staging area.
 - **Secure Key Storage**: API keys are stored securely using VS Code's Secret Storage.
 - **Model Selection**: Customize which model you want to use for each provider.
-- **One-Click Generation**: Instantly generate commit messages for your staged changes.
 - **Preview & Edit**: Review the generated message in the Source Control input box before committing.
 
 ## Requirements
@@ -43,8 +45,9 @@ Download and install the extension from the VS Code Marketplace or Open VSX Regi
 #### Method A: Activity Bar
 
 1.  Open the **Commit Copilot** view in the Activity Bar.
-2.  Ensure you have changes in your repository (staged or unstaged).
+2.  Ensure you have changes in your repository (staged, unstaged, or untracked).
 3.  Click the **"Generate Commit Message"** button.
+    - If only untracked files are found, you will be prompted to **"Stage & Generate"**.
 
 #### Method B: Source Control Navigation
 

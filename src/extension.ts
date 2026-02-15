@@ -96,7 +96,7 @@ export function activate(context: vscode.ExtensionContext) {
         outputChannel.appendLine(
           `[${new Date().toISOString()}] Starting commit-copilot generation...`,
         );
-        outputChannel.appendLine("Mode: Auto-stage all changes enabled");
+        outputChannel.appendLine("Mode: Smart staging (respects manual staging)");
 
         let scm: vscode.SourceControl | undefined;
         if (arg && "rootUri" in arg) {
