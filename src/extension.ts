@@ -201,19 +201,42 @@ export function activate(context: vscode.ExtensionContext) {
               outputChannel.appendLine(`Using model: ${savedModel}`);
             }
 
-            const result = await generateCommitMessage({
+            let result = await generateCommitMessage({
               cwd: repository.rootUri.fsPath,
               provider: currentProvider,
               apiKey: apiKey || "",
-              stageChanges: true,
+              stageChanges: false,
               model: savedModel,
               onProgress:
                 currentProvider === "ollama"
                   ? (message, increment) => {
-                      progress.report({ message, increment });
-                    }
+                    progress.report({ message, increment });
+                  }
                   : undefined,
             });
+
+            if (result.error?.exitCode === EXIT_CODES.NO_CHANGES_BUT_UNTRACKED) {
+              const selection = await vscode.window.showInformationMessage(
+                "No staged changes detected. Untracked files found. Please stage them manually or click 'Stage & Generate' to automatically stage and generate a commit message.",
+                "Stage & Generate",
+              );
+
+              if (selection === "Stage & Generate") {
+                result = await generateCommitMessage({
+                  cwd: repository.rootUri.fsPath,
+                  provider: currentProvider,
+                  apiKey: apiKey || "",
+                  stageChanges: true,
+                  model: savedModel,
+                  onProgress:
+                    currentProvider === "ollama"
+                      ? (message, increment) => {
+                        progress.report({ message, increment });
+                      }
+                      : undefined,
+                });
+              }
+            }
 
             if (result.success && result.message) {
               outputChannel.appendLine(`Generated message: ${result.message}`);
@@ -261,7 +284,7 @@ export function activate(context: vscode.ExtensionContext) {
                 vscode.window.showInformationMessage(
                   "No changes to commit. Make some changes first!",
                 );
-              } else {
+              } else if (error.exitCode !== EXIT_CODES.NO_CHANGES_BUT_UNTRACKED) {
                 vscode.window.showErrorMessage(
                   `${errorInfo.title}: ${error.message}. ${errorInfo.action || ""}`,
                 );
@@ -290,4 +313,4 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(disposable);
 }
 
-export function deactivate() {}
+export function deactivate() { }

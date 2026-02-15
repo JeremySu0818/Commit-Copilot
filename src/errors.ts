@@ -5,6 +5,7 @@ export const EXIT_CODES = {
   NOT_GIT_REPO: 1,
   STAGE_FAILED: 2,
   NO_CHANGES: 3,
+  NO_CHANGES_BUT_UNTRACKED: 4,
   API_KEY_MISSING: 10,
   API_KEY_INVALID: 11,
   QUOTA_EXCEEDED: 12,
@@ -28,6 +29,10 @@ export const ERROR_MESSAGES: Record<
   [EXIT_CODES.NO_CHANGES]: {
     title: "No changes to commit",
     action: "Make some changes to your files first.",
+  },
+  [EXIT_CODES.NO_CHANGES_BUT_UNTRACKED]: {
+    title: "No staged changes detected",
+    action: "Untracked files found. Please stage them to generate a commit message.",
   },
   [EXIT_CODES.API_KEY_MISSING]: {
     title: "API Key not configured",
@@ -120,6 +125,17 @@ export class NoChangesError extends CommitCopilotError {
       EXIT_CODES.NO_CHANGES,
     );
     this.name = "NoChangesError";
+  }
+}
+
+export class NoChangesButUntrackedError extends CommitCopilotError {
+  constructor() {
+    super(
+      "No changes to commit, but untracked files were detected.",
+      "NO_CHANGES_BUT_UNTRACKED",
+      EXIT_CODES.NO_CHANGES_BUT_UNTRACKED,
+    );
+    this.name = "NoChangesButUntrackedError";
   }
 }
 

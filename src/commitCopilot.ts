@@ -8,6 +8,7 @@ import {
   EXIT_CODES,
   CommitCopilotError,
   NoChangesError,
+  NoChangesButUntrackedError,
   StageFailedError,
 } from "./errors";
 
@@ -20,13 +21,14 @@ export {
   APIQuotaExceededError,
   APIRequestError,
   NoChangesError,
+  NoChangesButUntrackedError,
   StageFailedError,
 } from "./errors";
 
 const execAsync = promisify(exec);
 
 export class GitOperations {
-  constructor(private readonly cwd: string) {}
+  constructor(private readonly cwd: string) { }
 
   async isGitRepo(): Promise<boolean> {
     try {
@@ -39,14 +41,19 @@ export class GitOperations {
 
   async getDiff(staged: boolean = true): Promise<string> {
     try {
-      const cmd = staged ? "git diff --cached" : "git diff";
+      const cmd = staged
+        ? "git --no-pager diff --cached"
+        : "git --no-pager diff";
       const { stdout } = await execAsync(cmd, {
         cwd: this.cwd,
         encoding: "utf-8",
         maxBuffer: 10 * 1024 * 1024,
       });
       return stdout;
-    } catch (error) {
+    } catch (error: any) {
+      if (error?.stdout && typeof error.stdout === "string" && error.stdout.trim()) {
+        return error.stdout;
+      }
       console.error("Error running git diff:", error);
       return "";
     }
@@ -148,6 +155,12 @@ export async function generateCommitMessage(
     let diff = await gitOps.getDiff(true);
     if (!diff.trim() && !stageChanges) {
       diff = await gitOps.getDiff(false);
+    }
+    if (!diff.trim()) {
+      const untrackedFiles = await gitOps.getUntrackedFiles();
+      if (untrackedFiles.length > 0) {
+        throw new NoChangesButUntrackedError();
+      }
     }
     if (!diff.trim()) {
       throw new NoChangesError();
