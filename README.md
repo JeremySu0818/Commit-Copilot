@@ -8,13 +8,13 @@ Commit-Copilot is a smart VS Code extension that leverages Large Language Models
   - **Google Gemini**: Support for Gemini 2.0 Flash Lite/Flash, Gemini 2.5 Flash Lite/Flash/Pro, and Gemini 3 Flash/Pro Preview.
   - **OpenAI**: Support for o3/o3-mini, o4-mini, GPT-4o/GPT-4o mini, GPT-5 nano/GPT-5 mini/GPT-5, GPT-5.1, and GPT-5.2.
   - **Anthropic**: Support for Claude Sonnet/Opus 4, Claude Opus 4.1, Claude Haiku/Sonnet/Opus 4.5 and Claude Opus 4.6.
-  - **Ollama**: Support for local models like Gemma 3 1B/4B/12B/27B, gpt-oss-20B/120B, Meta-Llama-3-8B/70B, Phi-4 and Mistral-7B-Instruct-v0.3.
+  - **Ollama**: Support for local models like Gemma 3 1B/4B/12B/27B, gpt-oss-20B/120B, Llama 3.3 8B/70B, Phi-4 14B and Mistral 7B.
 - **Seamless VS Code Integration**: Access Commit-Copilot directly from the Activity Bar or Command Palette.
 - **Conventional Commits**: Generates messages following the Conventional Commits specification (e.g., `feat:`, `fix:`, `docs:`).
 - **One-Click Generation**: Instantly generate commit messages for your staged or unstaged changes.
 - **Smart Context**: Intelligently analyzes your `git diff` to understand the intent of your changes, prioritizing staged files.
 - **Auto-Staging Support**: Automatically detects untracked files and offers to stage them before generating the message.
-- **Respects Staging**: No longer forces `git add .` automatically, giving you full control over your staging area.
+- **Respects Staging**: Never forces automatic staging, giving you full control over your staging area.
 - **Secure Key Storage**: API keys are stored securely using VS Code's Secret Storage.
 - **Model Selection**: Customize which model you want to use for each provider.
 - **Preview & Edit**: Review the generated message in the Source Control input box before committing.
@@ -22,7 +22,7 @@ Commit-Copilot is a smart VS Code extension that leverages Large Language Models
 ## Requirements
 
 - **VS Code**: v1.80.0 or higher.
-- **Git**: Installed and available in your PATH.
+- **Git**: Installed and accessible by VS Code's built-in Git extension.
 - **API Key**: A valid API key for your chosen provider (or a local Ollama instance).
 
 ## Usage
