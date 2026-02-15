@@ -1,7 +1,5 @@
-// src/autoCommit.ts
+// src/commitCopilot.ts
 
-import { exec } from "child_process";
-import { promisify } from "util";
 import { APIProvider, DEFAULT_MODELS } from "./models";
 import { createLLMClient, ProgressCallback } from "./llmClients";
 import {
@@ -25,35 +23,39 @@ export {
   StageFailedError,
 } from "./errors";
 
-const execAsync = promisify(exec);
+const STATUS_UNTRACKED = 7;
+
+interface GitChange {
+  readonly uri: { fsPath: string };
+  readonly status: number;
+}
+
+export interface GitRepository {
+  readonly rootUri: { fsPath: string; toString(): string };
+  readonly state: {
+    readonly workingTreeChanges: ReadonlyArray<GitChange>;
+    readonly indexChanges: ReadonlyArray<GitChange>;
+    readonly untrackedChanges: ReadonlyArray<GitChange>;
+  };
+  readonly inputBox: { value: string };
+  diff(cached?: boolean): Promise<string>;
+  add(paths: string[]): Promise<void>;
+  commit(message: string, opts?: { all?: boolean | 'tracked' }): Promise<void>;
+  status(): Promise<void>;
+}
 
 export class GitOperations {
-  constructor(private readonly cwd: string) { }
+  constructor(private readonly repository: GitRepository) { }
 
   async isGitRepo(): Promise<boolean> {
-    try {
-      await execAsync("git rev-parse --is-inside-work-tree", { cwd: this.cwd });
-      return true;
-    } catch {
-      return false;
-    }
+    return true;
   }
 
   async getDiff(staged: boolean = true): Promise<string> {
     try {
-      const cmd = staged
-        ? "git --no-pager diff --cached"
-        : "git --no-pager diff";
-      const { stdout } = await execAsync(cmd, {
-        cwd: this.cwd,
-        encoding: "utf-8",
-        maxBuffer: 10 * 1024 * 1024,
-      });
-      return stdout;
+      const diff = await this.repository.diff(staged);
+      return diff;
     } catch (error: any) {
-      if (error?.stdout && typeof error.stdout === "string" && error.stdout.trim()) {
-        return error.stdout;
-      }
       console.error("Error running git diff:", error);
       return "";
     }
@@ -61,7 +63,18 @@ export class GitOperations {
 
   async stageAllChanges(): Promise<boolean> {
     try {
-      await execAsync("git add .", { cwd: this.cwd });
+      const paths: string[] = [];
+
+      for (const change of this.repository.state.workingTreeChanges) {
+        paths.push(change.uri.fsPath);
+      }
+      for (const change of this.repository.state.untrackedChanges) {
+        paths.push(change.uri.fsPath);
+      }
+
+      if (paths.length > 0) {
+        await this.repository.add(paths);
+      }
       return true;
     } catch (error) {
       console.error("Error staging changes:", error);
@@ -71,8 +84,7 @@ export class GitOperations {
 
   async commitChanges(message: string): Promise<boolean> {
     try {
-      const escapedMessage = message.replace(/"/g, '\\"');
-      await execAsync(`git commit -m "${escapedMessage}"`, { cwd: this.cwd });
+      await this.repository.commit(message);
       return true;
     } catch (error) {
       console.error("Error committing changes:", error);
@@ -80,19 +92,16 @@ export class GitOperations {
     }
   }
 
-  async getUntrackedFiles(): Promise<string[]> {
+  async hasUntrackedFiles(): Promise<boolean> {
     try {
-      const { stdout } = await execAsync(
-        "git ls-files --others --exclude-standard",
-        {
-          cwd: this.cwd,
-          encoding: "utf-8",
-        },
+      if (this.repository.state.untrackedChanges.length > 0) {
+        return true;
+      }
+      return this.repository.state.workingTreeChanges.some(
+        (change) => change.status === STATUS_UNTRACKED,
       );
-      return stdout.split("\n").filter((line) => line.trim().length > 0);
-    } catch (error) {
-      console.error("Error getting untracked files:", error);
-      return [];
+    } catch {
+      return false;
     }
   }
 
@@ -101,8 +110,7 @@ export class GitOperations {
       return true;
     }
     try {
-      const fileArgs = files.map((f) => `"${f}"`).join(" ");
-      await execAsync(`git add ${fileArgs}`, { cwd: this.cwd });
+      await this.repository.add(files);
       return true;
     } catch (error) {
       console.error("Error staging files:", error);
@@ -112,7 +120,7 @@ export class GitOperations {
 }
 
 export interface GenerateCommitMessageOptions {
-  cwd: string;
+  repository: GitRepository;
   provider: APIProvider;
   apiKey: string;
   model?: string;
@@ -130,7 +138,7 @@ export async function generateCommitMessage(
   options: GenerateCommitMessageOptions,
 ): Promise<GenerateCommitMessageResult> {
   const {
-    cwd,
+    repository,
     provider,
     apiKey,
     model,
@@ -138,7 +146,7 @@ export async function generateCommitMessage(
     onProgress,
   } = options;
   try {
-    const gitOps = new GitOperations(cwd);
+    const gitOps = new GitOperations(repository);
     if (!(await gitOps.isGitRepo())) {
       throw new CommitCopilotError(
         "Not a git repository. Please run this command inside a git repository.",
@@ -154,13 +162,10 @@ export async function generateCommitMessage(
     }
     let diff = await gitOps.getDiff(true);
     if (!diff.trim() && !stageChanges) {
-      diff = await gitOps.getDiff(false);
-    }
-    if (!diff.trim()) {
-      const untrackedFiles = await gitOps.getUntrackedFiles();
-      if (untrackedFiles.length > 0) {
+      if (await gitOps.hasUntrackedFiles()) {
         throw new NoChangesButUntrackedError();
       }
+      diff = await gitOps.getDiff(false);
     }
     if (!diff.trim()) {
       throw new NoChangesError();
