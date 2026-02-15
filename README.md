@@ -5,10 +5,10 @@ Commit-Copilot is a smart VS Code extension that leverages Large Language Models
 ## Features
 
 - **Multi-Provider Support**: Choose your preferred AI provider:
-  - **Google Gemini**: Support for Gemini 2.0 Flash, Gemini 2.5 Flash/Pro, and Gemini 3 Preview.
-  - **OpenAI**: Support for o3, o4-mini, GPT-4o, and the next-generation GPT-5 series.
-  - **Anthropic**: Support for Claude Sonnet/Opus 4 and Claude Haiku/Sonnet/Opus 4.5 and Claude Opus 4.6.
-  - **Ollama**: Support for local models like Gemma 3 and GPT-OSS.
+  - **Google Gemini**: Support for Gemini 2.0 Flash Lite/Flash, Gemini 2.5 Flash Lite/Flash/Pro, and Gemini 3 Flash/Pro Preview.
+  - **OpenAI**: Support for o3/o3-mini, o4-mini, GPT-4o/GPT-4o mini, GPT-5 nano/GPT-5 mini/GPT-5, GPT-5.1, and GPT-5.2.
+  - **Anthropic**: Support for Claude Sonnet/Opus 4, Claude Opus 4.1, Claude Haiku/Sonnet/Opus 4.5 and Claude Opus 4.6.
+  - **Ollama**: Support for local models like Gemma 3 1B/4B/12B/27B, gpt-oss-20B/120B, Meta-Llama-3-8B/70B, Phi-4 and Mistral-7B-Instruct-v0.3.
 - **Seamless VS Code Integration**: Access Commit-Copilot directly from the Activity Bar or Command Palette.
 - **Conventional Commits**: Generates messages following the Conventional Commits specification (e.g., `feat:`, `fix:`, `docs:`).
 - **One-Click Generation**: Instantly generate commit messages for your staged or unstaged changes.
