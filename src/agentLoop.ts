@@ -1,9 +1,6 @@
-// src/agentLoop.ts
-
 import {
     executeToolCall,
-    ToolCallRequest,
-    ToolCallResult,
+    buildInitialContext,
     toGeminiFunctionDeclarations,
     toOpenAITools,
     toAnthropicTools,
@@ -18,24 +15,23 @@ import {
 } from "./errors";
 import { ProgressCallback } from "./llmClients";
 
-const MAX_AGENT_STEPS = 5;
+const MAX_AGENT_STEPS = Infinity;
 
 const AGENT_SYSTEM_PROMPT = `You are a senior software engineer acting as an autonomous commit message agent.
 You have access to tools that let you inspect the repository to make informed decisions.
 
-## Your Mission
-Generate a precise, meaningful conventional commit message based on the provided git diff.
-You MUST use tools when the diff alone is ambiguous about the nature of the change.
+## IMPORTANT: You receive LIMITED information initially
+You are given ONLY the names of changed files, line counts, and the project structure.
+You do NOT see the actual changes. You MUST use your tools to investigate before classifying.
 
-## Decision Process (MANDATORY)
-Before generating the commit message, you must classify the change by following these steps:
-
-1. **Scan the diff**: Identify what was added, removed, or modified.
-2. **Assess ambiguity**: If the diff shows lines removed/changed but you cannot confidently determine
-   whether they are comments, dead code, configuration, or functional logic — you MUST call \`read_file\`
-   or \`get_file_outline\` to examine the surrounding context.
-3. **Apply the classification rules** (see below) ONLY after you have sufficient context.
-4. **Output the final commit message** with no additional explanation.
+## Required Workflow
+1. **First**: Call \`get_diff\` with a specific file path for each changed file you want to investigate.
+   You MUST provide the \`path\` argument — calling \`get_diff\` without a path is NOT allowed.
+   Prioritize the most important or ambiguous files. You do NOT need to inspect every file if the changes are clearly related.
+2. **Then**: If the diff is ambiguous (e.g., lines removed but unclear if comments or logic),
+   call \`read_file\` to see the full file context around the changes.
+3. **Optionally**: Call \`get_file_outline\` to understand a file's role in the project.
+4. **Finally**: Only after sufficient investigation, output the commit message.
 
 ## Classification Rules (STRICT)
 Apply these rules IN ORDER. The first matching rule wins:
@@ -51,28 +47,21 @@ Apply these rules IN ORDER. The first matching rule wins:
 | Improves performance without changing behavior | \`perf\` |
 | Changes ONLY whitespace, formatting, semicolons, trailing commas (no logic change) | \`style\` |
 | Restructures existing code logic WITHOUT changing external behavior | \`refactor\` |
-| Everything else: deleting comments, removing dead code, updating dependencies, renaming without logic change, housekeeping tasks | \`chore\` |
+| Everything else: deleting comments, removing dead code, removing console.log, updating dependencies, renaming without logic change, housekeeping | \`chore\` |
 
 ### Critical Distinctions
-- **chore vs refactor**: If the ONLY change is removing comments, TODO notes, console.logs, or unused imports — this is \`chore\`, NOT \`refactor\`. \`refactor\` requires restructuring of actual program logic.
+- **chore vs refactor**: If the ONLY change is removing comments, TODO notes, console.logs, unused imports, or deprecated dead code — this is \`chore\`, NOT \`refactor\`. \`refactor\` requires restructuring of actual program logic (e.g., extracting functions, reorganizing class hierarchy).
 - **chore vs style**: Removing comments is \`chore\`. Reformatting existing code (indentation, bracket style) is \`style\`.
 - **feat vs refactor**: If the change exposes new functionality to the user/API, it's \`feat\`. If it only reorganizes internals, it's \`refactor\`.
 
-## Format
-- Conventional Commits format: \`type(scope): description\`
+## Output Format
+- Conventional Commits: \`type(scope): description\`
 - First line max 72 characters, ideally under 50
 - Optional body and footer
 - English only, no emojis
 - Do NOT wrap in markdown code blocks
+- Do NOT output explanations — ONLY the commit message`;
 
-## When to Use Tools
-- You see lines removed but can't determine if they're comments or code → call \`read_file\`
-- You want to understand a file's role in the project → call \`get_file_outline\`
-- You want to see the full scope of changes → call \`list_changed_files\`
-- When in doubt, ALWAYS investigate. It's better to make one extra tool call than to misclassify.
-
-## Output
-When you are confident in your classification, output ONLY the commit message string. No markdown, no explanation.`;
 
 interface AgentLoopOptions {
     provider: APIProvider;
@@ -135,12 +124,14 @@ async function runGeminiAgentLoop(
             ],
         });
 
-        const history: any[] = [];
-        const userMessage = `Here is the git diff for the staged changes:\n\n${diff}`;
+        const initialContext = buildInitialContext(diff, repoRoot);
+        const chat = generativeModel.startChat({ history: [] });
 
-        const chat = generativeModel.startChat({ history });
+        if (onProgress) {
+            onProgress("🧠 Agent analyzing changes...");
+        }
 
-        let response = await chat.sendMessage(userMessage);
+        let response = await chat.sendMessage(initialContext);
         let step = 0;
 
         while (step < MAX_AGENT_STEPS) {
@@ -165,7 +156,7 @@ async function runGeminiAgentLoop(
             for (const part of functionCalls) {
                 const fc = (part as any).functionCall;
                 if (onProgress) {
-                    onProgress(`🔍 Investigating: ${fc.name}(${JSON.stringify(fc.args).substring(0, 60)})...`);
+                    onProgress(`🔍 [Step ${step + 1}] ${fc.name}(${JSON.stringify(fc.args || {}).substring(0, 80)})`);
                 }
 
                 const result = executeToolCall(
@@ -231,13 +222,16 @@ async function runOpenAIAgentLoop(
         const client = new OpenAI({ apiKey });
         const modelName = model || DEFAULT_MODELS.openai;
 
+        const initialContext = buildInitialContext(diff, repoRoot);
+
         const messages: any[] = [
             { role: "system", content: AGENT_SYSTEM_PROMPT },
-            {
-                role: "user",
-                content: `Here is the git diff for the staged changes:\n\n${diff}`,
-            },
+            { role: "user", content: initialContext },
         ];
+
+        if (onProgress) {
+            onProgress("🧠 Agent analyzing changes...");
+        }
 
         let step = 0;
 
@@ -265,7 +259,7 @@ async function runOpenAIAgentLoop(
                 for (const toolCall of assistantMessage.tool_calls) {
                     const args = JSON.parse(toolCall.function.arguments || "{}");
                     if (onProgress) {
-                        onProgress(`🔍 Investigating: ${toolCall.function.name}(${JSON.stringify(args).substring(0, 60)})...`);
+                        onProgress(`🔍 [Step ${step + 1}] ${toolCall.function.name}(${JSON.stringify(args).substring(0, 80)})`);
                     }
 
                     const result = executeToolCall(
@@ -323,6 +317,7 @@ async function runOpenAIAgentLoop(
     }
 }
 
+
 async function runAnthropicAgentLoop(
     apiKey: string,
     model: string | undefined,
@@ -342,12 +337,15 @@ async function runAnthropicAgentLoop(
         const client = new Anthropic({ apiKey });
         const modelName = model || DEFAULT_MODELS.anthropic;
 
+        const initialContext = buildInitialContext(diff, repoRoot);
+
         const messages: any[] = [
-            {
-                role: "user",
-                content: `Here is the git diff for the staged changes:\n\n${diff}`,
-            },
+            { role: "user", content: initialContext },
         ];
+
+        if (onProgress) {
+            onProgress("🧠 Agent analyzing changes...");
+        }
 
         let step = 0;
 
@@ -381,7 +379,7 @@ async function runAnthropicAgentLoop(
             for (const block of toolUseBlocks) {
                 const toolUse = block as any;
                 if (onProgress) {
-                    onProgress(`🔍 Investigating: ${toolUse.name}(${JSON.stringify(toolUse.input).substring(0, 60)})...`);
+                    onProgress(`🔍 [Step ${step + 1}] ${toolUse.name}(${JSON.stringify(toolUse.input || {}).substring(0, 80)})`);
                 }
 
                 const result = executeToolCall(
@@ -482,23 +480,8 @@ async function runOllamaAgentLoop(
             onProgress("Generating commit message...", 0);
         }
 
-        const changedFiles = extractChangedFilesFromDiff(diff);
-        let contextBlock = "";
-
-        for (const filePath of changedFiles.slice(0, 5)) {
-            const result = executeToolCall(
-                { name: "read_file", arguments: { path: filePath } },
-                repoRoot,
-                diff,
-            );
-            if (!result.error) {
-                contextBlock += `\n--- Context: ${filePath} ---\n${result.content}\n`;
-            }
-        }
-
-        const enhancedPrompt = contextBlock
-            ? `Here is the git diff for the staged changes:\n\n${diff}\n\nHere is the full context of the changed files for your reference:\n${contextBlock}`
-            : `Here is the git diff for the staged changes:\n\n${diff}`;
+        const initialContext = buildInitialContext(diff, repoRoot);
+        const enhancedPrompt = `${initialContext}\n\n## Full Diff (provided inline for local model)\n\n${diff}`;
 
         const response = await client.chat({
             model: modelName,
@@ -533,17 +516,4 @@ async function runOllamaAgentLoop(
         }
         throw new APIRequestError(message);
     }
-}
-
-function extractChangedFilesFromDiff(diff: string): string[] {
-    const files: string[] = [];
-    const regex = /^diff --git a\/(.+?) b\/(.+)$/gm;
-    let match;
-    while ((match = regex.exec(diff)) !== null) {
-        const bPath = match[2];
-        if (bPath !== "/dev/null") {
-            files.push(bPath);
-        }
-    }
-    return [...new Set(files)];
 }

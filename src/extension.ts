@@ -1,5 +1,3 @@
-// src/extension.ts
-
 import * as vscode from "vscode";
 import { SidePanelProvider } from "./SidePanelProvider";
 import {
@@ -207,12 +205,12 @@ export function activate(context: vscode.ExtensionContext) {
               apiKey: apiKey || "",
               stageChanges: false,
               model: savedModel,
-              onProgress:
-                currentProvider === "ollama"
-                  ? (message, increment) => {
-                    progress.report({ message, increment });
-                  }
-                  : undefined,
+              onProgress: (message, increment) => {
+                outputChannel.appendLine(message);
+                if (currentProvider === "ollama") {
+                  progress.report({ message, increment });
+                }
+              },
             });
 
             if (result.error?.exitCode === EXIT_CODES.NO_CHANGES_BUT_UNTRACKED) {
@@ -228,12 +226,12 @@ export function activate(context: vscode.ExtensionContext) {
                   apiKey: apiKey || "",
                   stageChanges: true,
                   model: savedModel,
-                  onProgress:
-                    currentProvider === "ollama"
-                      ? (message, increment) => {
-                        progress.report({ message, increment });
-                      }
-                      : undefined,
+                  onProgress: (message, increment) => {
+                    outputChannel.appendLine(message);
+                    if (currentProvider === "ollama") {
+                      progress.report({ message, increment });
+                    }
+                  },
                 });
               }
             }
