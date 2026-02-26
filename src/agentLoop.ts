@@ -17,6 +17,58 @@ import { ProgressCallback } from "./llmClients";
 
 const MAX_AGENT_STEPS = Infinity;
 
+const CONVENTIONAL_COMMIT_TYPES = ["feat", "fix", "docs", "style", "refactor", "perf", "test", "build", "ci", "chore", "revert"];
+
+/**
+ * Post-process model output to extract only the conventional commit message.
+ * This is the last line of defense against models (especially Claude) that
+ * output analysis/explanation text before or after the commit message.
+ */
+function extractCommitMessage(raw: string): string {
+    const trimmed = raw.trim();
+
+    // Build regex: type(scope): description
+    const typesPattern = CONVENTIONAL_COMMIT_TYPES.join("|");
+    const commitRegex = new RegExp(
+        `^(${typesPattern})(\\([^)]+\\))?(!)?:\\s*.+`,
+        "m",
+    );
+
+    // If the output already starts with a valid commit type, it's likely clean
+    const firstLine = trimmed.split("\n")[0];
+    if (commitRegex.test(firstLine)) {
+        // Return the full message (may include body/footer after blank line)
+        return trimmed;
+    }
+
+    // Otherwise, scan all lines and find the first conventional commit line
+    const lines = trimmed.split("\n");
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (commitRegex.test(line)) {
+            // Return from this line onwards (may include body/footer)
+            return lines
+                .slice(i)
+                .map((l) => l.trimStart())
+                .join("\n")
+                .trim();
+        }
+    }
+
+    // Last resort: strip markdown code fences and try again
+    const stripped = trimmed
+        .replace(/^```[\w]*\n?/gm, "")
+        .replace(/\n?```\s*$/gm, "")
+        .trim();
+    const strippedFirstLine = stripped.split("\n")[0];
+    if (commitRegex.test(strippedFirstLine)) {
+        return stripped;
+    }
+
+    // If nothing matched, return the raw trimmed output as-is
+    return trimmed;
+}
+
 const AGENT_SYSTEM_PROMPT = `You are a senior software engineer acting as an autonomous commit message agent.
 You have access to tools that let you inspect the repository to make informed decisions.
 
@@ -24,14 +76,23 @@ You have access to tools that let you inspect the repository to make informed de
 You are given ONLY the names of changed files, line counts, and the project structure.
 You do NOT see the actual changes. You MUST use your tools to investigate before classifying.
 
+## Available Tools
+You have multiple tools at your disposal. Use whichever tools are needed for accurate investigation:
+- \`get_diff\` — Get the actual git diff for a specific file. You MUST provide the \`path\` argument.
+- \`read_file\` — Read the current contents of a file, optionally specifying a line range.
+- \`get_file_outline\` — Get the structural outline (functions, classes, exports) of a file.
+
+You are NOT limited to \`get_diff\`. Choose the best tool(s) for the situation. For example:
+- Use \`read_file\` to understand context around changes.
+- Use \`get_file_outline\` to understand a file's role before reading its diff.
+- Combine multiple tools as needed for a thorough investigation.
+
 ## Required Workflow
-1. **First**: Call \`get_diff\` with a specific file path for each changed file you want to investigate.
-   You MUST provide the \`path\` argument — calling \`get_diff\` without a path is NOT allowed.
+1. Investigate the changes using your tools (\`get_diff\`, \`read_file\`, \`get_file_outline\` — use any combination).
    Prioritize the most important or ambiguous files. You do NOT need to inspect every file if the changes are clearly related.
-2. **Then**: If the diff is ambiguous (e.g., lines removed but unclear if comments or logic),
-   call \`read_file\` to see the full file context around the changes.
-3. **Optionally**: Call \`get_file_outline\` to understand a file's role in the project.
-4. **Finally**: Only after sufficient investigation, output the commit message.
+2. Classify the change type based on the Classification Rules below.
+3. Determine the appropriate scope from the affected module/area.
+4. Output ONLY the commit message. Nothing else.
 
 ## Classification Rules (STRICT)
 Apply these rules IN ORDER. The first matching rule wins:
@@ -54,13 +115,45 @@ Apply these rules IN ORDER. The first matching rule wins:
 - **chore vs style**: Removing comments is \`chore\`. Reformatting existing code (indentation, bracket style) is \`style\`.
 - **feat vs refactor**: If the change exposes new functionality to the user/API, it's \`feat\`. If it only reorganizes internals, it's \`refactor\`.
 
-## Output Format
-- Conventional Commits: \`type(scope): description\`
-- First line max 72 characters, ideally under 50
-- Optional body and footer
-- English only, no emojis
-- Do NOT wrap in markdown code blocks
-- Do NOT output explanations — ONLY the commit message`;
+## Output Format (MANDATORY — ZERO TOLERANCE FOR VIOLATIONS)
+
+### Strict Rules
+1. **Scope parentheses are MANDATORY**: The format is \`type(scope): description\`. You MUST always include a scope in parentheses. Never output \`type: description\` without a scope.
+   - The scope should describe the affected module, component, or area (e.g., \`auth\`, \`api\`, \`ui\`, \`config\`, \`deps\`, \`core\`).
+   - For initial project setup or changes spanning the entire project, use \`project\` as the scope.
+2. First line max 72 characters, ideally under 50.
+3. **Commit body is MANDATORY**: You MUST provide a body separated by a blank line after the description. The body should explain *what* and *why* (not just *how*). Footer is optional.
+4. English only, no emojis.
+5. Do NOT wrap in markdown code blocks (no \`\`\`).  
+
+### CRITICAL OUTPUT CONSTRAINT
+**Your ENTIRE final text output MUST be the commit message and NOTHING ELSE.**
+- Do NOT include any analysis, reasoning, investigation notes, summaries, or explanations.
+- Do NOT include bullet points, numbered lists, or headers describing what you found.
+- Do NOT precede the commit message with phrases like "Based on...", "Here is...", "The commit message is...", or any introductory text.
+- Do NOT follow the commit message with any concluding remarks or justification.
+- The FIRST character of your output must be the start of the commit type (e.g., \`f\` in \`feat\`, \`c\` in \`chore\`).
+- The output must be PARSEABLE as a commit message directly — no surrounding text whatsoever.
+
+### Examples of CORRECT output (entire response is just this):
+feat(auth): add OAuth2 login flow with Google provider
+
+Implemented the standard OAuth2 authorization code grant to allow
+users to log in via their Google accounts. Stored session tokens
+securely in HttpOnly cookies.
+
+fix(api): resolve null pointer in user query handler
+
+Added a null check for the user metadata object before attempting
+to access the nested role property during database querying.
+
+### Examples of WRONG output (NEVER do this):
+"Based on my investigation..." followed by the commit message
+"Here's the commit message:" followed by the commit message
+Any text before or after the commit message
+A commit message without scope parentheses like "feat: add login"
+
+VIOLATING THESE OUTPUT RULES IS A CRITICAL FAILURE.`;
 
 
 interface AgentLoopOptions {
@@ -128,7 +221,7 @@ async function runGeminiAgentLoop(
         const chat = generativeModel.startChat({ history: [] });
 
         if (onProgress) {
-            onProgress("🧠 Agent analyzing changes...");
+            onProgress("Agent analyzing changes...");
         }
 
         let response = await chat.sendMessage(initialContext);
@@ -149,14 +242,14 @@ async function runGeminiAgentLoop(
                 if (!text) {
                     throw new APIRequestError("Empty text response from Gemini API");
                 }
-                return text.trim();
+                return extractCommitMessage(text);
             }
 
             const toolResults: any[] = [];
             for (const part of functionCalls) {
                 const fc = (part as any).functionCall;
                 if (onProgress) {
-                    onProgress(`🔍 [Step ${step + 1}] ${fc.name}(${JSON.stringify(fc.args || {}).substring(0, 80)})`);
+                    onProgress(`[Step ${step + 1}] ${fc.name}(${JSON.stringify(fc.args || {}).substring(0, 80)})`);
                 }
 
                 const result = executeToolCall(
@@ -178,10 +271,10 @@ async function runGeminiAgentLoop(
         }
 
         const finalResponse = await chat.sendMessage(
-            "You have used all available investigation steps. Based on what you've gathered, output the final commit message now.",
+            "You have used all available investigation steps. Output ONLY the final commit message now in type(scope): description format. Scope parentheses are MANDATORY. Do NOT include any explanation or analysis — just the commit message.",
         );
         const text = finalResponse.response.text();
-        return text?.trim() || "chore: update files";
+        return text ? extractCommitMessage(text) : "chore(project): update files";
     } catch (error: any) {
         if (
             error instanceof NoChangesError ||
@@ -230,7 +323,7 @@ async function runOpenAIAgentLoop(
         ];
 
         if (onProgress) {
-            onProgress("🧠 Agent analyzing changes...");
+            onProgress("Agent analyzing changes...");
         }
 
         let step = 0;
@@ -259,7 +352,7 @@ async function runOpenAIAgentLoop(
                 for (const toolCall of assistantMessage.tool_calls) {
                     const args = JSON.parse(toolCall.function.arguments || "{}");
                     if (onProgress) {
-                        onProgress(`🔍 [Step ${step + 1}] ${toolCall.function.name}(${JSON.stringify(args).substring(0, 80)})`);
+                        onProgress(`[Step ${step + 1}] ${toolCall.function.name}(${JSON.stringify(args).substring(0, 80)})`);
                     }
 
                     const result = executeToolCall(
@@ -280,21 +373,21 @@ async function runOpenAIAgentLoop(
                 if (!text) {
                     throw new APIRequestError("Empty text response from OpenAI API");
                 }
-                return text.trim();
+                return extractCommitMessage(text);
             }
         }
 
         messages.push({
             role: "user",
             content:
-                "You have used all available investigation steps. Output the final commit message now.",
+                "You have used all available investigation steps. Output ONLY the final commit message now in type(scope): description format. Scope parentheses are MANDATORY. Do NOT include any explanation or analysis — just the commit message.",
         });
         const finalCompletion = await client.chat.completions.create({
             model: modelName,
             messages,
         });
         const text = finalCompletion.choices[0]?.message?.content;
-        return text?.trim() || "chore: update files";
+        return text ? extractCommitMessage(text) : "chore(project): update files";
     } catch (error: any) {
         if (
             error instanceof NoChangesError ||
@@ -344,7 +437,7 @@ async function runAnthropicAgentLoop(
         ];
 
         if (onProgress) {
-            onProgress("🧠 Agent analyzing changes...");
+            onProgress("Agent analyzing changes...");
         }
 
         let step = 0;
@@ -370,7 +463,7 @@ async function runAnthropicAgentLoop(
                 if (!text) {
                     throw new APIRequestError("Empty response from Anthropic API");
                 }
-                return text.trim();
+                return extractCommitMessage(text);
             }
 
             messages.push({ role: "assistant", content: response.content });
@@ -379,7 +472,7 @@ async function runAnthropicAgentLoop(
             for (const block of toolUseBlocks) {
                 const toolUse = block as any;
                 if (onProgress) {
-                    onProgress(`🔍 [Step ${step + 1}] ${toolUse.name}(${JSON.stringify(toolUse.input || {}).substring(0, 80)})`);
+                    onProgress(`[Step ${step + 1}] ${toolUse.name}(${JSON.stringify(toolUse.input || {}).substring(0, 80)})`);
                 }
 
                 const result = executeToolCall(
@@ -404,10 +497,12 @@ async function runAnthropicAgentLoop(
             content: [
                 {
                     type: "text",
-                    text: "You have used all available investigation steps. Output the final commit message now.",
+                    text: "You have used all available investigation steps. Output ONLY the final commit message now in type(scope): description format. Scope parentheses are MANDATORY. Do NOT include any explanation or analysis — just the commit message.",
                 },
             ],
         });
+
+
         const finalResponse = await client.messages.create({
             model: modelName,
             max_tokens: 4096,
@@ -418,7 +513,7 @@ async function runAnthropicAgentLoop(
             .filter((b: any) => b.type === "text")
             .map((b: any) => b.text)
             .join("");
-        return text?.trim() || "chore: update files";
+        return text ? extractCommitMessage(text) : "chore(project): update files";
     } catch (error: any) {
         if (
             error instanceof NoChangesError ||
@@ -499,7 +594,7 @@ async function runOllamaAgentLoop(
         if (!text) {
             throw new APIRequestError("Empty response from Ollama");
         }
-        return text.trim();
+        return extractCommitMessage(text);
     } catch (error: any) {
         if (error instanceof NoChangesError) {
             throw error;

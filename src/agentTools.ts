@@ -417,8 +417,10 @@ ${projectTree}
 ---
 
 You have ONLY been given the file names and line counts. You do NOT yet know what the actual changes are.
-You MUST use your tools (especially \`get_diff\`) to inspect the actual changes before making any classification decision.
-Do NOT guess the commit type based solely on file names.`;
+Use your tools to inspect the changes before classifying. You have \`get_diff\`, \`read_file\`, and \`get_file_outline\` — use whichever combination is most effective.
+Do NOT guess the commit type based solely on file names.
+
+REMINDER: When you are done investigating, your ENTIRE text output must be ONLY the commit message in \`type(scope): description\` format — scope parentheses are MANDATORY. No analysis, no explanation, no commentary.`;
 }
 
 export function toGeminiFunctionDeclarations(): object[] {
