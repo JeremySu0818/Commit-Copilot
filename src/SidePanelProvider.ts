@@ -1,5 +1,3 @@
-// src/SidePanelProvider.ts
-
 import * as vscode from "vscode";
 import {
   APIProvider,

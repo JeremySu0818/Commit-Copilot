@@ -1,5 +1,3 @@
-// src/agentTools.ts
-
 import * as fs from "fs";
 import * as path from "path";
 
@@ -22,9 +20,25 @@ export interface ToolCallResult {
 
 export const AGENT_TOOLS: ToolDefinition[] = [
     {
+        name: "get_diff",
+        description:
+            "Get the actual git diff content for a specific file. You MUST specify the file path. Call this tool for each file you want to investigate. You MUST call this tool at least once to understand what was actually changed before making a classification decision.",
+        parameters: {
+            type: "object",
+            properties: {
+                path: {
+                    type: "string",
+                    description:
+                        "Required. Relative path to a specific file to get the diff for. Use the file paths from the staged changes summary.",
+                },
+            },
+            required: ["path"],
+        },
+    },
+    {
         name: "read_file",
         description:
-            "Read the contents of a file in the repository. Use this when the diff alone is insufficient to determine the nature of the change (e.g., whether removed lines were comments, dead code, or functional logic). You can specify a line range to read a portion of the file.",
+            "Read the current contents of a file in the repository. Use this to understand the full context around changes — e.g., whether removed lines were comments, dead code, or functional logic. You can specify a line range to read a portion of the file.",
         parameters: {
             type: "object",
             properties: {
@@ -63,20 +77,45 @@ export const AGENT_TOOLS: ToolDefinition[] = [
             required: ["path"],
         },
     },
-    {
-        name: "list_changed_files",
-        description:
-            "List all files that have been changed (staged) in this commit, along with their change type (added, modified, deleted, renamed). Use this to understand the full scope of the commit.",
-        parameters: {
-            type: "object",
-            properties: {},
-            required: [],
-        },
-    },
 ];
+
 
 const MAX_FILE_LINES = 300;
 const MAX_OUTLINE_LINES = 150;
+
+function executeGetDiff(
+    _repoRoot: string,
+    args: Record<string, unknown>,
+    diffContent: string,
+): string {
+    const filePath = args.path as string | undefined;
+
+    if (!filePath) {
+        return "Error: 'path' is required. Please specify a file path to get its diff. Use the file paths from the staged changes summary.";
+    }
+
+    const lines = diffContent.split("\n");
+    const fileBlocks: string[] = [];
+    let capturing = false;
+
+    for (const line of lines) {
+        const match = line.match(/^diff --git a\/(.+?) b\/(.+)$/);
+        if (match) {
+            const aPath = match[1];
+            const bPath = match[2];
+            capturing = aPath === filePath || bPath === filePath;
+        }
+        if (capturing) {
+            fileBlocks.push(line);
+        }
+    }
+
+    if (fileBlocks.length === 0) {
+        return `No diff found for file: ${filePath}`;
+    }
+
+    return fileBlocks.join("\n");
+}
 
 function executeReadFile(
     repoRoot: string,
@@ -140,6 +179,7 @@ function executeReadFile(
     }
 }
 
+
 function executeGetFileOutline(
     repoRoot: string,
     args: Record<string, unknown>,
@@ -198,42 +238,6 @@ function executeGetFileOutline(
     }
 }
 
-function executeListChangedFiles(
-    _repoRoot: string,
-    _args: Record<string, unknown>,
-    diffContent: string,
-): string {
-    const files: { path: string; type: string }[] = [];
-    const diffLines = diffContent.split("\n");
-
-    for (const line of diffLines) {
-        const match = line.match(/^diff --git a\/(.+?) b\/(.+)$/);
-        if (match) {
-            const aPath = match[1];
-            const bPath = match[2];
-
-            if (aPath === "/dev/null") {
-                files.push({ path: bPath, type: "added" });
-            } else if (bPath === "/dev/null") {
-                files.push({ path: aPath, type: "deleted" });
-            } else if (aPath !== bPath) {
-                files.push({ path: `${aPath} → ${bPath}`, type: "renamed" });
-            } else {
-                files.push({ path: bPath, type: "modified" });
-            }
-        }
-    }
-
-    if (files.length === 0) {
-        return "No changed files detected in the diff.";
-    }
-
-    const summary = files
-        .map((f) => `  [${f.type.toUpperCase()}] ${f.path}`)
-        .join("\n");
-
-    return `Changed files (${files.length}):\n${summary}`;
-}
 
 export function executeToolCall(
     toolCall: ToolCallRequest,
@@ -244,18 +248,14 @@ export function executeToolCall(
         let content: string;
 
         switch (toolCall.name) {
+            case "get_diff":
+                content = executeGetDiff(repoRoot, toolCall.arguments, diffContent);
+                break;
             case "read_file":
                 content = executeReadFile(repoRoot, toolCall.arguments);
                 break;
             case "get_file_outline":
                 content = executeGetFileOutline(repoRoot, toolCall.arguments);
-                break;
-            case "list_changed_files":
-                content = executeListChangedFiles(
-                    repoRoot,
-                    toolCall.arguments,
-                    diffContent,
-                );
                 break;
             default:
                 content = `Unknown tool: ${toolCall.name}`;
@@ -270,6 +270,155 @@ export function executeToolCall(
             error: true,
         };
     }
+}
+
+
+export function parseDiffSummary(
+    diff: string,
+): { path: string; type: string; added: number; removed: number }[] {
+    const files: { path: string; type: string; added: number; removed: number }[] = [];
+    const lines = diff.split("\n");
+
+    let currentFile: { path: string; type: string; added: number; removed: number } | null = null;
+
+    for (const line of lines) {
+        const diffMatch = line.match(/^diff --git a\/(.+?) b\/(.+)$/);
+        if (diffMatch) {
+            if (currentFile) {
+                files.push(currentFile);
+            }
+
+            const aPath = diffMatch[1];
+            const bPath = diffMatch[2];
+
+            let type = "modified";
+            let filePath = bPath;
+            if (aPath === "/dev/null") {
+                type = "added";
+                filePath = bPath;
+            } else if (bPath === "/dev/null") {
+                type = "deleted";
+                filePath = aPath;
+            } else if (aPath !== bPath) {
+                type = "renamed";
+                filePath = `${aPath} → ${bPath}`;
+            }
+
+            currentFile = { path: filePath, type, added: 0, removed: 0 };
+            continue;
+        }
+
+        if (currentFile) {
+            if (line.startsWith("+") && !line.startsWith("+++")) {
+                currentFile.added++;
+            } else if (line.startsWith("-") && !line.startsWith("---")) {
+                currentFile.removed++;
+            }
+        }
+    }
+
+    if (currentFile) {
+        files.push(currentFile);
+    }
+
+    return files;
+}
+
+export function getProjectStructure(repoRoot: string): string {
+    const IGNORE_DIRS = new Set([
+        ".git",
+        "node_modules",
+        ".next",
+        "dist",
+        "build",
+        "out",
+        ".cache",
+        "coverage",
+        "__pycache__",
+        ".vscode",
+        ".idea",
+    ]);
+
+    const MAX_FILES = 200;
+    let fileCount = 0;
+
+    function walk(dir: string, prefix: string = ""): string[] {
+        const lines: string[] = [];
+
+        let entries: fs.Dirent[];
+        try {
+            entries = fs.readdirSync(dir, { withFileTypes: true });
+        } catch {
+            return lines;
+        }
+
+        entries.sort((a, b) => {
+            if (a.isDirectory() && !b.isDirectory()) return -1;
+            if (!a.isDirectory() && b.isDirectory()) return 1;
+            return a.name.localeCompare(b.name);
+        });
+
+        for (let i = 0; i < entries.length; i++) {
+            if (fileCount >= MAX_FILES) {
+                lines.push(`${prefix}... (truncated, ${MAX_FILES}+ files)`);
+                break;
+            }
+
+            const entry = entries[i];
+            const isLast = i === entries.length - 1;
+            const connector = isLast ? "└── " : "├── ";
+            const childPrefix = isLast ? "    " : "│   ";
+
+            if (entry.isDirectory()) {
+                if (IGNORE_DIRS.has(entry.name)) {
+                    continue;
+                }
+                lines.push(`${prefix}${connector}${entry.name}/`);
+                const childLines = walk(
+                    path.join(dir, entry.name),
+                    prefix + childPrefix,
+                );
+                lines.push(...childLines);
+            } else {
+                lines.push(`${prefix}${connector}${entry.name}`);
+                fileCount++;
+            }
+        }
+
+        return lines;
+    }
+
+    const treeLines = walk(repoRoot);
+    return treeLines.join("\n");
+}
+
+
+export function buildInitialContext(diff: string, repoRoot: string): string {
+    const fileSummary = parseDiffSummary(diff);
+    const projectTree = getProjectStructure(repoRoot);
+
+    const changedFilesSection = fileSummary
+        .map(
+            (f) =>
+                `  [${f.type.toUpperCase()}] ${f.path}  (+${f.added} / -${f.removed} lines)`,
+        )
+        .join("\n");
+
+    return `## Staged Changes Summary
+
+The following files have been modified in this commit:
+
+${changedFilesSection}
+
+## Project Structure (tracked files)
+
+${projectTree}
+
+---
+
+You have ONLY been given the file names and line counts. You do NOT yet know what the actual changes are.
+You MUST use your tools (especially \`get_diff\`) to inspect the actual changes before making any classification decision.
+Do NOT guess the commit type based solely on file names.`;
 }
 
 export function toGeminiFunctionDeclarations(): object[] {

@@ -1,5 +1,3 @@
-// src/errors.ts
-
 export const EXIT_CODES = {
   SUCCESS: 0,
   NOT_GIT_REPO: 1,

@@ -1,5 +1,3 @@
-// src/commitCopilot.ts
-
 import { APIProvider, DEFAULT_MODELS } from "./models";
 import { createLLMClient, ProgressCallback } from "./llmClients";
 import { runAgentLoop } from "./agentLoop";
