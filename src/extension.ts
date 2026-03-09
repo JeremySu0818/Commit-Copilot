@@ -215,16 +215,32 @@ export function activate(context: vscode.ExtensionContext) {
 
             if (result.error?.exitCode === EXIT_CODES.NO_CHANGES_BUT_UNTRACKED) {
               const selection = await vscode.window.showInformationMessage(
-                "No staged changes detected. Untracked files found. Please stage them manually or click 'Stage & Generate' to automatically stage and generate a commit message.",
-                "Stage & Generate",
+                "No staged changes detected. Untracked files found. Would you like to stage all files (including untracked) or generate only for tracked modified files?",
+                "Stage & Generate All",
+                "Generate Tracked Only"
               );
 
-              if (selection === "Stage & Generate") {
+              if (selection === "Stage & Generate All") {
                 result = await generateCommitMessage({
                   repository,
                   provider: currentProvider,
                   apiKey: apiKey || "",
                   stageChanges: true,
+                  model: savedModel,
+                  onProgress: (message, increment) => {
+                    outputChannel.appendLine(message);
+                    if (currentProvider === "ollama") {
+                      progress.report({ message, increment });
+                    }
+                  },
+                });
+              } else if (selection === "Generate Tracked Only") {
+                result = await generateCommitMessage({
+                  repository,
+                  provider: currentProvider,
+                  apiKey: apiKey || "",
+                  stageChanges: false,
+                  ignoreUntracked: true,
                   model: savedModel,
                   onProgress: (message, increment) => {
                     outputChannel.appendLine(message);
