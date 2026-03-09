@@ -4,6 +4,7 @@ export const EXIT_CODES = {
   STAGE_FAILED: 2,
   NO_CHANGES: 3,
   NO_CHANGES_BUT_UNTRACKED: 4,
+  NO_TRACKED_CHANGES_BUT_UNTRACKED: 5,
   API_KEY_MISSING: 10,
   API_KEY_INVALID: 11,
   QUOTA_EXCEEDED: 12,
@@ -31,6 +32,10 @@ export const ERROR_MESSAGES: Record<
   [EXIT_CODES.NO_CHANGES_BUT_UNTRACKED]: {
     title: "No staged changes detected",
     action: "Untracked files found. Please stage them to generate a commit message.",
+  },
+  [EXIT_CODES.NO_TRACKED_CHANGES_BUT_UNTRACKED]: {
+    title: "Only untracked files found",
+    action: "You have newly created files but no tracked modifications. Please stage them to generate a commit.",
   },
   [EXIT_CODES.API_KEY_MISSING]: {
     title: "API Key not configured",
@@ -134,6 +139,17 @@ export class NoChangesButUntrackedError extends CommitCopilotError {
       EXIT_CODES.NO_CHANGES_BUT_UNTRACKED,
     );
     this.name = "NoChangesButUntrackedError";
+  }
+}
+
+export class NoTrackedChangesButUntrackedError extends CommitCopilotError {
+  constructor() {
+    super(
+      "No tracked changes detected, only untracked files are present.",
+      "NO_TRACKED_CHANGES_BUT_UNTRACKED",
+      EXIT_CODES.NO_TRACKED_CHANGES_BUT_UNTRACKED,
+    );
+    this.name = "NoTrackedChangesButUntrackedError";
   }
 }
 

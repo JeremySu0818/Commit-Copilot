@@ -6,6 +6,7 @@ import {
   CommitCopilotError,
   NoChangesError,
   NoChangesButUntrackedError,
+  NoTrackedChangesButUntrackedError,
   StageFailedError,
 } from "./errors";
 
@@ -19,6 +20,7 @@ export {
   APIRequestError,
   NoChangesError,
   NoChangesButUntrackedError,
+  NoTrackedChangesButUntrackedError,
   StageFailedError,
 } from "./errors";
 
@@ -163,10 +165,15 @@ export async function generateCommitMessage(
     }
     let diff = await gitOps.getDiff(true);
     if (!diff.trim() && !stageChanges) {
+      const unstagedDiff = await gitOps.getDiff(false);
       if (!ignoreUntracked && await gitOps.hasUntrackedFiles()) {
-        throw new NoChangesButUntrackedError();
+        if (!unstagedDiff.trim()) {
+          throw new NoTrackedChangesButUntrackedError();
+        } else {
+          throw new NoChangesButUntrackedError();
+        }
       }
-      diff = await gitOps.getDiff(false);
+      diff = unstagedDiff;
     }
     if (!diff.trim()) {
       throw new NoChangesError();

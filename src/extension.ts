@@ -250,6 +250,30 @@ export function activate(context: vscode.ExtensionContext) {
                   },
                 });
               }
+            } else if (result.error?.exitCode === EXIT_CODES.NO_TRACKED_CHANGES_BUT_UNTRACKED) {
+              const selection = await vscode.window.showInformationMessage(
+                "Only untracked files are present with no tracked modifications. Do you want to stage and track these new files to generate a commit?",
+                "Stage & Track",
+                "Cancel"
+              );
+
+              if (selection === "Stage & Track") {
+                result = await generateCommitMessage({
+                  repository,
+                  provider: currentProvider,
+                  apiKey: apiKey || "",
+                  stageChanges: true,
+                  model: savedModel,
+                  onProgress: (message, increment) => {
+                    outputChannel.appendLine(message);
+                    if (currentProvider === "ollama") {
+                      progress.report({ message, increment });
+                    }
+                  },
+                });
+              } else {
+                return;
+              }
             }
 
             if (result.success && result.message) {
@@ -298,7 +322,10 @@ export function activate(context: vscode.ExtensionContext) {
                 vscode.window.showInformationMessage(
                   "No changes to commit. Make some changes first!",
                 );
-              } else if (error.exitCode !== EXIT_CODES.NO_CHANGES_BUT_UNTRACKED) {
+              } else if (
+                error.exitCode !== EXIT_CODES.NO_CHANGES_BUT_UNTRACKED &&
+                error.exitCode !== EXIT_CODES.NO_TRACKED_CHANGES_BUT_UNTRACKED
+              ) {
                 vscode.window.showErrorMessage(
                   `${errorInfo.title}: ${error.message}. ${errorInfo.action || ""}`,
                 );
