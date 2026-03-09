@@ -9,12 +9,13 @@ export type ModelConfig = { id: string; alias: string };
 
 export const GEMINI_MODELS: ModelConfig[] = [
   { id: "gemini-2.0-flash", alias: "Gemini 2.0 Flash" },
-  { id: "gemini-2.0-flash-lite", alias: "Gemini 2.0 Flash Lite" },
+  { id: "gemini-2.0-flash-lite", alias: "Gemini 2.0 Flash-Lite" },
   { id: "gemini-2.5-flash", alias: "Gemini 2.5 Flash" },
-  { id: "gemini-2.5-flash-lite", alias: "Gemini 2.5 Flash Lite" },
+  { id: "gemini-2.5-flash-lite", alias: "Gemini 2.5 Flash-Lite" },
   { id: "gemini-2.5-pro", alias: "Gemini 2.5 Pro" },
   { id: "gemini-3-flash-preview", alias: "Gemini 3 Flash" },
-  { id: "gemini-3-pro-preview", alias: "Gemini 3 Pro" },
+  { id: "gemini-3.1-flash-lite-preview", alias: "Gemini 3.1 Flash-Lite" },
+  { id: "gemini-3.1-pro-preview", alias: "Gemini 3.1 Pro" },
 ];
 
 export const OPENAI_MODELS: ModelConfig[] = [

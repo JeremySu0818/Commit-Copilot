@@ -124,6 +124,7 @@ export interface GenerateCommitMessageOptions {
   apiKey: string;
   model?: string;
   stageChanges?: boolean;
+  ignoreUntracked?: boolean;
   onProgress?: ProgressCallback;
 }
 
@@ -142,6 +143,7 @@ export async function generateCommitMessage(
     apiKey,
     model,
     stageChanges = true,
+    ignoreUntracked = false,
     onProgress,
   } = options;
   try {
@@ -161,7 +163,7 @@ export async function generateCommitMessage(
     }
     let diff = await gitOps.getDiff(true);
     if (!diff.trim() && !stageChanges) {
-      if (await gitOps.hasUntrackedFiles()) {
+      if (!ignoreUntracked && await gitOps.hasUntrackedFiles()) {
         throw new NoChangesButUntrackedError();
       }
       diff = await gitOps.getDiff(false);
