@@ -79,7 +79,6 @@ export const AGENT_TOOLS: ToolDefinition[] = [
     },
 ];
 
-
 const MAX_FILE_LINES = 300;
 const MAX_OUTLINE_LINES = 150;
 
@@ -179,7 +178,6 @@ function executeReadFile(
     }
 }
 
-
 function executeGetFileOutline(
     repoRoot: string,
     args: Record<string, unknown>,
@@ -238,7 +236,6 @@ function executeGetFileOutline(
     }
 }
 
-
 export function executeToolCall(
     toolCall: ToolCallRequest,
     repoRoot: string,
@@ -271,7 +268,6 @@ export function executeToolCall(
         };
     }
 }
-
 
 export function parseDiffSummary(
     diff: string,
@@ -391,7 +387,6 @@ export function getProjectStructure(repoRoot: string): string {
     const treeLines = walk(repoRoot);
     return treeLines.join("\n");
 }
-
 
 export function buildInitialContext(diff: string, repoRoot: string): string {
     const fileSummary = parseDiffSummary(diff);

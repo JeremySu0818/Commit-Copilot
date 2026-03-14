@@ -19,34 +19,25 @@ const MAX_AGENT_STEPS = Infinity;
 
 const CONVENTIONAL_COMMIT_TYPES = ["feat", "fix", "docs", "style", "refactor", "perf", "test", "build", "ci", "chore", "revert"];
 
-/**
- * Post-process model output to extract only the conventional commit message.
- * This is the last line of defense against models (especially Claude) that
- * output analysis/explanation text before or after the commit message.
- */
+
 function extractCommitMessage(raw: string): string {
     const trimmed = raw.trim();
 
-    // Build regex: type(scope): description
     const typesPattern = CONVENTIONAL_COMMIT_TYPES.join("|");
     const commitRegex = new RegExp(
         `^(${typesPattern})(\\([^)]+\\))?(!)?:\\s*.+`,
         "m",
     );
 
-    // If the output already starts with a valid commit type, it's likely clean
     const firstLine = trimmed.split("\n")[0];
     if (commitRegex.test(firstLine)) {
-        // Return the full message (may include body/footer after blank line)
         return trimmed;
     }
 
-    // Otherwise, scan all lines and find the first conventional commit line
     const lines = trimmed.split("\n");
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i].trim();
         if (commitRegex.test(line)) {
-            // Return from this line onwards (may include body/footer)
             return lines
                 .slice(i)
                 .map((l) => l.trimStart())
@@ -55,7 +46,6 @@ function extractCommitMessage(raw: string): string {
         }
     }
 
-    // Last resort: strip markdown code fences and try again
     const stripped = trimmed
         .replace(/^```[\w]*\n?/gm, "")
         .replace(/\n?```\s*$/gm, "")
@@ -65,7 +55,6 @@ function extractCommitMessage(raw: string): string {
         return stripped;
     }
 
-    // If nothing matched, return the raw trimmed output as-is
     return trimmed;
 }
 
