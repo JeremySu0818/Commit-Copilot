@@ -1,5 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
+import { GitOperations } from "./commitCopilot";
 
 export interface ToolDefinition {
     name: string;
@@ -116,10 +117,12 @@ function executeGetDiff(
     return fileBlocks.join("\n");
 }
 
-function executeReadFile(
+async function executeReadFile(
     repoRoot: string,
     args: Record<string, unknown>,
-): string {
+    isStaged: boolean,
+    gitOps?: GitOperations,
+): Promise<string> {
     const relPath = args.path as string;
     if (!relPath) {
         return "Error: 'path' is required.";
@@ -131,21 +134,26 @@ function executeReadFile(
         return "Error: path traversal is not allowed.";
     }
 
-    if (!fs.existsSync(absPath)) {
-        return `Error: file '${relPath}' does not exist.`;
-    }
-
-    const stat = fs.statSync(absPath);
-    if (stat.isDirectory()) {
-        return `Error: '${relPath}' is a directory, not a file.`;
-    }
-
-    if (stat.size > 512 * 1024) {
-        return `Error: file '${relPath}' is too large (${(stat.size / 1024).toFixed(0)} KB). Please specify a line range.`;
-    }
-
+    let content: string;
     try {
-        const content = fs.readFileSync(absPath, "utf-8");
+        if (isStaged && gitOps) {
+            // Read from Git Index
+            content = await gitOps.show(relPath);
+            if (!content) {
+                // Fallback to disk if show fails or returns empty
+                if (!fs.existsSync(absPath)) {
+                    return `Error: file '${relPath}' does not exist in index or disk.`;
+                }
+                content = fs.readFileSync(absPath, "utf-8");
+            }
+        } else {
+            // Read from disk
+            if (!fs.existsSync(absPath)) {
+                return `Error: file '${relPath}' does not exist.`;
+            }
+            content = fs.readFileSync(absPath, "utf-8");
+        }
+
         const lines = content.split("\n");
 
         const startLine = Math.max(1, (args.startLine as number) || 1);
@@ -178,10 +186,12 @@ function executeReadFile(
     }
 }
 
-function executeGetFileOutline(
+async function executeGetFileOutline(
     repoRoot: string,
     args: Record<string, unknown>,
-): string {
+    isStaged: boolean,
+    gitOps?: GitOperations,
+): Promise<string> {
     const relPath = args.path as string;
     if (!relPath) {
         return "Error: 'path' is required.";
@@ -193,12 +203,21 @@ function executeGetFileOutline(
         return "Error: path traversal is not allowed.";
     }
 
-    if (!fs.existsSync(absPath)) {
-        return `Error: file '${relPath}' does not exist.`;
-    }
-
     try {
-        const content = fs.readFileSync(absPath, "utf-8");
+        let content: string;
+        if (isStaged && gitOps) {
+            content = await gitOps.show(relPath);
+            if (!content) {
+                if (!fs.existsSync(absPath)) return `Error: file '${relPath}' does not exist.`;
+                content = fs.readFileSync(absPath, "utf-8");
+            }
+        } else {
+            if (!fs.existsSync(absPath)) {
+                return `Error: file '${relPath}' does not exist.`;
+            }
+            content = fs.readFileSync(absPath, "utf-8");
+        }
+
         const lines = content.split("\n");
         const outlineLines: string[] = [];
 
@@ -236,11 +255,13 @@ function executeGetFileOutline(
     }
 }
 
-export function executeToolCall(
+export async function executeToolCall(
     toolCall: ToolCallRequest,
     repoRoot: string,
     diffContent: string,
-): ToolCallResult {
+    isStaged: boolean = true,
+    gitOps?: GitOperations,
+): Promise<ToolCallResult> {
     try {
         let content: string;
 
@@ -249,10 +270,10 @@ export function executeToolCall(
                 content = executeGetDiff(repoRoot, toolCall.arguments, diffContent);
                 break;
             case "read_file":
-                content = executeReadFile(repoRoot, toolCall.arguments);
+                content = await executeReadFile(repoRoot, toolCall.arguments, isStaged, gitOps);
                 break;
             case "get_file_outline":
-                content = executeGetFileOutline(repoRoot, toolCall.arguments);
+                content = await executeGetFileOutline(repoRoot, toolCall.arguments, isStaged, gitOps);
                 break;
             default:
                 content = `Unknown tool: ${toolCall.name}`;

@@ -14,6 +14,7 @@ import {
     NoChangesError,
 } from "./errors";
 import { ProgressCallback } from "./llmClients";
+import { GitOperations } from "./commitCopilot";
 
 const MAX_AGENT_STEPS = Infinity;
 
@@ -152,20 +153,66 @@ interface AgentLoopOptions {
     diff: string;
     repoRoot: string;
     onProgress?: ProgressCallback;
+    isStaged: boolean;
+    gitOps: GitOperations;
+}
+
+function formatProgressMessage(step: number, toolName: string, args: any): string {
+    const stepPrefix = `[Step ${step}] `;
+    switch (toolName) {
+        case "get_diff":
+            return `${stepPrefix}Analyzing diff: ${args.path || "unknown file"}`;
+        case "read_file":
+            return `${stepPrefix}Reading file: ${args.path || "unknown file"}`;
+        case "get_file_outline":
+            return `${stepPrefix}Getting outline: ${args.path || "unknown file"}`;
+        default:
+            return `${stepPrefix}Calling ${toolName}...`;
+    }
+}
+
+function formatBatchProgressMessage(step: number, toolCalls: { name: string; args: any }[]): string {
+    if (toolCalls.length === 0) return "";
+    if (toolCalls.length === 1) {
+        return formatProgressMessage(step, toolCalls[0].name, toolCalls[0].args);
+    }
+
+    const stepPrefix = `[Step ${step}] `;
+    const toolNames = Array.from(new Set(toolCalls.map(tc => tc.name)));
+
+    if (toolNames.length === 1) {
+        const name = toolNames[0];
+        const paths = toolCalls.map(tc => tc.args.path).filter(Boolean);
+
+        if (name === "get_diff") {
+            if (paths.length <= 2) return `${stepPrefix}Analyzing diffs: ${paths.join(", ")}`;
+            return `${stepPrefix}Analyzing diffs for ${paths.length} files...`;
+        }
+        if (name === "read_file") {
+            if (paths.length <= 2) return `${stepPrefix}Reading files: ${paths.join(", ")}`;
+            return `${stepPrefix}Reading ${paths.length} files...`;
+        }
+        if (name === "get_file_outline") {
+            if (paths.length <= 2) return `${stepPrefix}Getting outlines: ${paths.join(", ")}`;
+            return `${stepPrefix}Getting outlines for ${paths.length} files...`;
+        }
+    }
+
+    return `${stepPrefix}Executing ${toolCalls.length} investigation tools...`;
 }
 
 export async function runAgentLoop(
     options: AgentLoopOptions,
 ): Promise<string> {
-    const { provider, apiKey, model, diff, repoRoot, onProgress } = options;
+    const { provider, apiKey, model, diff, repoRoot, onProgress, isStaged, gitOps } = options;
 
     switch (provider) {
         case "google":
-            return runGeminiAgentLoop(apiKey, model, diff, repoRoot, onProgress);
+            return runGeminiAgentLoop(apiKey, model, diff, repoRoot, onProgress, isStaged, gitOps);
         case "openai":
-            return runOpenAIAgentLoop(apiKey, model, diff, repoRoot, onProgress);
+            return runOpenAIAgentLoop(apiKey, model, diff, repoRoot, onProgress, isStaged, gitOps);
         case "anthropic":
-            return runAnthropicAgentLoop(apiKey, model, diff, repoRoot, onProgress);
+            return runAnthropicAgentLoop(apiKey, model, diff, repoRoot, onProgress, isStaged, gitOps);
         case "ollama":
             return runOllamaAgentLoop(model, diff, repoRoot, onProgress);
         default:
@@ -179,6 +226,8 @@ async function runGeminiAgentLoop(
     diff: string,
     repoRoot: string,
     onProgress?: ProgressCallback,
+    isStaged: boolean = true,
+    gitOps?: GitOperations,
 ): Promise<string> {
     if (!apiKey) {
         throw new APIKeyMissingError();
@@ -235,16 +284,22 @@ async function runGeminiAgentLoop(
             }
 
             const toolResults: any[] = [];
+            if (onProgress && functionCalls.length > 0) {
+                const calls = functionCalls.map((p: any) => ({
+                    name: p.functionCall.name,
+                    args: p.functionCall.args || {}
+                }));
+                onProgress(formatBatchProgressMessage(step + 1, calls));
+            }
+
             for (const part of functionCalls) {
                 const fc = (part as any).functionCall;
-                if (onProgress) {
-                    onProgress(`[Step ${step + 1}] ${fc.name}(${JSON.stringify(fc.args || {}).substring(0, 80)})`);
-                }
-
-                const result = executeToolCall(
+                const result = await executeToolCall(
                     { name: fc.name, arguments: fc.args || {} },
                     repoRoot,
                     diff,
+                    isStaged,
+                    gitOps,
                 );
 
                 toolResults.push({
@@ -291,6 +346,8 @@ async function runOpenAIAgentLoop(
     diff: string,
     repoRoot: string,
     onProgress?: ProgressCallback,
+    isStaged: boolean = true,
+    gitOps?: GitOperations,
 ): Promise<string> {
     if (!apiKey) {
         throw new APIKeyMissingError();
@@ -338,16 +395,22 @@ async function runOpenAIAgentLoop(
                 assistantMessage.tool_calls &&
                 assistantMessage.tool_calls.length > 0
             ) {
+                if (onProgress) {
+                    const calls = assistantMessage.tool_calls.map((tc: any) => ({
+                        name: tc.function.name,
+                        args: JSON.parse(tc.function.arguments || "{}")
+                    }));
+                    onProgress(formatBatchProgressMessage(step + 1, calls));
+                }
+
                 for (const toolCall of assistantMessage.tool_calls) {
                     const args = JSON.parse(toolCall.function.arguments || "{}");
-                    if (onProgress) {
-                        onProgress(`[Step ${step + 1}] ${toolCall.function.name}(${JSON.stringify(args).substring(0, 80)})`);
-                    }
-
-                    const result = executeToolCall(
+                    const result = await executeToolCall(
                         { name: toolCall.function.name, arguments: args },
                         repoRoot,
                         diff,
+                        isStaged,
+                        gitOps,
                     );
 
                     messages.push({
@@ -406,6 +469,8 @@ async function runAnthropicAgentLoop(
     diff: string,
     repoRoot: string,
     onProgress?: ProgressCallback,
+    isStaged: boolean = true,
+    gitOps?: GitOperations,
 ): Promise<string> {
     if (!apiKey) {
         throw new APIKeyMissingError();
@@ -458,16 +523,22 @@ async function runAnthropicAgentLoop(
             messages.push({ role: "assistant", content: response.content });
 
             const toolResults: any[] = [];
+            if (onProgress && toolUseBlocks.length > 0) {
+                const calls = toolUseBlocks.map((b: any) => ({
+                    name: b.name,
+                    args: b.input || {}
+                }));
+                onProgress(formatBatchProgressMessage(step + 1, calls));
+            }
+
             for (const block of toolUseBlocks) {
                 const toolUse = block as any;
-                if (onProgress) {
-                    onProgress(`[Step ${step + 1}] ${toolUse.name}(${JSON.stringify(toolUse.input || {}).substring(0, 80)})`);
-                }
-
-                const result = executeToolCall(
+                const result = await executeToolCall(
                     { name: toolUse.name, arguments: toolUse.input || {} },
                     repoRoot,
                     diff,
+                    isStaged,
+                    gitOps,
                 );
 
                 toolResults.push({

@@ -8,6 +8,7 @@ import {
   NoChangesButUntrackedError,
   NoTrackedChangesButUntrackedError,
   StageFailedError,
+  MixedChangesError,
 } from "./errors";
 
 export {
@@ -22,6 +23,7 @@ export {
   NoChangesButUntrackedError,
   NoTrackedChangesButUntrackedError,
   StageFailedError,
+  MixedChangesError,
 } from "./errors";
 
 const STATUS_UNTRACKED = 7;
@@ -41,6 +43,7 @@ export interface GitRepository {
   readonly inputBox: { value: string };
   diff(cached?: boolean): Promise<string>;
   add(paths: string[]): Promise<void>;
+  show(ref: string, path: string): Promise<string>;
   commit(message: string, opts?: { all?: boolean | 'tracked' }): Promise<void>;
   status(): Promise<void>;
 }
@@ -60,6 +63,22 @@ export class GitOperations {
       console.error("Error running git diff:", error);
       return "";
     }
+  }
+
+  async show(filePath: string): Promise<string> {
+    try {
+      // In VS Code Git API, repository.show(':path') returns staged content.
+      return await this.repository.show(":", filePath);
+    } catch (error) {
+      console.error("Error running git show:", error);
+      return "";
+    }
+  }
+
+  async hasMixedChanges(): Promise<boolean> {
+    const hasStaged = this.repository.state.indexChanges.length > 0;
+    const hasUnstaged = this.repository.state.workingTreeChanges.length > 0;
+    return hasStaged && hasUnstaged;
   }
 
   async stageAllChanges(): Promise<boolean> {
@@ -128,6 +147,7 @@ export interface GenerateCommitMessageOptions {
   stageChanges?: boolean;
   ignoreUntracked?: boolean;
   onProgress?: ProgressCallback;
+  proceedWithStagedOnly?: boolean;
 }
 
 export interface GenerateCommitMessageResult {
@@ -147,6 +167,7 @@ export async function generateCommitMessage(
     stageChanges = true,
     ignoreUntracked = false,
     onProgress,
+    proceedWithStagedOnly = false,
   } = options;
   try {
     const gitOps = new GitOperations(repository);
@@ -157,13 +178,19 @@ export async function generateCommitMessage(
         EXIT_CODES.NOT_GIT_REPO,
       );
     }
+
     if (stageChanges) {
       const staged = await gitOps.stageAllChanges();
       if (!staged) {
         throw new StageFailedError();
       }
+    } else if (!proceedWithStagedOnly && await gitOps.hasMixedChanges()) {
+      throw new MixedChangesError();
     }
+
+    let isStaged = true;
     let diff = await gitOps.getDiff(true);
+
     if (!diff.trim() && !stageChanges) {
       const unstagedDiff = await gitOps.getDiff(false);
       if (!ignoreUntracked && await gitOps.hasUntrackedFiles()) {
@@ -174,7 +201,9 @@ export async function generateCommitMessage(
         }
       }
       diff = unstagedDiff;
+      isStaged = false;
     }
+
     if (!diff.trim()) {
       throw new NoChangesError();
     }
@@ -186,6 +215,8 @@ export async function generateCommitMessage(
       diff,
       repoRoot,
       onProgress,
+      isStaged,
+      gitOps,
     });
     return {
       success: true,

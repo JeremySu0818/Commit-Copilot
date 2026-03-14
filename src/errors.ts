@@ -9,6 +9,7 @@ export const EXIT_CODES = {
   API_KEY_INVALID: 11,
   QUOTA_EXCEEDED: 12,
   API_ERROR: 13,
+  MIXED_CHANGES: 14,
   COMMIT_FAILED: 20,
   UNKNOWN_ERROR: 99,
 } as const;
@@ -36,6 +37,10 @@ export const ERROR_MESSAGES: Record<
   [EXIT_CODES.NO_TRACKED_CHANGES_BUT_UNTRACKED]: {
     title: "Only untracked files found",
     action: "You have newly created files but no tracked modifications. Please stage them to generate a commit.",
+  },
+  [EXIT_CODES.MIXED_CHANGES]: {
+    title: "Mixed changes detected",
+    action: "You have both staged and unstaged changes. Please choose how to proceed.",
   },
   [EXIT_CODES.API_KEY_MISSING]: {
     title: "API Key not configured",
@@ -150,6 +155,17 @@ export class NoTrackedChangesButUntrackedError extends CommitCopilotError {
       EXIT_CODES.NO_TRACKED_CHANGES_BUT_UNTRACKED,
     );
     this.name = "NoTrackedChangesButUntrackedError";
+  }
+}
+
+export class MixedChangesError extends CommitCopilotError {
+  constructor() {
+    super(
+      "Both staged and unstaged changes were detected.",
+      "MIXED_CHANGES",
+      EXIT_CODES.MIXED_CHANGES,
+    );
+    this.name = "MixedChangesError";
   }
 }
 
