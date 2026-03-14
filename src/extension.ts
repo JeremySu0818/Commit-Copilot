@@ -178,7 +178,7 @@ export function activate(context: vscode.ExtensionContext) {
         const progressTitle =
           currentProvider === "ollama"
             ? "Ollama"
-            : `Generating commit message with ${PROVIDER_DISPLAY_NAMES[currentProvider]}...`;
+            : `Generating commit message with ${PROVIDER_DISPLAY_NAMES[currentProvider]}`;
 
         await vscode.window.withProgress(
           {
@@ -207,11 +207,47 @@ export function activate(context: vscode.ExtensionContext) {
               model: savedModel,
               onProgress: (message, increment) => {
                 outputChannel.appendLine(message);
-                if (currentProvider === "ollama") {
-                  progress.report({ message, increment });
-                }
+                progress.report({ message, increment });
               },
             });
+
+            if (result.error?.exitCode === EXIT_CODES.MIXED_CHANGES) {
+              const selection = await vscode.window.showInformationMessage(
+                "You have both staged and unstaged changes. How would you like to proceed?",
+                "Stage All & Generate",
+                "Proceed with Staged Only",
+                "Cancel"
+              );
+
+              if (selection === "Stage All & Generate") {
+                result = await generateCommitMessage({
+                  repository,
+                  provider: currentProvider,
+                  apiKey: apiKey || "",
+                  stageChanges: true,
+                  model: savedModel,
+                  onProgress: (message, increment) => {
+                    outputChannel.appendLine(message);
+                    progress.report({ message, increment });
+                  },
+                });
+              } else if (selection === "Proceed with Staged Only") {
+                result = await generateCommitMessage({
+                  repository,
+                  provider: currentProvider,
+                  apiKey: apiKey || "",
+                  stageChanges: false,
+                  proceedWithStagedOnly: true,
+                  model: savedModel,
+                  onProgress: (message, increment) => {
+                    outputChannel.appendLine(message);
+                    progress.report({ message, increment });
+                  },
+                });
+              } else {
+                return;
+              }
+            }
 
             if (result.error?.exitCode === EXIT_CODES.NO_CHANGES_BUT_UNTRACKED) {
               const selection = await vscode.window.showInformationMessage(
@@ -229,9 +265,7 @@ export function activate(context: vscode.ExtensionContext) {
                   model: savedModel,
                   onProgress: (message, increment) => {
                     outputChannel.appendLine(message);
-                    if (currentProvider === "ollama") {
-                      progress.report({ message, increment });
-                    }
+                    progress.report({ message, increment });
                   },
                 });
               } else if (selection === "Generate Tracked Only") {
@@ -244,9 +278,7 @@ export function activate(context: vscode.ExtensionContext) {
                   model: savedModel,
                   onProgress: (message, increment) => {
                     outputChannel.appendLine(message);
-                    if (currentProvider === "ollama") {
-                      progress.report({ message, increment });
-                    }
+                    progress.report({ message, increment });
                   },
                 });
               }
@@ -266,9 +298,7 @@ export function activate(context: vscode.ExtensionContext) {
                   model: savedModel,
                   onProgress: (message, increment) => {
                     outputChannel.appendLine(message);
-                    if (currentProvider === "ollama") {
-                      progress.report({ message, increment });
-                    }
+                    progress.report({ message, increment });
                   },
                 });
               } else {
