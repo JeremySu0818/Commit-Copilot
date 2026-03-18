@@ -30,14 +30,11 @@ export const OPENAI_MODELS: ModelConfig[] = [
   { id: "gpt-5-nano", alias: "GPT-5 nano" },
   { id: "gpt-5-mini", alias: "GPT-5 mini" },
   { id: "gpt-5", alias: "GPT-5" },
-  { id: "gpt-5-pro", alias: "GPT-5 pro" },
   { id: "gpt-5.1", alias: "GPT-5.1" },
   { id: "gpt-5.2", alias: "GPT-5.2" },
-  { id: "gpt-5.2-pro", alias: "GPT-5.2 pro" },
   { id: "gpt-5.4-nano", alias: "GPT-5.4 nano" },
   { id: "gpt-5.4-mini", alias: "GPT-5.4 mini" },
   { id: "gpt-5.4", alias: "GPT-5.4" },
-  { id: "gpt-5.4-pro", alias: "GPT-5.4 pro" },
 ];
 
 export const ANTHROPIC_MODELS: ModelConfig[] = [
