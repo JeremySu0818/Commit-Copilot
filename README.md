@@ -33,31 +33,31 @@ Download and install the extension from the VS Code Marketplace or Open VSX Regi
 
 ### 2. Configuration
 
-1.  Click on the **Commit Copilot** icon in the Activity Bar (left side sidebar).
-2.  Select your desired **Provider** from the dropdown menu (Google, OpenAI, Anthropic, or Ollama).
-3.  Enter your **API Key** (or Host URL for Ollama).
-    - _Note: Keys are stored securely on your device._
-4.  Click **Save**. The extension will validate your key.
-5.  Once validated, you can select a specific **Model** from the dropdown if available.
+1. Click on the **Commit Copilot** icon in the Activity Bar (left side sidebar).
+2. Select your desired **Provider** from the dropdown menu (Google, OpenAI, Anthropic, or Ollama).
+3. Enter your **API Key** (or Host URL for Ollama).
+   - _Note: Keys are stored securely on your device._
+4. Click **Save**. The extension will validate your key.
+5. Once validated, you can select a specific **Model** from the dropdown if available.
 
 ### 3. Generate Commit Message
 
 #### Method A: Activity Bar
 
-1.  Open the **Commit Copilot** view in the Activity Bar.
-2.  Ensure you have changes in your repository (staged, unstaged, or untracked).
-3.  Click the **"Generate Commit Message"** button.
-    - If only untracked files are found, you will be prompted to **"Stage & Generate"**.
+1. Open the **Commit Copilot** view in the Activity Bar.
+2. Ensure you have changes in your repository (staged, unstaged, or untracked).
+3. Click the **"Generate Commit Message"** button.
+   - If only untracked files are found, you will be prompted to **"Stage & Generate"**.
 
 #### Method B: Source Control Navigation
 
-1.  Open the **Source Control** view (`Ctrl+Shift+G`).
-2.  Click the **Commit-Copilot** icon (sparkle) in the navigation bar.
+1. Open the **Source Control** view (`Ctrl+Shift+G`).
+2. Click the **Commit-Copilot** icon (sparkle) in the navigation bar.
 
 #### Method C: Command Palette
 
-1.  Press `Ctrl+Shift+P` (or `Cmd+Shift+P` on Mac).
-2.  Type `Commit-Copilot: Generate Commit Message` and select it.
+1. Press `Ctrl+Shift+P` (or `Cmd+Shift+P` on Mac).
+2. Type `Commit-Copilot: Generate Commit Message` and select it.
 
 ### 4. Review and Commit
 
