@@ -1,3 +1,5 @@
+import { NoChangesError } from "./errors";
+
 export type APIProvider = "google" | "openai" | "anthropic" | "ollama";
 export const PROVIDER_DISPLAY_NAMES: Record<APIProvider, string> = {
   google: "Google (Gemini)",
@@ -20,13 +22,22 @@ export const OPENAI_MODELS: ModelConfig[] = [
   { id: "o3", alias: "o3" },
   { id: "o3-mini", alias: "o3-mini" },
   { id: "o4-mini", alias: "o4-mini" },
-  { id: "gpt-4o", alias: "GPT-4o" },
   { id: "gpt-4o-mini", alias: "GPT-4o mini" },
+  { id: "gpt-4o", alias: "GPT-4o" },
+  { id: "gpt-4.1-nano", alias: "GPT-4.1 nano" },
+  { id: "gpt-4.1-mini", alias: "GPT-4.1 mini" },
+  { id: "gpt-4.1", alias: "GPT-4.1" },
   { id: "gpt-5-nano", alias: "GPT-5 nano" },
   { id: "gpt-5-mini", alias: "GPT-5 mini" },
   { id: "gpt-5", alias: "GPT-5" },
+  { id: "gpt-5-pro", alias: "GPT-5 pro" },
   { id: "gpt-5.1", alias: "GPT-5.1" },
   { id: "gpt-5.2", alias: "GPT-5.2" },
+  { id: "gpt-5.2-pro", alias: "GPT-5.2 pro" },
+  { id: "gpt-5.4-nano", alias: "GPT-5.4 nano" },
+  { id: "gpt-5.4-mini", alias: "GPT-5.4 mini" },
+  { id: "gpt-5.4", alias: "GPT-5.4" },
+  { id: "gpt-5.4-pro", alias: "GPT-5.4 pro" },
 ];
 
 export const ANTHROPIC_MODELS: ModelConfig[] = [

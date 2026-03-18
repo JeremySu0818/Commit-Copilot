@@ -1,23 +1,41 @@
 # Commit-Copilot VS Code Extension
 
-Commit-Copilot is a smart VS Code extension that leverages Large Language Models (LLMs) to automatically generate meaningful, conventional commit messages based on your local changes. It streamlines your git workflow by analyzing diffs and suggesting professional commit messages directly within your editor.
+Commit-Copilot is an **agentic** VS Code extension that uses a multi-step AI agent loop to generate meaningful, conventional commit messages. Unlike simple diff-to-prompt tools, Commit-Copilot's agent autonomously investigates your repository — reading files, analyzing code structure, and inspecting diffs — before classifying changes and crafting professional commit messages directly within your editor.
 
 ## Features
 
 - **Multi-Provider Support**: Choose your preferred AI provider:
-  - **Google Gemini**: Support for Gemini 2.0 Flash Lite/Flash, Gemini 2.5 Flash Lite/Flash/Pro, and Gemini 3 Flash/Pro Preview.
-  - **OpenAI**: Support for o3/o3-mini, o4-mini, GPT-4o/GPT-4o mini, GPT-5 nano/GPT-5 mini/GPT-5, GPT-5.1, and GPT-5.2.
+  - **Google Gemini**: Support for Gemini 2.0 Flash Lite/Flash, Gemini 2.5 Flash-Lite/Flash/Pro, Gemini 3 Flash amd Gemini 3.1 Flash-Lite/Pro.
+  - **OpenAI**: Support for o3/o3-mini, o4-mini, GPT-4o mini/GPT-4o, GPT-4.1 nano/GPT-4.1 mini/GPT-4.1, GPT-5 nano/GPT-5 mini/GPT-5/GPT-5 pro, GPT-5.1, GPT-5.2/GPT-5.2 pro, and GPT-5.4 nano/GPT-5.4 mini/GPT-5.4/GPT-5.4 pro.
   - **Anthropic**: Support for Claude Sonnet/Opus 4, Claude Opus 4.1, Claude Haiku/Sonnet/Opus 4.5 and Claude Opus 4.6.
   - **Ollama**: Support for local models like Gemma 3 1B/4B/12B/27B, gpt-oss-20B/120B, Llama 3.3 8B/70B, Phi-4 14B and Mistral 7B.
-- **Seamless VS Code Integration**: Access Commit-Copilot directly from the Activity Bar or Command Palette.
-- **Conventional Commits**: Generates messages following the Conventional Commits specification (e.g., `feat:`, `fix:`, `docs:`).
-- **One-Click Generation**: Instantly generate commit messages for your staged or unstaged changes.
-- **Smart Context**: Intelligently analyzes your `git diff` to understand the intent of your changes, prioritizing staged files.
-- **Auto-Staging Support**: Automatically detects untracked files and offers to stage them before generating the message.
-- **Respects Staging**: Never forces automatic staging, giving you full control over your staging area.
+- **Agentic AI Architecture**: Instead of blindly feeding the entire diff into a prompt, Commit-Copilot runs a multi-step agent loop. The AI is given only file names and line counts initially, then autonomously decides which tools to call — `get_diff`, `read_file`, `get_file_outline` — to investigate the actual changes, understand surrounding context, and inspect the project structure tree before making its classification decision.
+- **Strict Conventional Commits Classification**: Applies a priority-ordered ruleset covering 11 commit types (`feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`) with clearly defined boundary rules (e.g., removing dead code is `chore`, not `refactor`). Enforces mandatory scope parentheses, commit body, and 72-character line limits.
+- **Intelligent Change Detection**: Detects four distinct change scenarios — staged-only, unstaged-only, mixed (staged + unstaged), and untracked-only — and presents contextual prompts to let you decide how to proceed. Never auto-stages without your explicit consent.
+- **Git Index-Aware Analysis**: When analyzing staged changes, the agent reads file contents from the Git index (`git show :path`) rather than from disk, ensuring the analysis matches exactly what will be committed.
+- **Real-Time API Validation**: Each provider's API key is validated against its actual endpoint before saving. Invalid keys, quota limits, and connection failures are caught immediately with provider-specific error messages.
+- **Ollama Auto-Pull**: Automatically pulls the selected Ollama model if it is not already available locally, with real-time download progress reporting in the notification area.
+- **Seamless VS Code Integration**: Access Commit-Copilot from the Activity Bar, Source Control navigation bar (sparkle icon), or Command Palette — three entry points integrated into your existing workflow.
+- **Real-Time Git Monitoring**: The side panel dynamically reflects your repository state. The Generate button automatically enables when changes are detected and disables when the working tree is clean.
+- **Detailed Error Handling**: Provides specific, actionable error messages for every failure scenario — API key issues link to the settings panel, quota errors open the provider console, and staging failures suggest corrective actions.
 - **Secure Key Storage**: API keys are stored securely using VS Code's Secret Storage.
 - **Model Selection**: Customize which model you want to use for each provider.
 - **Preview & Edit**: Review the generated message in the Source Control input box before committing.
+
+## How It Works
+
+Commit-Copilot uses an **agentic workflow** rather than a single-shot LLM call:
+
+1. **Change Summary**: The extension collects file names, change types (added/modified/deleted/renamed), and line counts from `git diff`, along with a project structure tree.
+2. **Agent Initialization**: This summary is sent to the LLM with a system prompt that instructs it to act as an autonomous commit message agent. The agent does **not** receive the raw diff content at this stage.
+3. **Tool-Based Investigation**: The agent decides which files to inspect and calls tools in a loop:
+   - `get_diff` — Retrieve the actual diff for a specific file.
+   - `read_file` — Read file contents (from Git index for staged changes) with optional line ranges.
+   - `get_file_outline` — Get the structural outline (functions, classes, exports) of a file.
+4. **Classification & Generation**: After investigating, the agent applies a strict priority-ordered ruleset to classify the change type, determines the appropriate scope, and outputs the final commit message in `type(scope): description` format with a mandatory body.
+5. **Output**: The generated message is placed into the Source Control input box for review.
+
+This approach produces significantly more accurate commit messages because the agent can selectively investigate ambiguous changes, read surrounding context, and understand the role of each file in the project.
 
 ## Requirements
 
