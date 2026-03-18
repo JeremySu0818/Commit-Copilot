@@ -1,5 +1,3 @@
-import { NoChangesError } from "./errors";
-
 export type APIProvider = "google" | "openai" | "anthropic" | "ollama";
 export const PROVIDER_DISPLAY_NAMES: Record<APIProvider, string> = {
   google: "Google (Gemini)",
