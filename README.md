@@ -6,7 +6,7 @@ Commit-Copilot is an **agentic** VS Code extension that uses a multi-step AI age
 
 - **Multi-Provider Support**: Choose your preferred AI provider:
   - **Google Gemini**: Support for Gemini 2.0 Flash Lite/Flash, Gemini 2.5 Flash-Lite/Flash/Pro, Gemini 3 Flash amd Gemini 3.1 Flash-Lite/Pro.
-  - **OpenAI**: Support for o3/o3-mini, o4-mini, GPT-4o mini/GPT-4o, GPT-4.1 nano/GPT-4.1 mini/GPT-4.1, GPT-5 nano/GPT-5 mini/GPT-5/GPT-5 pro, GPT-5.1, GPT-5.2/GPT-5.2 pro, and GPT-5.4 nano/GPT-5.4 mini/GPT-5.4/GPT-5.4 pro.
+  - **OpenAI**: Support for o3/o3-mini, o4-mini, GPT-4o mini/GPT-4o, GPT-4.1 nano/GPT-4.1 mini/GPT-4.1, GPT-5 nano/GPT-5 mini/GPT-5, GPT-5.1, GPT-5.2, and GPT-5.4 nano/GPT-5.4 mini/GPT-5.4.
   - **Anthropic**: Support for Claude Sonnet/Opus 4, Claude Opus 4.1, Claude Haiku/Sonnet/Opus 4.5 and Claude Opus 4.6.
   - **Ollama**: Support for local models like Gemma 3 1B/4B/12B/27B, gpt-oss-20B/120B, Llama 3.3 8B/70B, Phi-4 14B and Mistral 7B.
 - **Agentic AI Architecture**: Instead of blindly feeding the entire diff into a prompt, Commit-Copilot runs a multi-step agent loop. The AI is given only file names and line counts initially, then autonomously decides which tools to call — `get_diff`, `read_file`, `get_file_outline` — to investigate the actual changes, understand surrounding context, and inspect the project structure tree before making its classification decision.
