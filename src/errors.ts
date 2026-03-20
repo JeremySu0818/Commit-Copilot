@@ -19,53 +19,56 @@ export const ERROR_MESSAGES: Record<
   { title: string; action?: string }
 > = {
   [EXIT_CODES.NOT_GIT_REPO]: {
-    title: "Not a Git repository",
-    action: "Please open a folder that contains a Git repository.",
+    title: 'Not a Git repository',
+    action: 'Please open a folder that contains a Git repository.',
   },
   [EXIT_CODES.STAGE_FAILED]: {
-    title: "Failed to stage changes",
-    action: "Check if Git is properly configured.",
+    title: 'Failed to stage changes',
+    action: 'Check if Git is properly configured.',
   },
   [EXIT_CODES.NO_CHANGES]: {
-    title: "No changes to commit",
-    action: "Make some changes to your files first.",
+    title: 'No changes to commit',
+    action: 'Make some changes to your files first.',
   },
   [EXIT_CODES.NO_CHANGES_BUT_UNTRACKED]: {
-    title: "No staged changes detected",
-    action: "Untracked files found. Please stage them to generate a commit message.",
+    title: 'No staged changes detected',
+    action:
+      'Untracked files found. Please stage them to generate a commit message.',
   },
   [EXIT_CODES.NO_TRACKED_CHANGES_BUT_UNTRACKED]: {
-    title: "Only untracked files found",
-    action: "You have newly created files but no tracked modifications. Please stage them to generate a commit.",
+    title: 'Only untracked files found',
+    action:
+      'You have newly created files but no tracked modifications. Please stage them to generate a commit.',
   },
   [EXIT_CODES.MIXED_CHANGES]: {
-    title: "Mixed changes detected",
-    action: "You have both staged and unstaged changes. Please choose how to proceed.",
+    title: 'Mixed changes detected',
+    action:
+      'You have both staged and unstaged changes. Please choose how to proceed.',
   },
   [EXIT_CODES.API_KEY_MISSING]: {
-    title: "API Key not configured",
-    action: "Please set your API Key in the Commit-Copilot panel.",
+    title: 'API Key not configured',
+    action: 'Please set your API Key in the Commit-Copilot panel.',
   },
   [EXIT_CODES.API_KEY_INVALID]: {
-    title: "Invalid API Key",
+    title: 'Invalid API Key',
     action:
-      "Your API Key is invalid or has been revoked. Please check and update it.",
+      'Your API Key is invalid or has been revoked. Please check and update it.',
   },
   [EXIT_CODES.QUOTA_EXCEEDED]: {
-    title: "API quota exceeded",
+    title: 'API quota exceeded',
     action:
-      "You have exceeded your API quota. Please check your provider account.",
+      'You have exceeded your API quota. Please check your provider account.',
   },
   [EXIT_CODES.API_ERROR]: {
-    title: "API request failed",
-    action: "There was an error communicating with the API. Please try again.",
+    title: 'API request failed',
+    action: 'There was an error communicating with the API. Please try again.',
   },
   [EXIT_CODES.COMMIT_FAILED]: {
-    title: "Failed to commit changes",
-    action: "Check if there are any Git conflicts or issues.",
+    title: 'Failed to commit changes',
+    action: 'Check if there are any Git conflicts or issues.',
   },
   [EXIT_CODES.UNKNOWN_ERROR]: {
-    title: "An unexpected error occurred",
+    title: 'An unexpected error occurred',
     action: 'Check the "Commit-Copilot Debug" output for details.',
   },
 };
@@ -73,109 +76,109 @@ export const ERROR_MESSAGES: Record<
 export class CommitCopilotError extends Error {
   constructor(
     message: string,
-    public readonly errorCode: string = "UNKNOWN",
+    public readonly errorCode: string = 'UNKNOWN',
     public readonly exitCode: number = EXIT_CODES.UNKNOWN_ERROR,
   ) {
     super(message);
-    this.name = "CommitCopilotError";
+    this.name = 'CommitCopilotError';
   }
 }
 
 export class APIKeyMissingError extends CommitCopilotError {
   constructor() {
     super(
-      "API Key is not set. Please configure your API key.",
-      "API_KEY_MISSING",
+      'API Key is not set. Please configure your API key.',
+      'API_KEY_MISSING',
       EXIT_CODES.API_KEY_MISSING,
     );
-    this.name = "APIKeyMissingError";
+    this.name = 'APIKeyMissingError';
   }
 }
 
 export class APIKeyInvalidError extends CommitCopilotError {
   constructor(details?: string) {
     super(
-      `Invalid API Key${details ? `: ${details}` : ""}`,
-      "API_KEY_INVALID",
+      `Invalid API Key${details ? `: ${details}` : ''}`,
+      'API_KEY_INVALID',
       EXIT_CODES.API_KEY_INVALID,
     );
-    this.name = "APIKeyInvalidError";
+    this.name = 'APIKeyInvalidError';
   }
 }
 
 export class APIQuotaExceededError extends CommitCopilotError {
   constructor(details?: string) {
     super(
-      `API quota exceeded${details ? `: ${details}` : ""}`,
-      "QUOTA_EXCEEDED",
+      `API quota exceeded${details ? `: ${details}` : ''}`,
+      'QUOTA_EXCEEDED',
       EXIT_CODES.QUOTA_EXCEEDED,
     );
-    this.name = "APIQuotaExceededError";
+    this.name = 'APIQuotaExceededError';
   }
 }
 
 export class APIRequestError extends CommitCopilotError {
   constructor(details?: string) {
     super(
-      `API request failed${details ? `: ${details}` : ""}`,
-      "API_ERROR",
+      `API request failed${details ? `: ${details}` : ''}`,
+      'API_ERROR',
       EXIT_CODES.API_ERROR,
     );
-    this.name = "APIRequestError";
+    this.name = 'APIRequestError';
   }
 }
 
 export class NoChangesError extends CommitCopilotError {
   constructor() {
     super(
-      "No changes detected to generate a commit for.",
-      "NO_CHANGES",
+      'No changes detected to generate a commit for.',
+      'NO_CHANGES',
       EXIT_CODES.NO_CHANGES,
     );
-    this.name = "NoChangesError";
+    this.name = 'NoChangesError';
   }
 }
 
 export class NoChangesButUntrackedError extends CommitCopilotError {
   constructor() {
     super(
-      "No changes to commit, but untracked files were detected.",
-      "NO_CHANGES_BUT_UNTRACKED",
+      'No changes to commit, but untracked files were detected.',
+      'NO_CHANGES_BUT_UNTRACKED',
       EXIT_CODES.NO_CHANGES_BUT_UNTRACKED,
     );
-    this.name = "NoChangesButUntrackedError";
+    this.name = 'NoChangesButUntrackedError';
   }
 }
 
 export class NoTrackedChangesButUntrackedError extends CommitCopilotError {
   constructor() {
     super(
-      "No tracked changes detected, only untracked files are present.",
-      "NO_TRACKED_CHANGES_BUT_UNTRACKED",
+      'No tracked changes detected, only untracked files are present.',
+      'NO_TRACKED_CHANGES_BUT_UNTRACKED',
       EXIT_CODES.NO_TRACKED_CHANGES_BUT_UNTRACKED,
     );
-    this.name = "NoTrackedChangesButUntrackedError";
+    this.name = 'NoTrackedChangesButUntrackedError';
   }
 }
 
 export class MixedChangesError extends CommitCopilotError {
   constructor() {
     super(
-      "Both staged and unstaged changes were detected.",
-      "MIXED_CHANGES",
+      'Both staged and unstaged changes were detected.',
+      'MIXED_CHANGES',
       EXIT_CODES.MIXED_CHANGES,
     );
-    this.name = "MixedChangesError";
+    this.name = 'MixedChangesError';
   }
 }
 
 export class StageFailedError extends CommitCopilotError {
   constructor(details?: string) {
     super(
-      `Failed to stage changes${details ? `: ${details}` : ""}`,
-      "STAGE_FAILED",
+      `Failed to stage changes${details ? `: ${details}` : ''}`,
+      'STAGE_FAILED',
       EXIT_CODES.STAGE_FAILED,
     );
-    this.name = "StageFailedError";
+    this.name = 'StageFailedError';
   }
 }

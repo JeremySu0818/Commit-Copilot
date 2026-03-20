@@ -1,11 +1,11 @@
-import { APIProvider, DEFAULT_MODELS, OLLAMA_DEFAULT_HOST } from "./models";
+import { APIProvider, DEFAULT_MODELS, OLLAMA_DEFAULT_HOST } from './models';
 import {
   APIKeyMissingError,
   APIKeyInvalidError,
   APIQuotaExceededError,
   APIRequestError,
   NoChangesError,
-} from "./errors";
+} from './errors';
 
 const SYSTEM_PROMPT = `You are a senior software engineer acting as an autonomous commit message generator.
 Your task is to generate a clean, concise, and meaningful content for a git commit based on the provided diff.
@@ -59,7 +59,7 @@ export class GeminiClient implements ILLMClient {
       throw new APIKeyMissingError();
     }
     this.apiKey = apiKey;
-    this.model = (model || DEFAULT_MODELS.google).replace(/^models\//, "");
+    this.model = (model || DEFAULT_MODELS.google).replace(/^models\//, '');
   }
 
   async generateCommitMessage(diff: string): Promise<string> {
@@ -68,7 +68,7 @@ export class GeminiClient implements ILLMClient {
     }
 
     try {
-      const { GoogleGenerativeAI } = await import("@google/generative-ai");
+      const { GoogleGenerativeAI } = await import('@google/generative-ai');
       const client = new GoogleGenerativeAI(this.apiKey);
       const generativeModel = client.getGenerativeModel({
         model: this.model,
@@ -78,7 +78,7 @@ export class GeminiClient implements ILLMClient {
       const result = await generativeModel.generateContent({
         contents: [
           {
-            role: "user",
+            role: 'user',
             parts: [{ text: `Here is the git diff:\n\n${diff}` }],
           },
         ],
@@ -93,7 +93,7 @@ export class GeminiClient implements ILLMClient {
       const text = response.text();
 
       if (!text) {
-        throw new APIRequestError("Empty response from Gemini API");
+        throw new APIRequestError('Empty response from Gemini API');
       }
 
       return text.trim();
@@ -108,12 +108,12 @@ export class GeminiClient implements ILLMClient {
       const message = error?.message || String(error);
 
       if (
-        message.includes("API_KEY_INVALID") ||
-        message.includes("401") ||
-        message.includes("403")
+        message.includes('API_KEY_INVALID') ||
+        message.includes('401') ||
+        message.includes('403')
       ) {
         throw new APIKeyInvalidError(message);
-      } else if (message.includes("429") || message.includes("quota")) {
+      } else if (message.includes('429') || message.includes('quota')) {
         throw new APIQuotaExceededError(message);
       }
 
@@ -140,20 +140,20 @@ export class OpenAIClient implements ILLMClient {
     }
 
     try {
-      const OpenAI = (await import("openai")).default;
+      const OpenAI = (await import('openai')).default;
       const client = new OpenAI({ apiKey: this.apiKey });
       const completion = await client.chat.completions.create({
         model: this.model,
         messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: `Here is the git diff:\n\n${diff}` },
+          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'user', content: `Here is the git diff:\n\n${diff}` },
         ],
       });
 
       const text = completion.choices[0]?.message?.content;
 
       if (!text) {
-        throw new APIRequestError("Empty response from OpenAI API");
+        throw new APIRequestError('Empty response from OpenAI API');
       }
 
       return text.trim();
@@ -171,10 +171,10 @@ export class OpenAIClient implements ILLMClient {
       if (
         status === 401 ||
         status === 403 ||
-        message.includes("Invalid API Key")
+        message.includes('Invalid API Key')
       ) {
         throw new APIKeyInvalidError(message);
-      } else if (status === 429 || message.includes("rate limit")) {
+      } else if (status === 429 || message.includes('rate limit')) {
         throw new APIQuotaExceededError(message);
       }
 
@@ -201,25 +201,25 @@ export class AnthropicClient implements ILLMClient {
     }
 
     try {
-      const Anthropic = (await import("@anthropic-ai/sdk")).default;
+      const Anthropic = (await import('@anthropic-ai/sdk')).default;
       const client = new Anthropic({ apiKey: this.apiKey });
       const message = await client.messages.create({
         model: this.model,
         max_tokens: 65536,
         system: SYSTEM_PROMPT,
         messages: [
-          { role: "user", content: `Here is the git diff:\n\n${diff}` },
+          { role: 'user', content: `Here is the git diff:\n\n${diff}` },
         ],
       });
 
       const textBlock = message.content.find(
-        (block: { type: string }) => block.type === "text",
+        (block: { type: string }) => block.type === 'text',
       );
       const text =
-        textBlock && textBlock.type === "text" ? (textBlock as any).text : null;
+        textBlock && textBlock.type === 'text' ? (textBlock as any).text : null;
 
       if (!text) {
-        throw new APIRequestError("Empty response from Anthropic API");
+        throw new APIRequestError('Empty response from Anthropic API');
       }
 
       return text.trim();
@@ -237,10 +237,10 @@ export class AnthropicClient implements ILLMClient {
       if (
         status === 401 ||
         status === 403 ||
-        message.includes("invalid_api_key")
+        message.includes('invalid_api_key')
       ) {
         throw new APIKeyInvalidError(message);
-      } else if (status === 429 || message.includes("rate_limit")) {
+      } else if (status === 429 || message.includes('rate_limit')) {
         throw new APIQuotaExceededError(message);
       }
 
@@ -267,7 +267,7 @@ export class OllamaClient implements ILLMClient {
     }
 
     try {
-      const { Ollama } = await import("ollama");
+      const { Ollama } = await import('ollama');
       const client = new Ollama({ host: this.host });
 
       const pullStream = await client.pull({ model: this.model, stream: true });
@@ -291,14 +291,14 @@ export class OllamaClient implements ILLMClient {
       }
 
       if (onProgress) {
-        onProgress("Generating commit message...", 0);
+        onProgress('Generating commit message...', 0);
       }
 
       const response = await client.chat({
         model: this.model,
         messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          { role: "user", content: `Here is the git diff:\n\n${diff}` },
+          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'user', content: `Here is the git diff:\n\n${diff}` },
         ],
         options: {
           temperature: 0.7,
@@ -309,7 +309,7 @@ export class OllamaClient implements ILLMClient {
       const text = response.message?.content;
 
       if (!text) {
-        throw new APIRequestError("Empty response from Ollama");
+        throw new APIRequestError('Empty response from Ollama');
       }
 
       return text.trim();
@@ -320,11 +320,11 @@ export class OllamaClient implements ILLMClient {
 
       const message = error?.message || String(error);
 
-      if (message.includes("ECONNREFUSED") || message.includes("connect")) {
+      if (message.includes('ECONNREFUSED') || message.includes('connect')) {
         throw new APIRequestError(
           `Cannot connect to Ollama. Make sure Ollama is running at ${this.host}`,
         );
-      } else if (message.includes("model") && message.includes("not found")) {
+      } else if (message.includes('model') && message.includes('not found')) {
         throw new APIRequestError(
           `Model "${this.model}" not found. Please pull it first with: ollama pull ${this.model}`,
         );
@@ -339,13 +339,13 @@ export function createLLMClient(options: LLMClientOptions): ILLMClient {
   const { provider, apiKey, model } = options;
 
   switch (provider) {
-    case "google":
+    case 'google':
       return new GeminiClient(apiKey, model);
-    case "openai":
+    case 'openai':
       return new OpenAIClient(apiKey, model);
-    case "anthropic":
+    case 'anthropic':
       return new AnthropicClient(apiKey, model);
-    case "ollama":
+    case 'ollama':
       return new OllamaClient(apiKey, model);
     default:
       throw new Error(`Unsupported provider: ${provider}`);
