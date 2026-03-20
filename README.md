@@ -9,7 +9,7 @@ Commit-Copilot is an **agentic** VS Code extension that uses a multi-step AI age
   - **OpenAI**: Support for o3/o3-mini, o4-mini, GPT-4o mini/GPT-4o, GPT-4.1 nano/GPT-4.1 mini/GPT-4.1, GPT-5 nano/GPT-5 mini/GPT-5, GPT-5.1, GPT-5.2, and GPT-5.4 nano/GPT-5.4 mini/GPT-5.4.
   - **Anthropic**: Support for Claude Sonnet/Opus 4, Claude Opus 4.1, Claude Haiku/Sonnet/Opus 4.5 and Claude Opus 4.6.
   - **Ollama**: Support for local models like Gemma 3 1B/4B/12B/27B, gpt-oss-20B/120B, Llama 3.3 8B/70B, Phi-4 14B and Mistral 7B.
-- **Agentic AI Architecture**: Instead of blindly feeding the entire diff into a prompt, Commit-Copilot runs a multi-step agent loop. The AI is given only file names and line counts initially, then autonomously decides which tools to call — `get_diff`, `read_file`, `get_file_outline` — to investigate the actual changes, understand surrounding context, and inspect the project structure tree before making its classification decision.
+- **Agentic AI Architecture**: Instead of blindly feeding the entire diff into a prompt, Commit-Copilot runs a multi-step agent loop. The AI is given only file names and line counts initially, then autonomously decides which tools to call — `get_diff`, `read_file`, `get_file_outline`, `get_recent_commits` — to investigate the actual changes, understand surrounding context, inspect the project structure tree, and learn the project's commit style before making its classification decision.
 - **Strict Conventional Commits Classification**: Applies a priority-ordered ruleset covering 11 commit types (`feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`) with clearly defined boundary rules (e.g., removing dead code is `chore`, not `refactor`). Enforces mandatory scope parentheses, commit body, and 72-character line limits.
 - **Intelligent Change Detection**: Detects four distinct change scenarios — staged-only, unstaged-only, mixed (staged + unstaged), and untracked-only — and presents contextual prompts to let you decide how to proceed. Never auto-stages without your explicit consent.
 - **Git Index-Aware Analysis**: When analyzing staged changes, the agent reads file contents from the Git index (`git show :path`) rather than from disk, ensuring the analysis matches exactly what will be committed.
@@ -32,6 +32,7 @@ Commit-Copilot uses an **agentic workflow** rather than a single-shot LLM call:
    - `get_diff` — Retrieve the actual diff for a specific file.
    - `read_file` — Read file contents (from Git index for staged changes) with optional line ranges.
    - `get_file_outline` — Get the structural outline (functions, classes, exports) of a file.
+   - `get_recent_commits` — Fetch recent commit messages to learn the project's commit style.
 4. **Classification & Generation**: After investigating, the agent applies a strict priority-ordered ruleset to classify the change type, determines the appropriate scope, and outputs the final commit message in `type(scope): description` format with a mandatory body.
 5. **Output**: The generated message is placed into the Source Control input box for review.
 
