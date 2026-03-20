@@ -80,6 +80,37 @@ export const AGENT_TOOLS: ToolDefinition[] = [
     },
   },
   {
+    name: 'find_references',
+    description:
+      'Find all references for a symbol at a specific file position using the VS Code Language Server (LSP). This is syntax-aware reference lookup, not a text search. Provide the file path plus 1-based line and character.',
+    parameters: {
+      type: 'object',
+      properties: {
+        path: {
+          type: 'string',
+          description:
+            "Required. Relative path to the file from the repository root. Example: 'src/index.ts'",
+        },
+        line: {
+          type: 'number',
+          description:
+            'Required. 1-based line number of the symbol to analyze.',
+        },
+        character: {
+          type: 'number',
+          description:
+            'Required. 1-based character (column) number of the symbol to analyze.',
+        },
+        includeDeclaration: {
+          type: 'boolean',
+          description:
+            'Optional. Whether to include the symbol declaration itself in the results. Defaults to false.',
+        },
+      },
+      required: ['path', 'line', 'character'],
+    },
+  },
+  {
     name: 'get_recent_commits',
     description:
       'Get recent git commit messages to learn the repository commit style (e.g., scope naming, tense, use of emojis). Provide how many commit messages you want. Returns newest first.',
@@ -99,6 +130,17 @@ export const AGENT_TOOLS: ToolDefinition[] = [
 
 const MAX_FILE_LINES = Infinity;
 const MAX_OUTLINE_LINES = Infinity;
+const MAX_REFERENCE_SNIPPET_LENGTH = 200;
+const TOOLS_DISABLED_WHEN_STAGED = new Set<string>(['find_references']);
+
+function getAvailableTools(isStaged: boolean): ToolDefinition[] {
+  if (!isStaged) {
+    return AGENT_TOOLS;
+  }
+  return AGENT_TOOLS.filter(
+    (tool) => !TOOLS_DISABLED_WHEN_STAGED.has(tool.name),
+  );
+}
 
 const OUTLINE_KIND_LABELS: Partial<Record<vscode.SymbolKind, string>> = {
   [vscode.SymbolKind.Class]: 'Class',
@@ -121,6 +163,41 @@ const OUTLINE_KIND_LABELS: Partial<Record<vscode.SymbolKind, string>> = {
 
 function labelForSymbol(kind: vscode.SymbolKind): string {
   return OUTLINE_KIND_LABELS[kind] ?? 'Symbol';
+}
+
+function parseIntegerArg(value: unknown): number | null {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return Math.floor(value);
+  }
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+    const parsed = Number(trimmed);
+    if (Number.isFinite(parsed)) {
+      return Math.floor(parsed);
+    }
+  }
+  return null;
+}
+
+function parseBooleanArg(value: unknown): boolean | null {
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value !== 0;
+  }
+  if (typeof value === 'string') {
+    const trimmed = value.trim().toLowerCase();
+    if (!trimmed) return null;
+    if (['true', '1', 'yes', 'y'].includes(trimmed)) return true;
+    if (['false', '0', 'no', 'n'].includes(trimmed)) return false;
+  }
+  return null;
+}
+
+function truncateSnippet(text: string, maxLength: number): string {
+  const trimmed = text.trim();
+  if (trimmed.length <= maxLength) return trimmed;
+  return `${trimmed.slice(0, Math.max(0, maxLength - 3))}...`;
 }
 
 function formatOutlineLine(
@@ -374,6 +451,184 @@ async function executeGetFileOutline(
   }
 }
 
+async function executeFindReferences(
+  repoRoot: string,
+  args: Record<string, unknown>,
+): Promise<string> {
+  const relPath = args.path as string | undefined;
+  if (!relPath) {
+    return "Error: 'path' is required.";
+  }
+
+  const line = parseIntegerArg(args.line);
+  const character = parseIntegerArg(args.character);
+  if (!line || line <= 0 || !character || character <= 0) {
+    return "Error: 'line' and 'character' are required and must be positive 1-based numbers.";
+  }
+
+  const absPath = path.resolve(repoRoot, relPath);
+  if (!absPath.startsWith(repoRoot)) {
+    return 'Error: path traversal is not allowed.';
+  }
+  if (!fs.existsSync(absPath)) {
+    return `Error: file '${relPath}' does not exist on disk.`;
+  }
+
+  const includeDeclaration =
+    parseBooleanArg(args.includeDeclaration) ?? false;
+
+  try {
+    const document = await vscode.workspace.openTextDocument(
+      vscode.Uri.file(absPath),
+    );
+
+    if (line > document.lineCount) {
+      return `Error: line ${line} is outside the valid range (1-${document.lineCount}).`;
+    }
+
+    const lineText = document.lineAt(line - 1).text;
+    if (character > lineText.length + 1) {
+      return `Error: character ${character} is outside the line length (${lineText.length + 1}).`;
+    }
+
+    const position = new vscode.Position(line - 1, character - 1);
+
+    let locations:
+      | (vscode.Location | vscode.LocationLink)[]
+      | undefined = undefined;
+    try {
+      locations = await vscode.commands.executeCommand<
+        (vscode.Location | vscode.LocationLink)[] | undefined
+      >(
+        'vscode.executeReferenceProvider',
+        document.uri,
+        position,
+        { includeDeclaration },
+      );
+    } catch {
+      locations = await vscode.commands.executeCommand<
+        (vscode.Location | vscode.LocationLink)[] | undefined
+      >(
+        'vscode.executeReferenceProvider',
+        document.uri,
+        position,
+        includeDeclaration,
+      );
+    }
+
+    if (!locations) {
+      return `No reference provider available for language "${document.languageId}" or no references found for ${relPath}:${line}:${character}.`;
+    }
+    if (locations.length === 0) {
+      return `No references found for ${relPath}:${line}:${character}.`;
+    }
+
+    type ReferenceEntry = {
+      uri: vscode.Uri;
+      range: vscode.Range;
+    };
+
+    const entries: ReferenceEntry[] = [];
+    const seen = new Set<string>();
+
+    const isLocation = (loc: any): loc is vscode.Location =>
+      !!loc && typeof loc === 'object' && 'uri' in loc && 'range' in loc;
+
+    for (const loc of locations) {
+      const uri = isLocation(loc) ? loc.uri : loc.targetUri;
+      const range = isLocation(loc) ? loc.range : loc.targetRange;
+
+      const key = `${uri.toString()}#${range.start.line}:${range.start.character}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      entries.push({ uri, range });
+    }
+
+    const byFile = new Map<string, ReferenceEntry[]>();
+    for (const entry of entries) {
+      const fileKey =
+        entry.uri.scheme === 'file' ? entry.uri.fsPath : entry.uri.toString();
+      const list = byFile.get(fileKey);
+      if (list) {
+        list.push(entry);
+      } else {
+        byFile.set(fileKey, [entry]);
+      }
+    }
+
+    const sortedFiles = Array.from(byFile.keys()).sort((a, b) =>
+      a.localeCompare(b),
+    );
+    const totalRefs = entries.length;
+    const totalFiles = sortedFiles.length;
+
+    const outputLines: string[] = [];
+    outputLines.push(
+      `References for ${relPath}:${line}:${character} (includeDeclaration: ${includeDeclaration})`,
+    );
+    outputLines.push(
+      `Found ${totalRefs} reference${totalRefs === 1 ? '' : 's'} in ${totalFiles} file${totalFiles === 1 ? '' : 's'}.`,
+    );
+    outputLines.push('');
+
+    const docCache = new Map<string, vscode.TextDocument>();
+
+    for (const fileKey of sortedFiles) {
+      const isFilePath =
+        path.isAbsolute(fileKey) || /^[a-zA-Z]:\\/.test(fileKey);
+      const displayPath = isFilePath
+        ? (() => {
+            const rel = path.relative(repoRoot, fileKey);
+            return rel.startsWith('..') ? fileKey : rel;
+          })()
+        : fileKey;
+      outputLines.push(displayPath);
+
+      const fileEntries = byFile.get(fileKey) ?? [];
+      fileEntries.sort((a, b) => {
+        if (a.range.start.line !== b.range.start.line) {
+          return a.range.start.line - b.range.start.line;
+        }
+        return a.range.start.character - b.range.start.character;
+      });
+
+      let doc: vscode.TextDocument | undefined = undefined;
+      if (isFilePath) {
+        doc = docCache.get(fileKey);
+        if (!doc) {
+          try {
+            doc = await vscode.workspace.openTextDocument(
+              vscode.Uri.file(fileKey),
+            );
+            docCache.set(fileKey, doc);
+          } catch {
+            doc = undefined;
+          }
+        }
+      }
+
+      for (const entry of fileEntries) {
+        const refLine = entry.range.start.line + 1;
+        const refChar = entry.range.start.character + 1;
+        let snippet = '';
+        if (doc && refLine - 1 < doc.lineCount) {
+          const text = doc.lineAt(refLine - 1).text;
+          snippet = truncateSnippet(text, MAX_REFERENCE_SNIPPET_LENGTH);
+        }
+        const snippetSuffix = snippet ? `  ${snippet}` : '';
+        outputLines.push(`  L${refLine}:C${refChar}${snippetSuffix}`);
+      }
+
+      outputLines.push('');
+    }
+
+    return outputLines.join('\n').trimEnd();
+  } catch (err: any) {
+    const message = err?.message || String(err);
+    return `Error finding references: ${message}`;
+  }
+}
+
 function parseCommitCount(value: unknown): number | null {
   if (typeof value === 'number' && Number.isFinite(value)) {
     return Math.floor(value);
@@ -433,6 +688,11 @@ export async function executeToolCall(
   try {
     let content: string;
 
+    if (isStaged && TOOLS_DISABLED_WHEN_STAGED.has(toolCall.name)) {
+      content = `Unknown tool: ${toolCall.name}`;
+      return { name: toolCall.name, content, error: true };
+    }
+
     switch (toolCall.name) {
       case 'get_diff':
         content = executeGetDiff(repoRoot, toolCall.arguments, diffContent);
@@ -452,6 +712,9 @@ export async function executeToolCall(
           isStaged,
           gitOps,
         );
+        break;
+      case 'find_references':
+        content = await executeFindReferences(repoRoot, toolCall.arguments);
         break;
       case 'get_recent_commits':
         content = await executeGetRecentCommits(toolCall.arguments, gitOps);
@@ -620,6 +883,7 @@ export async function buildInitialContext(
   diff: string,
   repoRoot: string,
   gitOps?: GitOperations,
+  isStaged: boolean = true,
 ): Promise<string> {
   const fileSummary = parseDiffSummary(diff);
   const projectTree = getProjectStructure(repoRoot);
@@ -631,6 +895,10 @@ export async function buildInitialContext(
         `  [${f.type.toUpperCase()}] ${f.path}  (+${f.added} / -${f.removed} lines)`,
     )
     .join('\n');
+
+  const toolList = isStaged
+    ? '`get_diff`, `read_file`, `get_file_outline`'
+    : '`get_diff`, `read_file`, `get_file_outline`, and `find_references`';
 
   return `## Staged Changes Summary
 
@@ -649,23 +917,25 @@ ${commitHistory}
 ---
 
 You have ONLY been given the file names and line counts. You do NOT yet know what the actual changes are.
-Use your tools to inspect the changes before classifying. You have \`get_diff\`, \`read_file\`, and \`get_file_outline\` — use whichever combination is most effective.
+Use your tools to inspect the changes before classifying. You have ${toolList} — use whichever combination is most effective.
 If you need to learn the project's commit style, you can call \`get_recent_commits\` to fetch recent commit messages.
 Do NOT guess the commit type based solely on file names.
 
 REMINDER: When you are done investigating, your ENTIRE text output must be ONLY the commit message in \`type(scope): description\` format — scope parentheses are MANDATORY. No analysis, no explanation, no commentary.`;
 }
 
-export function toGeminiFunctionDeclarations(): object[] {
-  return AGENT_TOOLS.map((tool) => ({
+export function toGeminiFunctionDeclarations(
+  isStaged: boolean = false,
+): object[] {
+  return getAvailableTools(isStaged).map((tool) => ({
     name: tool.name,
     description: tool.description,
     parameters: tool.parameters,
   }));
 }
 
-export function toOpenAITools(): object[] {
-  return AGENT_TOOLS.map((tool) => ({
+export function toOpenAITools(isStaged: boolean = false): object[] {
+  return getAvailableTools(isStaged).map((tool) => ({
     type: 'function',
     function: {
       name: tool.name,
@@ -675,8 +945,8 @@ export function toOpenAITools(): object[] {
   }));
 }
 
-export function toAnthropicTools(): object[] {
-  return AGENT_TOOLS.map((tool) => ({
+export function toAnthropicTools(isStaged: boolean = false): object[] {
+  return getAvailableTools(isStaged).map((tool) => ({
     name: tool.name,
     description: tool.description,
     input_schema: tool.parameters,

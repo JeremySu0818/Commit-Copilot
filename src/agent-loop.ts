@@ -70,7 +70,42 @@ function extractCommitMessage(raw: string): string {
   return trimmed;
 }
 
-const AGENT_SYSTEM_PROMPT = `You are a senior software engineer acting as an autonomous commit message agent.
+function buildAgentSystemPrompt(options: {
+  includeFindReferences: boolean;
+}): string {
+  const toolLines = [
+    '- `get_diff` — Get the actual git diff for a specific file. You MUST provide the `path` argument.',
+    '- `read_file` — Read the current contents of a file, optionally specifying a line range.',
+    '- `get_file_outline` — Get the structural outline (functions, classes, exports) of a file.',
+  ];
+  if (options.includeFindReferences) {
+    toolLines.push(
+      '- `find_references` — Find all references for a symbol at a specific file position (LSP-based, syntax-aware).',
+    );
+  }
+  toolLines.push(
+    "- `get_recent_commits` — Fetch recent commit messages to learn the project's commit style.",
+  );
+
+  const usageLines = [
+    '- Use `read_file` to understand context around changes.',
+    "- Use `get_file_outline` to understand a file's role before reading its diff.",
+  ];
+  if (options.includeFindReferences) {
+    usageLines.push(
+      '- Use `find_references` to understand how a changed symbol is used across the workspace.',
+    );
+  }
+  usageLines.push(
+    "- Use `get_recent_commits` if you need to mirror the project's commit message conventions.",
+  );
+  usageLines.push('- Combine multiple tools as needed for a thorough investigation.');
+
+  const investigationTools = options.includeFindReferences
+    ? '`get_diff`, `read_file`, `get_file_outline`, `find_references`'
+    : '`get_diff`, `read_file`, `get_file_outline`';
+
+  return `You are a senior software engineer acting as an autonomous commit message agent.
 You have access to tools that let you inspect the repository to make informed decisions.
 
 ## IMPORTANT: You receive LIMITED information initially
@@ -79,19 +114,13 @@ You do NOT see the actual changes. You MUST use your tools to investigate before
 
 ## Available Tools
 You have multiple tools at your disposal. Use whichever tools are needed for accurate investigation:
-- \`get_diff\` — Get the actual git diff for a specific file. You MUST provide the \`path\` argument.
-- \`read_file\` — Read the current contents of a file, optionally specifying a line range.
-- \`get_file_outline\` — Get the structural outline (functions, classes, exports) of a file.
-- \`get_recent_commits\` — Fetch recent commit messages to learn the project's commit style.
+${toolLines.join('\n')}
 
 You are NOT limited to \`get_diff\`. Choose the best tool(s) for the situation. For example:
-- Use \`read_file\` to understand context around changes.
-- Use \`get_file_outline\` to understand a file's role before reading its diff.
-- Use \`get_recent_commits\` if you need to mirror the project's commit message conventions.
-- Combine multiple tools as needed for a thorough investigation.
+${usageLines.join('\n')}
 
 ## Required Workflow
-1. Investigate the changes using your tools (\`get_diff\`, \`read_file\`, \`get_file_outline\` — use any combination).
+1. Investigate the changes using your tools (${investigationTools} — use any combination).
    Prioritize the most important or ambiguous files. You do NOT need to inspect every file if the changes are clearly related.
 2. If necessary, check recent commit messages with \`get_recent_commits\` to match the project's writing style.
 3. Classify the change type based on the Classification Rules below.
@@ -158,6 +187,7 @@ Any text before or after the commit message
 A commit message without scope parentheses like "feat: add login"
 
 VIOLATING THESE OUTPUT RULES IS A CRITICAL FAILURE.`;
+}
 
 interface AgentLoopOptions {
   provider: APIProvider;
@@ -183,6 +213,11 @@ function formatProgressMessage(
       return `${stepPrefix}Reading file: ${args.path || 'unknown file'}`;
     case 'get_file_outline':
       return `${stepPrefix}Getting outline: ${args.path || 'unknown file'}`;
+    case 'find_references': {
+      const line = args.line ?? 'unknown line';
+      const character = args.character ?? 'unknown char';
+      return `${stepPrefix}Finding references: ${args.path || 'unknown file'}:${line}:${character}`;
+    }
     case 'get_recent_commits':
       return `${stepPrefix}Fetching recent commits: ${args.count || 'default'} entries`;
     default:
@@ -220,6 +255,24 @@ function formatBatchProgressMessage(
       if (paths.length <= 2)
         return `${stepPrefix}Getting outlines: ${paths.join(', ')}`;
       return `${stepPrefix}Getting outlines for ${paths.length} files...`;
+    }
+    if (name === 'find_references') {
+      const targets = toolCalls
+        .map((tc) => {
+          const path = tc.args.path;
+          const line = tc.args.line;
+          const character = tc.args.character;
+          if (!path) return null;
+          if (typeof line !== 'undefined' && typeof character !== 'undefined') {
+            return `${path}:${line}:${character}`;
+          }
+          return path;
+        })
+        .filter(Boolean) as string[];
+      if (targets.length <= 2) {
+        return `${stepPrefix}Finding references: ${targets.join(', ')}`;
+      }
+      return `${stepPrefix}Finding references for ${targets.length} symbols...`;
     }
     if (name === 'get_recent_commits') {
       const counts = toolCalls
@@ -279,7 +332,14 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
         gitOps,
       );
     case 'ollama':
-      return runOllamaAgentLoop(model, diff, repoRoot, onProgress, gitOps);
+      return runOllamaAgentLoop(
+        model,
+        diff,
+        repoRoot,
+        onProgress,
+        isStaged,
+        gitOps,
+      );
     default:
       throw new Error(`Unsupported provider for agent loop: ${provider}`);
   }
@@ -306,17 +366,25 @@ async function runGeminiAgentLoop(
     const client = new GoogleGenerativeAI(apiKey);
     const modelName = (model || DEFAULT_MODELS.google).replace(/^models\//, '');
 
+    const systemPrompt = buildAgentSystemPrompt({
+      includeFindReferences: !isStaged,
+    });
     const generativeModel = client.getGenerativeModel({
       model: modelName,
-      systemInstruction: AGENT_SYSTEM_PROMPT,
+      systemInstruction: systemPrompt,
       tools: [
         {
-          functionDeclarations: toGeminiFunctionDeclarations() as any,
+          functionDeclarations: toGeminiFunctionDeclarations(isStaged) as any,
         },
       ],
     });
 
-    const initialContext = await buildInitialContext(diff, repoRoot, gitOps);
+    const initialContext = await buildInitialContext(
+      diff,
+      repoRoot,
+      gitOps,
+      isStaged,
+    );
     const chat = generativeModel.startChat({ history: [] });
 
     if (onProgress) {
@@ -422,10 +490,18 @@ async function runOpenAIAgentLoop(
     const client = new OpenAI({ apiKey });
     const modelName = model || DEFAULT_MODELS.openai;
 
-    const initialContext = await buildInitialContext(diff, repoRoot, gitOps);
+    const initialContext = await buildInitialContext(
+      diff,
+      repoRoot,
+      gitOps,
+      isStaged,
+    );
+    const systemPrompt = buildAgentSystemPrompt({
+      includeFindReferences: !isStaged,
+    });
 
     const messages: any[] = [
-      { role: 'system', content: AGENT_SYSTEM_PROMPT },
+      { role: 'system', content: systemPrompt },
       { role: 'user', content: initialContext },
     ];
 
@@ -439,7 +515,7 @@ async function runOpenAIAgentLoop(
       const completion = await client.chat.completions.create({
         model: modelName,
         messages,
-        tools: toOpenAITools() as any,
+        tools: toOpenAITools(isStaged) as any,
         tool_choice: 'auto',
       });
 
@@ -544,7 +620,15 @@ async function runAnthropicAgentLoop(
     const client = new Anthropic({ apiKey });
     const modelName = model || DEFAULT_MODELS.anthropic;
 
-    const initialContext = await buildInitialContext(diff, repoRoot, gitOps);
+    const initialContext = await buildInitialContext(
+      diff,
+      repoRoot,
+      gitOps,
+      isStaged,
+    );
+    const systemPrompt = buildAgentSystemPrompt({
+      includeFindReferences: !isStaged,
+    });
 
     const messages: any[] = [{ role: 'user', content: initialContext }];
 
@@ -558,9 +642,9 @@ async function runAnthropicAgentLoop(
       const response = await client.messages.create({
         model: modelName,
         max_tokens: 4096,
-        system: AGENT_SYSTEM_PROMPT,
+        system: systemPrompt,
         messages,
-        tools: toAnthropicTools() as any,
+        tools: toAnthropicTools(isStaged) as any,
       });
 
       const textBlocks = response.content.filter((b: any) => b.type === 'text');
@@ -621,7 +705,7 @@ async function runAnthropicAgentLoop(
     const finalResponse = await client.messages.create({
       model: modelName,
       max_tokens: 4096,
-      system: AGENT_SYSTEM_PROMPT,
+      system: systemPrompt,
       messages,
     });
     const text = finalResponse.content
@@ -655,7 +739,8 @@ async function runOllamaAgentLoop(
   model: string | undefined,
   diff: string,
   repoRoot: string,
-  onProgress?: ProgressCallback,
+  onProgress: ProgressCallback | undefined,
+  isStaged: boolean,
   gitOps?: GitOperations,
 ): Promise<string> {
   if (!diff.trim()) {
@@ -691,13 +776,21 @@ async function runOllamaAgentLoop(
       onProgress('Generating commit message...', 0);
     }
 
-    const initialContext = await buildInitialContext(diff, repoRoot, gitOps);
+    const initialContext = await buildInitialContext(
+      diff,
+      repoRoot,
+      gitOps,
+      isStaged,
+    );
+    const systemPrompt = buildAgentSystemPrompt({
+      includeFindReferences: !isStaged,
+    });
     const enhancedPrompt = `${initialContext}\n\n## Full Diff (provided inline for local model)\n\n${diff}`;
 
     const response = await client.chat({
       model: modelName,
       messages: [
-        { role: 'system', content: AGENT_SYSTEM_PROMPT },
+        { role: 'system', content: systemPrompt },
         { role: 'user', content: enhancedPrompt },
       ],
       options: {
