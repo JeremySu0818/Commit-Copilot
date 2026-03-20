@@ -1,62 +1,73 @@
 import {
-    executeToolCall,
-    buildInitialContext,
-    toGeminiFunctionDeclarations,
-    toOpenAITools,
-    toAnthropicTools,
-} from "./agentTools";
-import { APIProvider, DEFAULT_MODELS, OLLAMA_DEFAULT_HOST } from "./models";
+  executeToolCall,
+  buildInitialContext,
+  toGeminiFunctionDeclarations,
+  toOpenAITools,
+  toAnthropicTools,
+} from './agentTools';
+import { APIProvider, DEFAULT_MODELS, OLLAMA_DEFAULT_HOST } from './models';
 import {
-    APIKeyMissingError,
-    APIKeyInvalidError,
-    APIQuotaExceededError,
-    APIRequestError,
-    NoChangesError,
-} from "./errors";
-import { ProgressCallback } from "./llmClients";
-import { GitOperations } from "./commitCopilot";
+  APIKeyMissingError,
+  APIKeyInvalidError,
+  APIQuotaExceededError,
+  APIRequestError,
+  NoChangesError,
+} from './errors';
+import { ProgressCallback } from './llmClients';
+import { GitOperations } from './commitCopilot';
 
 const MAX_AGENT_STEPS = Infinity;
 
-const CONVENTIONAL_COMMIT_TYPES = ["feat", "fix", "docs", "style", "refactor", "perf", "test", "build", "ci", "chore", "revert"];
-
+const CONVENTIONAL_COMMIT_TYPES = [
+  'feat',
+  'fix',
+  'docs',
+  'style',
+  'refactor',
+  'perf',
+  'test',
+  'build',
+  'ci',
+  'chore',
+  'revert',
+];
 
 function extractCommitMessage(raw: string): string {
-    const trimmed = raw.trim();
+  const trimmed = raw.trim();
 
-    const typesPattern = CONVENTIONAL_COMMIT_TYPES.join("|");
-    const commitRegex = new RegExp(
-        `^(${typesPattern})(\\([^)]+\\))?(!)?:\\s*.+`,
-        "m",
-    );
+  const typesPattern = CONVENTIONAL_COMMIT_TYPES.join('|');
+  const commitRegex = new RegExp(
+    `^(${typesPattern})(\\([^)]+\\))?(!)?:\\s*.+`,
+    'm',
+  );
 
-    const firstLine = trimmed.split("\n")[0];
-    if (commitRegex.test(firstLine)) {
-        return trimmed;
-    }
-
-    const lines = trimmed.split("\n");
-    for (let i = 0; i < lines.length; i++) {
-        const line = lines[i].trim();
-        if (commitRegex.test(line)) {
-            return lines
-                .slice(i)
-                .map((l) => l.trimStart())
-                .join("\n")
-                .trim();
-        }
-    }
-
-    const stripped = trimmed
-        .replace(/^```[\w]*\n?/gm, "")
-        .replace(/\n?```\s*$/gm, "")
-        .trim();
-    const strippedFirstLine = stripped.split("\n")[0];
-    if (commitRegex.test(strippedFirstLine)) {
-        return stripped;
-    }
-
+  const firstLine = trimmed.split('\n')[0];
+  if (commitRegex.test(firstLine)) {
     return trimmed;
+  }
+
+  const lines = trimmed.split('\n');
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (commitRegex.test(line)) {
+      return lines
+        .slice(i)
+        .map((l) => l.trimStart())
+        .join('\n')
+        .trim();
+    }
+  }
+
+  const stripped = trimmed
+    .replace(/^```[\w]*\n?/gm, '')
+    .replace(/\n?```\s*$/gm, '')
+    .trim();
+  const strippedFirstLine = stripped.split('\n')[0];
+  if (commitRegex.test(strippedFirstLine)) {
+    return stripped;
+  }
+
+  return trimmed;
 }
 
 const AGENT_SYSTEM_PROMPT = `You are a senior software engineer acting as an autonomous commit message agent.
@@ -145,530 +156,560 @@ A commit message without scope parentheses like "feat: add login"
 
 VIOLATING THESE OUTPUT RULES IS A CRITICAL FAILURE.`;
 
-
 interface AgentLoopOptions {
-    provider: APIProvider;
-    apiKey: string;
-    model?: string;
-    diff: string;
-    repoRoot: string;
-    onProgress?: ProgressCallback;
-    isStaged: boolean;
-    gitOps: GitOperations;
+  provider: APIProvider;
+  apiKey: string;
+  model?: string;
+  diff: string;
+  repoRoot: string;
+  onProgress?: ProgressCallback;
+  isStaged: boolean;
+  gitOps: GitOperations;
 }
 
-function formatProgressMessage(step: number, toolName: string, args: any): string {
-    const stepPrefix = `[Step ${step}] `;
-    switch (toolName) {
-        case "get_diff":
-            return `${stepPrefix}Analyzing diff: ${args.path || "unknown file"}`;
-        case "read_file":
-            return `${stepPrefix}Reading file: ${args.path || "unknown file"}`;
-        case "get_file_outline":
-            return `${stepPrefix}Getting outline: ${args.path || "unknown file"}`;
-        default:
-            return `${stepPrefix}Calling ${toolName}...`;
-    }
+function formatProgressMessage(
+  step: number,
+  toolName: string,
+  args: any,
+): string {
+  const stepPrefix = `[Step ${step}] `;
+  switch (toolName) {
+    case 'get_diff':
+      return `${stepPrefix}Analyzing diff: ${args.path || 'unknown file'}`;
+    case 'read_file':
+      return `${stepPrefix}Reading file: ${args.path || 'unknown file'}`;
+    case 'get_file_outline':
+      return `${stepPrefix}Getting outline: ${args.path || 'unknown file'}`;
+    default:
+      return `${stepPrefix}Calling ${toolName}...`;
+  }
 }
 
-function formatBatchProgressMessage(step: number, toolCalls: { name: string; args: any }[]): string {
-    if (toolCalls.length === 0) return "";
-    if (toolCalls.length === 1) {
-        return formatProgressMessage(step, toolCalls[0].name, toolCalls[0].args);
+function formatBatchProgressMessage(
+  step: number,
+  toolCalls: { name: string; args: any }[],
+): string {
+  if (toolCalls.length === 0) return '';
+  if (toolCalls.length === 1) {
+    return formatProgressMessage(step, toolCalls[0].name, toolCalls[0].args);
+  }
+
+  const stepPrefix = `[Step ${step}] `;
+  const toolNames = Array.from(new Set(toolCalls.map((tc) => tc.name)));
+
+  if (toolNames.length === 1) {
+    const name = toolNames[0];
+    const paths = toolCalls.map((tc) => tc.args.path).filter(Boolean);
+
+    if (name === 'get_diff') {
+      if (paths.length <= 2)
+        return `${stepPrefix}Analyzing diffs: ${paths.join(', ')}`;
+      return `${stepPrefix}Analyzing diffs for ${paths.length} files...`;
     }
-
-    const stepPrefix = `[Step ${step}] `;
-    const toolNames = Array.from(new Set(toolCalls.map(tc => tc.name)));
-
-    if (toolNames.length === 1) {
-        const name = toolNames[0];
-        const paths = toolCalls.map(tc => tc.args.path).filter(Boolean);
-
-        if (name === "get_diff") {
-            if (paths.length <= 2) return `${stepPrefix}Analyzing diffs: ${paths.join(", ")}`;
-            return `${stepPrefix}Analyzing diffs for ${paths.length} files...`;
-        }
-        if (name === "read_file") {
-            if (paths.length <= 2) return `${stepPrefix}Reading files: ${paths.join(", ")}`;
-            return `${stepPrefix}Reading ${paths.length} files...`;
-        }
-        if (name === "get_file_outline") {
-            if (paths.length <= 2) return `${stepPrefix}Getting outlines: ${paths.join(", ")}`;
-            return `${stepPrefix}Getting outlines for ${paths.length} files...`;
-        }
+    if (name === 'read_file') {
+      if (paths.length <= 2)
+        return `${stepPrefix}Reading files: ${paths.join(', ')}`;
+      return `${stepPrefix}Reading ${paths.length} files...`;
     }
+    if (name === 'get_file_outline') {
+      if (paths.length <= 2)
+        return `${stepPrefix}Getting outlines: ${paths.join(', ')}`;
+      return `${stepPrefix}Getting outlines for ${paths.length} files...`;
+    }
+  }
 
-    return `${stepPrefix}Executing ${toolCalls.length} investigation tools...`;
+  return `${stepPrefix}Executing ${toolCalls.length} investigation tools...`;
 }
 
-export async function runAgentLoop(
-    options: AgentLoopOptions,
-): Promise<string> {
-    const { provider, apiKey, model, diff, repoRoot, onProgress, isStaged, gitOps } = options;
+export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
+  const {
+    provider,
+    apiKey,
+    model,
+    diff,
+    repoRoot,
+    onProgress,
+    isStaged,
+    gitOps,
+  } = options;
 
-    switch (provider) {
-        case "google":
-            return runGeminiAgentLoop(apiKey, model, diff, repoRoot, onProgress, isStaged, gitOps);
-        case "openai":
-            return runOpenAIAgentLoop(apiKey, model, diff, repoRoot, onProgress, isStaged, gitOps);
-        case "anthropic":
-            return runAnthropicAgentLoop(apiKey, model, diff, repoRoot, onProgress, isStaged, gitOps);
-        case "ollama":
-            return runOllamaAgentLoop(model, diff, repoRoot, onProgress);
-        default:
-            throw new Error(`Unsupported provider for agent loop: ${provider}`);
-    }
+  switch (provider) {
+    case 'google':
+      return runGeminiAgentLoop(
+        apiKey,
+        model,
+        diff,
+        repoRoot,
+        onProgress,
+        isStaged,
+        gitOps,
+      );
+    case 'openai':
+      return runOpenAIAgentLoop(
+        apiKey,
+        model,
+        diff,
+        repoRoot,
+        onProgress,
+        isStaged,
+        gitOps,
+      );
+    case 'anthropic':
+      return runAnthropicAgentLoop(
+        apiKey,
+        model,
+        diff,
+        repoRoot,
+        onProgress,
+        isStaged,
+        gitOps,
+      );
+    case 'ollama':
+      return runOllamaAgentLoop(model, diff, repoRoot, onProgress);
+    default:
+      throw new Error(`Unsupported provider for agent loop: ${provider}`);
+  }
 }
 
 async function runGeminiAgentLoop(
-    apiKey: string,
-    model: string | undefined,
-    diff: string,
-    repoRoot: string,
-    onProgress?: ProgressCallback,
-    isStaged: boolean = true,
-    gitOps?: GitOperations,
+  apiKey: string,
+  model: string | undefined,
+  diff: string,
+  repoRoot: string,
+  onProgress?: ProgressCallback,
+  isStaged: boolean = true,
+  gitOps?: GitOperations,
 ): Promise<string> {
-    if (!apiKey) {
-        throw new APIKeyMissingError();
-    }
-    if (!diff.trim()) {
-        throw new NoChangesError();
+  if (!apiKey) {
+    throw new APIKeyMissingError();
+  }
+  if (!diff.trim()) {
+    throw new NoChangesError();
+  }
+
+  try {
+    const { GoogleGenerativeAI } = await import('@google/generative-ai');
+    const client = new GoogleGenerativeAI(apiKey);
+    const modelName = (model || DEFAULT_MODELS.google).replace(/^models\//, '');
+
+    const generativeModel = client.getGenerativeModel({
+      model: modelName,
+      systemInstruction: AGENT_SYSTEM_PROMPT,
+      tools: [
+        {
+          functionDeclarations: toGeminiFunctionDeclarations() as any,
+        },
+      ],
+    });
+
+    const initialContext = buildInitialContext(diff, repoRoot);
+    const chat = generativeModel.startChat({ history: [] });
+
+    if (onProgress) {
+      onProgress('Agent analyzing changes...');
     }
 
-    try {
-        const { GoogleGenerativeAI } = await import("@google/generative-ai");
-        const client = new GoogleGenerativeAI(apiKey);
-        const modelName = (model || DEFAULT_MODELS.google).replace(
-            /^models\//,
-            "",
+    let response = await chat.sendMessage(initialContext);
+    let step = 0;
+
+    while (step < MAX_AGENT_STEPS) {
+      const candidate = response.response.candidates?.[0];
+      if (!candidate) {
+        throw new APIRequestError('Empty response from Gemini API');
+      }
+
+      const functionCalls = candidate.content?.parts?.filter(
+        (p: any) => p.functionCall,
+      );
+
+      if (!functionCalls || functionCalls.length === 0) {
+        const text = response.response.text();
+        if (!text) {
+          throw new APIRequestError('Empty text response from Gemini API');
+        }
+        return extractCommitMessage(text);
+      }
+
+      const toolResults: any[] = [];
+      if (onProgress && functionCalls.length > 0) {
+        const calls = functionCalls.map((p: any) => ({
+          name: p.functionCall.name,
+          args: p.functionCall.args || {},
+        }));
+        onProgress(formatBatchProgressMessage(step + 1, calls));
+      }
+
+      for (const part of functionCalls) {
+        const fc = (part as any).functionCall;
+        const result = await executeToolCall(
+          { name: fc.name, arguments: fc.args || {} },
+          repoRoot,
+          diff,
+          isStaged,
+          gitOps,
         );
 
-        const generativeModel = client.getGenerativeModel({
-            model: modelName,
-            systemInstruction: AGENT_SYSTEM_PROMPT,
-            tools: [
-                {
-                    functionDeclarations:
-                        toGeminiFunctionDeclarations() as any,
-                },
-            ],
+        toolResults.push({
+          functionResponse: {
+            name: fc.name,
+            response: { content: result.content },
+          },
         });
+      }
 
-        const initialContext = buildInitialContext(diff, repoRoot);
-        const chat = generativeModel.startChat({ history: [] });
-
-        if (onProgress) {
-            onProgress("Agent analyzing changes...");
-        }
-
-        let response = await chat.sendMessage(initialContext);
-        let step = 0;
-
-        while (step < MAX_AGENT_STEPS) {
-            const candidate = response.response.candidates?.[0];
-            if (!candidate) {
-                throw new APIRequestError("Empty response from Gemini API");
-            }
-
-            const functionCalls = candidate.content?.parts?.filter(
-                (p: any) => p.functionCall,
-            );
-
-            if (!functionCalls || functionCalls.length === 0) {
-                const text = response.response.text();
-                if (!text) {
-                    throw new APIRequestError("Empty text response from Gemini API");
-                }
-                return extractCommitMessage(text);
-            }
-
-            const toolResults: any[] = [];
-            if (onProgress && functionCalls.length > 0) {
-                const calls = functionCalls.map((p: any) => ({
-                    name: p.functionCall.name,
-                    args: p.functionCall.args || {}
-                }));
-                onProgress(formatBatchProgressMessage(step + 1, calls));
-            }
-
-            for (const part of functionCalls) {
-                const fc = (part as any).functionCall;
-                const result = await executeToolCall(
-                    { name: fc.name, arguments: fc.args || {} },
-                    repoRoot,
-                    diff,
-                    isStaged,
-                    gitOps,
-                );
-
-                toolResults.push({
-                    functionResponse: {
-                        name: fc.name,
-                        response: { content: result.content },
-                    },
-                });
-            }
-
-            response = await chat.sendMessage(toolResults);
-            step++;
-        }
-
-        const finalResponse = await chat.sendMessage(
-            "You have used all available investigation steps. Output ONLY the final commit message now in type(scope): description format. Scope parentheses are MANDATORY. Do NOT include any explanation or analysis — just the commit message.",
-        );
-        const text = finalResponse.response.text();
-        return text ? extractCommitMessage(text) : "chore(project): update files";
-    } catch (error: any) {
-        if (
-            error instanceof NoChangesError ||
-            error instanceof APIKeyMissingError
-        ) {
-            throw error;
-        }
-        const message = error?.message || String(error);
-        if (
-            message.includes("API_KEY_INVALID") ||
-            message.includes("401") ||
-            message.includes("403")
-        ) {
-            throw new APIKeyInvalidError(message);
-        } else if (message.includes("429") || message.includes("quota")) {
-            throw new APIQuotaExceededError(message);
-        }
-        throw new APIRequestError(message);
+      response = await chat.sendMessage(toolResults);
+      step++;
     }
+
+    const finalResponse = await chat.sendMessage(
+      'You have used all available investigation steps. Output ONLY the final commit message now in type(scope): description format. Scope parentheses are MANDATORY. Do NOT include any explanation or analysis — just the commit message.',
+    );
+    const text = finalResponse.response.text();
+    return text ? extractCommitMessage(text) : 'chore(project): update files';
+  } catch (error: any) {
+    if (
+      error instanceof NoChangesError ||
+      error instanceof APIKeyMissingError
+    ) {
+      throw error;
+    }
+    const message = error?.message || String(error);
+    if (
+      message.includes('API_KEY_INVALID') ||
+      message.includes('401') ||
+      message.includes('403')
+    ) {
+      throw new APIKeyInvalidError(message);
+    } else if (message.includes('429') || message.includes('quota')) {
+      throw new APIQuotaExceededError(message);
+    }
+    throw new APIRequestError(message);
+  }
 }
 
 async function runOpenAIAgentLoop(
-    apiKey: string,
-    model: string | undefined,
-    diff: string,
-    repoRoot: string,
-    onProgress?: ProgressCallback,
-    isStaged: boolean = true,
-    gitOps?: GitOperations,
+  apiKey: string,
+  model: string | undefined,
+  diff: string,
+  repoRoot: string,
+  onProgress?: ProgressCallback,
+  isStaged: boolean = true,
+  gitOps?: GitOperations,
 ): Promise<string> {
-    if (!apiKey) {
-        throw new APIKeyMissingError();
+  if (!apiKey) {
+    throw new APIKeyMissingError();
+  }
+  if (!diff.trim()) {
+    throw new NoChangesError();
+  }
+
+  try {
+    const OpenAI = (await import('openai')).default;
+    const client = new OpenAI({ apiKey });
+    const modelName = model || DEFAULT_MODELS.openai;
+
+    const initialContext = buildInitialContext(diff, repoRoot);
+
+    const messages: any[] = [
+      { role: 'system', content: AGENT_SYSTEM_PROMPT },
+      { role: 'user', content: initialContext },
+    ];
+
+    if (onProgress) {
+      onProgress('Agent analyzing changes...');
     }
-    if (!diff.trim()) {
-        throw new NoChangesError();
-    }
 
-    try {
-        const OpenAI = (await import("openai")).default;
-        const client = new OpenAI({ apiKey });
-        const modelName = model || DEFAULT_MODELS.openai;
+    let step = 0;
 
-        const initialContext = buildInitialContext(diff, repoRoot);
+    while (step < MAX_AGENT_STEPS) {
+      const completion = await client.chat.completions.create({
+        model: modelName,
+        messages,
+        tools: toOpenAITools() as any,
+        tool_choice: 'auto',
+      });
 
-        const messages: any[] = [
-            { role: "system", content: AGENT_SYSTEM_PROMPT },
-            { role: "user", content: initialContext },
-        ];
+      const choice = completion.choices[0];
+      if (!choice) {
+        throw new APIRequestError('Empty response from OpenAI API');
+      }
 
+      const assistantMessage = choice.message;
+      messages.push(assistantMessage);
+
+      if (
+        choice.finish_reason === 'tool_calls' &&
+        assistantMessage.tool_calls &&
+        assistantMessage.tool_calls.length > 0
+      ) {
         if (onProgress) {
-            onProgress("Agent analyzing changes...");
+          const calls = assistantMessage.tool_calls.map((tc: any) => ({
+            name: tc.function.name,
+            args: JSON.parse(tc.function.arguments || '{}'),
+          }));
+          onProgress(formatBatchProgressMessage(step + 1, calls));
         }
 
-        let step = 0;
+        for (const toolCall of assistantMessage.tool_calls) {
+          const args = JSON.parse(toolCall.function.arguments || '{}');
+          const result = await executeToolCall(
+            { name: toolCall.function.name, arguments: args },
+            repoRoot,
+            diff,
+            isStaged,
+            gitOps,
+          );
 
-        while (step < MAX_AGENT_STEPS) {
-            const completion = await client.chat.completions.create({
-                model: modelName,
-                messages,
-                tools: toOpenAITools() as any,
-                tool_choice: "auto",
-            });
-
-            const choice = completion.choices[0];
-            if (!choice) {
-                throw new APIRequestError("Empty response from OpenAI API");
-            }
-
-            const assistantMessage = choice.message;
-            messages.push(assistantMessage);
-
-            if (
-                choice.finish_reason === "tool_calls" &&
-                assistantMessage.tool_calls &&
-                assistantMessage.tool_calls.length > 0
-            ) {
-                if (onProgress) {
-                    const calls = assistantMessage.tool_calls.map((tc: any) => ({
-                        name: tc.function.name,
-                        args: JSON.parse(tc.function.arguments || "{}")
-                    }));
-                    onProgress(formatBatchProgressMessage(step + 1, calls));
-                }
-
-                for (const toolCall of assistantMessage.tool_calls) {
-                    const args = JSON.parse(toolCall.function.arguments || "{}");
-                    const result = await executeToolCall(
-                        { name: toolCall.function.name, arguments: args },
-                        repoRoot,
-                        diff,
-                        isStaged,
-                        gitOps,
-                    );
-
-                    messages.push({
-                        role: "tool",
-                        tool_call_id: toolCall.id,
-                        content: result.content,
-                    });
-                }
-                step++;
-            } else {
-                const text = assistantMessage.content;
-                if (!text) {
-                    throw new APIRequestError("Empty text response from OpenAI API");
-                }
-                return extractCommitMessage(text);
-            }
+          messages.push({
+            role: 'tool',
+            tool_call_id: toolCall.id,
+            content: result.content,
+          });
         }
-
-        messages.push({
-            role: "user",
-            content:
-                "You have used all available investigation steps. Output ONLY the final commit message now in type(scope): description format. Scope parentheses are MANDATORY. Do NOT include any explanation or analysis — just the commit message.",
-        });
-        const finalCompletion = await client.chat.completions.create({
-            model: modelName,
-            messages,
-        });
-        const text = finalCompletion.choices[0]?.message?.content;
-        return text ? extractCommitMessage(text) : "chore(project): update files";
-    } catch (error: any) {
-        if (
-            error instanceof NoChangesError ||
-            error instanceof APIKeyMissingError
-        ) {
-            throw error;
+        step++;
+      } else {
+        const text = assistantMessage.content;
+        if (!text) {
+          throw new APIRequestError('Empty text response from OpenAI API');
         }
-        const message = error?.message || String(error);
-        const status = error?.status;
-        if (
-            status === 401 ||
-            status === 403 ||
-            message.includes("Invalid API Key")
-        ) {
-            throw new APIKeyInvalidError(message);
-        } else if (status === 429 || message.includes("rate limit")) {
-            throw new APIQuotaExceededError(message);
-        }
-        throw new APIRequestError(message);
+        return extractCommitMessage(text);
+      }
     }
+
+    messages.push({
+      role: 'user',
+      content:
+        'You have used all available investigation steps. Output ONLY the final commit message now in type(scope): description format. Scope parentheses are MANDATORY. Do NOT include any explanation or analysis — just the commit message.',
+    });
+    const finalCompletion = await client.chat.completions.create({
+      model: modelName,
+      messages,
+    });
+    const text = finalCompletion.choices[0]?.message?.content;
+    return text ? extractCommitMessage(text) : 'chore(project): update files';
+  } catch (error: any) {
+    if (
+      error instanceof NoChangesError ||
+      error instanceof APIKeyMissingError
+    ) {
+      throw error;
+    }
+    const message = error?.message || String(error);
+    const status = error?.status;
+    if (
+      status === 401 ||
+      status === 403 ||
+      message.includes('Invalid API Key')
+    ) {
+      throw new APIKeyInvalidError(message);
+    } else if (status === 429 || message.includes('rate limit')) {
+      throw new APIQuotaExceededError(message);
+    }
+    throw new APIRequestError(message);
+  }
 }
 
-
 async function runAnthropicAgentLoop(
-    apiKey: string,
-    model: string | undefined,
-    diff: string,
-    repoRoot: string,
-    onProgress?: ProgressCallback,
-    isStaged: boolean = true,
-    gitOps?: GitOperations,
+  apiKey: string,
+  model: string | undefined,
+  diff: string,
+  repoRoot: string,
+  onProgress?: ProgressCallback,
+  isStaged: boolean = true,
+  gitOps?: GitOperations,
 ): Promise<string> {
-    if (!apiKey) {
-        throw new APIKeyMissingError();
+  if (!apiKey) {
+    throw new APIKeyMissingError();
+  }
+  if (!diff.trim()) {
+    throw new NoChangesError();
+  }
+
+  try {
+    const Anthropic = (await import('@anthropic-ai/sdk')).default;
+    const client = new Anthropic({ apiKey });
+    const modelName = model || DEFAULT_MODELS.anthropic;
+
+    const initialContext = buildInitialContext(diff, repoRoot);
+
+    const messages: any[] = [{ role: 'user', content: initialContext }];
+
+    if (onProgress) {
+      onProgress('Agent analyzing changes...');
     }
-    if (!diff.trim()) {
-        throw new NoChangesError();
-    }
 
-    try {
-        const Anthropic = (await import("@anthropic-ai/sdk")).default;
-        const client = new Anthropic({ apiKey });
-        const modelName = model || DEFAULT_MODELS.anthropic;
+    let step = 0;
 
-        const initialContext = buildInitialContext(diff, repoRoot);
+    while (step < MAX_AGENT_STEPS) {
+      const response = await client.messages.create({
+        model: modelName,
+        max_tokens: 4096,
+        system: AGENT_SYSTEM_PROMPT,
+        messages,
+        tools: toAnthropicTools() as any,
+      });
 
-        const messages: any[] = [
-            { role: "user", content: initialContext },
-        ];
+      const textBlocks = response.content.filter((b: any) => b.type === 'text');
+      const toolUseBlocks = response.content.filter(
+        (b: any) => b.type === 'tool_use',
+      );
 
-        if (onProgress) {
-            onProgress("Agent analyzing changes...");
+      if (response.stop_reason === 'end_turn' || toolUseBlocks.length === 0) {
+        const text = textBlocks.map((b: any) => b.text).join('');
+        if (!text) {
+          throw new APIRequestError('Empty response from Anthropic API');
         }
+        return extractCommitMessage(text);
+      }
 
-        let step = 0;
+      messages.push({ role: 'assistant', content: response.content });
 
-        while (step < MAX_AGENT_STEPS) {
-            const response = await client.messages.create({
-                model: modelName,
-                max_tokens: 4096,
-                system: AGENT_SYSTEM_PROMPT,
-                messages,
-                tools: toAnthropicTools() as any,
-            });
+      const toolResults: any[] = [];
+      if (onProgress && toolUseBlocks.length > 0) {
+        const calls = toolUseBlocks.map((b: any) => ({
+          name: b.name,
+          args: b.input || {},
+        }));
+        onProgress(formatBatchProgressMessage(step + 1, calls));
+      }
 
-            const textBlocks = response.content.filter(
-                (b: any) => b.type === "text",
-            );
-            const toolUseBlocks = response.content.filter(
-                (b: any) => b.type === "tool_use",
-            );
+      for (const block of toolUseBlocks) {
+        const toolUse = block as any;
+        const result = await executeToolCall(
+          { name: toolUse.name, arguments: toolUse.input || {} },
+          repoRoot,
+          diff,
+          isStaged,
+          gitOps,
+        );
 
-            if (response.stop_reason === "end_turn" || toolUseBlocks.length === 0) {
-                const text = textBlocks.map((b: any) => b.text).join("");
-                if (!text) {
-                    throw new APIRequestError("Empty response from Anthropic API");
-                }
-                return extractCommitMessage(text);
-            }
-
-            messages.push({ role: "assistant", content: response.content });
-
-            const toolResults: any[] = [];
-            if (onProgress && toolUseBlocks.length > 0) {
-                const calls = toolUseBlocks.map((b: any) => ({
-                    name: b.name,
-                    args: b.input || {}
-                }));
-                onProgress(formatBatchProgressMessage(step + 1, calls));
-            }
-
-            for (const block of toolUseBlocks) {
-                const toolUse = block as any;
-                const result = await executeToolCall(
-                    { name: toolUse.name, arguments: toolUse.input || {} },
-                    repoRoot,
-                    diff,
-                    isStaged,
-                    gitOps,
-                );
-
-                toolResults.push({
-                    type: "tool_result",
-                    tool_use_id: toolUse.id,
-                    content: result.content,
-                });
-            }
-
-            messages.push({ role: "user", content: toolResults });
-            step++;
-        }
-
-        messages.push({
-            role: "user",
-            content: [
-                {
-                    type: "text",
-                    text: "You have used all available investigation steps. Output ONLY the final commit message now in type(scope): description format. Scope parentheses are MANDATORY. Do NOT include any explanation or analysis — just the commit message.",
-                },
-            ],
+        toolResults.push({
+          type: 'tool_result',
+          tool_use_id: toolUse.id,
+          content: result.content,
         });
+      }
 
-
-        const finalResponse = await client.messages.create({
-            model: modelName,
-            max_tokens: 4096,
-            system: AGENT_SYSTEM_PROMPT,
-            messages,
-        });
-        const text = finalResponse.content
-            .filter((b: any) => b.type === "text")
-            .map((b: any) => b.text)
-            .join("");
-        return text ? extractCommitMessage(text) : "chore(project): update files";
-    } catch (error: any) {
-        if (
-            error instanceof NoChangesError ||
-            error instanceof APIKeyMissingError
-        ) {
-            throw error;
-        }
-        const message = error?.message || String(error);
-        const status = error?.status;
-        if (
-            status === 401 ||
-            status === 403 ||
-            message.includes("invalid_api_key")
-        ) {
-            throw new APIKeyInvalidError(message);
-        } else if (status === 429 || message.includes("rate_limit")) {
-            throw new APIQuotaExceededError(message);
-        }
-        throw new APIRequestError(message);
+      messages.push({ role: 'user', content: toolResults });
+      step++;
     }
+
+    messages.push({
+      role: 'user',
+      content: [
+        {
+          type: 'text',
+          text: 'You have used all available investigation steps. Output ONLY the final commit message now in type(scope): description format. Scope parentheses are MANDATORY. Do NOT include any explanation or analysis — just the commit message.',
+        },
+      ],
+    });
+
+    const finalResponse = await client.messages.create({
+      model: modelName,
+      max_tokens: 4096,
+      system: AGENT_SYSTEM_PROMPT,
+      messages,
+    });
+    const text = finalResponse.content
+      .filter((b: any) => b.type === 'text')
+      .map((b: any) => b.text)
+      .join('');
+    return text ? extractCommitMessage(text) : 'chore(project): update files';
+  } catch (error: any) {
+    if (
+      error instanceof NoChangesError ||
+      error instanceof APIKeyMissingError
+    ) {
+      throw error;
+    }
+    const message = error?.message || String(error);
+    const status = error?.status;
+    if (
+      status === 401 ||
+      status === 403 ||
+      message.includes('invalid_api_key')
+    ) {
+      throw new APIKeyInvalidError(message);
+    } else if (status === 429 || message.includes('rate_limit')) {
+      throw new APIQuotaExceededError(message);
+    }
+    throw new APIRequestError(message);
+  }
 }
 
 async function runOllamaAgentLoop(
-    model: string | undefined,
-    diff: string,
-    repoRoot: string,
-    onProgress?: ProgressCallback,
+  model: string | undefined,
+  diff: string,
+  repoRoot: string,
+  onProgress?: ProgressCallback,
 ): Promise<string> {
-    if (!diff.trim()) {
-        throw new NoChangesError();
+  if (!diff.trim()) {
+    throw new NoChangesError();
+  }
+
+  try {
+    const { Ollama } = await import('ollama');
+    const client = new Ollama({ host: OLLAMA_DEFAULT_HOST });
+    const modelName = model || DEFAULT_MODELS.ollama;
+
+    const pullStream = await client.pull({ model: modelName, stream: true });
+    let lastPercent = 0;
+    for await (const part of pullStream) {
+      if (part.total && part.completed) {
+        const percent = Math.round((part.completed / part.total) * 100);
+        if (percent > lastPercent) {
+          const increment = percent - lastPercent;
+          lastPercent = percent;
+          if (onProgress) {
+            onProgress(
+              `Pulling ${modelName}: ${part.status} (${percent}%)`,
+              increment,
+            );
+          }
+        }
+      } else if (part.status && onProgress) {
+        onProgress(`Pulling ${modelName}: ${part.status}`);
+      }
     }
 
-    try {
-        const { Ollama } = await import("ollama");
-        const client = new Ollama({ host: OLLAMA_DEFAULT_HOST });
-        const modelName = model || DEFAULT_MODELS.ollama;
-
-        const pullStream = await client.pull({ model: modelName, stream: true });
-        let lastPercent = 0;
-        for await (const part of pullStream) {
-            if (part.total && part.completed) {
-                const percent = Math.round((part.completed / part.total) * 100);
-                if (percent > lastPercent) {
-                    const increment = percent - lastPercent;
-                    lastPercent = percent;
-                    if (onProgress) {
-                        onProgress(
-                            `Pulling ${modelName}: ${part.status} (${percent}%)`,
-                            increment,
-                        );
-                    }
-                }
-            } else if (part.status && onProgress) {
-                onProgress(`Pulling ${modelName}: ${part.status}`);
-            }
-        }
-
-        if (onProgress) {
-            onProgress("Generating commit message...", 0);
-        }
-
-        const initialContext = buildInitialContext(diff, repoRoot);
-        const enhancedPrompt = `${initialContext}\n\n## Full Diff (provided inline for local model)\n\n${diff}`;
-
-        const response = await client.chat({
-            model: modelName,
-            messages: [
-                { role: "system", content: AGENT_SYSTEM_PROMPT },
-                { role: "user", content: enhancedPrompt },
-            ],
-            options: {
-                temperature: 0.7,
-                top_p: 0.95,
-            },
-        });
-
-        const text = response.message?.content;
-        if (!text) {
-            throw new APIRequestError("Empty response from Ollama");
-        }
-        return extractCommitMessage(text);
-    } catch (error: any) {
-        if (error instanceof NoChangesError) {
-            throw error;
-        }
-        const message = error?.message || String(error);
-        if (message.includes("ECONNREFUSED") || message.includes("connect")) {
-            throw new APIRequestError(
-                `Cannot connect to Ollama. Make sure Ollama is running at ${OLLAMA_DEFAULT_HOST}`,
-            );
-        } else if (message.includes("model") && message.includes("not found")) {
-            throw new APIRequestError(
-                `Model "${model || DEFAULT_MODELS.ollama}" not found. Please pull it first.`,
-            );
-        }
-        throw new APIRequestError(message);
+    if (onProgress) {
+      onProgress('Generating commit message...', 0);
     }
+
+    const initialContext = buildInitialContext(diff, repoRoot);
+    const enhancedPrompt = `${initialContext}\n\n## Full Diff (provided inline for local model)\n\n${diff}`;
+
+    const response = await client.chat({
+      model: modelName,
+      messages: [
+        { role: 'system', content: AGENT_SYSTEM_PROMPT },
+        { role: 'user', content: enhancedPrompt },
+      ],
+      options: {
+        temperature: 0.7,
+        top_p: 0.95,
+      },
+    });
+
+    const text = response.message?.content;
+    if (!text) {
+      throw new APIRequestError('Empty response from Ollama');
+    }
+    return extractCommitMessage(text);
+  } catch (error: any) {
+    if (error instanceof NoChangesError) {
+      throw error;
+    }
+    const message = error?.message || String(error);
+    if (message.includes('ECONNREFUSED') || message.includes('connect')) {
+      throw new APIRequestError(
+        `Cannot connect to Ollama. Make sure Ollama is running at ${OLLAMA_DEFAULT_HOST}`,
+      );
+    } else if (message.includes('model') && message.includes('not found')) {
+      throw new APIRequestError(
+        `Model "${model || DEFAULT_MODELS.ollama}" not found. Please pull it first.`,
+      );
+    }
+    throw new APIRequestError(message);
+  }
 }

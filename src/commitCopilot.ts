@@ -1,6 +1,6 @@
-import { APIProvider, DEFAULT_MODELS } from "./models";
-import { createLLMClient, ProgressCallback } from "./llmClients";
-import { runAgentLoop } from "./agentLoop";
+import { APIProvider, DEFAULT_MODELS } from './models';
+import { createLLMClient, ProgressCallback } from './llmClients';
+import { runAgentLoop } from './agentLoop';
 import {
   EXIT_CODES,
   CommitCopilotError,
@@ -9,7 +9,7 @@ import {
   NoTrackedChangesButUntrackedError,
   StageFailedError,
   MixedChangesError,
-} from "./errors";
+} from './errors';
 
 export {
   EXIT_CODES,
@@ -24,7 +24,7 @@ export {
   NoTrackedChangesButUntrackedError,
   StageFailedError,
   MixedChangesError,
-} from "./errors";
+} from './errors';
 
 const STATUS_UNTRACKED = 7;
 
@@ -49,7 +49,7 @@ export interface GitRepository {
 }
 
 export class GitOperations {
-  constructor(private readonly repository: GitRepository) { }
+  constructor(private readonly repository: GitRepository) {}
 
   async isGitRepo(): Promise<boolean> {
     return true;
@@ -60,18 +60,17 @@ export class GitOperations {
       const diff = await this.repository.diff(staged);
       return diff;
     } catch (error: any) {
-      console.error("Error running git diff:", error);
-      return "";
+      console.error('Error running git diff:', error);
+      return '';
     }
   }
 
   async show(filePath: string): Promise<string> {
     try {
-      // In VS Code Git API, repository.show(':path') returns staged content.
-      return await this.repository.show(":", filePath);
+      return await this.repository.show(':', filePath);
     } catch (error) {
-      console.error("Error running git show:", error);
-      return "";
+      console.error('Error running git show:', error);
+      return '';
     }
   }
 
@@ -97,7 +96,7 @@ export class GitOperations {
       }
       return true;
     } catch (error) {
-      console.error("Error staging changes:", error);
+      console.error('Error staging changes:', error);
       return false;
     }
   }
@@ -107,7 +106,7 @@ export class GitOperations {
       await this.repository.commit(message);
       return true;
     } catch (error) {
-      console.error("Error committing changes:", error);
+      console.error('Error committing changes:', error);
       return false;
     }
   }
@@ -133,7 +132,7 @@ export class GitOperations {
       await this.repository.add(files);
       return true;
     } catch (error) {
-      console.error("Error staging files:", error);
+      console.error('Error staging files:', error);
       return false;
     }
   }
@@ -173,8 +172,8 @@ export async function generateCommitMessage(
     const gitOps = new GitOperations(repository);
     if (!(await gitOps.isGitRepo())) {
       throw new CommitCopilotError(
-        "Not a git repository. Please run this command inside a git repository.",
-        "NOT_GIT_REPO",
+        'Not a git repository. Please run this command inside a git repository.',
+        'NOT_GIT_REPO',
         EXIT_CODES.NOT_GIT_REPO,
       );
     }
@@ -184,7 +183,7 @@ export async function generateCommitMessage(
       if (!staged) {
         throw new StageFailedError();
       }
-    } else if (!proceedWithStagedOnly && await gitOps.hasMixedChanges()) {
+    } else if (!proceedWithStagedOnly && (await gitOps.hasMixedChanges())) {
       throw new MixedChangesError();
     }
 
@@ -193,7 +192,7 @@ export async function generateCommitMessage(
 
     if (!diff.trim() && !stageChanges) {
       const unstagedDiff = await gitOps.getDiff(false);
-      if (!ignoreUntracked && await gitOps.hasUntrackedFiles()) {
+      if (!ignoreUntracked && (await gitOps.hasUntrackedFiles())) {
         if (!unstagedDiff.trim()) {
           throw new NoTrackedChangesButUntrackedError();
         } else {
@@ -233,7 +232,7 @@ export async function generateCommitMessage(
       success: false,
       error: new CommitCopilotError(
         error instanceof Error ? error.message : String(error),
-        "UNKNOWN",
+        'UNKNOWN',
         EXIT_CODES.UNKNOWN_ERROR,
       ),
     };

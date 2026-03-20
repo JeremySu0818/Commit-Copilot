@@ -1,4 +1,4 @@
-import * as vscode from "vscode";
+import * as vscode from 'vscode';
 import {
   APIProvider,
   PROVIDER_DISPLAY_NAMES,
@@ -7,17 +7,17 @@ import {
   DEFAULT_PROVIDER,
   API_KEY_STORAGE_KEYS,
   OLLAMA_DEFAULT_HOST,
-} from "./models";
-import { GenerationStateManager, ValidationStateManager } from "./extension";
+} from './models';
+import { GenerationStateManager, ValidationStateManager } from './extension';
 
 export class SidePanelProvider implements vscode.WebviewViewProvider {
-  public static readonly viewType = "commit-copilot.view";
+  public static readonly viewType = 'commit-copilot.view';
   private _view?: vscode.WebviewView;
 
   constructor(
     private readonly _extensionUri: vscode.Uri,
     private readonly _context: vscode.ExtensionContext,
-  ) { }
+  ) {}
 
   private async validateGoogleApiKey(
     apiKey: string,
@@ -26,9 +26,9 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
       const response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`,
         {
-          method: "GET",
+          method: 'GET',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
         },
       );
@@ -64,8 +64,8 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
     apiKey: string,
   ): Promise<{ valid: boolean; error?: string }> {
     try {
-      const response = await fetch("https://api.openai.com/v1/models", {
-        method: "GET",
+      const response = await fetch('https://api.openai.com/v1/models', {
+        method: 'GET',
         headers: {
           Authorization: `Bearer ${apiKey}`,
         },
@@ -98,17 +98,17 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
     apiKey: string,
   ): Promise<{ valid: boolean; error?: string }> {
     try {
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
         headers: {
-          "x-api-key": apiKey,
-          "anthropic-version": "2023-06-01",
-          "content-type": "application/json",
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'content-type': 'application/json',
         },
         body: JSON.stringify({
-          model: "claude-3-5-haiku-20241022",
+          model: 'claude-3-5-haiku-20241022',
           max_tokens: 1,
-          messages: [{ role: "user", content: "Hi" }],
+          messages: [{ role: 'user', content: 'Hi' }],
         }),
       });
       if (response.ok || response.status === 200) {
@@ -138,7 +138,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
     try {
       const hostUrl = host || OLLAMA_DEFAULT_HOST;
       const response = await fetch(`${hostUrl}/api/tags`, {
-        method: "GET",
+        method: 'GET',
       });
       if (response.ok) {
         return { valid: true };
@@ -162,16 +162,16 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
     apiKey: string,
   ): Promise<{ valid: boolean; error?: string }> {
     switch (provider) {
-      case "google":
+      case 'google':
         return this.validateGoogleApiKey(apiKey);
-      case "openai":
+      case 'openai':
         return this.validateOpenAIApiKey(apiKey);
-      case "anthropic":
+      case 'anthropic':
         return this.validateAnthropicApiKey(apiKey);
-      case "ollama":
+      case 'ollama':
         return this.validateOllamaHost(apiKey);
       default:
-        return { valid: false, error: "Unknown provider" };
+        return { valid: false, error: 'Unknown provider' };
     }
   }
 
@@ -189,7 +189,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
 
     const onGenerationStateChange = () => {
       this._view?.webview.postMessage({
-        type: "generationStatusUpdate",
+        type: 'generationStatusUpdate',
         isGenerating: GenerationStateManager.isGenerating,
       });
     };
@@ -197,7 +197,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
 
     const onValidationStateChange = () => {
       this._view?.webview.postMessage({
-        type: "validationStatusUpdate",
+        type: 'validationStatusUpdate',
         isValidating: ValidationStateManager.isValidating,
         provider: ValidationStateManager.validatingProvider,
       });
@@ -211,7 +211,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
 
     const checkGitStatus = () => {
       try {
-        const gitExtension = vscode.extensions.getExtension<any>("vscode.git");
+        const gitExtension = vscode.extensions.getExtension<any>('vscode.git');
         if (!gitExtension?.isActive) {
           return;
         }
@@ -224,20 +224,20 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
           const hasChanges =
             repo.state.workingTreeChanges.length > 0 ||
             repo.state.indexChanges.length > 0;
-          webviewView.webview.postMessage({ type: "repoUpdate", hasChanges });
+          webviewView.webview.postMessage({ type: 'repoUpdate', hasChanges });
         } else {
           webviewView.webview.postMessage({
-            type: "repoUpdate",
+            type: 'repoUpdate',
             hasChanges: false,
           });
         }
       } catch (error) {
-        console.error("[Commit-Copilot] Error checking git status:", error);
+        console.error('[Commit-Copilot] Error checking git status:', error);
       }
     };
 
     try {
-      const gitExtension = vscode.extensions.getExtension<any>("vscode.git");
+      const gitExtension = vscode.extensions.getExtension<any>('vscode.git');
       if (gitExtension?.isActive && gitExtension.exports) {
         const git = gitExtension.exports.getAPI?.(1);
         if (git) {
@@ -252,11 +252,11 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
             }
           };
 
-          if (git.state === "initialized") {
+          if (git.state === 'initialized') {
             setupRepoListeners();
           } else {
             git.onDidChangeState?.((state: any) => {
-              if (state === "initialized") {
+              if (state === 'initialized') {
                 setupRepoListeners();
               }
             });
@@ -289,32 +289,32 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
             }
           } catch (err) {
             console.error(
-              "[Commit-Copilot] Failed to activate git extension:",
+              '[Commit-Copilot] Failed to activate git extension:',
               err,
             );
           }
         })();
       }
     } catch (error) {
-      console.error("[Commit-Copilot] Error setting up git listeners:", error);
+      console.error('[Commit-Copilot] Error setting up git listeners:', error);
     }
 
     webviewView.webview.onDidReceiveMessage(async (data) => {
       switch (data.type) {
-        case "saveKey": {
+        case 'saveKey': {
           const provider = data.provider as APIProvider;
           const apiKey = data.value;
-          if (!apiKey && provider !== "ollama") {
-            vscode.window.showErrorMessage("API Key cannot be empty");
+          if (!apiKey && provider !== 'ollama') {
+            vscode.window.showErrorMessage('API Key cannot be empty');
             this._view?.webview.postMessage({
-              type: "validationResult",
+              type: 'validationResult',
               success: false,
               provider,
             });
             return;
           }
           ValidationStateManager.setValidating(true, provider);
-          this._view?.webview.postMessage({ type: "validating", provider });
+          this._view?.webview.postMessage({ type: 'validating', provider });
           try {
             const validationResult = await this.validateApiKey(
               provider,
@@ -322,10 +322,10 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
             );
             if (!validationResult.valid) {
               vscode.window.showWarningMessage(
-                `Validation failed: ${validationResult.error || "Unable to connect"}`,
+                `Validation failed: ${validationResult.error || 'Unable to connect'}`,
               );
               this._view?.webview.postMessage({
-                type: "validationResult",
+                type: 'validationResult',
                 success: false,
                 error: validationResult.error,
                 provider,
@@ -342,20 +342,20 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
                 `${PROVIDER_DISPLAY_NAMES[provider]} configuration saved successfully!`,
               );
               this._view?.webview.postMessage({
-                type: "validationResult",
+                type: 'validationResult',
                 success: true,
                 models: MODELS_BY_PROVIDER[provider],
                 provider,
               });
               this._view?.webview.postMessage({
-                type: "keyStatus",
+                type: 'keyStatus',
                 hasKey: true,
                 provider,
               });
             } catch (e) {
-              vscode.window.showErrorMessage("Failed to save configuration");
+              vscode.window.showErrorMessage('Failed to save configuration');
               this._view?.webview.postMessage({
-                type: "validationResult",
+                type: 'validationResult',
                 success: false,
                 provider,
               });
@@ -365,39 +365,39 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
           }
           break;
         }
-        case "generate": {
+        case 'generate': {
           try {
-            await vscode.commands.executeCommand("commit-copilot.generate");
+            await vscode.commands.executeCommand('commit-copilot.generate');
           } finally {
-            this._view?.webview.postMessage({ type: "generationDone" });
+            this._view?.webview.postMessage({ type: 'generationDone' });
           }
           break;
         }
-        case "checkKey": {
+        case 'checkKey': {
           const provider = (data.provider as APIProvider) || DEFAULT_PROVIDER;
           const storageKey = API_KEY_STORAGE_KEYS[provider];
           const key = await this._context.secrets.get(storageKey);
           this._view?.webview.postMessage({
-            type: "keyStatus",
+            type: 'keyStatus',
             hasKey: !!key,
             provider,
           });
           break;
         }
-        case "checkGit": {
+        case 'checkGit': {
           checkGitStatus();
           break;
         }
-        case "getModels": {
+        case 'getModels': {
           const provider = (data.provider as APIProvider) || DEFAULT_PROVIDER;
           const storageKey = API_KEY_STORAGE_KEYS[provider];
           const key = await this._context.secrets.get(storageKey);
-          if (key || provider === "ollama") {
+          if (key || provider === 'ollama') {
             const savedModel = this._context.globalState.get<string>(
               `${provider.toUpperCase()}_MODEL`,
             );
             this._view?.webview.postMessage({
-              type: "modelsList",
+              type: 'modelsList',
               models: MODELS_BY_PROVIDER[provider],
               currentModel: savedModel || DEFAULT_MODELS[provider],
               provider,
@@ -405,7 +405,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
           }
           break;
         }
-        case "saveModel": {
+        case 'saveModel': {
           const provider = (data.provider as APIProvider) || DEFAULT_PROVIDER;
           await this._context.globalState.update(
             `${provider.toUpperCase()}_MODEL`,
@@ -413,23 +413,23 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
           );
           break;
         }
-        case "saveProvider": {
+        case 'saveProvider': {
           await this._context.globalState.update(
-            "CURRENT_PROVIDER",
+            'CURRENT_PROVIDER',
             data.value,
           );
           break;
         }
-        case "getProvider": {
+        case 'getProvider': {
           const savedProvider =
-            this._context.globalState.get<APIProvider>("CURRENT_PROVIDER");
+            this._context.globalState.get<APIProvider>('CURRENT_PROVIDER');
           this._view?.webview.postMessage({
-            type: "currentProvider",
+            type: 'currentProvider',
             provider: savedProvider || DEFAULT_PROVIDER,
           });
           break;
         }
-        case "getAllKeys": {
+        case 'getAllKeys': {
           const keyStatuses: Record<APIProvider, boolean> = {
             google: false,
             openai: false,
@@ -443,21 +443,21 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
             keyStatuses[provider as APIProvider] = !!key;
           }
           this._view?.webview.postMessage({
-            type: "allKeyStatuses",
+            type: 'allKeyStatuses',
             statuses: keyStatuses,
           });
           break;
         }
-        case "checkGenerationStatus": {
+        case 'checkGenerationStatus': {
           this._view?.webview.postMessage({
-            type: "generationStatusUpdate",
+            type: 'generationStatusUpdate',
             isGenerating: GenerationStateManager.isGenerating,
           });
           break;
         }
-        case "checkValidationStatus": {
+        case 'checkValidationStatus': {
           this._view?.webview.postMessage({
-            type: "validationStatusUpdate",
+            type: 'validationStatusUpdate',
             isValidating: ValidationStateManager.isValidating,
             provider: ValidationStateManager.validatingProvider,
           });
@@ -880,9 +880,9 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
 }
 
 function getNonce() {
-  let text = "";
+  let text = '';
   const possible =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   for (let i = 0; i < 32; i++) {
     text += possible.charAt(Math.floor(Math.random() * possible.length));
   }
