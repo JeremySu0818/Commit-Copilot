@@ -31,7 +31,7 @@ export const AGENT_TOOLS: ToolDefinition[] = [
         path: {
           type: 'string',
           description:
-            'Required. Relative path to a specific file to get the diff for. Use the file paths from the staged changes summary.',
+            "Required. Relative path to the file from the repository root. Example: 'src/index.ts'",
         },
       },
       required: ['path'],
@@ -47,7 +47,7 @@ export const AGENT_TOOLS: ToolDefinition[] = [
         path: {
           type: 'string',
           description:
-            "Relative path to the file from the repository root. Example: 'src/utils.ts'",
+            "Required. Relative path to the file from the repository root. Example: 'src/index.ts'",
         },
         startLine: {
           type: 'number',
@@ -73,7 +73,7 @@ export const AGENT_TOOLS: ToolDefinition[] = [
         path: {
           type: 'string',
           description:
-            "Relative path to the file from the repository root. Example: 'src/extension.ts'",
+            "Required. Relative path to the file from the repository root. Example: 'src/index.ts'",
         },
       },
       required: ['path'],
