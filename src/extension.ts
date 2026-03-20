@@ -1,11 +1,11 @@
 import * as vscode from 'vscode';
-import { SidePanelProvider } from './SidePanelProvider';
+import { SidePanelProvider } from './side-panel-provider';
 import {
   generateCommitMessage,
   EXIT_CODES,
   ERROR_MESSAGES,
   CommitCopilotError,
-} from './commitCopilot';
+} from './commit-copilot';
 import {
   APIProvider,
   API_KEY_STORAGE_KEYS,
