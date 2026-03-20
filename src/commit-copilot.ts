@@ -1,6 +1,6 @@
 import { APIProvider, DEFAULT_MODELS } from './models';
-import { createLLMClient, ProgressCallback } from './llmClients';
-import { runAgentLoop } from './agentLoop';
+import { createLLMClient, ProgressCallback } from './llm-clients';
+import { runAgentLoop } from './agent-loop';
 import {
   EXIT_CODES,
   CommitCopilotError,

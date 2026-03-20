@@ -4,7 +4,7 @@ import {
   toGeminiFunctionDeclarations,
   toOpenAITools,
   toAnthropicTools,
-} from './agentTools';
+} from './agent-tools';
 import { APIProvider, DEFAULT_MODELS, OLLAMA_DEFAULT_HOST } from './models';
 import {
   APIKeyMissingError,
@@ -13,8 +13,8 @@ import {
   APIRequestError,
   NoChangesError,
 } from './errors';
-import { ProgressCallback } from './llmClients';
-import { GitOperations } from './commitCopilot';
+import { ProgressCallback } from './llm-clients';
+import { GitOperations } from './commit-copilot';
 
 const MAX_AGENT_STEPS = Infinity;
 

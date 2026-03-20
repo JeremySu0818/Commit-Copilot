@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { GitOperations } from './commitCopilot';
+import { GitOperations } from './commit-copilot';
 
 export interface ToolDefinition {
   name: string;
