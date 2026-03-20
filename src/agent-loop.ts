@@ -279,7 +279,7 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
         gitOps,
       );
     case 'ollama':
-      return runOllamaAgentLoop(model, diff, repoRoot, onProgress);
+      return runOllamaAgentLoop(model, diff, repoRoot, onProgress, gitOps);
     default:
       throw new Error(`Unsupported provider for agent loop: ${provider}`);
   }
@@ -316,7 +316,7 @@ async function runGeminiAgentLoop(
       ],
     });
 
-    const initialContext = buildInitialContext(diff, repoRoot);
+    const initialContext = await buildInitialContext(diff, repoRoot, gitOps);
     const chat = generativeModel.startChat({ history: [] });
 
     if (onProgress) {
@@ -422,7 +422,7 @@ async function runOpenAIAgentLoop(
     const client = new OpenAI({ apiKey });
     const modelName = model || DEFAULT_MODELS.openai;
 
-    const initialContext = buildInitialContext(diff, repoRoot);
+    const initialContext = await buildInitialContext(diff, repoRoot, gitOps);
 
     const messages: any[] = [
       { role: 'system', content: AGENT_SYSTEM_PROMPT },
@@ -544,7 +544,7 @@ async function runAnthropicAgentLoop(
     const client = new Anthropic({ apiKey });
     const modelName = model || DEFAULT_MODELS.anthropic;
 
-    const initialContext = buildInitialContext(diff, repoRoot);
+    const initialContext = await buildInitialContext(diff, repoRoot, gitOps);
 
     const messages: any[] = [{ role: 'user', content: initialContext }];
 
@@ -656,6 +656,7 @@ async function runOllamaAgentLoop(
   diff: string,
   repoRoot: string,
   onProgress?: ProgressCallback,
+  gitOps?: GitOperations,
 ): Promise<string> {
   if (!diff.trim()) {
     throw new NoChangesError();
@@ -690,7 +691,7 @@ async function runOllamaAgentLoop(
       onProgress('Generating commit message...', 0);
     }
 
-    const initialContext = buildInitialContext(diff, repoRoot);
+    const initialContext = await buildInitialContext(diff, repoRoot, gitOps);
     const enhancedPrompt = `${initialContext}\n\n## Full Diff (provided inline for local model)\n\n${diff}`;
 
     const response = await client.chat({

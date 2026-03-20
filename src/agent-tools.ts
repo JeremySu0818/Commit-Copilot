@@ -600,9 +600,30 @@ export function getProjectStructure(repoRoot: string): string {
   return treeLines.join('\n');
 }
 
-export function buildInitialContext(diff: string, repoRoot: string): string {
+async function formatCommitHistory(
+  gitOps?: GitOperations,
+): Promise<string> {
+  if (!gitOps) {
+    return 'Commit history could not be determined.';
+  }
+  const count = await gitOps.getCommitCount();
+  if (count === null) {
+    return 'Commit history could not be determined.';
+  }
+  if (count === 0) {
+    return 'This repository has no commits yet.';
+  }
+  return `This repository has ${count} commit${count === 1 ? '' : 's'}.`;
+}
+
+export async function buildInitialContext(
+  diff: string,
+  repoRoot: string,
+  gitOps?: GitOperations,
+): Promise<string> {
   const fileSummary = parseDiffSummary(diff);
   const projectTree = getProjectStructure(repoRoot);
+  const commitHistory = await formatCommitHistory(gitOps);
 
   const changedFilesSection = fileSummary
     .map(
@@ -620,6 +641,10 @@ ${changedFilesSection}
 ## Project Structure (tracked files)
 
 ${projectTree}
+
+## Commit History
+
+${commitHistory}
 
 ---
 

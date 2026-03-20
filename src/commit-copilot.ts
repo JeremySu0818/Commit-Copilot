@@ -27,6 +27,7 @@ export {
 } from './errors';
 
 const STATUS_UNTRACKED = 7;
+const MAX_COMMIT_LOG_ENTRIES = 2147483647;
 
 interface GitChange {
   readonly uri: { fsPath: string };
@@ -98,6 +99,41 @@ export class GitOperations {
     } catch (error) {
       console.error('Error running git log:', error);
       return [];
+    }
+  }
+
+  async getCommitCount(): Promise<number | null> {
+    try {
+      const repoAny = this.repository as unknown as {
+        log?: (options?: { maxEntries?: number; path?: string }) => Promise<
+          GitCommit[]
+        >;
+      };
+      if (typeof repoAny.log !== 'function') {
+        console.error('Git log API not available on repository');
+        return null;
+      }
+      const commits = await repoAny.log({
+        maxEntries: MAX_COMMIT_LOG_ENTRIES,
+      });
+      if (!Array.isArray(commits)) {
+        return null;
+      }
+      return commits.length;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (
+        message.includes('does not have any commits') ||
+        message.includes('no commits yet') ||
+        message.includes('unknown revision') ||
+        message.includes('bad revision') ||
+        message.includes('Needed a single revision') ||
+        (message.includes('ambiguous argument') && message.includes('HEAD'))
+      ) {
+        return 0;
+      }
+      console.error('Error running git log:', error);
+      return null;
     }
   }
 
