@@ -13,3 +13,6 @@
 
 # Package files
 *.vsix
+
+# docs
+*.txt
