@@ -82,18 +82,21 @@ You have multiple tools at your disposal. Use whichever tools are needed for acc
 - \`get_diff\` — Get the actual git diff for a specific file. You MUST provide the \`path\` argument.
 - \`read_file\` — Read the current contents of a file, optionally specifying a line range.
 - \`get_file_outline\` — Get the structural outline (functions, classes, exports) of a file.
+- \`get_recent_commits\` — Fetch recent commit messages to learn the project's commit style.
 
 You are NOT limited to \`get_diff\`. Choose the best tool(s) for the situation. For example:
 - Use \`read_file\` to understand context around changes.
 - Use \`get_file_outline\` to understand a file's role before reading its diff.
+- Use \`get_recent_commits\` if you need to mirror the project's commit message conventions.
 - Combine multiple tools as needed for a thorough investigation.
 
 ## Required Workflow
 1. Investigate the changes using your tools (\`get_diff\`, \`read_file\`, \`get_file_outline\` — use any combination).
    Prioritize the most important or ambiguous files. You do NOT need to inspect every file if the changes are clearly related.
-2. Classify the change type based on the Classification Rules below.
-3. Determine the appropriate scope from the affected module/area.
-4. Output ONLY the commit message. Nothing else.
+2. If necessary, check recent commit messages with \`get_recent_commits\` to match the project's writing style.
+3. Classify the change type based on the Classification Rules below.
+4. Determine the appropriate scope from the affected module/area.
+5. Output ONLY the commit message. Nothing else.
 
 ## Classification Rules (STRICT)
 Apply these rules IN ORDER. The first matching rule wins:
@@ -180,6 +183,8 @@ function formatProgressMessage(
       return `${stepPrefix}Reading file: ${args.path || 'unknown file'}`;
     case 'get_file_outline':
       return `${stepPrefix}Getting outline: ${args.path || 'unknown file'}`;
+    case 'get_recent_commits':
+      return `${stepPrefix}Fetching recent commits: ${args.count || 'default'} entries`;
     default:
       return `${stepPrefix}Calling ${toolName}...`;
   }
@@ -215,6 +220,15 @@ function formatBatchProgressMessage(
       if (paths.length <= 2)
         return `${stepPrefix}Getting outlines: ${paths.join(', ')}`;
       return `${stepPrefix}Getting outlines for ${paths.length} files...`;
+    }
+    if (name === 'get_recent_commits') {
+      const counts = toolCalls
+        .map((tc) => tc.args.count)
+        .filter((count) => typeof count !== 'undefined');
+      if (counts.length === 1) {
+        return `${stepPrefix}Fetching recent commits: ${counts[0]} entries`;
+      }
+      return `${stepPrefix}Fetching recent commits...`;
     }
   }
 

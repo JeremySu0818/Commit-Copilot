@@ -33,6 +33,10 @@ interface GitChange {
   readonly status: number;
 }
 
+interface GitCommit {
+  readonly message: string;
+}
+
 export interface GitRepository {
   readonly rootUri: { fsPath: string; toString(): string };
   readonly state: {
@@ -44,6 +48,7 @@ export interface GitRepository {
   diff(cached?: boolean): Promise<string>;
   add(paths: string[]): Promise<void>;
   show(ref: string, path: string): Promise<string>;
+  log(options?: { maxEntries?: number; path?: string }): Promise<GitCommit[]>;
   commit(message: string, opts?: { all?: boolean | 'tracked' }): Promise<void>;
   status(): Promise<void>;
 }
@@ -71,6 +76,28 @@ export class GitOperations {
     } catch (error) {
       console.error('Error running git show:', error);
       return '';
+    }
+  }
+
+  async getRecentCommitMessages(count: number): Promise<string[]> {
+    if (count <= 0 || !Number.isFinite(count)) {
+      return [];
+    }
+    try {
+      const repoAny = this.repository as unknown as {
+        log?: (options?: { maxEntries?: number; path?: string }) => Promise<
+          GitCommit[]
+        >;
+      };
+      if (typeof repoAny.log !== 'function') {
+        console.error('Git log API not available on repository');
+        return [];
+      }
+      const commits = await repoAny.log({ maxEntries: count });
+      return commits.map((commit) => commit.message).filter(Boolean);
+    } catch (error) {
+      console.error('Error running git log:', error);
+      return [];
     }
   }
 

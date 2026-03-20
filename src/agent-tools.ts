@@ -79,6 +79,22 @@ export const AGENT_TOOLS: ToolDefinition[] = [
       required: ['path'],
     },
   },
+  {
+    name: 'get_recent_commits',
+    description:
+      'Get recent git commit messages to learn the repository commit style (e.g., scope naming, tense, use of emojis). Provide how many commit messages you want. Returns newest first.',
+    parameters: {
+      type: 'object',
+      properties: {
+        count: {
+          type: 'number',
+          description:
+            'Required. Number of recent commit messages to return. Use a positive integer (recommended 5-10). No maximum.',
+        },
+      },
+      required: ['count'],
+    },
+  },
 ];
 
 const MAX_FILE_LINES = Infinity;
@@ -358,6 +374,55 @@ async function executeGetFileOutline(
   }
 }
 
+function parseCommitCount(value: unknown): number | null {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return Math.floor(value);
+  }
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+    const parsed = Number(trimmed);
+    if (Number.isFinite(parsed)) {
+      return Math.floor(parsed);
+    }
+  }
+  return null;
+}
+
+async function executeGetRecentCommits(
+  args: Record<string, unknown>,
+  gitOps?: GitOperations,
+): Promise<string> {
+  if (!gitOps) {
+    return 'Error: git operations are not available to retrieve commit history.';
+  }
+
+  const count = parseCommitCount(args.count);
+  if (!count || count <= 0) {
+    return "Error: 'count' is required and must be a positive integer.";
+  }
+
+  const messages = await gitOps.getRecentCommitMessages(count);
+  if (messages.length === 0) {
+    return 'No recent commits found.';
+  }
+
+  const lines: string[] = [
+    `Recent commits (last ${messages.length}, newest first):`,
+  ];
+
+  messages.forEach((message, index) => {
+    lines.push('');
+    lines.push(`[${index + 1}]`);
+    const msgLines = message.split(/\r?\n/);
+    for (const line of msgLines) {
+      lines.push(`  ${line}`);
+    }
+  });
+
+  return lines.join('\n');
+}
+
 export async function executeToolCall(
   toolCall: ToolCallRequest,
   repoRoot: string,
@@ -387,6 +452,9 @@ export async function executeToolCall(
           isStaged,
           gitOps,
         );
+        break;
+      case 'get_recent_commits':
+        content = await executeGetRecentCommits(toolCall.arguments, gitOps);
         break;
       default:
         content = `Unknown tool: ${toolCall.name}`;
@@ -557,6 +625,7 @@ ${projectTree}
 
 You have ONLY been given the file names and line counts. You do NOT yet know what the actual changes are.
 Use your tools to inspect the changes before classifying. You have \`get_diff\`, \`read_file\`, and \`get_file_outline\` — use whichever combination is most effective.
+If you need to learn the project's commit style, you can call \`get_recent_commits\` to fetch recent commit messages.
 Do NOT guess the commit type based solely on file names.
 
 REMINDER: When you are done investigating, your ENTIRE text output must be ONLY the commit message in \`type(scope): description\` format — scope parentheses are MANDATORY. No analysis, no explanation, no commentary.`;
