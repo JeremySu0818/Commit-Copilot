@@ -11,3 +11,4 @@ package-lock.json
 esbuild.js
 build.bat
 build.sh
+*.txt
