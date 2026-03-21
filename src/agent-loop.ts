@@ -350,6 +350,7 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
       );
     case 'ollama':
       return runOllamaAgentLoop(
+        apiKey,
         model,
         diff,
         repoRoot,
@@ -753,6 +754,7 @@ async function runAnthropicAgentLoop(
 }
 
 async function runOllamaAgentLoop(
+  host: string | undefined,
   model: string | undefined,
   diff: string,
   repoRoot: string,
@@ -764,9 +766,11 @@ async function runOllamaAgentLoop(
     throw new NoChangesError();
   }
 
+  const resolvedHost = host || OLLAMA_DEFAULT_HOST;
+
   try {
     const { Ollama } = await import('ollama');
-    const client = new Ollama({ host: OLLAMA_DEFAULT_HOST });
+    const client = new Ollama({ host: resolvedHost });
     const modelName = model || DEFAULT_MODELS.ollama;
 
     const pullStream = await client.pull({ model: modelName, stream: true });
@@ -828,7 +832,7 @@ async function runOllamaAgentLoop(
     const message = error?.message || String(error);
     if (message.includes('ECONNREFUSED') || message.includes('connect')) {
       throw new APIRequestError(
-        `Cannot connect to Ollama. Make sure Ollama is running at ${OLLAMA_DEFAULT_HOST}`,
+        `Cannot connect to Ollama. Make sure Ollama is running at ${resolvedHost}`,
       );
     } else if (message.includes('model') && message.includes('not found')) {
       throw new APIRequestError(
