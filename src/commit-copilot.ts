@@ -80,6 +80,18 @@ export class GitOperations {
     }
   }
 
+  async showIndexFile(
+    filePath: string,
+  ): Promise<{ content: string; found: boolean }> {
+    try {
+      const content = await this.repository.show(':', filePath);
+      return { content, found: true };
+    } catch (error) {
+      console.error('Error running git show for index file:', error);
+      return { content: '', found: false };
+    }
+  }
+
   async getRecentCommitMessages(count: number): Promise<string[]> {
     if (count <= 0 || !Number.isFinite(count)) {
       return [];
@@ -184,6 +196,33 @@ export class GitOperations {
       );
     } catch {
       return false;
+    }
+  }
+
+  getWorkingTreePaths(): string[] {
+    try {
+      return this.repository.state.workingTreeChanges.map(
+        (change) => change.uri.fsPath,
+      );
+    } catch {
+      return [];
+    }
+  }
+
+  getUntrackedPaths(): string[] {
+    try {
+      const paths = new Set<string>();
+      for (const change of this.repository.state.untrackedChanges) {
+        paths.add(change.uri.fsPath);
+      }
+      for (const change of this.repository.state.workingTreeChanges) {
+        if (change.status === STATUS_UNTRACKED) {
+          paths.add(change.uri.fsPath);
+        }
+      }
+      return [...paths];
+    } catch {
+      return [];
     }
   }
 

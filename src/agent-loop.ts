@@ -367,7 +367,7 @@ async function runGeminiAgentLoop(
     const modelName = (model || DEFAULT_MODELS.google).replace(/^models\//, '');
 
     const systemPrompt = buildAgentSystemPrompt({
-      includeFindReferences: !isStaged,
+      includeFindReferences: true,
     });
     const generativeModel = client.getGenerativeModel({
       model: modelName,
@@ -497,7 +497,7 @@ async function runOpenAIAgentLoop(
       isStaged,
     );
     const systemPrompt = buildAgentSystemPrompt({
-      includeFindReferences: !isStaged,
+      includeFindReferences: true,
     });
 
     const messages: any[] = [
@@ -627,7 +627,7 @@ async function runAnthropicAgentLoop(
       isStaged,
     );
     const systemPrompt = buildAgentSystemPrompt({
-      includeFindReferences: !isStaged,
+      includeFindReferences: true,
     });
 
     const messages: any[] = [{ role: 'user', content: initialContext }];
@@ -783,7 +783,7 @@ async function runOllamaAgentLoop(
       isStaged,
     );
     const systemPrompt = buildAgentSystemPrompt({
-      includeFindReferences: !isStaged,
+      includeFindReferences: true,
     });
     const enhancedPrompt = `${initialContext}\n\n## Full Diff (provided inline for local model)\n\n${diff}`;
 
