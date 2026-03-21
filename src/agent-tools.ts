@@ -126,6 +126,32 @@ export const AGENT_TOOLS: ToolDefinition[] = [
       required: ['count'],
     },
   },
+  {
+    name: 'search_code',
+    description:
+      'Search for a keyword or pattern across the entire project (similar to grep/ripgrep). Use this to discover hidden relationships that are not expressed through imports — such as environment variable references (e.g. process.env.DB_URL), string-based event names, configuration keys in .env or config.yaml, or duplicated magic strings. Also useful for consistency checks (e.g. verifying an API endpoint path is updated everywhere).',
+    parameters: {
+      type: 'object',
+      properties: {
+        query: {
+          type: 'string',
+          description:
+            'Required. The keyword or text pattern to search for across the project.',
+        },
+        caseSensitive: {
+          type: 'boolean',
+          description:
+            'Optional. Whether the search should be case-sensitive. Defaults to false.',
+        },
+        maxResults: {
+          type: 'number',
+          description:
+            'Optional. Maximum number of matching files to return. Defaults to 20.',
+        },
+      },
+      required: ['query'],
+    },
+  },
 ];
 
 const STAGED_WORKSPACE_DIR_NAME = 'commit-copilot-temp';
@@ -148,6 +174,18 @@ const DEFAULT_IGNORED_DIRS = new Set([
 const MAX_FILE_LINES = Infinity;
 const MAX_OUTLINE_LINES = Infinity;
 const MAX_REFERENCE_SNIPPET_LENGTH = 200;
+const MAX_SEARCH_MATCHES_PER_FILE = 10;
+const MAX_SEARCH_FILES = 20;
+const MAX_SEARCH_LINE_LENGTH = 200;
+const BINARY_EXT = new Set([
+  'png', 'jpg', 'jpeg', 'gif', 'bmp', 'ico', 'svg', 'webp', 'avif',
+  'mp3', 'mp4', 'wav', 'ogg', 'webm', 'avi', 'mov',
+  'woff', 'woff2', 'ttf', 'eot', 'otf',
+  'zip', 'gz', 'tar', 'rar', '7z',
+  'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx',
+  'exe', 'dll', 'so', 'dylib', 'bin',
+  'vsix', 'lock',
+]);
 
 function getAvailableTools(isStaged: boolean): ToolDefinition[] {
   void isStaged;
@@ -1025,6 +1063,111 @@ async function executeGetRecentCommits(
   return lines.join('\n');
 }
 
+async function executeSearchCode(
+  repoRoot: string,
+  args: Record<string, unknown>,
+): Promise<string> {
+  const query = args.query as string | undefined;
+  if (!query) {
+    return "Error: 'query' is required. Provide a keyword or text pattern to search for.";
+  }
+
+  const caseSensitive = parseBooleanArg(args.caseSensitive) ?? false;
+  const maxResults = parseIntegerArg(args.maxResults) ?? MAX_SEARCH_FILES;
+  const effectiveMaxFiles = Math.min(
+    Math.max(1, maxResults),
+    50,
+  );
+
+  const excludePattern = `{${[...DEFAULT_IGNORED_DIRS].join(',')}}`;
+
+  let files: vscode.Uri[];
+  try {
+    files = await vscode.workspace.findFiles(
+      new vscode.RelativePattern(repoRoot, '**/*'),
+      new vscode.RelativePattern(repoRoot, `**/${excludePattern}/**`),
+    );
+  } catch (err: any) {
+    return `Error searching files: ${err.message}`;
+  }
+
+  const searchQuery = caseSensitive ? query : query.toLowerCase();
+
+  type FileMatch = {
+    relPath: string;
+    matches: { line: number; text: string }[];
+  };
+
+  const fileMatches: FileMatch[] = [];
+
+  for (const fileUri of files) {
+    if (fileMatches.length >= effectiveMaxFiles) break;
+
+    const ext = path.extname(fileUri.fsPath).replace(/^\./, '').toLowerCase();
+    if (BINARY_EXT.has(ext)) continue;
+
+    const relPath = path.relative(repoRoot, fileUri.fsPath);
+    if (!relPath || relPath.startsWith('..') || path.isAbsolute(relPath)) continue;
+
+    let content: string;
+    try {
+      const raw = await vscode.workspace.fs.readFile(fileUri);
+      content = Buffer.from(raw).toString('utf-8');
+    } catch {
+      continue;
+    }
+
+    const lines = content.split(/\r?\n/);
+    const matches: { line: number; text: string }[] = [];
+
+    for (let i = 0; i < lines.length; i++) {
+      const lineText = lines[i];
+      const target = caseSensitive ? lineText : lineText.toLowerCase();
+      if (target.includes(searchQuery)) {
+        const displayText =
+          lineText.length > MAX_SEARCH_LINE_LENGTH
+            ? `${lineText.slice(0, MAX_SEARCH_LINE_LENGTH)}...`
+            : lineText;
+        matches.push({ line: i + 1, text: displayText });
+        if (matches.length >= MAX_SEARCH_MATCHES_PER_FILE) break;
+      }
+    }
+
+    if (matches.length > 0) {
+      fileMatches.push({ relPath: toPosixPath(relPath), matches });
+    }
+  }
+
+  if (fileMatches.length === 0) {
+    return `No matches found for "${query}" in the project.`;
+  }
+
+  const outputLines: string[] = [];
+  let totalMatches = 0;
+  for (const fm of fileMatches) {
+    totalMatches += fm.matches.length;
+  }
+
+  outputLines.push(
+    `Search results for "${query}" (case-${caseSensitive ? 'sensitive' : 'insensitive'}): ${totalMatches} match${totalMatches === 1 ? '' : 'es'} in ${fileMatches.length} file${fileMatches.length === 1 ? '' : 's'}`,
+  );
+  outputLines.push('');
+
+  for (const fm of fileMatches) {
+    outputLines.push(fm.relPath);
+    for (const m of fm.matches) {
+      outputLines.push(`  L${m.line}: ${m.text}`);
+    }
+    outputLines.push('');
+  }
+
+  if (fileMatches.length >= effectiveMaxFiles) {
+    outputLines.push(`... (results capped at ${effectiveMaxFiles} files)`);
+  }
+
+  return outputLines.join('\n').trimEnd();
+}
+
 export async function executeToolCall(
   toolCall: ToolCallRequest,
   repoRoot: string,
@@ -1066,6 +1209,9 @@ export async function executeToolCall(
         break;
       case 'get_recent_commits':
         content = await executeGetRecentCommits(toolCall.arguments, gitOps);
+        break;
+      case 'search_code':
+        content = await executeSearchCode(repoRoot, toolCall.arguments);
         break;
       default:
         content = `Unknown tool: ${toolCall.name}`;
@@ -1229,7 +1375,7 @@ export async function buildInitialContext(
     .join('\n');
 
   const toolList =
-    '`get_diff`, `read_file`, `get_file_outline`, and `find_references`';
+    '`get_diff`, `read_file`, `get_file_outline`, `find_references`, and `search_code`';
 
   return `## Staged Changes Summary
 

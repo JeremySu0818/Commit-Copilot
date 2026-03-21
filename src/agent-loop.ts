@@ -86,6 +86,9 @@ function buildAgentSystemPrompt(options: {
   toolLines.push(
     "- `get_recent_commits` — Fetch recent commit messages to learn the project's commit style.",
   );
+  toolLines.push(
+    '- `search_code` — Search for a keyword or pattern across the entire project (like grep). Useful for discovering hidden relationships not expressed through imports, such as environment variable references, string-based event names, config keys, or verifying consistency across modules.',
+  );
 
   const usageLines = [
     '- Use `read_file` to understand context around changes.',
@@ -99,11 +102,14 @@ function buildAgentSystemPrompt(options: {
   usageLines.push(
     "- Use `get_recent_commits` if you need to mirror the project's commit message conventions.",
   );
+  usageLines.push(
+    '- Use `search_code` to find hidden references to changed identifiers, environment variables, config keys, or string constants across the entire project.',
+  );
   usageLines.push('- Combine multiple tools as needed for a thorough investigation.');
 
   const investigationTools = options.includeFindReferences
-    ? '`get_diff`, `read_file`, `get_file_outline`, `find_references`'
-    : '`get_diff`, `read_file`, `get_file_outline`';
+    ? '`get_diff`, `read_file`, `get_file_outline`, `find_references`, `search_code`'
+    : '`get_diff`, `read_file`, `get_file_outline`, `search_code`';
 
   return `You are a senior software engineer acting as an autonomous commit message agent.
 You have access to tools that let you inspect the repository to make informed decisions.
@@ -220,6 +226,8 @@ function formatProgressMessage(
     }
     case 'get_recent_commits':
       return `${stepPrefix}Fetching recent commits: ${args.count || 'default'} entries`;
+    case 'search_code':
+      return `${stepPrefix}Searching project for: ${args.query || 'unknown keyword'}`;
     default:
       return `${stepPrefix}Calling ${toolName}...`;
   }
@@ -282,6 +290,15 @@ function formatBatchProgressMessage(
         return `${stepPrefix}Fetching recent commits: ${counts[0]} entries`;
       }
       return `${stepPrefix}Fetching recent commits...`;
+    }
+    if (name === 'search_code') {
+      const queries = toolCalls
+        .map((tc) => tc.args.query)
+        .filter(Boolean) as string[];
+      if (queries.length <= 2) {
+        return `${stepPrefix}Searching project for: ${queries.join(', ')}`;
+      }
+      return `${stepPrefix}Searching project for ${queries.length} keywords...`;
     }
   }
 

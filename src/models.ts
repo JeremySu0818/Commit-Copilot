@@ -8,8 +8,8 @@ export const PROVIDER_DISPLAY_NAMES: Record<APIProvider, string> = {
 export type ModelConfig = { id: string; alias: string };
 
 export const GEMINI_MODELS: ModelConfig[] = [
-  { id: 'gemini-2.5-flash', alias: 'Gemini 2.5 Flash' },
   { id: 'gemini-2.5-flash-lite', alias: 'Gemini 2.5 Flash-Lite' },
+  { id: 'gemini-2.5-flash', alias: 'Gemini 2.5 Flash' },
   { id: 'gemini-2.5-pro', alias: 'Gemini 2.5 Pro' },
   { id: 'gemini-3-flash-preview', alias: 'Gemini 3 Flash' },
   { id: 'gemini-3.1-flash-lite-preview', alias: 'Gemini 3.1 Flash-Lite' },
