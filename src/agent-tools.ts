@@ -128,18 +128,30 @@ export const AGENT_TOOLS: ToolDefinition[] = [
   },
 ];
 
+const STAGED_WORKSPACE_DIR_NAME = 'commit-copilot-temp';
+const STAGED_WORKSPACE_SUBDIR_NAME = 'staged-workspace';
+const DEFAULT_IGNORED_DIRS = new Set([
+  '.git',
+  'node_modules',
+  '.next',
+  'dist',
+  'build',
+  'out',
+  '.cache',
+  'coverage',
+  '__pycache__',
+  '.vscode',
+  '.idea',
+  STAGED_WORKSPACE_DIR_NAME,
+]);
+
 const MAX_FILE_LINES = Infinity;
 const MAX_OUTLINE_LINES = Infinity;
 const MAX_REFERENCE_SNIPPET_LENGTH = 200;
-const TOOLS_DISABLED_WHEN_STAGED = new Set<string>(['find_references']);
 
 function getAvailableTools(isStaged: boolean): ToolDefinition[] {
-  if (!isStaged) {
-    return AGENT_TOOLS;
-  }
-  return AGENT_TOOLS.filter(
-    (tool) => !TOOLS_DISABLED_WHEN_STAGED.has(tool.name),
-  );
+  void isStaged;
+  return AGENT_TOOLS;
 }
 
 const OUTLINE_KIND_LABELS: Partial<Record<vscode.SymbolKind, string>> = {
@@ -198,6 +210,293 @@ function truncateSnippet(text: string, maxLength: number): string {
   const trimmed = text.trim();
   if (trimmed.length <= maxLength) return trimmed;
   return `${trimmed.slice(0, Math.max(0, maxLength - 3))}...`;
+}
+
+type StagedDiffEntry = {
+  aPath: string;
+  bPath: string;
+  status: 'added' | 'modified' | 'deleted' | 'renamed';
+};
+
+function parseStagedDiffEntries(diffContent: string): StagedDiffEntry[] {
+  const entries: StagedDiffEntry[] = [];
+  const lines = diffContent.split('\n');
+  let current: StagedDiffEntry | null = null;
+
+  for (const line of lines) {
+    const match = line.match(/^diff --git a\/(.+?) b\/(.+)$/);
+    if (match) {
+      if (current) {
+        entries.push(current);
+      }
+      current = {
+        aPath: match[1],
+        bPath: match[2],
+        status: 'modified',
+      };
+      continue;
+    }
+
+    if (!current) continue;
+
+    if (line.startsWith('new file mode') || line.startsWith('--- /dev/null')) {
+      current.status = 'added';
+      continue;
+    }
+    if (
+      line.startsWith('deleted file mode') ||
+      line.startsWith('+++ /dev/null')
+    ) {
+      current.status = 'deleted';
+      continue;
+    }
+    if (line.startsWith('rename from') || line.startsWith('rename to')) {
+      current.status = 'renamed';
+      continue;
+    }
+  }
+
+  if (current) {
+    entries.push(current);
+  }
+
+  for (const entry of entries) {
+    if (entry.status === 'modified' && entry.aPath !== entry.bPath) {
+      entry.status = 'renamed';
+    }
+  }
+
+  return entries;
+}
+
+type RemovePathOptions = {
+  throwOnFailure?: boolean;
+  operation?: string;
+};
+
+function removePath(targetPath: string, options?: RemovePathOptions): Error | null {
+  try {
+    fs.rmSync(targetPath, { recursive: true, force: true });
+    return null;
+  } catch (err: any) {
+    if (options?.throwOnFailure) {
+      const message = err?.message || String(err);
+      const code = err?.code ? ` (${err.code})` : '';
+      throw new Error(
+        `Failed to ${options.operation ?? 'remove path'} '${targetPath}'${code}: ${message}`,
+      );
+    }
+    return err instanceof Error ? err : new Error(String(err));
+  }
+}
+
+function copyWorkspaceSnapshot(repoRoot: string, destRoot: string): void {
+  const stack: Array<{ src: string; dest: string }> = [
+    { src: repoRoot, dest: destRoot },
+  ];
+
+  while (stack.length > 0) {
+    const current = stack.pop();
+    if (!current) break;
+    const { src, dest } = current;
+    fs.mkdirSync(dest, { recursive: true });
+
+    let entries: fs.Dirent[];
+    try {
+      entries = fs.readdirSync(src, { withFileTypes: true });
+    } catch {
+      continue;
+    }
+
+    for (const entry of entries) {
+      if (entry.isSymbolicLink()) {
+        continue;
+      }
+      const srcPath = path.join(src, entry.name);
+      const destPath = path.join(dest, entry.name);
+
+      if (entry.isDirectory()) {
+        if (DEFAULT_IGNORED_DIRS.has(entry.name)) {
+          continue;
+        }
+        stack.push({ src: srcPath, dest: destPath });
+        continue;
+      }
+
+      if (entry.isFile()) {
+        try {
+          fs.copyFileSync(srcPath, destPath);
+        } catch {}
+      }
+    }
+  }
+}
+
+function toRepoRelativePath(repoRoot: string, targetPath: string): string | null {
+  const resolvedRepoRoot = path.resolve(repoRoot);
+  const resolvedTarget = path.resolve(targetPath);
+  const rel = path.relative(resolvedRepoRoot, resolvedTarget);
+  if (!rel || rel.startsWith('..') || path.isAbsolute(rel)) {
+    return null;
+  }
+  return rel;
+}
+
+function toPosixPath(relPath: string): string {
+  return relPath.split(path.sep).join('/');
+}
+
+async function restoreIndexSnapshotFile(
+  workspaceRoot: string,
+  relPath: string,
+  gitOps: GitOperations,
+): Promise<void> {
+  const targetAbs = path.resolve(workspaceRoot, relPath);
+  if (!targetAbs.startsWith(workspaceRoot)) {
+    return;
+  }
+
+  const { content, found } = await gitOps.showIndexFile(relPath);
+  if (!found) {
+    removePath(targetAbs);
+    return;
+  }
+
+  fs.mkdirSync(path.dirname(targetAbs), { recursive: true });
+  fs.writeFileSync(targetAbs, content, 'utf-8');
+}
+
+async function scrubWorkspaceToIndex(
+  repoRoot: string,
+  workspaceRoot: string,
+  gitOps: GitOperations,
+): Promise<void> {
+  const untrackedRelPaths = new Set<string>();
+
+  for (const absPath of gitOps.getUntrackedPaths()) {
+    const relPath = toRepoRelativePath(repoRoot, absPath);
+    if (!relPath) continue;
+    const relPosix = toPosixPath(relPath);
+    untrackedRelPaths.add(relPosix);
+
+    const targetAbs = path.resolve(workspaceRoot, relPosix);
+    if (targetAbs.startsWith(workspaceRoot)) {
+      removePath(targetAbs);
+    }
+  }
+
+  for (const absPath of gitOps.getWorkingTreePaths()) {
+    const relPath = toRepoRelativePath(repoRoot, absPath);
+    if (!relPath) continue;
+    const relPosix = toPosixPath(relPath);
+    if (untrackedRelPaths.has(relPosix)) {
+      continue;
+    }
+    await restoreIndexSnapshotFile(workspaceRoot, relPosix, gitOps);
+  }
+}
+
+async function createStagedWorkspaceSnapshot(
+  repoRoot: string,
+  diffContent: string,
+  gitOps?: GitOperations,
+): Promise<string> {
+  if (!gitOps) {
+    throw new Error(
+      'git operations are not available to build staged workspace.',
+    );
+  }
+
+  const baseTempRoot = path.join(repoRoot, STAGED_WORKSPACE_DIR_NAME);
+  const workspaceRoot = path.join(baseTempRoot, STAGED_WORKSPACE_SUBDIR_NAME);
+
+  fs.mkdirSync(baseTempRoot, { recursive: true });
+  removePath(workspaceRoot, {
+    throwOnFailure: true,
+    operation: 'clean staged workspace snapshot',
+  });
+  copyWorkspaceSnapshot(repoRoot, workspaceRoot);
+  await scrubWorkspaceToIndex(repoRoot, workspaceRoot, gitOps);
+
+  const stagedEntries = parseStagedDiffEntries(diffContent);
+  for (const entry of stagedEntries) {
+    if (entry.status === 'deleted') {
+      const deletedPath = path.resolve(workspaceRoot, entry.aPath);
+      if (deletedPath.startsWith(workspaceRoot)) {
+        removePath(deletedPath);
+      }
+      continue;
+    }
+
+    if (entry.status === 'renamed' && entry.aPath !== entry.bPath) {
+      const oldPath = path.resolve(workspaceRoot, entry.aPath);
+      if (oldPath.startsWith(workspaceRoot)) {
+        removePath(oldPath);
+      }
+    }
+
+    const targetRel = entry.bPath === '/dev/null' ? entry.aPath : entry.bPath;
+    if (!targetRel || targetRel === '/dev/null') continue;
+
+    const targetAbs = path.resolve(workspaceRoot, targetRel);
+    if (!targetAbs.startsWith(workspaceRoot)) {
+      continue;
+    }
+
+    fs.mkdirSync(path.dirname(targetAbs), { recursive: true });
+
+    let content = '';
+    let hasContent = false;
+    const { content: indexContent, found } =
+      await gitOps.showIndexFile(targetRel);
+    if (found) {
+      content = indexContent;
+      hasContent = true;
+    } else {
+      const diskAbs = path.resolve(repoRoot, targetRel);
+      if (diskAbs.startsWith(repoRoot) && fs.existsSync(diskAbs)) {
+        try {
+          content = fs.readFileSync(diskAbs, 'utf-8');
+          hasContent = true;
+        } catch {
+          hasContent = false;
+        }
+      }
+    }
+
+    if (hasContent) {
+      fs.writeFileSync(targetAbs, content, 'utf-8');
+    }
+  }
+
+  return workspaceRoot;
+}
+
+function cleanupStagedWorkspaceSnapshot(workspaceRoot: string): void {
+  const removalError = removePath(workspaceRoot);
+  if (removalError) {
+    console.error(
+      '[Commit-Copilot] Failed to clean staged workspace snapshot:',
+      removalError,
+    );
+    return;
+  }
+
+  const baseRoot = path.dirname(workspaceRoot);
+  if (!fs.existsSync(baseRoot)) {
+    return;
+  }
+  try {
+    const entries = fs.readdirSync(baseRoot);
+    if (entries.length === 0) {
+      fs.rmdirSync(baseRoot);
+    }
+  } catch (err) {
+    console.error(
+      '[Commit-Copilot] Failed to clean staged workspace base directory:',
+      err,
+    );
+  }
 }
 
 function formatOutlineLine(
@@ -454,6 +753,9 @@ async function executeGetFileOutline(
 async function executeFindReferences(
   repoRoot: string,
   args: Record<string, unknown>,
+  isStaged: boolean,
+  diffContent: string,
+  gitOps?: GitOperations,
 ): Promise<string> {
   const relPath = args.path as string | undefined;
   if (!relPath) {
@@ -466,16 +768,40 @@ async function executeFindReferences(
     return "Error: 'line' and 'character' are required and must be positive 1-based numbers.";
   }
 
-  const absPath = path.resolve(repoRoot, relPath);
-  if (!absPath.startsWith(repoRoot)) {
+  let workspaceRoot = repoRoot;
+  let stagedWorkspaceRoot: string | null = null;
+  let plannedStagedRoot: string | null = null;
+  if (isStaged) {
+    plannedStagedRoot = path.join(
+      repoRoot,
+      STAGED_WORKSPACE_DIR_NAME,
+      STAGED_WORKSPACE_SUBDIR_NAME,
+    );
+    try {
+      stagedWorkspaceRoot = await createStagedWorkspaceSnapshot(
+        repoRoot,
+        diffContent,
+        gitOps,
+      );
+      workspaceRoot = stagedWorkspaceRoot;
+    } catch (err: any) {
+      const message = err?.message || String(err);
+      if (plannedStagedRoot) {
+        cleanupStagedWorkspaceSnapshot(plannedStagedRoot);
+      }
+      return `Error preparing staged workspace for references: ${message}`;
+    }
+  }
+
+  const absPath = path.resolve(workspaceRoot, relPath);
+  if (!absPath.startsWith(workspaceRoot)) {
     return 'Error: path traversal is not allowed.';
   }
   if (!fs.existsSync(absPath)) {
     return `Error: file '${relPath}' does not exist on disk.`;
   }
 
-  const includeDeclaration =
-    parseBooleanArg(args.includeDeclaration) ?? false;
+  const includeDeclaration = parseBooleanArg(args.includeDeclaration) ?? false;
 
   try {
     const document = await vscode.workspace.openTextDocument(
@@ -493,18 +819,14 @@ async function executeFindReferences(
 
     const position = new vscode.Position(line - 1, character - 1);
 
-    let locations:
-      | (vscode.Location | vscode.LocationLink)[]
-      | undefined = undefined;
+    let locations: (vscode.Location | vscode.LocationLink)[] | undefined =
+      undefined;
     try {
       locations = await vscode.commands.executeCommand<
         (vscode.Location | vscode.LocationLink)[] | undefined
-      >(
-        'vscode.executeReferenceProvider',
-        document.uri,
-        position,
-        { includeDeclaration },
-      );
+      >('vscode.executeReferenceProvider', document.uri, position, {
+        includeDeclaration,
+      });
     } catch {
       locations = await vscode.commands.executeCommand<
         (vscode.Location | vscode.LocationLink)[] | undefined
@@ -573,15 +895,36 @@ async function executeFindReferences(
 
     const docCache = new Map<string, vscode.TextDocument>();
 
+    const isPathWithin = (basePath: string, targetPath: string): boolean => {
+      const relative = path.relative(basePath, targetPath);
+      return (
+        relative === '' ||
+        (!relative.startsWith('..') && !path.isAbsolute(relative))
+      );
+    };
+
+    const resolveDisplayPath = (fileKey: string): string => {
+      const isFilePath =
+        path.isAbsolute(fileKey) || /^[a-zA-Z]:\\/.test(fileKey);
+      if (!isFilePath) return fileKey;
+
+      if (stagedWorkspaceRoot && isPathWithin(stagedWorkspaceRoot, fileKey)) {
+        const rel = path.relative(stagedWorkspaceRoot, fileKey);
+        return rel && !rel.startsWith('..') ? rel : fileKey;
+      }
+
+      if (isPathWithin(repoRoot, fileKey)) {
+        const rel = path.relative(repoRoot, fileKey);
+        return rel && !rel.startsWith('..') ? rel : fileKey;
+      }
+
+      return fileKey;
+    };
+
     for (const fileKey of sortedFiles) {
       const isFilePath =
         path.isAbsolute(fileKey) || /^[a-zA-Z]:\\/.test(fileKey);
-      const displayPath = isFilePath
-        ? (() => {
-            const rel = path.relative(repoRoot, fileKey);
-            return rel.startsWith('..') ? fileKey : rel;
-          })()
-        : fileKey;
+      const displayPath = resolveDisplayPath(fileKey);
       outputLines.push(displayPath);
 
       const fileEntries = byFile.get(fileKey) ?? [];
@@ -626,6 +969,10 @@ async function executeFindReferences(
   } catch (err: any) {
     const message = err?.message || String(err);
     return `Error finding references: ${message}`;
+  } finally {
+    if (stagedWorkspaceRoot) {
+      cleanupStagedWorkspaceSnapshot(stagedWorkspaceRoot);
+    }
   }
 }
 
@@ -688,11 +1035,6 @@ export async function executeToolCall(
   try {
     let content: string;
 
-    if (isStaged && TOOLS_DISABLED_WHEN_STAGED.has(toolCall.name)) {
-      content = `Unknown tool: ${toolCall.name}`;
-      return { name: toolCall.name, content, error: true };
-    }
-
     switch (toolCall.name) {
       case 'get_diff':
         content = executeGetDiff(repoRoot, toolCall.arguments, diffContent);
@@ -714,7 +1056,13 @@ export async function executeToolCall(
         );
         break;
       case 'find_references':
-        content = await executeFindReferences(repoRoot, toolCall.arguments);
+        content = await executeFindReferences(
+          repoRoot,
+          toolCall.arguments,
+          isStaged,
+          diffContent,
+          gitOps,
+        );
         break;
       case 'get_recent_commits':
         content = await executeGetRecentCommits(toolCall.arguments, gitOps);
@@ -796,20 +1144,6 @@ export function parseDiffSummary(
 }
 
 export function getProjectStructure(repoRoot: string): string {
-  const IGNORE_DIRS = new Set([
-    '.git',
-    'node_modules',
-    '.next',
-    'dist',
-    'build',
-    'out',
-    '.cache',
-    'coverage',
-    '__pycache__',
-    '.vscode',
-    '.idea',
-  ]);
-
   const MAX_FILES = Infinity;
   let fileCount = 0;
 
@@ -841,7 +1175,7 @@ export function getProjectStructure(repoRoot: string): string {
       const childPrefix = isLast ? '    ' : '│   ';
 
       if (entry.isDirectory()) {
-        if (IGNORE_DIRS.has(entry.name)) {
+        if (DEFAULT_IGNORED_DIRS.has(entry.name)) {
           continue;
         }
         lines.push(`${prefix}${connector}${entry.name}/`);
@@ -863,9 +1197,7 @@ export function getProjectStructure(repoRoot: string): string {
   return treeLines.join('\n');
 }
 
-async function formatCommitHistory(
-  gitOps?: GitOperations,
-): Promise<string> {
+async function formatCommitHistory(gitOps?: GitOperations): Promise<string> {
   if (!gitOps) {
     return 'Commit history could not be determined.';
   }
@@ -896,9 +1228,8 @@ export async function buildInitialContext(
     )
     .join('\n');
 
-  const toolList = isStaged
-    ? '`get_diff`, `read_file`, `get_file_outline`'
-    : '`get_diff`, `read_file`, `get_file_outline`, and `find_references`';
+  const toolList =
+    '`get_diff`, `read_file`, `get_file_outline`, and `find_references`';
 
   return `## Staged Changes Summary
 
