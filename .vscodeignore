@@ -11,4 +11,6 @@ package-lock.json
 esbuild.js
 build.bat
 build.sh
-*.txt
+build.ps1
+*.md
+!readme.md
