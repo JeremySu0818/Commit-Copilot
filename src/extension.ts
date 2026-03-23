@@ -174,7 +174,7 @@ export function activate(context: vscode.ExtensionContext) {
         const progressTitle =
           currentProvider === 'ollama'
             ? 'Ollama'
-            : `Generating commit message with ${PROVIDER_DISPLAY_NAMES[currentProvider]}`;
+            : `${PROVIDER_DISPLAY_NAMES[currentProvider]}`;
 
         await vscode.window.withProgress(
           {

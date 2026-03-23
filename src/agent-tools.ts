@@ -1139,7 +1139,7 @@ async function executeSearchCode(
     files = await vscode.workspace.findFiles(
       new vscode.RelativePattern(repoRoot, '**/*'),
       new vscode.RelativePattern(repoRoot, `**/${excludePattern}/**`),
-      MAX_SEARCH_WORKSPACE_FILES
+      MAX_SEARCH_WORKSPACE_FILES,
     );
   } catch (err: any) {
     return `Error searching files: ${err.message}`;
