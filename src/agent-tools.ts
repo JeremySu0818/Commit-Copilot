@@ -1447,7 +1447,7 @@ export async function buildInitialContext(
   const toolList =
     '`get_diff`, `read_file`, `get_file_outline`, `find_references`, and `search_code`';
 
-  return `## Staged Changes Summary
+  return `## ${isStaged ? 'Staged' : 'Unstaged'} Changes Summary
 
 The following files have been modified in this commit:
 
