@@ -111,7 +111,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
           messages: [{ role: 'user', content: 'Hi' }],
         }),
       });
-      if (response.ok || response.status === 200) {
+      if (response.ok) {
         return { valid: true };
       }
       const errorData = (await response.json().catch(() => ({}))) as {
