@@ -94,9 +94,6 @@ export function activate(context: vscode.ExtensionContext) {
         outputChannel.appendLine(
           `[${new Date().toISOString()}] Starting commit-copilot generation...`,
         );
-        outputChannel.appendLine(
-          'Mode: Smart staging (respects manual staging)',
-        );
 
         let scm: vscode.SourceControl | undefined;
         if (arg && 'rootUri' in arg) {
@@ -114,9 +111,6 @@ export function activate(context: vscode.ExtensionContext) {
         }
 
         const api = gitExtension.getAPI(1);
-        outputChannel.appendLine(
-          `Git API version: ${api.version ? api.version : 'unknown'}`,
-        );
 
         let repository = null;
         if (scm) {
