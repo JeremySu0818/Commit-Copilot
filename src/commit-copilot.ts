@@ -1,5 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { execFile } from 'child_process';
+import { promisify } from 'util';
 import { APIProvider, DEFAULT_MODELS } from './models';
 import { createLLMClient, ProgressCallback } from './llm-clients';
 import { runAgentLoop } from './agent-loop';
@@ -29,7 +31,20 @@ export {
 } from './errors';
 
 const STATUS_UNTRACKED = 7;
-const MAX_COMMIT_LOG_ENTRIES = 2147483647;
+const MAX_COMMIT_LOG_ENTRIES_FALLBACK = 1000;
+const GIT_COMMIT_COUNT_TIMEOUT_MS = 15000;
+const execFileAsync = promisify(execFile);
+
+function isNoCommitsError(message: string): boolean {
+  return (
+    message.includes('does not have any commits') ||
+    message.includes('no commits yet') ||
+    message.includes('unknown revision') ||
+    message.includes('bad revision') ||
+    message.includes('Needed a single revision') ||
+    (message.includes('ambiguous argument') && message.includes('HEAD'))
+  );
+}
 
 interface GitChange {
   readonly uri: { fsPath: string };
@@ -139,6 +154,14 @@ export class GitOperations {
 
   async getCommitCount(): Promise<number | null> {
     try {
+      const repoRoot = this.repository?.rootUri?.fsPath;
+      if (repoRoot) {
+        const count = await this.getCommitCountFromCli(repoRoot);
+        if (count !== null) {
+          return count;
+        }
+      }
+
       const repoAny = this.repository as unknown as {
         log?: (options?: {
           maxEntries?: number;
@@ -150,25 +173,52 @@ export class GitOperations {
         return null;
       }
       const commits = await repoAny.log({
-        maxEntries: MAX_COMMIT_LOG_ENTRIES,
+        maxEntries: MAX_COMMIT_LOG_ENTRIES_FALLBACK,
       });
       if (!Array.isArray(commits)) {
         return null;
       }
-      return commits.length;
+      if (commits.length < MAX_COMMIT_LOG_ENTRIES_FALLBACK) {
+        return commits.length;
+      }
+      return null;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      if (
-        message.includes('does not have any commits') ||
-        message.includes('no commits yet') ||
-        message.includes('unknown revision') ||
-        message.includes('bad revision') ||
-        message.includes('Needed a single revision') ||
-        (message.includes('ambiguous argument') && message.includes('HEAD'))
-      ) {
+      if (isNoCommitsError(message)) {
         return 0;
       }
       console.error('Error running git log:', error);
+      return null;
+    }
+  }
+
+  private async getCommitCountFromCli(
+    repoRoot: string,
+  ): Promise<number | null> {
+    try {
+      const { stdout } = await execFileAsync(
+        'git',
+        ['rev-list', '--count', 'HEAD'],
+        {
+          cwd: repoRoot,
+          windowsHide: true,
+          maxBuffer: 1024 * 1024,
+          timeout: GIT_COMMIT_COUNT_TIMEOUT_MS,
+        },
+      );
+      const trimmed = stdout.trim();
+      if (!trimmed) {
+        return null;
+      }
+      const parsed = Number.parseInt(trimmed, 10);
+      return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
+    } catch (error: any) {
+      const stderr = typeof error?.stderr === 'string' ? error.stderr : '';
+      const message = [stderr, error?.message].filter(Boolean).join(' ');
+      if (isNoCommitsError(message)) {
+        return 0;
+      }
+      console.error('Error running git rev-list --count:', error);
       return null;
     }
   }

@@ -106,7 +106,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
           'content-type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'claude-3-5-haiku-20241022',
+          model: MODELS_BY_PROVIDER.anthropic[0].id,
           max_tokens: 1,
           messages: [{ role: 'user', content: 'Hi' }],
         }),
