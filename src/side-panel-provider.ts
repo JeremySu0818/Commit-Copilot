@@ -123,7 +123,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
       } else if (response.status === 429) {
         return { valid: false, error: `API quota exceeded: ${errorMessage}` };
       } else {
-        return { valid: true };
+        return { valid: false, error: `API error (${response.status}): ${errorMessage}` };
       }
     } catch (error) {
       const errorMessage =
@@ -219,11 +219,16 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
         if (!git) {
           return;
         }
-        if (git.repositories.length > 0) {
-          const repo = git.repositories[0];
-          const hasChanges =
-            repo.state.workingTreeChanges.length > 0 ||
-            repo.state.indexChanges.length > 0;
+        const repos = git.repositories;
+        if (repos.length > 0) {
+          const hasChanges = repos.some((repo: any) => {
+            const state = repo?.state;
+            return (
+              (state?.workingTreeChanges?.length ?? 0) > 0 ||
+              (state?.indexChanges?.length ?? 0) > 0 ||
+              (state?.untrackedChanges?.length ?? 0) > 0
+            );
+          });
           webviewView.webview.postMessage({ type: 'repoUpdate', hasChanges });
         } else {
           webviewView.webview.postMessage({

@@ -231,6 +231,7 @@ export class GitOperations {
 
   async stageAllChanges(): Promise<boolean> {
     try {
+      await this.repository.status();
       const paths: string[] = [];
 
       for (const change of this.repository.state.workingTreeChanges) {
