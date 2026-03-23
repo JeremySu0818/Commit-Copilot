@@ -178,13 +178,46 @@ const MAX_SEARCH_MATCHES_PER_FILE = 10;
 const MAX_SEARCH_FILES = 20;
 const MAX_SEARCH_LINE_LENGTH = 200;
 const BINARY_EXT = new Set([
-  'png', 'jpg', 'jpeg', 'gif', 'bmp', 'ico', 'svg', 'webp', 'avif',
-  'mp3', 'mp4', 'wav', 'ogg', 'webm', 'avi', 'mov',
-  'woff', 'woff2', 'ttf', 'eot', 'otf',
-  'zip', 'gz', 'tar', 'rar', '7z',
-  'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx',
-  'exe', 'dll', 'so', 'dylib', 'bin',
-  'vsix', 'lock',
+  'png',
+  'jpg',
+  'jpeg',
+  'gif',
+  'bmp',
+  'ico',
+  'svg',
+  'webp',
+  'avif',
+  'mp3',
+  'mp4',
+  'wav',
+  'ogg',
+  'webm',
+  'avi',
+  'mov',
+  'woff',
+  'woff2',
+  'ttf',
+  'eot',
+  'otf',
+  'zip',
+  'gz',
+  'tar',
+  'rar',
+  '7z',
+  'pdf',
+  'doc',
+  'docx',
+  'xls',
+  'xlsx',
+  'ppt',
+  'pptx',
+  'exe',
+  'dll',
+  'so',
+  'dylib',
+  'bin',
+  'vsix',
+  'lock',
 ]);
 
 function getAvailableTools(isStaged: boolean): ToolDefinition[] {
@@ -312,7 +345,10 @@ type RemovePathOptions = {
   operation?: string;
 };
 
-function removePath(targetPath: string, options?: RemovePathOptions): Error | null {
+function removePath(
+  targetPath: string,
+  options?: RemovePathOptions,
+): Error | null {
   try {
     fs.rmSync(targetPath, { recursive: true, force: true });
     return null;
@@ -370,7 +406,10 @@ function copyWorkspaceSnapshot(repoRoot: string, destRoot: string): void {
   }
 }
 
-function toRepoRelativePath(repoRoot: string, targetPath: string): string | null {
+function toRepoRelativePath(
+  repoRoot: string,
+  targetPath: string,
+): string | null {
   const resolvedRepoRoot = path.resolve(repoRoot);
   const resolvedTarget = path.resolve(targetPath);
   const rel = path.relative(resolvedRepoRoot, resolvedTarget);
@@ -1087,10 +1126,7 @@ async function executeSearchCode(
 
   const caseSensitive = parseBooleanArg(args.caseSensitive) ?? false;
   const maxResults = parseIntegerArg(args.maxResults) ?? MAX_SEARCH_FILES;
-  const effectiveMaxFiles = Math.min(
-    Math.max(1, maxResults),
-    50,
-  );
+  const effectiveMaxFiles = Math.min(Math.max(1, maxResults), 50);
 
   const excludePattern = `{${[...DEFAULT_IGNORED_DIRS].join(',')}}`;
 
@@ -1120,7 +1156,8 @@ async function executeSearchCode(
     if (BINARY_EXT.has(ext)) continue;
 
     const relPath = path.relative(repoRoot, fileUri.fsPath);
-    if (!relPath || relPath.startsWith('..') || path.isAbsolute(relPath)) continue;
+    if (!relPath || relPath.startsWith('..') || path.isAbsolute(relPath))
+      continue;
 
     let content: string;
     try {
