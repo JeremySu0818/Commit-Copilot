@@ -1,3 +1,5 @@
+import * as fs from 'fs';
+import * as path from 'path';
 import { APIProvider, DEFAULT_MODELS } from './models';
 import { createLLMClient, ProgressCallback } from './llm-clients';
 import { runAgentLoop } from './agent-loop';
@@ -58,7 +60,27 @@ export class GitOperations {
   constructor(private readonly repository: GitRepository) {}
 
   async isGitRepo(): Promise<boolean> {
-    return true;
+    const rootPath = this.repository?.rootUri?.fsPath;
+    if (!rootPath) {
+      return false;
+    }
+
+    const gitPath = path.join(rootPath, '.git');
+    try {
+      const stat = await fs.promises.stat(gitPath);
+      if (stat.isDirectory() || stat.isFile()) {
+        return true;
+      }
+    } catch {
+      // Fall through to status check.
+    }
+
+    try {
+      await this.repository.status();
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   async getDiff(staged: boolean = true): Promise<string> {
@@ -98,9 +120,10 @@ export class GitOperations {
     }
     try {
       const repoAny = this.repository as unknown as {
-        log?: (options?: { maxEntries?: number; path?: string }) => Promise<
-          GitCommit[]
-        >;
+        log?: (options?: {
+          maxEntries?: number;
+          path?: string;
+        }) => Promise<GitCommit[]>;
       };
       if (typeof repoAny.log !== 'function') {
         console.error('Git log API not available on repository');
@@ -117,9 +140,10 @@ export class GitOperations {
   async getCommitCount(): Promise<number | null> {
     try {
       const repoAny = this.repository as unknown as {
-        log?: (options?: { maxEntries?: number; path?: string }) => Promise<
-          GitCommit[]
-        >;
+        log?: (options?: {
+          maxEntries?: number;
+          path?: string;
+        }) => Promise<GitCommit[]>;
       };
       if (typeof repoAny.log !== 'function') {
         console.error('Git log API not available on repository');
