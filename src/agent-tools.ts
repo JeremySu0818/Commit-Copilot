@@ -380,6 +380,19 @@ function toRepoRelativePath(repoRoot: string, targetPath: string): string | null
   return rel;
 }
 
+function isPathWithinRoot(rootPath: string, targetPath: string): boolean {
+  const resolvedRoot = path.resolve(rootPath);
+  const resolvedTarget = path.resolve(targetPath);
+  const rel = path.relative(resolvedRoot, resolvedTarget);
+  if (rel === '') {
+    return true;
+  }
+  if (rel === '..' || rel.startsWith(`..${path.sep}`)) {
+    return false;
+  }
+  return !path.isAbsolute(rel);
+}
+
 function toPosixPath(relPath: string): string {
   return relPath.split(path.sep).join('/');
 }
@@ -390,7 +403,7 @@ async function restoreIndexSnapshotFile(
   gitOps: GitOperations,
 ): Promise<void> {
   const targetAbs = path.resolve(workspaceRoot, relPath);
-  if (!targetAbs.startsWith(workspaceRoot)) {
+  if (!isPathWithinRoot(workspaceRoot, targetAbs)) {
     return;
   }
 
@@ -418,7 +431,7 @@ async function scrubWorkspaceToIndex(
     untrackedRelPaths.add(relPosix);
 
     const targetAbs = path.resolve(workspaceRoot, relPosix);
-    if (targetAbs.startsWith(workspaceRoot)) {
+    if (isPathWithinRoot(workspaceRoot, targetAbs)) {
       removePath(targetAbs);
     }
   }
@@ -460,7 +473,7 @@ async function createStagedWorkspaceSnapshot(
   for (const entry of stagedEntries) {
     if (entry.status === 'deleted') {
       const deletedPath = path.resolve(workspaceRoot, entry.aPath);
-      if (deletedPath.startsWith(workspaceRoot)) {
+      if (isPathWithinRoot(workspaceRoot, deletedPath)) {
         removePath(deletedPath);
       }
       continue;
@@ -468,7 +481,7 @@ async function createStagedWorkspaceSnapshot(
 
     if (entry.status === 'renamed' && entry.aPath !== entry.bPath) {
       const oldPath = path.resolve(workspaceRoot, entry.aPath);
-      if (oldPath.startsWith(workspaceRoot)) {
+      if (isPathWithinRoot(workspaceRoot, oldPath)) {
         removePath(oldPath);
       }
     }
@@ -477,7 +490,7 @@ async function createStagedWorkspaceSnapshot(
     if (!targetRel || targetRel === '/dev/null') continue;
 
     const targetAbs = path.resolve(workspaceRoot, targetRel);
-    if (!targetAbs.startsWith(workspaceRoot)) {
+    if (!isPathWithinRoot(workspaceRoot, targetAbs)) {
       continue;
     }
 
@@ -492,7 +505,7 @@ async function createStagedWorkspaceSnapshot(
       hasContent = true;
     } else {
       const diskAbs = path.resolve(repoRoot, targetRel);
-      if (diskAbs.startsWith(repoRoot) && fs.existsSync(diskAbs)) {
+      if (isPathWithinRoot(repoRoot, diskAbs) && fs.existsSync(diskAbs)) {
         try {
           content = fs.readFileSync(diskAbs, 'utf-8');
           hasContent = true;
@@ -652,7 +665,7 @@ async function executeReadFile(
 
   const absPath = path.resolve(repoRoot, relPath);
 
-  if (!absPath.startsWith(repoRoot)) {
+  if (!isPathWithinRoot(repoRoot, absPath)) {
     return 'Error: path traversal is not allowed.';
   }
 
@@ -714,7 +727,7 @@ async function executeGetFileOutline(
 
   const absPath = path.resolve(repoRoot, relPath);
 
-  if (!absPath.startsWith(repoRoot)) {
+  if (!isPathWithinRoot(repoRoot, absPath)) {
     return 'Error: path traversal is not allowed.';
   }
 
@@ -832,7 +845,7 @@ async function executeFindReferences(
   }
 
   const absPath = path.resolve(workspaceRoot, relPath);
-  if (!absPath.startsWith(workspaceRoot)) {
+  if (!isPathWithinRoot(workspaceRoot, absPath)) {
     return 'Error: path traversal is not allowed.';
   }
   if (!fs.existsSync(absPath)) {
