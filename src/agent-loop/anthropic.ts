@@ -62,7 +62,7 @@ async function runAnthropicAgentLoop(
     while (step < MAX_AGENT_STEPS) {
       const response = await client.messages.create({
         model: modelName,
-        max_tokens: 4096,
+        max_tokens: 16384,
         system: systemPrompt,
         messages,
         tools: toAnthropicTools(isStaged) as any,
@@ -125,7 +125,7 @@ async function runAnthropicAgentLoop(
 
     const finalResponse = await client.messages.create({
       model: modelName,
-      max_tokens: 4096,
+      max_tokens: 16384,
       system: systemPrompt,
       messages,
     });
@@ -155,6 +155,5 @@ async function runAnthropicAgentLoop(
     throw new APIRequestError(message);
   }
 }
-
 
 export { runAnthropicAgentLoop };
