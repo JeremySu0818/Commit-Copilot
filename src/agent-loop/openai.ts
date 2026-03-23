@@ -46,11 +46,9 @@ async function runOpenAIAgentLoop(
       repoRoot,
       gitOps,
       isStaged,
-      false,
     );
     const systemPrompt = buildAgentSystemPrompt({
-      includeFindReferences: false,
-      enableTools: false,
+      includeFindReferences: true,
     });
 
     const messages: any[] = [
