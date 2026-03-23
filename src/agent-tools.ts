@@ -1432,6 +1432,7 @@ export async function buildInitialContext(
   repoRoot: string,
   gitOps?: GitOperations,
   isStaged: boolean = true,
+  enableTools: boolean = true,
 ): Promise<string> {
   const fileSummary = parseDiffSummary(diff);
   const projectTree = getProjectStructure(repoRoot);
@@ -1443,6 +1444,29 @@ export async function buildInitialContext(
         `  [${f.type.toUpperCase()}] ${f.path}  (+${f.added} / -${f.removed} lines)`,
     )
     .join('\n');
+
+  if (!enableTools) {
+    return `## ${isStaged ? 'Staged' : 'Unstaged'} Changes Summary
+
+The following files have been modified in this commit:
+
+${changedFilesSection}
+
+## Project Structure (tracked files)
+
+${projectTree}
+
+## Commit History
+
+${commitHistory}
+
+---
+
+You have been given the file names and line counts above. The full diff is provided below.
+Base your classification on the provided diff and context. Do NOT guess the commit type based solely on file names.
+
+REMINDER: When you are done, your ENTIRE text output must be ONLY the commit message in \`type(scope): description\` format — scope parentheses are MANDATORY. No analysis, no explanation, no commentary.`;
+  }
 
   const toolList =
     '`get_diff`, `read_file`, `get_file_outline`, `find_references`, and `search_code`';
