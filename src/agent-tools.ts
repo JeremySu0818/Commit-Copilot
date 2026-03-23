@@ -711,8 +711,11 @@ async function executeReadFile(
   let content: string;
   try {
     if (isStaged && gitOps) {
-      content = await gitOps.show(relPath);
-      if (!content) {
+      const { content: indexContent, found } =
+        await gitOps.showIndexFile(relPath);
+      if (found) {
+        content = indexContent;
+      } else {
         if (!fs.existsSync(absPath)) {
           return `Error: file '${relPath}' does not exist in index or disk.`;
         }
