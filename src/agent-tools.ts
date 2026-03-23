@@ -177,6 +177,7 @@ const MAX_REFERENCE_SNIPPET_LENGTH = 200;
 const MAX_SEARCH_MATCHES_PER_FILE = 10;
 const MAX_SEARCH_FILES = 20;
 const MAX_SEARCH_LINE_LENGTH = 200;
+const MAX_SEARCH_WORKSPACE_FILES = 10000;
 const BINARY_EXT = new Set([
   'png',
   'jpg',
@@ -1138,6 +1139,7 @@ async function executeSearchCode(
     files = await vscode.workspace.findFiles(
       new vscode.RelativePattern(repoRoot, '**/*'),
       new vscode.RelativePattern(repoRoot, `**/${excludePattern}/**`),
+      MAX_SEARCH_WORKSPACE_FILES
     );
   } catch (err: any) {
     return `Error searching files: ${err.message}`;
