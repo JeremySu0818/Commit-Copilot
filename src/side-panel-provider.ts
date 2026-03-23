@@ -8,7 +8,7 @@ import {
   API_KEY_STORAGE_KEYS,
   OLLAMA_DEFAULT_HOST,
 } from './models';
-import { GenerationStateManager, ValidationStateManager } from './extension';
+import { GenerationStateManager, ValidationStateManager } from './state';
 
 export class SidePanelProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = 'commit-copilot.view';
