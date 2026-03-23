@@ -123,7 +123,10 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
       } else if (response.status === 429) {
         return { valid: false, error: `API quota exceeded: ${errorMessage}` };
       } else {
-        return { valid: false, error: `API error (${response.status}): ${errorMessage}` };
+        return {
+          valid: false,
+          error: `API error (${response.status}): ${errorMessage}`,
+        };
       }
     } catch (error) {
       const errorMessage =

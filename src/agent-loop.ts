@@ -105,7 +105,9 @@ function buildAgentSystemPrompt(options: {
   usageLines.push(
     '- Use `search_code` to find hidden references to changed identifiers, environment variables, config keys, or string constants across the entire project.',
   );
-  usageLines.push('- Combine multiple tools as needed for a thorough investigation.');
+  usageLines.push(
+    '- Combine multiple tools as needed for a thorough investigation.',
+  );
 
   const investigationTools = options.includeFindReferences
     ? '`get_diff`, `read_file`, `get_file_outline`, `find_references`, `search_code`'

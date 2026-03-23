@@ -86,9 +86,7 @@ export class GitOperations {
       if (stat.isDirectory() || stat.isFile()) {
         return true;
       }
-    } catch {
-      // Fall through to status check.
-    }
+    } catch {}
 
     try {
       await this.repository.status();
