@@ -1300,6 +1300,8 @@ export function parseDiffSummary(
     added: number;
     removed: number;
   } | null = null;
+  let currentAPath = '';
+  let currentBPath = '';
 
   for (const line of lines) {
     const diffMatch = line.match(/^diff --git a\/(.+?) b\/(.+)$/);
@@ -1308,32 +1310,45 @@ export function parseDiffSummary(
         files.push(currentFile);
       }
 
-      const aPath = diffMatch[1];
-      const bPath = diffMatch[2];
+      currentAPath = diffMatch[1];
+      currentBPath = diffMatch[2];
 
       let type = 'modified';
-      let filePath = bPath;
-      if (aPath === '/dev/null') {
-        type = 'added';
-        filePath = bPath;
-      } else if (bPath === '/dev/null') {
-        type = 'deleted';
-        filePath = aPath;
-      } else if (aPath !== bPath) {
+      let filePath = currentBPath;
+      if (currentAPath !== currentBPath) {
         type = 'renamed';
-        filePath = `${aPath} → ${bPath}`;
+        filePath = `${currentAPath} → ${currentBPath}`;
       }
 
       currentFile = { path: filePath, type, added: 0, removed: 0 };
       continue;
     }
 
-    if (currentFile) {
-      if (line.startsWith('+') && !line.startsWith('+++')) {
-        currentFile.added++;
-      } else if (line.startsWith('-') && !line.startsWith('---')) {
-        currentFile.removed++;
-      }
+    if (!currentFile) continue;
+
+    if (line.startsWith('new file mode') || line.startsWith('--- /dev/null')) {
+      currentFile.type = 'added';
+      currentFile.path = currentBPath;
+      continue;
+    }
+    if (
+      line.startsWith('deleted file mode') ||
+      line.startsWith('+++ /dev/null')
+    ) {
+      currentFile.type = 'deleted';
+      currentFile.path = currentAPath;
+      continue;
+    }
+    if (line.startsWith('rename from') || line.startsWith('rename to')) {
+      currentFile.type = 'renamed';
+      currentFile.path = `${currentAPath} → ${currentBPath}`;
+      continue;
+    }
+
+    if (line.startsWith('+') && !line.startsWith('+++')) {
+      currentFile.added++;
+    } else if (line.startsWith('-') && !line.startsWith('---')) {
+      currentFile.removed++;
     }
   }
 

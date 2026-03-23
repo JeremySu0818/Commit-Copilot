@@ -338,7 +338,7 @@ export async function generateCommitMessage(
     provider,
     apiKey,
     model,
-    stageChanges = true,
+    stageChanges = false,
     ignoreUntracked = false,
     onProgress,
     proceedWithStagedOnly = false,
