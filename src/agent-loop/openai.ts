@@ -173,5 +173,4 @@ async function runOpenAIAgentLoop(
   }
 }
 
-
 export { runOpenAIAgentLoop };
