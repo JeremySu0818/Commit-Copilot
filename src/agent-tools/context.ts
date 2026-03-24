@@ -6,6 +6,7 @@ import { DEFAULT_IGNORED_DIRS } from './staged-workspace';
 export function parseDiffSummary(
   diff: string,
 ): { path: string; type: string; added: number; removed: number }[] {
+  const RENAME_PATH_SEPARATOR = ' → ';
   const files: {
     path: string;
     type: string;
@@ -37,7 +38,7 @@ export function parseDiffSummary(
       let filePath = currentBPath;
       if (currentAPath !== currentBPath) {
         type = 'renamed';
-        filePath = `${currentAPath} → ${currentBPath}`;
+        filePath = `${currentAPath}${RENAME_PATH_SEPARATOR}${currentBPath}`;
       }
 
       currentFile = { path: filePath, type, added: 0, removed: 0 };
@@ -61,7 +62,7 @@ export function parseDiffSummary(
     }
     if (line.startsWith('rename from') || line.startsWith('rename to')) {
       currentFile.type = 'renamed';
-      currentFile.path = `${currentAPath} → ${currentBPath}`;
+      currentFile.path = `${currentAPath}${RENAME_PATH_SEPARATOR}${currentBPath}`;
       continue;
     }
 

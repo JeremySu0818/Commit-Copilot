@@ -106,12 +106,12 @@ export class GitOperations {
     }
   }
 
-  async show(filePath: string): Promise<string> {
+  async show(filePath: string): Promise<string | null> {
     try {
       return await this.repository.show(':', filePath);
     } catch (error) {
       console.error('Error running git show:', error);
-      return '';
+      return null;
     }
   }
 

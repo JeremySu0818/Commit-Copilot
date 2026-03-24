@@ -38,6 +38,25 @@ function formatOutlineLine(
   return `${indent}L${line} [${label}] ${name}`;
 }
 
+async function resolveLanguageId(absPath: string): Promise<string | undefined> {
+  if (fs.existsSync(absPath)) {
+    try {
+      const diskDoc = await vscode.workspace.openTextDocument(
+        vscode.Uri.file(absPath),
+      );
+      return diskDoc.languageId;
+    } catch {}
+  }
+
+  try {
+    const untitledUri = vscode.Uri.file(absPath).with({ scheme: 'untitled' });
+    const untitledDoc = await vscode.workspace.openTextDocument(untitledUri);
+    return untitledDoc.languageId;
+  } catch {
+    return undefined;
+  }
+}
+
 function collectOutlineFromDocumentSymbols(
   symbols: vscode.DocumentSymbol[],
   lines: string[],
@@ -116,10 +135,14 @@ async function executeGetFileOutline(
   try {
     let content: string;
     if (isStaged && gitOps) {
-      content = await gitOps.show(relPath);
-      if (!content) {
-        if (!fs.existsSync(absPath))
-          return `Error: file '${relPath}' does not exist.`;
+      const { content: indexContent, found } =
+        await gitOps.showIndexFile(relPath);
+      if (found) {
+        content = indexContent;
+      } else {
+        if (!fs.existsSync(absPath)) {
+          return `Error: file '${relPath}' does not exist in index or disk.`;
+        }
         content = fs.readFileSync(absPath, 'utf-8');
       }
     } else {
@@ -140,6 +163,13 @@ async function executeGetFileOutline(
       document = await vscode.workspace.openTextDocument({
         content,
       });
+      const languageId = await resolveLanguageId(absPath);
+      if (languageId && languageId !== document.languageId) {
+        document = await vscode.languages.setTextDocumentLanguage(
+          document,
+          languageId,
+        );
+      }
     } else {
       document = await vscode.workspace.openTextDocument(
         vscode.Uri.file(absPath),
