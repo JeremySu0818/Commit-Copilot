@@ -10,7 +10,10 @@ function executeGetDiff(
   }
 
   const normalizePath = (value: string): string =>
-    value.trim().replace(/^[ab][\\/]/, '').replace(/\\/g, '/');
+    value
+      .trim()
+      .replace(/^[ab][\\/]/, '')
+      .replace(/\\/g, '/');
 
   const expandPathInput = (value: string): string[] => {
     const trimmed = value.trim();

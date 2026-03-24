@@ -169,5 +169,4 @@ async function runGeminiAgentLoop(
   }
 }
 
-
 export { runGeminiAgentLoop };

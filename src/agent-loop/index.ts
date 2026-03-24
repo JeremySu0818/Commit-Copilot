@@ -17,7 +17,6 @@ interface AgentLoopOptions {
   gitOps: GitOperations;
 }
 
-
 export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
   const {
     provider,
@@ -75,4 +74,3 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
       throw new Error(`Unsupported provider for agent loop: ${provider}`);
   }
 }
-

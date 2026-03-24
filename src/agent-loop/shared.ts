@@ -196,7 +196,6 @@ ${usageLines.join('\n')}
 ${CLASSIFICATION_AND_OUTPUT_RULES}`;
 }
 
-
 function formatProgressMessage(
   step: number,
   toolName: string,
@@ -295,7 +294,6 @@ function formatBatchProgressMessage(
 
   return `${stepPrefix}Executing ${toolCalls.length} investigation tools...`;
 }
-
 
 export {
   MAX_AGENT_STEPS,
