@@ -19,6 +19,7 @@ import {
   formatBatchProgressMessage,
   MAX_AGENT_STEPS,
 } from './shared';
+import { DEFAULT_RETRY_OPTIONS, RetryInfo, withRetry } from '../retry';
 
 async function runGeminiAgentLoop(
   apiKey: string,
@@ -66,7 +67,24 @@ async function runGeminiAgentLoop(
       onProgress('Agent analyzing changes...');
     }
 
-    let response = await chat.sendMessage(initialContext);
+    const retryOptions = {
+      ...DEFAULT_RETRY_OPTIONS,
+      onRetry: ({ attempt, maxAttempts, delayMs }: RetryInfo) => {
+        if (onProgress) {
+          const nextAttempt = attempt + 1;
+          onProgress(
+            `Transient API error. Retrying (${nextAttempt}/${maxAttempts}) in ${Math.ceil(
+              delayMs / 1000,
+            )}s...`,
+          );
+        }
+      },
+    };
+
+    let response = await withRetry(
+      () => chat.sendMessage(initialContext),
+      retryOptions,
+    );
     let step = 0;
 
     while (step < MAX_AGENT_STEPS) {
@@ -114,12 +132,19 @@ async function runGeminiAgentLoop(
         });
       }
 
-      response = await chat.sendMessage(toolResults);
+      response = await withRetry(
+        () => chat.sendMessage(toolResults),
+        retryOptions,
+      );
       step++;
     }
 
-    const finalResponse = await chat.sendMessage(
-      'You have used all available investigation steps. Output ONLY the final commit message now in type(scope): description format. Scope parentheses are MANDATORY. Do NOT include any explanation or analysis — just the commit message.',
+    const finalResponse = await withRetry(
+      () =>
+        chat.sendMessage(
+          'You have used all available investigation steps. Output ONLY the final commit message now in type(scope): description format. Scope parentheses are MANDATORY. Do NOT include any explanation or analysis — just the commit message.',
+        ),
+      retryOptions,
     );
     const text = finalResponse.response.text();
     return text ? extractCommitMessage(text) : 'chore(project): update files';

@@ -1,5 +1,6 @@
 import { APIProvider, DEFAULT_MODELS, OLLAMA_DEFAULT_HOST } from './models';
 import { buildAgentSystemPrompt } from './agent-loop/shared';
+import { DEFAULT_RETRY_OPTIONS, withRetry } from './retry';
 import {
   APIKeyMissingError,
   APIKeyInvalidError,
@@ -53,19 +54,23 @@ export class GeminiClient implements ILLMClient {
         systemInstruction: SYSTEM_PROMPT,
       });
 
-      const result = await generativeModel.generateContent({
-        contents: [
-          {
-            role: 'user',
-            parts: [{ text: `Here is the git diff:\n\n${diff}` }],
-          },
-        ],
-        generationConfig: {
-          temperature: 0.7,
-          topP: 0.95,
-          topK: 40,
-        },
-      });
+      const result = await withRetry(
+        () =>
+          generativeModel.generateContent({
+            contents: [
+              {
+                role: 'user',
+                parts: [{ text: `Here is the git diff:\n\n${diff}` }],
+              },
+            ],
+            generationConfig: {
+              temperature: 0.7,
+              topP: 0.95,
+              topK: 40,
+            },
+          }),
+        DEFAULT_RETRY_OPTIONS,
+      );
 
       const response = result.response;
       const text = response.text();
@@ -120,13 +125,17 @@ export class OpenAIClient implements ILLMClient {
     try {
       const OpenAI = (await import('openai')).default;
       const client = new OpenAI({ apiKey: this.apiKey });
-      const completion = await client.chat.completions.create({
-        model: this.model,
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          { role: 'user', content: `Here is the git diff:\n\n${diff}` },
-        ],
-      });
+      const completion = await withRetry(
+        () =>
+          client.chat.completions.create({
+            model: this.model,
+            messages: [
+              { role: 'system', content: SYSTEM_PROMPT },
+              { role: 'user', content: `Here is the git diff:\n\n${diff}` },
+            ],
+          }),
+        DEFAULT_RETRY_OPTIONS,
+      );
 
       const text = completion.choices[0]?.message?.content;
 
@@ -181,14 +190,18 @@ export class AnthropicClient implements ILLMClient {
     try {
       const Anthropic = (await import('@anthropic-ai/sdk')).default;
       const client = new Anthropic({ apiKey: this.apiKey });
-      const message = await client.messages.create({
-        model: this.model,
-        max_tokens: 65536,
-        system: SYSTEM_PROMPT,
-        messages: [
-          { role: 'user', content: `Here is the git diff:\n\n${diff}` },
-        ],
-      });
+      const message = await withRetry(
+        () =>
+          client.messages.create({
+            model: this.model,
+            max_tokens: 65536,
+            system: SYSTEM_PROMPT,
+            messages: [
+              { role: 'user', content: `Here is the git diff:\n\n${diff}` },
+            ],
+          }),
+        DEFAULT_RETRY_OPTIONS,
+      );
 
       const textBlock = message.content.find(
         (block: { type: string }) => block.type === 'text',

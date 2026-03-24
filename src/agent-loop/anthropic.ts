@@ -19,6 +19,7 @@ import {
   formatBatchProgressMessage,
   MAX_AGENT_STEPS,
 } from './shared';
+import { DEFAULT_RETRY_OPTIONS, RetryInfo, withRetry } from '../retry';
 
 async function runAnthropicAgentLoop(
   apiKey: string,
@@ -57,16 +58,34 @@ async function runAnthropicAgentLoop(
       onProgress('Agent analyzing changes...');
     }
 
+    const retryOptions = {
+      ...DEFAULT_RETRY_OPTIONS,
+      onRetry: ({ attempt, maxAttempts, delayMs }: RetryInfo) => {
+        if (onProgress) {
+          const nextAttempt = attempt + 1;
+          onProgress(
+            `Transient API error. Retrying (${nextAttempt}/${maxAttempts}) in ${Math.ceil(
+              delayMs / 1000,
+            )}s...`,
+          );
+        }
+      },
+    };
+
     let step = 0;
 
     while (step < MAX_AGENT_STEPS) {
-      const response = await client.messages.create({
-        model: modelName,
-        max_tokens: 16384,
-        system: systemPrompt,
-        messages,
-        tools: toAnthropicTools(isStaged) as any,
-      });
+      const response = await withRetry(
+        () =>
+          client.messages.create({
+            model: modelName,
+            max_tokens: 16384,
+            system: systemPrompt,
+            messages,
+            tools: toAnthropicTools(isStaged) as any,
+          }),
+        retryOptions,
+      );
 
       const textBlocks = response.content.filter((b: any) => b.type === 'text');
       const toolUseBlocks = response.content.filter(
@@ -123,12 +142,16 @@ async function runAnthropicAgentLoop(
       ],
     });
 
-    const finalResponse = await client.messages.create({
-      model: modelName,
-      max_tokens: 16384,
-      system: systemPrompt,
-      messages,
-    });
+    const finalResponse = await withRetry(
+      () =>
+        client.messages.create({
+          model: modelName,
+          max_tokens: 16384,
+          system: systemPrompt,
+          messages,
+        }),
+      retryOptions,
+    );
     const text = finalResponse.content
       .filter((b: any) => b.type === 'text')
       .map((b: any) => b.text)
