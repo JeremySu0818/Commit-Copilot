@@ -19,6 +19,7 @@ import {
   formatBatchProgressMessage,
   MAX_AGENT_STEPS,
 } from './shared';
+import { DEFAULT_RETRY_OPTIONS, RetryInfo, withRetry } from '../retry';
 
 async function runOpenAIAgentLoop(
   apiKey: string,
@@ -60,15 +61,33 @@ async function runOpenAIAgentLoop(
       onProgress('Agent analyzing changes...');
     }
 
+    const retryOptions = {
+      ...DEFAULT_RETRY_OPTIONS,
+      onRetry: ({ attempt, maxAttempts, delayMs }: RetryInfo) => {
+        if (onProgress) {
+          const nextAttempt = attempt + 1;
+          onProgress(
+            `Transient API error. Retrying (${nextAttempt}/${maxAttempts}) in ${Math.ceil(
+              delayMs / 1000,
+            )}s...`,
+          );
+        }
+      },
+    };
+
     let step = 0;
 
     while (step < MAX_AGENT_STEPS) {
-      const completion = await client.chat.completions.create({
-        model: modelName,
-        messages,
-        tools: toOpenAITools(isStaged) as any,
-        tool_choice: 'auto',
-      });
+      const completion = await withRetry(
+        () =>
+          client.chat.completions.create({
+            model: modelName,
+            messages,
+            tools: toOpenAITools(isStaged) as any,
+            tool_choice: 'auto',
+          }),
+        retryOptions,
+      );
 
       const choice = completion.choices[0];
       if (!choice) {
@@ -122,10 +141,14 @@ async function runOpenAIAgentLoop(
       content:
         'You have used all available investigation steps. Output ONLY the final commit message now in type(scope): description format. Scope parentheses are MANDATORY. Do NOT include any explanation or analysis — just the commit message.',
     });
-    const finalCompletion = await client.chat.completions.create({
-      model: modelName,
-      messages,
-    });
+    const finalCompletion = await withRetry(
+      () =>
+        client.chat.completions.create({
+          model: modelName,
+          messages,
+        }),
+      retryOptions,
+    );
     const text = finalCompletion.choices[0]?.message?.content;
     return text ? extractCommitMessage(text) : 'chore(project): update files';
   } catch (error: any) {
