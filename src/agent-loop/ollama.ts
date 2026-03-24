@@ -54,9 +54,11 @@ async function runOllamaAgentLoop(
       repoRoot,
       gitOps,
       isStaged,
+      false,
     );
     const systemPrompt = buildAgentSystemPrompt({
-      includeFindReferences: true,
+      includeFindReferences: false,
+      enableTools: false,
     });
     const enhancedPrompt = `${initialContext}\n\n## Full Diff (provided inline for local model)\n\n${diff}`;
 
