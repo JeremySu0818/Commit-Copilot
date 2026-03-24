@@ -76,14 +76,48 @@ export function activate(context: vscode.ExtensionContext) {
         }
 
         if (!repository) {
-          if (api.repositories.length > 0) {
+          const activeEditor = vscode.window.activeTextEditor;
+          const activeUri = activeEditor?.document?.uri;
+          if (activeUri) {
+            if (typeof api.getRepository === 'function') {
+              repository = api.getRepository(activeUri);
+            }
+            if (!repository) {
+              const activeUriString = activeUri.toString();
+              repository = api.repositories.find((r: any) =>
+                activeUriString.startsWith(r.rootUri.toString()),
+              );
+            }
+            if (repository) {
+              outputChannel.appendLine(
+                `Selected repository from active editor: ${repository.rootUri.fsPath}`,
+              );
+            } else {
+              outputChannel.appendLine(
+                'No repository matched the active editor.',
+              );
+            }
+          } else {
             outputChannel.appendLine(
-              `Found ${api.repositories.length} repositories.`,
+              'No active editor found for repository selection.',
             );
+          }
+        }
+
+        if (!repository) {
+          if (api.repositories.length === 1) {
             repository = api.repositories[0];
             outputChannel.appendLine(
-              `Selected first repository: ${repository.rootUri.fsPath}`,
+              `Selected only repository: ${repository.rootUri.fsPath}`,
             );
+          } else if (api.repositories.length > 1) {
+            outputChannel.appendLine(
+              `Found ${api.repositories.length} repositories but could not determine the active one.`,
+            );
+            vscode.window.showWarningMessage(
+              'Multiple Git repositories found. Please focus a file in the target repository or run from the SCM view.',
+            );
+            return;
           } else {
             outputChannel.appendLine('No repositories found in API.');
           }
