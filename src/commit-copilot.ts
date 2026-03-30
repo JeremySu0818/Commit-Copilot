@@ -33,6 +33,8 @@ export {
 const STATUS_UNTRACKED = 7;
 const MAX_COMMIT_LOG_ENTRIES_FALLBACK = 1000;
 const GIT_COMMIT_COUNT_TIMEOUT_MS = 15000;
+const GIT_LS_FILES_TIMEOUT_MS = 15000;
+const GIT_LS_FILES_MAX_BUFFER = 20 * 1024 * 1024;
 const execFileAsync = promisify(execFile);
 
 function isNoCommitsError(message: string): boolean {
@@ -152,25 +154,13 @@ export class GitOperations {
   }
 
   async listFilesFromGitApi(): Promise<string[] | null> {
-    try {
-      const lsFiles = this.repository.lsFiles;
-      if (typeof lsFiles !== 'function') {
-        return null;
-      }
-
-      let files: string[];
-      try {
-        files = await lsFiles.call(this.repository, '');
-      } catch {
-        files = await lsFiles.call(this.repository);
-      }
-
+    const repoRoot = this.repository?.rootUri?.fsPath;
+    const normalizePaths = (files: unknown): string[] | null => {
       if (!Array.isArray(files)) {
         return null;
       }
 
       const normalizedFiles: string[] = [];
-      const repoRoot = this.repository?.rootUri?.fsPath;
       for (const filePath of files) {
         if (typeof filePath !== 'string') {
           continue;
@@ -203,8 +193,49 @@ export class GitOperations {
         normalizedFiles.push(normalized);
       }
       return normalizedFiles;
+    };
+
+    try {
+      const lsFiles = this.repository.lsFiles;
+      if (typeof lsFiles === 'function') {
+        try {
+          const apiFiles = await lsFiles.call(this.repository, '');
+          const normalized = normalizePaths(apiFiles);
+          if (normalized !== null) {
+            return normalized;
+          }
+        } catch {
+          const apiFiles = await lsFiles.call(this.repository);
+          const normalized = normalizePaths(apiFiles);
+          if (normalized !== null) {
+            return normalized;
+          }
+        }
+      }
     } catch (error) {
       console.error('Error listing files via VS Code Git API:', error);
+    }
+
+    if (!repoRoot) {
+      return null;
+    }
+
+    try {
+      const { stdout } = await execFileAsync(
+        'git',
+        ['ls-files', '--cached', '--others', '--exclude-standard'],
+        {
+          cwd: repoRoot,
+          windowsHide: true,
+          maxBuffer: GIT_LS_FILES_MAX_BUFFER,
+          timeout: GIT_LS_FILES_TIMEOUT_MS,
+        },
+      );
+      const cliFiles = stdout.split(/\r?\n/).filter(Boolean);
+      const normalized = normalizePaths(cliFiles);
+      return normalized ?? null;
+    } catch (error) {
+      console.error('Error listing files via git ls-files:', error);
       return null;
     }
   }

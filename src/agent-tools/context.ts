@@ -181,7 +181,7 @@ export async function getProjectStructure(
   };
 
   const filesFromGitApi = await gitOps?.listFilesFromGitApi();
-  if (filesFromGitApi && filesFromGitApi.length > 0) {
+  if (filesFromGitApi !== null && filesFromGitApi !== undefined) {
     return buildTreeFromPaths(filesFromGitApi).join('\n');
   }
 
