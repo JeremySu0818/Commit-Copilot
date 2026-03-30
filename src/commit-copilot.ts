@@ -64,6 +64,7 @@ export interface GitRepository {
   };
   readonly inputBox: { value: string };
   diff(cached?: boolean): Promise<string>;
+  lsFiles?(path?: string): Promise<string[]>;
   add(paths: string[]): Promise<void>;
   show(ref: string, path: string): Promise<string>;
   log(options?: { maxEntries?: number; path?: string }): Promise<GitCommit[]>;
@@ -147,6 +148,64 @@ export class GitOperations {
     } catch (error) {
       console.error('Error running git log:', error);
       return [];
+    }
+  }
+
+  async listFilesFromGitApi(): Promise<string[] | null> {
+    try {
+      const lsFiles = this.repository.lsFiles;
+      if (typeof lsFiles !== 'function') {
+        return null;
+      }
+
+      let files: string[];
+      try {
+        files = await lsFiles.call(this.repository, '');
+      } catch {
+        files = await lsFiles.call(this.repository);
+      }
+
+      if (!Array.isArray(files)) {
+        return null;
+      }
+
+      const normalizedFiles: string[] = [];
+      const repoRoot = this.repository?.rootUri?.fsPath;
+      for (const filePath of files) {
+        if (typeof filePath !== 'string') {
+          continue;
+        }
+        const trimmed = filePath.trim();
+        if (!trimmed) {
+          continue;
+        }
+
+        let candidate = trimmed;
+        if (path.isAbsolute(candidate)) {
+          if (!repoRoot) {
+            continue;
+          }
+          const relPath = path.relative(repoRoot, candidate);
+          if (!relPath || relPath.startsWith('..') || path.isAbsolute(relPath)) {
+            continue;
+          }
+          candidate = relPath;
+        }
+
+        const normalized = candidate.replace(/\\/g, '/');
+        if (
+          !normalized ||
+          normalized.startsWith('../') ||
+          path.isAbsolute(normalized)
+        ) {
+          continue;
+        }
+        normalizedFiles.push(normalized);
+      }
+      return normalizedFiles;
+    } catch (error) {
+      console.error('Error listing files via VS Code Git API:', error);
+      return null;
     }
   }
 
