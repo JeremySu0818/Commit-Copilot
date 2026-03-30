@@ -80,10 +80,112 @@ export function parseDiffSummary(
   return files;
 }
 
-export function getProjectStructure(repoRoot: string): string {
+export async function getProjectStructure(
+  repoRoot: string,
+  gitOps?: GitOperations,
+): Promise<string> {
   const MAX_FILES = Infinity;
-  let fileCount = 0;
 
+  type TreeNode = {
+    dirs: Map<string, TreeNode>;
+    files: Set<string>;
+  };
+
+  const buildTreeFromPaths = (paths: string[]): string[] => {
+    const root: TreeNode = { dirs: new Map(), files: new Set() };
+
+    const addFile = (relPath: string): void => {
+      const normalized = relPath.trim().replace(/\\/g, '/');
+      if (
+        !normalized ||
+        normalized.startsWith('../') ||
+        path.isAbsolute(normalized)
+      ) {
+        return;
+      }
+
+      const parts = normalized.split('/').filter(Boolean);
+      if (parts.length === 0) {
+        return;
+      }
+      if (parts.some((part) => DEFAULT_IGNORED_DIRS.has(part))) {
+        return;
+      }
+
+      const fileName = parts[parts.length - 1];
+      if (!fileName) {
+        return;
+      }
+
+      let node = root;
+      for (let i = 0; i < parts.length - 1; i++) {
+        const segment = parts[i];
+        let next = node.dirs.get(segment);
+        if (!next) {
+          next = { dirs: new Map(), files: new Set() };
+          node.dirs.set(segment, next);
+        }
+        node = next;
+      }
+      node.files.add(fileName);
+    };
+
+    for (const relPath of paths) {
+      addFile(relPath);
+    }
+
+    let fileCount = 0;
+    let didTruncate = false;
+
+    const render = (node: TreeNode, prefix: string = ''): string[] => {
+      const lines: string[] = [];
+      const dirNames = [...node.dirs.keys()].sort((a, b) => a.localeCompare(b));
+      const fileNames = [...node.files].sort((a, b) => a.localeCompare(b));
+      const entries = [
+        ...dirNames.map((name) => ({ name, isDir: true })),
+        ...fileNames.map((name) => ({ name, isDir: false })),
+      ];
+
+      for (let i = 0; i < entries.length; i++) {
+        if (fileCount >= MAX_FILES) {
+          if (!didTruncate) {
+            lines.push(`${prefix}... (truncated, ${MAX_FILES}+ files)`);
+            didTruncate = true;
+          }
+          break;
+        }
+
+        const entry = entries[i];
+        const isLast = i === entries.length - 1;
+        const connector = isLast ? '└── ' : '├── ';
+        const childPrefix = isLast ? '    ' : '│   ';
+
+        if (entry.isDir) {
+          const childNode = node.dirs.get(entry.name);
+          if (!childNode) {
+            continue;
+          }
+          lines.push(`${prefix}${connector}${entry.name}/`);
+          lines.push(...render(childNode, prefix + childPrefix));
+          continue;
+        }
+
+        lines.push(`${prefix}${connector}${entry.name}`);
+        fileCount++;
+      }
+
+      return lines;
+    };
+
+    return render(root);
+  };
+
+  const filesFromGitApi = await gitOps?.listFilesFromGitApi();
+  if (filesFromGitApi && filesFromGitApi.length > 0) {
+    return buildTreeFromPaths(filesFromGitApi).join('\n');
+  }
+
+  let fileCount = 0;
   function walk(dir: string, prefix: string = ''): string[] {
     const lines: string[] = [];
 
@@ -130,8 +232,7 @@ export function getProjectStructure(repoRoot: string): string {
     return lines;
   }
 
-  const treeLines = walk(repoRoot);
-  return treeLines.join('\n');
+  return walk(repoRoot).join('\n');
 }
 
 async function formatCommitHistory(gitOps?: GitOperations): Promise<string> {
@@ -156,7 +257,7 @@ export async function buildInitialContext(
   enableTools: boolean = true,
 ): Promise<string> {
   const fileSummary = parseDiffSummary(diff);
-  const projectTree = getProjectStructure(repoRoot);
+  const projectTree = await getProjectStructure(repoRoot, gitOps);
   const commitHistory = await formatCommitHistory(gitOps);
 
   const changedFilesSection = fileSummary
