@@ -16,6 +16,7 @@ const DEFAULT_IGNORED_DIRS = new Set([
   '__pycache__',
   '.vscode',
   '.idea',
+  '.venv',
   STAGED_WORKSPACE_DIR_NAME,
 ]);
 
