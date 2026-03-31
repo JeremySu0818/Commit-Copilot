@@ -2,11 +2,11 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import { DEFAULT_IGNORED_DIRS, toPosixPath } from '../staged-workspace';
 import {
-  BINARY_EXT,
   MAX_SEARCH_FILES,
   MAX_SEARCH_LINE_LENGTH,
   MAX_SEARCH_MATCHES_PER_FILE,
   MAX_SEARCH_WORKSPACE_FILES,
+  isBinaryContent,
   parseBooleanArg,
   parseIntegerArg,
 } from './shared';
@@ -49,16 +49,15 @@ async function executeSearchCode(
   for (const fileUri of files) {
     if (fileMatches.length >= effectiveMaxFiles) break;
 
-    const ext = path.extname(fileUri.fsPath).replace(/^\./, '').toLowerCase();
-    if (BINARY_EXT.has(ext)) continue;
-
     const relPath = path.relative(repoRoot, fileUri.fsPath);
     if (!relPath || relPath.startsWith('..') || path.isAbsolute(relPath))
       continue;
 
+    let raw: Uint8Array;
     let content: string;
     try {
-      const raw = await vscode.workspace.fs.readFile(fileUri);
+      raw = await vscode.workspace.fs.readFile(fileUri);
+      if (await isBinaryContent(raw)) continue;
       content = Buffer.from(raw).toString('utf-8');
     } catch {
       continue;
