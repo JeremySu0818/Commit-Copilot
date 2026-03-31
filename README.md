@@ -120,6 +120,25 @@ build.bat
 
 After building, you can open the project in VS Code (`code .`) and press `F5` to start debugging.
 
+### Unit Testing
+
+Run the unit test pipeline:
+
+```bash
+npm test
+```
+
+This executes:
+
+1. `npm run test:build` (compile TypeScript tests with `tsconfig.test.json`)
+2. `node --test --test-concurrency=1 out/test/**/*.test.js`
+
+Current unit tests cover:
+
+- All agent tools: `get_diff`, `read_file`, `get_file_outline`, `find_references`, `get_recent_commits`, `search_code`
+- Tool dispatcher: `executeToolCall`
+- Core supporting logic: context parsing/building, staged workspace snapshot utilities, retry behavior, and state managers
+
 ## License
 
 This project is released into the public domain. You are free to copy, modify, publish, use, compile, sell, or distribute this software, either in source code form or as a compiled binary, for any purpose, commercial or non-commercial, and by any means.

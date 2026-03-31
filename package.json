@@ -66,13 +66,15 @@
     "watch:esbuild": "node esbuild.js --watch",
     "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
     "check-types": "tsc --noEmit",
-    "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js"
+    "test:build": "tsc --project tsconfig.test.json",
+    "test:unit": "npm run test:build && node --test --test-concurrency=1 out/test/**/*.test.js",
+    "test": "npm run test:unit"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",
     "@google/generative-ai": "^0.21.0",
+    "isbinaryfile": "^4.0.10",
     "ollama": "^0.6.3",
     "openai": "^4.77.0"
   },

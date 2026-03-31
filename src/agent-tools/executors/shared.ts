@@ -1,3 +1,5 @@
+import { isBinaryFile } from 'isbinaryfile';
+
 const MAX_FILE_LINES = Infinity;
 const MAX_OUTLINE_LINES = Infinity;
 const MAX_REFERENCE_SNIPPET_LENGTH = 200;
@@ -5,48 +7,6 @@ const MAX_SEARCH_MATCHES_PER_FILE = 10;
 const MAX_SEARCH_FILES = 20;
 const MAX_SEARCH_LINE_LENGTH = 200;
 const MAX_SEARCH_WORKSPACE_FILES = 10000;
-const BINARY_EXT = new Set([
-  'png',
-  'jpg',
-  'jpeg',
-  'gif',
-  'bmp',
-  'ico',
-  'svg',
-  'webp',
-  'avif',
-  'mp3',
-  'mp4',
-  'wav',
-  'ogg',
-  'webm',
-  'avi',
-  'mov',
-  'woff',
-  'woff2',
-  'ttf',
-  'eot',
-  'otf',
-  'zip',
-  'gz',
-  'tar',
-  'rar',
-  '7z',
-  'pdf',
-  'doc',
-  'docx',
-  'xls',
-  'xlsx',
-  'ppt',
-  'pptx',
-  'exe',
-  'dll',
-  'so',
-  'dylib',
-  'bin',
-  'vsix',
-  'lock',
-]);
 
 function parseIntegerArg(value: unknown): number | null {
   if (typeof value === 'number' && Number.isFinite(value)) {
@@ -83,6 +43,10 @@ function truncateSnippet(text: string, maxLength: number): string {
   return `${trimmed.slice(0, Math.max(0, maxLength - 3))}...`;
 }
 
+async function isBinaryContent(content: Uint8Array): Promise<boolean> {
+  return isBinaryFile(Buffer.from(content), content.length);
+}
+
 export {
   MAX_FILE_LINES,
   MAX_OUTLINE_LINES,
@@ -91,7 +55,7 @@ export {
   MAX_SEARCH_FILES,
   MAX_SEARCH_LINE_LENGTH,
   MAX_SEARCH_WORKSPACE_FILES,
-  BINARY_EXT,
+  isBinaryContent,
   parseIntegerArg,
   parseBooleanArg,
   truncateSnippet,
