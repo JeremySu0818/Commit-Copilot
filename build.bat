@@ -14,17 +14,7 @@ if %ERRORLEVEL% neq 0 (
 )
 
 echo.
-echo [*] Step 2: Compiling TypeScript...
-echo.
-
-call npm run compile
-if %ERRORLEVEL% neq 0 (
-    echo [!] TypeScript compilation failed
-    exit /b %ERRORLEVEL%
-)
-
-echo.
-echo [*] Step 3: Packaging VS Code Extension (.vsix)...
+echo [*] Step 2: Packaging VS Code Extension (.vsix)...
 echo.
 
 
