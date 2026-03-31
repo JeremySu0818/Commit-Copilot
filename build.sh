@@ -12,16 +12,7 @@ if [ $? -ne 0 ]; then
 fi
 
 echo
-echo "[*] Step 2: Compiling TypeScript..."
-echo
-npm run compile
-if [ $? -ne 0 ]; then
-    echo "[!] TypeScript compilation failed"
-    exit 1
-fi
-
-echo
-echo "[*] Step 3: Packaging VS Code Extension (.vsix)..."
+echo "[*] Step 2: Packaging VS Code Extension (.vsix)..."
 echo
 npx vsce package
 if [ $? -ne 0 ]; then

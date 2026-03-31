@@ -4,13 +4,15 @@ src/**
 node_modules/**
 *.ts
 tsconfig.json
+tsconfig.test.json
 .gitignore
 .vscodeignore
 package-lock.json
-!out/**
+out/**
+!out/extension.js
 esbuild.js
 build.bat
 build.sh
 build.ps1
 *.md
-!readme.md
+!README.md

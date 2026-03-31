@@ -10,16 +10,7 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host ""
-Write-Host "[*] Step 2: Compiling TypeScript..."
-Write-Host ""
-npm run compile
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "[!] TypeScript compilation failed"
-    exit 1
-}
-
-Write-Host ""
-Write-Host "[*] Step 3: Packaging VS Code Extension (.vsix)..."
+Write-Host "[*] Step 2: Packaging VS Code Extension (.vsix)..."
 Write-Host ""
 npx vsce package
 if ($LASTEXITCODE -ne 0) {
