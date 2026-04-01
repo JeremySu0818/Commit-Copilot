@@ -2,7 +2,12 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
-import { APIProvider, DEFAULT_MODELS } from './models';
+import {
+  APIProvider,
+  DEFAULT_GENERATE_MODE,
+  DEFAULT_MODELS,
+  GenerateMode,
+} from './models';
 import { createLLMClient, ProgressCallback } from './llm-clients';
 import { runAgentLoop } from './agent-loop';
 import {
@@ -408,6 +413,7 @@ export interface GenerateCommitMessageOptions {
   provider: APIProvider;
   apiKey: string;
   model?: string;
+  generateMode?: GenerateMode;
   stageChanges?: boolean;
   ignoreUntracked?: boolean;
   onProgress?: ProgressCallback;
@@ -428,6 +434,7 @@ export async function generateCommitMessage(
     provider,
     apiKey,
     model,
+    generateMode = DEFAULT_GENERATE_MODE,
     stageChanges = false,
     ignoreUntracked = false,
     onProgress,
@@ -471,17 +478,28 @@ export async function generateCommitMessage(
     if (!diff.trim()) {
       throw new NoChangesError();
     }
+    const resolvedGenerateMode: GenerateMode =
+      provider === 'ollama' ? 'direct-diff' : generateMode;
+    const resolvedModel = model || DEFAULT_MODELS[provider];
+
     const repoRoot = repository.rootUri.fsPath;
-    const commitMessage = await runAgentLoop({
-      provider,
-      apiKey,
-      model: model || DEFAULT_MODELS[provider],
-      diff,
-      repoRoot,
-      onProgress,
-      isStaged,
-      gitOps,
-    });
+    const commitMessage =
+      resolvedGenerateMode === 'agentic'
+        ? await runAgentLoop({
+            provider,
+            apiKey,
+            model: resolvedModel,
+            diff,
+            repoRoot,
+            onProgress,
+            isStaged,
+            gitOps,
+          })
+        : await createLLMClient({
+            provider,
+            apiKey,
+            model: resolvedModel,
+          }).generateCommitMessage(diff, onProgress);
     return {
       success: true,
       message: commitMessage,

@@ -1,4 +1,9 @@
 export type APIProvider = 'google' | 'openai' | 'anthropic' | 'ollama';
+export type GenerateMode = 'agentic' | 'direct-diff';
+export const GENERATE_MODE_DISPLAY_NAMES: Record<GenerateMode, string> = {
+  agentic: 'Agentic Generate',
+  'direct-diff': 'Direct Diff',
+};
 export const PROVIDER_DISPLAY_NAMES: Record<APIProvider, string> = {
   google: 'Google (Gemini)',
   openai: 'OpenAI (ChatGPT)',
@@ -80,3 +85,4 @@ export const API_KEY_STORAGE_KEYS: Record<APIProvider, string> = {
   ollama: 'OLLAMA_HOST',
 };
 export const OLLAMA_DEFAULT_HOST = 'http://127.0.0.1:11434';
+export const DEFAULT_GENERATE_MODE: GenerateMode = 'agentic';
