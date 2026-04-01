@@ -9,10 +9,34 @@ import {
 import {
   APIProvider,
   API_KEY_STORAGE_KEYS,
+  DEFAULT_GENERATE_MODE,
   DEFAULT_PROVIDER,
+  GenerateMode,
   PROVIDER_DISPLAY_NAMES,
 } from './models';
 import { GenerationStateManager, ValidationStateManager } from './state';
+
+type GenerateCommandArg =
+  | vscode.SourceControl
+  | {
+      sourceControl?: vscode.SourceControl;
+      generateMode?: GenerateMode;
+    };
+
+function isSourceControl(value: unknown): value is vscode.SourceControl {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'rootUri' in (value as Record<string, unknown>)
+  );
+}
+
+function parseGenerateMode(value: unknown): GenerateMode | undefined {
+  if (value === 'agentic' || value === 'direct-diff') {
+    return value;
+  }
+  return undefined;
+}
 
 export function activate(context: vscode.ExtensionContext) {
   console.log('Commit-Copilot extension is now active!');
@@ -32,7 +56,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   let disposable = vscode.commands.registerCommand(
     'commit-copilot.generate',
-    async (arg?: vscode.SourceControl) => {
+    async (arg?: GenerateCommandArg) => {
       GenerationStateManager.setGenerating(true);
       await vscode.commands.executeCommand(
         'setContext',
@@ -47,8 +71,14 @@ export function activate(context: vscode.ExtensionContext) {
         );
 
         let scm: vscode.SourceControl | undefined;
-        if (arg && 'rootUri' in arg) {
-          scm = arg as vscode.SourceControl;
+        let requestedGenerateMode: GenerateMode | undefined;
+        if (isSourceControl(arg)) {
+          scm = arg;
+        } else if (arg && typeof arg === 'object') {
+          if (isSourceControl(arg.sourceControl)) {
+            scm = arg.sourceControl;
+          }
+          requestedGenerateMode = parseGenerateMode(arg.generateMode);
         }
 
         const gitExtension =
@@ -133,12 +163,20 @@ export function activate(context: vscode.ExtensionContext) {
         const currentProvider =
           context.globalState.get<APIProvider>('CURRENT_PROVIDER') ||
           DEFAULT_PROVIDER;
+        const savedGenerateMode =
+          context.globalState.get<GenerateMode>('GENERATE_MODE') ||
+          DEFAULT_GENERATE_MODE;
+        const currentGenerateMode: GenerateMode =
+          currentProvider === 'ollama'
+            ? 'direct-diff'
+            : (requestedGenerateMode ?? savedGenerateMode);
         const storageKey = API_KEY_STORAGE_KEYS[currentProvider];
         const apiKey = await context.secrets.get(storageKey);
 
         outputChannel.appendLine(
           `Using provider: ${PROVIDER_DISPLAY_NAMES[currentProvider]}`,
         );
+        outputChannel.appendLine(`Generation mode: ${currentGenerateMode}`);
 
         if (!apiKey && currentProvider !== 'ollama') {
           outputChannel.appendLine(
@@ -184,6 +222,7 @@ export function activate(context: vscode.ExtensionContext) {
               repository,
               provider: currentProvider,
               apiKey: apiKey || '',
+              generateMode: currentGenerateMode,
               stageChanges: false,
               model: savedModel,
               onProgress: (message, increment) => {
@@ -205,6 +244,7 @@ export function activate(context: vscode.ExtensionContext) {
                   repository,
                   provider: currentProvider,
                   apiKey: apiKey || '',
+                  generateMode: currentGenerateMode,
                   stageChanges: true,
                   model: savedModel,
                   onProgress: (message, increment) => {
@@ -217,6 +257,7 @@ export function activate(context: vscode.ExtensionContext) {
                   repository,
                   provider: currentProvider,
                   apiKey: apiKey || '',
+                  generateMode: currentGenerateMode,
                   stageChanges: false,
                   proceedWithStagedOnly: true,
                   model: savedModel,
@@ -244,6 +285,7 @@ export function activate(context: vscode.ExtensionContext) {
                   repository,
                   provider: currentProvider,
                   apiKey: apiKey || '',
+                  generateMode: currentGenerateMode,
                   stageChanges: true,
                   model: savedModel,
                   onProgress: (message, increment) => {
@@ -256,6 +298,7 @@ export function activate(context: vscode.ExtensionContext) {
                   repository,
                   provider: currentProvider,
                   apiKey: apiKey || '',
+                  generateMode: currentGenerateMode,
                   stageChanges: false,
                   ignoreUntracked: true,
                   model: savedModel,
@@ -280,6 +323,7 @@ export function activate(context: vscode.ExtensionContext) {
                   repository,
                   provider: currentProvider,
                   apiKey: apiKey || '',
+                  generateMode: currentGenerateMode,
                   stageChanges: true,
                   model: savedModel,
                   onProgress: (message, increment) => {

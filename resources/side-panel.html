@@ -169,6 +169,19 @@
       </div>
     </div>
     <hr />
+    <div class="config-section">
+      <div class="section-title"> Generate Configuration</div>
+      <div class="input-group" style="margin-top: 10px;">
+        <label>Mode</label>
+        <select id="generateModeSelect">
+          <option value="" disabled selected>Select generate mode...</option>
+        </select>
+        <span id="generateModeStatus" class="status">
+          <span class="status-dot warning"></span>
+          Loading configuration...
+        </span>
+      </div>
+    </div>
     <div class="input-group">
       <button id="generateBtn" class="primary" disabled>
          Generate Commit Message
@@ -178,13 +191,17 @@
   <script nonce="{{NONCE}}">
     const vscode = acquireVsCodeApi();
     const providers = {{PROVIDERS_JSON}};
+    const generateModes = {{GENERATE_MODES_JSON}};
     const modelsByProvider = {{MODELS_JSON}};
     const defaultModels = {{DEFAULT_MODELS_JSON}};
     const defaultProvider = '{{DEFAULT_PROVIDER}}';
+    const defaultGenerateMode = '{{DEFAULT_GENERATE_MODE}}';
     const ollamaDefaultHost = '{{OLLAMA_DEFAULT_HOST}}';
     const providerSelect = document.getElementById('providerSelect');
     const saveBtn = document.getElementById('saveBtn');
     const generateBtn = document.getElementById('generateBtn');
+    const generateModeSelect = document.getElementById('generateModeSelect');
+    const generateModeStatus = document.getElementById('generateModeStatus');
     const apiKeyInput = document.getElementById('apiKey');
     const apiKeyLabel = document.getElementById('apiKeyLabel');
     const keyStatus = document.getElementById('keyStatus');
@@ -195,6 +212,8 @@
     let isGenerating = false;
     let hasChanges = false;
     let currentProvider = defaultProvider;
+    let currentGenerateMode = defaultGenerateMode;
+    let preferredGenerateMode = defaultGenerateMode;
     let keyStatuses = {};
 
     Object.entries(providers).forEach(([value, label]) => {
@@ -203,6 +222,45 @@
       option.textContent = label;
       providerSelect.appendChild(option);
     });
+
+    Object.entries(generateModes).forEach(([value, label]) => {
+      const option = document.createElement('option');
+      option.value = value;
+      option.textContent = label;
+      generateModeSelect.appendChild(option);
+    });
+
+    function normalizeGenerateMode(mode) {
+      return mode === 'direct-diff' ? 'direct-diff' : 'agentic';
+    }
+
+    function updateGenerateModeStatus(mode) {
+      if (currentProvider === 'ollama') {
+        generateModeStatus.innerHTML = '<span class="status-dot warning"></span>Ollama is fixed to Direct Diff mode';
+        return;
+      }
+      if (mode === 'agentic') {
+        generateModeStatus.innerHTML = '<span class="status-dot success"></span>Agentic mode uses repository tools for deeper analysis';
+      } else {
+        generateModeStatus.innerHTML = '<span class="status-dot warning"></span>Direct Diff sends the raw diff directly to the model';
+      }
+    }
+
+    function updateGenerateModeUI(provider) {
+      if (provider === 'ollama') {
+        currentGenerateMode = 'direct-diff';
+        generateModeSelect.value = 'direct-diff';
+        generateModeSelect.disabled = true;
+        updateGenerateModeStatus('direct-diff');
+        return;
+      }
+
+      const mode = normalizeGenerateMode(preferredGenerateMode || defaultGenerateMode);
+      currentGenerateMode = mode;
+      generateModeSelect.value = mode;
+      generateModeSelect.disabled = false;
+      updateGenerateModeStatus(mode);
+    }
 
     function updateProviderUI(provider) {
       currentProvider = provider;
@@ -243,6 +301,7 @@
           `;
         }
       }
+      updateGenerateModeUI(provider);
       vscode.postMessage({ type: 'checkKey', provider });
       vscode.postMessage({ type: 'getModels', provider });
     }
@@ -278,6 +337,7 @@
     }
 
     vscode.postMessage({ type: 'getProvider' });
+    vscode.postMessage({ type: 'getGenerateMode' });
     vscode.postMessage({ type: 'checkGit' });
     vscode.postMessage({ type: 'getAllKeys' });
     vscode.postMessage({ type: 'checkGenerationStatus' });
@@ -309,11 +369,22 @@
     generateBtn.addEventListener('click', () => {
       isGenerating = true;
       updateGenerateBtn();
-      vscode.postMessage({ type: 'generate' });
+      vscode.postMessage({ type: 'generate', generateMode: currentGenerateMode });
     });
 
     modelSelect.addEventListener('change', () => {
       vscode.postMessage({ type: 'saveModel', value: modelSelect.value, provider: currentProvider });
+    });
+
+    generateModeSelect.addEventListener('change', () => {
+      if (currentProvider === 'ollama') {
+        return;
+      }
+      const mode = normalizeGenerateMode(generateModeSelect.value);
+      preferredGenerateMode = mode;
+      currentGenerateMode = mode;
+      updateGenerateModeStatus(mode);
+      vscode.postMessage({ type: 'saveGenerateMode', value: mode });
     });
 
     window.addEventListener('message', event => {
@@ -331,6 +402,10 @@
           break;
         case 'allKeyStatuses':
           keyStatuses = message.statuses;
+          break;
+        case 'currentGenerateMode':
+          preferredGenerateMode = normalizeGenerateMode(message.generateMode);
+          updateGenerateModeUI(currentProvider);
           break;
         case 'modelsList':
           populateModels(message.models, message.currentModel);

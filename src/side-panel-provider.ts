@@ -2,7 +2,10 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import {
   APIProvider,
+  DEFAULT_GENERATE_MODE,
   PROVIDER_DISPLAY_NAMES,
+  GENERATE_MODE_DISPLAY_NAMES,
+  GenerateMode,
   MODELS_BY_PROVIDER,
   DEFAULT_MODELS,
   DEFAULT_PROVIDER,
@@ -376,7 +379,11 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
         }
         case 'generate': {
           try {
-            await vscode.commands.executeCommand('commit-copilot.generate');
+            const requestedMode =
+              data.generateMode === 'direct-diff' ? 'direct-diff' : 'agentic';
+            await vscode.commands.executeCommand('commit-copilot.generate', {
+              generateMode: requestedMode,
+            });
           } finally {
             this._view?.webview.postMessage({ type: 'generationDone' });
           }
@@ -438,6 +445,22 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
           });
           break;
         }
+        case 'saveGenerateMode': {
+          const mode: GenerateMode =
+            data.value === 'direct-diff' ? 'direct-diff' : 'agentic';
+          await this._context.globalState.update('GENERATE_MODE', mode);
+          break;
+        }
+        case 'getGenerateMode': {
+          const savedMode =
+            this._context.globalState.get<GenerateMode>('GENERATE_MODE') ||
+            DEFAULT_GENERATE_MODE;
+          this._view?.webview.postMessage({
+            type: 'currentGenerateMode',
+            generateMode: savedMode,
+          });
+          break;
+        }
         case 'getAllKeys': {
           const keyStatuses: Record<APIProvider, boolean> = {
             google: false,
@@ -479,9 +502,11 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
   private _getHtmlForWebview(webview: vscode.Webview) {
     const nonce = getNonce();
     const providersJson = JSON.stringify(PROVIDER_DISPLAY_NAMES);
+    const generateModesJson = JSON.stringify(GENERATE_MODE_DISPLAY_NAMES);
     const modelsJson = JSON.stringify(MODELS_BY_PROVIDER);
     const defaultModelsJson = JSON.stringify(DEFAULT_MODELS);
     const defaultProvider = DEFAULT_PROVIDER;
+    const defaultGenerateMode = DEFAULT_GENERATE_MODE;
     const ollamaDefaultHost = OLLAMA_DEFAULT_HOST;
 
     const templateUri = vscode.Uri.joinPath(
@@ -495,9 +520,11 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
       .replace(/\{\{CSP_SOURCE\}\}/g, webview.cspSource)
       .replace(/\{\{NONCE\}\}/g, nonce)
       .replace(/\{\{PROVIDERS_JSON\}\}/g, providersJson)
+      .replace(/\{\{GENERATE_MODES_JSON\}\}/g, generateModesJson)
       .replace(/\{\{MODELS_JSON\}\}/g, modelsJson)
       .replace(/\{\{DEFAULT_MODELS_JSON\}\}/g, defaultModelsJson)
       .replace(/\{\{DEFAULT_PROVIDER\}\}/g, defaultProvider)
+      .replace(/\{\{DEFAULT_GENERATE_MODE\}\}/g, defaultGenerateMode)
       .replace(/\{\{OLLAMA_DEFAULT_HOST\}\}/g, ollamaDefaultHost);
   }
 }
