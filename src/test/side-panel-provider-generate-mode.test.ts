@@ -16,7 +16,9 @@ type Harness = {
   dispose: () => void;
 };
 
-async function createHarness(initialState?: Record<string, unknown>): Promise<Harness> {
+async function createHarness(
+  initialState?: Record<string, unknown>,
+): Promise<Harness> {
   clearRequireCache(MODULE_PATH);
 
   const postedMessages: any[] = [];

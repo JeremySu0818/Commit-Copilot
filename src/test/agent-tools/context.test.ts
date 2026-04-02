@@ -33,12 +33,10 @@ test('parseDiffSummary parses modified, added, deleted, and renamed files', () =
 
   const summary = parseDiffSummary(diff);
   assert.equal(summary.length, 4);
-  assert.deepEqual(summary.map((f) => f.type), [
-    'modified',
-    'added',
-    'deleted',
-    'renamed',
-  ]);
+  assert.deepEqual(
+    summary.map((f) => f.type),
+    ['modified', 'added', 'deleted', 'renamed'],
+  );
 });
 
 test('parseDiffSummary marks binary diffs as non-zero changes', () => {
@@ -58,7 +56,11 @@ test('parseDiffSummary marks binary diffs as non-zero changes', () => {
 
 test('getProjectStructure uses git API file list when available', async () => {
   const gitOps = {
-    listFilesFromGitApi: async () => ['src/a.ts', 'src/b.ts', 'node_modules/x.js'],
+    listFilesFromGitApi: async () => [
+      'src/a.ts',
+      'src/b.ts',
+      'node_modules/x.js',
+    ],
   } as any;
 
   const structure = await getProjectStructure('unused', gitOps);
@@ -85,7 +87,10 @@ test('buildInitialContext includes tool guidance when tools are enabled', async 
     );
 
     assert.match(context, /## Staged Changes Summary/);
-    assert.match(context, /`get_diff`, `read_file`, `get_file_outline`, `find_references`, and `search_code`/);
+    assert.match(
+      context,
+      /`get_diff`, `read_file`, `get_file_outline`, `find_references`, and `search_code`/,
+    );
     assert.match(context, /This repository has 3 commits\./);
   } finally {
     cleanupTempDir(repoRoot);

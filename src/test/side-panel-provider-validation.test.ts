@@ -154,7 +154,9 @@ test('validateGoogleApiKey uses Google SDK file manager list API', async () => {
       { GoogleAIFileManager: GoogleAIFileManagerMock },
       async () => {
         clearRequireCache(MODULE_PATH);
-        const mod = require(MODULE_PATH) as typeof import('../side-panel-provider');
+        const mod = require(
+          MODULE_PATH,
+        ) as typeof import('../side-panel-provider');
         const provider = createProvider(mod);
         const result = await provider.validateGoogleApiKey('google-test-key');
 
@@ -191,7 +193,9 @@ test('validateOpenAIApiKey uses OpenAI SDK models.list', async () => {
       { __esModule: true, default: OpenAIMock },
       async () => {
         clearRequireCache(MODULE_PATH);
-        const mod = require(MODULE_PATH) as typeof import('../side-panel-provider');
+        const mod = require(
+          MODULE_PATH,
+        ) as typeof import('../side-panel-provider');
         const provider = createProvider(mod);
         const result = await provider.validateOpenAIApiKey('openai-test-key');
 
@@ -258,7 +262,9 @@ test('validation errors use unified API request failed format for Google/OpenAI/
               { __esModule: true, default: AnthropicMock },
               async () => {
                 clearRequireCache(MODULE_PATH);
-                const mod = require(MODULE_PATH) as typeof import('../side-panel-provider');
+                const mod = require(
+                  MODULE_PATH,
+                ) as typeof import('../side-panel-provider');
                 const provider = createProvider(mod);
 
                 const googleResult =

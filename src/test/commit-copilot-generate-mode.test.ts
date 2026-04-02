@@ -15,7 +15,8 @@ import { EXIT_CODES } from '../errors';
 
 const MODULE_PATH = path.resolve(__dirname, '..', 'commit-copilot');
 
-type GenerateCommitMessageFn = typeof import('../commit-copilot').generateCommitMessage;
+type GenerateCommitMessageFn =
+  typeof import('../commit-copilot').generateCommitMessage;
 
 function createRepository(repoRoot: string, stagedDiff: string) {
   return {
@@ -39,9 +40,7 @@ function createRepository(repoRoot: string, stagedDiff: string) {
 }
 
 async function loadGenerateCommitMessage(options: {
-  runAgentLoop: (
-    options: Record<string, unknown>,
-  ) => Promise<string> | string;
+  runAgentLoop: (options: Record<string, unknown>) => Promise<string> | string;
   createLLMClient: (options: {
     provider: APIProvider;
     apiKey: string;
@@ -80,9 +79,7 @@ async function runGenerate(options: {
   provider: APIProvider;
   generateMode?: GenerateMode;
   commitOutputOptions?: CommitOutputOptions;
-  runAgentLoop: (
-    options: Record<string, unknown>,
-  ) => Promise<string> | string;
+  runAgentLoop: (options: Record<string, unknown>) => Promise<string> | string;
   createLLMClient: (options: {
     provider: APIProvider;
     apiKey: string;
@@ -96,10 +93,16 @@ async function runGenerate(options: {
     ) => Promise<string> | string;
   };
   cancellationToken?: { isCancellationRequested: boolean };
-}): Promise<{ result: Awaited<ReturnType<GenerateCommitMessageFn>>; repoRoot: string }> {
+}): Promise<{
+  result: Awaited<ReturnType<GenerateCommitMessageFn>>;
+  repoRoot: string;
+}> {
   const repoRoot = createTempDir();
   fs.mkdirSync(path.join(repoRoot, '.git'), { recursive: true });
-  const repository = createRepository(repoRoot, 'diff --git a/a.ts b/a.ts\n+new');
+  const repository = createRepository(
+    repoRoot,
+    'diff --git a/a.ts b/a.ts\n+new',
+  );
   const generateCommitMessage = await loadGenerateCommitMessage({
     runAgentLoop: options.runAgentLoop,
     createLLMClient: options.createLLMClient,
@@ -186,7 +189,10 @@ test('generateCommitMessage uses direct diff client in direct-diff mode', async 
       return 'should not be used';
     },
     createLLMClient: (clientOptions) => {
-      capturedClientOptions = clientOptions as unknown as Record<string, unknown>;
+      capturedClientOptions = clientOptions as unknown as Record<
+        string,
+        unknown
+      >;
       return {
         generateCommitMessage: async (diff) => {
           capturedDirectDiff = diff;
@@ -234,7 +240,10 @@ test('generateCommitMessage forces ollama to direct diff even if agentic request
       return 'should not be used';
     },
     createLLMClient: (clientOptions) => {
-      capturedClientOptions = clientOptions as unknown as Record<string, unknown>;
+      capturedClientOptions = clientOptions as unknown as Record<
+        string,
+        unknown
+      >;
       return {
         generateCommitMessage: async () =>
           'chore(local): use ollama direct diff\n\nEnforced direct mode for local provider.',
