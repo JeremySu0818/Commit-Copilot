@@ -6,10 +6,18 @@ import {
   OLLAMA_DEFAULT_HOST,
   normalizeCommitOutputOptions,
 } from '../models';
-import { APIRequestError, NoChangesError } from '../errors';
+import {
+  APIRequestError,
+  GenerationCancelledError,
+  NoChangesError,
+} from '../errors';
 import { ProgressCallback } from '../llm-clients';
 import { GitOperations } from '../commit-copilot';
 import { buildAgentSystemPrompt, extractCommitMessage } from './shared';
+import {
+  CancellationSignal,
+  throwIfCancellationRequested,
+} from '../cancellation';
 
 async function runOllamaAgentLoop(
   host: string | undefined,
@@ -20,7 +28,9 @@ async function runOllamaAgentLoop(
   isStaged: boolean,
   gitOps?: GitOperations,
   commitOutputOptions: CommitOutputOptions = DEFAULT_COMMIT_OUTPUT_OPTIONS,
+  cancellationToken?: CancellationSignal,
 ): Promise<string> {
+  throwIfCancellationRequested(cancellationToken);
   if (!diff.trim()) {
     throw new NoChangesError();
   }
@@ -37,6 +47,7 @@ async function runOllamaAgentLoop(
     const pullStream = await client.pull({ model: modelName, stream: true });
     let lastPercent = 0;
     for await (const part of pullStream) {
+      throwIfCancellationRequested(cancellationToken);
       if (part.total && part.completed) {
         const percent = Math.round((part.completed / part.total) * 100);
         if (percent > lastPercent) {
@@ -86,12 +97,13 @@ async function runOllamaAgentLoop(
     });
 
     const text = response.message?.content;
+    throwIfCancellationRequested(cancellationToken);
     if (!text) {
       throw new APIRequestError('Empty response from Ollama');
     }
     return extractCommitMessage(text);
   } catch (error: any) {
-    if (error instanceof NoChangesError) {
+    if (error instanceof NoChangesError || error instanceof GenerationCancelledError) {
       throw error;
     }
     const message = error?.message || String(error);

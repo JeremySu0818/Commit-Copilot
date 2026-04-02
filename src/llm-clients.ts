@@ -9,10 +9,15 @@ import {
 import { buildAgentSystemPrompt } from './agent-loop/shared';
 import { DEFAULT_RETRY_OPTIONS, withRetry } from './retry';
 import {
+  CancellationSignal,
+  throwIfCancellationRequested,
+} from './cancellation';
+import {
   APIKeyMissingError,
   APIKeyInvalidError,
   APIQuotaExceededError,
   APIRequestError,
+  GenerationCancelledError,
   NoChangesError,
 } from './errors';
 
@@ -30,6 +35,7 @@ export interface ILLMClient {
   generateCommitMessage(
     diff: string,
     onProgress?: ProgressCallback,
+    cancellationToken?: CancellationSignal,
   ): Promise<string>;
 }
 
@@ -55,7 +61,12 @@ export class GeminiClient implements ILLMClient {
     });
   }
 
-  async generateCommitMessage(diff: string): Promise<string> {
+  async generateCommitMessage(
+    diff: string,
+    _onProgress?: ProgressCallback,
+    cancellationToken?: CancellationSignal,
+  ): Promise<string> {
+    throwIfCancellationRequested(cancellationToken);
     if (!diff.trim()) {
       throw new NoChangesError();
     }
@@ -88,6 +99,7 @@ export class GeminiClient implements ILLMClient {
 
       const response = result.response;
       const text = response.text();
+      throwIfCancellationRequested(cancellationToken);
 
       if (!text) {
         throw new APIRequestError('Empty response from Gemini API');
@@ -97,7 +109,8 @@ export class GeminiClient implements ILLMClient {
     } catch (error: any) {
       if (
         error instanceof NoChangesError ||
-        error instanceof APIKeyMissingError
+        error instanceof APIKeyMissingError ||
+        error instanceof GenerationCancelledError
       ) {
         throw error;
       }
@@ -141,7 +154,12 @@ export class OpenAIClient implements ILLMClient {
     });
   }
 
-  async generateCommitMessage(diff: string): Promise<string> {
+  async generateCommitMessage(
+    diff: string,
+    _onProgress?: ProgressCallback,
+    cancellationToken?: CancellationSignal,
+  ): Promise<string> {
+    throwIfCancellationRequested(cancellationToken);
     if (!diff.trim()) {
       throw new NoChangesError();
     }
@@ -162,6 +180,7 @@ export class OpenAIClient implements ILLMClient {
       );
 
       const text = completion.choices[0]?.message?.content;
+      throwIfCancellationRequested(cancellationToken);
 
       if (!text) {
         throw new APIRequestError('Empty response from OpenAI API');
@@ -171,7 +190,8 @@ export class OpenAIClient implements ILLMClient {
     } catch (error: any) {
       if (
         error instanceof NoChangesError ||
-        error instanceof APIKeyMissingError
+        error instanceof APIKeyMissingError ||
+        error instanceof GenerationCancelledError
       ) {
         throw error;
       }
@@ -216,7 +236,12 @@ export class AnthropicClient implements ILLMClient {
     });
   }
 
-  async generateCommitMessage(diff: string): Promise<string> {
+  async generateCommitMessage(
+    diff: string,
+    _onProgress?: ProgressCallback,
+    cancellationToken?: CancellationSignal,
+  ): Promise<string> {
+    throwIfCancellationRequested(cancellationToken);
     if (!diff.trim()) {
       throw new NoChangesError();
     }
@@ -242,6 +267,7 @@ export class AnthropicClient implements ILLMClient {
       );
       const text =
         textBlock && textBlock.type === 'text' ? (textBlock as any).text : null;
+      throwIfCancellationRequested(cancellationToken);
 
       if (!text) {
         throw new APIRequestError('Empty response from Anthropic API');
@@ -251,7 +277,8 @@ export class AnthropicClient implements ILLMClient {
     } catch (error: any) {
       if (
         error instanceof NoChangesError ||
-        error instanceof APIKeyMissingError
+        error instanceof APIKeyMissingError ||
+        error instanceof GenerationCancelledError
       ) {
         throw error;
       }
@@ -296,7 +323,9 @@ export class OllamaClient implements ILLMClient {
   async generateCommitMessage(
     diff: string,
     onProgress?: ProgressCallback,
+    cancellationToken?: CancellationSignal,
   ): Promise<string> {
+    throwIfCancellationRequested(cancellationToken);
     if (!diff.trim()) {
       throw new NoChangesError();
     }
@@ -308,6 +337,7 @@ export class OllamaClient implements ILLMClient {
       const pullStream = await client.pull({ model: this.model, stream: true });
       let lastPercent = 0;
       for await (const part of pullStream) {
+        throwIfCancellationRequested(cancellationToken);
         if (part.total && part.completed) {
           const percent = Math.round((part.completed / part.total) * 100);
           if (percent > lastPercent) {
@@ -342,6 +372,7 @@ export class OllamaClient implements ILLMClient {
       });
 
       const text = response.message?.content;
+      throwIfCancellationRequested(cancellationToken);
 
       if (!text) {
         throw new APIRequestError('Empty response from Ollama');
@@ -349,7 +380,7 @@ export class OllamaClient implements ILLMClient {
 
       return text.trim();
     } catch (error: any) {
-      if (error instanceof NoChangesError) {
+      if (error instanceof NoChangesError || error instanceof GenerationCancelledError) {
         throw error;
       }
 

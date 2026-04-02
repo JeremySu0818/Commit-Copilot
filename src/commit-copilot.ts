@@ -14,6 +14,10 @@ import {
 import { createLLMClient, ProgressCallback } from './llm-clients';
 import { runAgentLoop } from './agent-loop';
 import {
+  CancellationSignal,
+  throwIfCancellationRequested,
+} from './cancellation';
+import {
   EXIT_CODES,
   CommitCopilotError,
   NoChangesError,
@@ -415,6 +419,7 @@ export interface GenerateCommitMessageOptions {
   repository: GitRepository;
   provider: APIProvider;
   apiKey: string;
+  cancellationToken?: CancellationSignal;
   model?: string;
   generateMode?: GenerateMode;
   commitOutputOptions?: CommitOutputOptions;
@@ -437,6 +442,7 @@ export async function generateCommitMessage(
     repository,
     provider,
     apiKey,
+    cancellationToken,
     model,
     generateMode = DEFAULT_GENERATE_MODE,
     commitOutputOptions = DEFAULT_COMMIT_OUTPUT_OPTIONS,
@@ -446,6 +452,7 @@ export async function generateCommitMessage(
     proceedWithStagedOnly = false,
   } = options;
   try {
+    throwIfCancellationRequested(cancellationToken);
     const gitOps = new GitOperations(repository);
     if (!(await gitOps.isGitRepo())) {
       throw new CommitCopilotError(
@@ -456,6 +463,7 @@ export async function generateCommitMessage(
     }
 
     if (stageChanges) {
+      throwIfCancellationRequested(cancellationToken);
       const staged = await gitOps.stageAllChanges();
       if (!staged) {
         throw new StageFailedError();
@@ -466,9 +474,11 @@ export async function generateCommitMessage(
 
     let isStaged = true;
     let diff = await gitOps.getDiff(true);
+    throwIfCancellationRequested(cancellationToken);
 
     if (!diff.trim() && !stageChanges) {
       const unstagedDiff = await gitOps.getDiff(false);
+      throwIfCancellationRequested(cancellationToken);
       if (!ignoreUntracked && (await gitOps.hasUntrackedFiles())) {
         if (!unstagedDiff.trim()) {
           throw new NoTrackedChangesButUntrackedError();
@@ -503,6 +513,7 @@ export async function generateCommitMessage(
             isStaged,
             gitOps,
             commitOutputOptions: resolvedCommitOutputOptions,
+            cancellationToken,
           })
         : await createLLMClient({
             provider,
@@ -510,7 +521,8 @@ export async function generateCommitMessage(
             ollamaHost: provider === 'ollama' ? apiKey : undefined,
             model: resolvedModel,
             commitOutputOptions: resolvedCommitOutputOptions,
-          }).generateCommitMessage(diff, onProgress);
+          }).generateCommitMessage(diff, onProgress, cancellationToken);
+    throwIfCancellationRequested(cancellationToken);
     return {
       success: true,
       message: commitMessage,
