@@ -507,6 +507,7 @@ export async function generateCommitMessage(
         : await createLLMClient({
             provider,
             apiKey,
+            ollamaHost: provider === 'ollama' ? apiKey : undefined,
             model: resolvedModel,
             commitOutputOptions: resolvedCommitOutputOptions,
           }).generateCommitMessage(diff, onProgress);
