@@ -4,9 +4,12 @@ import { execFile } from 'child_process';
 import { promisify } from 'util';
 import {
   APIProvider,
+  CommitOutputOptions,
+  DEFAULT_COMMIT_OUTPUT_OPTIONS,
   DEFAULT_GENERATE_MODE,
   DEFAULT_MODELS,
   GenerateMode,
+  normalizeCommitOutputOptions,
 } from './models';
 import { createLLMClient, ProgressCallback } from './llm-clients';
 import { runAgentLoop } from './agent-loop';
@@ -414,6 +417,7 @@ export interface GenerateCommitMessageOptions {
   apiKey: string;
   model?: string;
   generateMode?: GenerateMode;
+  commitOutputOptions?: CommitOutputOptions;
   stageChanges?: boolean;
   ignoreUntracked?: boolean;
   onProgress?: ProgressCallback;
@@ -435,6 +439,7 @@ export async function generateCommitMessage(
     apiKey,
     model,
     generateMode = DEFAULT_GENERATE_MODE,
+    commitOutputOptions = DEFAULT_COMMIT_OUTPUT_OPTIONS,
     stageChanges = false,
     ignoreUntracked = false,
     onProgress,
@@ -480,6 +485,9 @@ export async function generateCommitMessage(
     }
     const resolvedGenerateMode: GenerateMode =
       provider === 'ollama' ? 'direct-diff' : generateMode;
+    const resolvedCommitOutputOptions = normalizeCommitOutputOptions(
+      commitOutputOptions,
+    );
     const resolvedModel = model || DEFAULT_MODELS[provider];
 
     const repoRoot = repository.rootUri.fsPath;
@@ -494,11 +502,13 @@ export async function generateCommitMessage(
             onProgress,
             isStaged,
             gitOps,
+            commitOutputOptions: resolvedCommitOutputOptions,
           })
         : await createLLMClient({
             provider,
             apiKey,
             model: resolvedModel,
+            commitOutputOptions: resolvedCommitOutputOptions,
           }).generateCommitMessage(diff, onProgress);
     return {
       success: true,

@@ -9,10 +9,13 @@ import {
 import {
   APIProvider,
   API_KEY_STORAGE_KEYS,
+  CommitOutputOptions,
+  DEFAULT_COMMIT_OUTPUT_OPTIONS,
   DEFAULT_GENERATE_MODE,
   DEFAULT_PROVIDER,
   GenerateMode,
   PROVIDER_DISPLAY_NAMES,
+  normalizeCommitOutputOptions,
 } from './models';
 import { GenerationStateManager, ValidationStateManager } from './state';
 
@@ -21,6 +24,7 @@ type GenerateCommandArg =
   | {
       sourceControl?: vscode.SourceControl;
       generateMode?: GenerateMode;
+      commitOutputOptions?: CommitOutputOptions;
     };
 
 function isSourceControl(value: unknown): value is vscode.SourceControl {
@@ -36,6 +40,15 @@ function parseGenerateMode(value: unknown): GenerateMode | undefined {
     return value;
   }
   return undefined;
+}
+
+function parseCommitOutputOptions(
+  value: unknown,
+): CommitOutputOptions | undefined {
+  if (typeof value === 'undefined') {
+    return undefined;
+  }
+  return normalizeCommitOutputOptions(value);
 }
 
 export function activate(context: vscode.ExtensionContext) {
@@ -72,6 +85,7 @@ export function activate(context: vscode.ExtensionContext) {
 
         let scm: vscode.SourceControl | undefined;
         let requestedGenerateMode: GenerateMode | undefined;
+        let requestedCommitOutputOptions: CommitOutputOptions | undefined;
         if (isSourceControl(arg)) {
           scm = arg;
         } else if (arg && typeof arg === 'object') {
@@ -79,6 +93,9 @@ export function activate(context: vscode.ExtensionContext) {
             scm = arg.sourceControl;
           }
           requestedGenerateMode = parseGenerateMode(arg.generateMode);
+          requestedCommitOutputOptions = parseCommitOutputOptions(
+            arg.commitOutputOptions,
+          );
         }
 
         const gitExtension =
@@ -166,10 +183,17 @@ export function activate(context: vscode.ExtensionContext) {
         const savedGenerateMode =
           context.globalState.get<GenerateMode>('GENERATE_MODE') ||
           DEFAULT_GENERATE_MODE;
+        const savedCommitOutputOptions = normalizeCommitOutputOptions(
+          context.globalState.get<CommitOutputOptions>(
+            'COMMIT_OUTPUT_OPTIONS',
+          ) || DEFAULT_COMMIT_OUTPUT_OPTIONS,
+        );
         const currentGenerateMode: GenerateMode =
           currentProvider === 'ollama'
             ? 'direct-diff'
             : (requestedGenerateMode ?? savedGenerateMode);
+        const currentCommitOutputOptions =
+          requestedCommitOutputOptions ?? savedCommitOutputOptions;
         const storageKey = API_KEY_STORAGE_KEYS[currentProvider];
         const apiKey = await context.secrets.get(storageKey);
 
@@ -177,6 +201,9 @@ export function activate(context: vscode.ExtensionContext) {
           `Using provider: ${PROVIDER_DISPLAY_NAMES[currentProvider]}`,
         );
         outputChannel.appendLine(`Generation mode: ${currentGenerateMode}`);
+        outputChannel.appendLine(
+          `Commit output options: ${JSON.stringify(currentCommitOutputOptions)}`,
+        );
 
         if (!apiKey && currentProvider !== 'ollama') {
           outputChannel.appendLine(
@@ -217,18 +244,23 @@ export function activate(context: vscode.ExtensionContext) {
             if (savedModel) {
               outputChannel.appendLine(`Using model: ${savedModel}`);
             }
-
-            let result = await generateCommitMessage({
+            const reportProgress = (message: string, increment?: number) => {
+              outputChannel.appendLine(message);
+              progress.report({ message, increment });
+            };
+            const baseGenerateOptions = {
               repository,
               provider: currentProvider,
               apiKey: apiKey || '',
               generateMode: currentGenerateMode,
-              stageChanges: false,
+              commitOutputOptions: currentCommitOutputOptions,
               model: savedModel,
-              onProgress: (message, increment) => {
-                outputChannel.appendLine(message);
-                progress.report({ message, increment });
-              },
+              onProgress: reportProgress,
+            };
+
+            let result = await generateCommitMessage({
+              ...baseGenerateOptions,
+              stageChanges: false,
             });
 
             if (result.error?.exitCode === EXIT_CODES.MIXED_CHANGES) {
@@ -241,30 +273,14 @@ export function activate(context: vscode.ExtensionContext) {
 
               if (selection === 'Stage All & Generate') {
                 result = await generateCommitMessage({
-                  repository,
-                  provider: currentProvider,
-                  apiKey: apiKey || '',
-                  generateMode: currentGenerateMode,
+                  ...baseGenerateOptions,
                   stageChanges: true,
-                  model: savedModel,
-                  onProgress: (message, increment) => {
-                    outputChannel.appendLine(message);
-                    progress.report({ message, increment });
-                  },
                 });
               } else if (selection === 'Proceed with Staged Only') {
                 result = await generateCommitMessage({
-                  repository,
-                  provider: currentProvider,
-                  apiKey: apiKey || '',
-                  generateMode: currentGenerateMode,
+                  ...baseGenerateOptions,
                   stageChanges: false,
                   proceedWithStagedOnly: true,
-                  model: savedModel,
-                  onProgress: (message, increment) => {
-                    outputChannel.appendLine(message);
-                    progress.report({ message, increment });
-                  },
                 });
               } else {
                 return;
@@ -282,30 +298,14 @@ export function activate(context: vscode.ExtensionContext) {
 
               if (selection === 'Stage & Generate All') {
                 result = await generateCommitMessage({
-                  repository,
-                  provider: currentProvider,
-                  apiKey: apiKey || '',
-                  generateMode: currentGenerateMode,
+                  ...baseGenerateOptions,
                   stageChanges: true,
-                  model: savedModel,
-                  onProgress: (message, increment) => {
-                    outputChannel.appendLine(message);
-                    progress.report({ message, increment });
-                  },
                 });
               } else if (selection === 'Generate Tracked Only') {
                 result = await generateCommitMessage({
-                  repository,
-                  provider: currentProvider,
-                  apiKey: apiKey || '',
-                  generateMode: currentGenerateMode,
+                  ...baseGenerateOptions,
                   stageChanges: false,
                   ignoreUntracked: true,
-                  model: savedModel,
-                  onProgress: (message, increment) => {
-                    outputChannel.appendLine(message);
-                    progress.report({ message, increment });
-                  },
                 });
               }
             } else if (
@@ -320,16 +320,8 @@ export function activate(context: vscode.ExtensionContext) {
 
               if (selection === 'Stage & Track') {
                 result = await generateCommitMessage({
-                  repository,
-                  provider: currentProvider,
-                  apiKey: apiKey || '',
-                  generateMode: currentGenerateMode,
+                  ...baseGenerateOptions,
                   stageChanges: true,
-                  model: savedModel,
-                  onProgress: (message, increment) => {
-                    outputChannel.appendLine(message);
-                    progress.report({ message, increment });
-                  },
                 });
               } else {
                 return;

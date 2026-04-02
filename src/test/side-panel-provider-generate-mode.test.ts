@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as path from 'path';
 import { clearRequireCache, withModuleMock } from './helpers/module-mock';
+import { DEFAULT_COMMIT_OUTPUT_OPTIONS } from '../models';
 
 const MODULE_PATH = path.resolve(__dirname, '..', 'side-panel-provider');
 
@@ -157,23 +158,94 @@ test('generate forwards normalized generateMode to command payload', async () =>
   const harness = await createHarness();
 
   try {
-    await harness.sendMessage({ type: 'generate', generateMode: 'direct-diff' });
+    await harness.sendMessage({
+      type: 'generate',
+      generateMode: 'direct-diff',
+      commitOutputOptions: {
+        includeScope: false,
+        includeBody: false,
+        includeFooter: true,
+      },
+    });
     await harness.sendMessage({ type: 'generate', generateMode: 'unknown' });
 
     assert.equal(harness.commandCalls.length, 2);
     assert.deepEqual(harness.commandCalls[0], [
       'commit-copilot.generate',
-      { generateMode: 'direct-diff' },
+      {
+        generateMode: 'direct-diff',
+        commitOutputOptions: {
+          includeScope: false,
+          includeBody: false,
+          includeFooter: true,
+        },
+      },
     ]);
     assert.deepEqual(harness.commandCalls[1], [
       'commit-copilot.generate',
-      { generateMode: 'agentic' },
+      {
+        generateMode: 'agentic',
+        commitOutputOptions: DEFAULT_COMMIT_OUTPUT_OPTIONS,
+      },
     ]);
 
     const doneMessages = harness.postedMessages.filter(
       (message) => message.type === 'generationDone',
     );
     assert.equal(doneMessages.length, 2);
+  } finally {
+    harness.dispose();
+  }
+});
+
+test('getCommitOutputOptions returns defaults when unset', async () => {
+  const harness = await createHarness();
+
+  try {
+    await harness.sendMessage({ type: 'getCommitOutputOptions' });
+    const optionsMessage = harness.postedMessages.find(
+      (message) => message.type === 'currentCommitOutputOptions',
+    );
+
+    assert.ok(optionsMessage);
+    assert.deepEqual(
+      optionsMessage.commitOutputOptions,
+      DEFAULT_COMMIT_OUTPUT_OPTIONS,
+    );
+  } finally {
+    harness.dispose();
+  }
+});
+
+test('saveCommitOutputOptions persists normalized values', async () => {
+  const harness = await createHarness();
+
+  try {
+    await harness.sendMessage({
+      type: 'saveCommitOutputOptions',
+      value: {
+        includeScope: false,
+        includeBody: false,
+        includeFooter: true,
+      },
+    });
+    assert.deepEqual(harness.state.get('COMMIT_OUTPUT_OPTIONS'), {
+      includeScope: false,
+      includeBody: false,
+      includeFooter: true,
+    });
+
+    await harness.sendMessage({
+      type: 'saveCommitOutputOptions',
+      value: {
+        includeScope: 'yes',
+      },
+    });
+    assert.deepEqual(harness.state.get('COMMIT_OUTPUT_OPTIONS'), {
+      includeScope: DEFAULT_COMMIT_OUTPUT_OPTIONS.includeScope,
+      includeBody: DEFAULT_COMMIT_OUTPUT_OPTIONS.includeBody,
+      includeFooter: DEFAULT_COMMIT_OUTPUT_OPTIONS.includeFooter,
+    });
   } finally {
     harness.dispose();
   }

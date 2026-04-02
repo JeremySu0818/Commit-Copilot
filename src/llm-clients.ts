@@ -1,4 +1,11 @@
-import { APIProvider, DEFAULT_MODELS, OLLAMA_DEFAULT_HOST } from './models';
+import {
+  APIProvider,
+  CommitOutputOptions,
+  DEFAULT_COMMIT_OUTPUT_OPTIONS,
+  DEFAULT_MODELS,
+  OLLAMA_DEFAULT_HOST,
+  normalizeCommitOutputOptions,
+} from './models';
 import { buildAgentSystemPrompt } from './agent-loop/shared';
 import { DEFAULT_RETRY_OPTIONS, withRetry } from './retry';
 import {
@@ -9,15 +16,11 @@ import {
   NoChangesError,
 } from './errors';
 
-const SYSTEM_PROMPT = buildAgentSystemPrompt({
-  includeFindReferences: false,
-  enableTools: false,
-});
-
 export interface LLMClientOptions {
   provider: APIProvider;
   apiKey: string;
   model?: string;
+  commitOutputOptions?: CommitOutputOptions;
 }
 
 export type ProgressCallback = (message: string, increment?: number) => void;
@@ -32,13 +35,23 @@ export interface ILLMClient {
 export class GeminiClient implements ILLMClient {
   private readonly apiKey: string;
   private readonly model: string;
+  private readonly systemPrompt: string;
 
-  constructor(apiKey: string, model?: string) {
+  constructor(
+    apiKey: string,
+    model?: string,
+    commitOutputOptions: CommitOutputOptions = DEFAULT_COMMIT_OUTPUT_OPTIONS,
+  ) {
     if (!apiKey) {
       throw new APIKeyMissingError();
     }
     this.apiKey = apiKey;
     this.model = (model || DEFAULT_MODELS.google).replace(/^models\//, '');
+    this.systemPrompt = buildAgentSystemPrompt({
+      includeFindReferences: false,
+      enableTools: false,
+      commitOutputOptions: normalizeCommitOutputOptions(commitOutputOptions),
+    });
   }
 
   async generateCommitMessage(diff: string): Promise<string> {
@@ -51,7 +64,7 @@ export class GeminiClient implements ILLMClient {
       const client = new GoogleGenerativeAI(this.apiKey);
       const generativeModel = client.getGenerativeModel({
         model: this.model,
-        systemInstruction: SYSTEM_PROMPT,
+        systemInstruction: this.systemPrompt,
       });
 
       const result = await withRetry(
@@ -108,13 +121,23 @@ export class GeminiClient implements ILLMClient {
 export class OpenAIClient implements ILLMClient {
   private readonly apiKey: string;
   private readonly model: string;
+  private readonly systemPrompt: string;
 
-  constructor(apiKey: string, model?: string) {
+  constructor(
+    apiKey: string,
+    model?: string,
+    commitOutputOptions: CommitOutputOptions = DEFAULT_COMMIT_OUTPUT_OPTIONS,
+  ) {
     if (!apiKey) {
       throw new APIKeyMissingError();
     }
     this.apiKey = apiKey;
     this.model = model || DEFAULT_MODELS.openai;
+    this.systemPrompt = buildAgentSystemPrompt({
+      includeFindReferences: false,
+      enableTools: false,
+      commitOutputOptions: normalizeCommitOutputOptions(commitOutputOptions),
+    });
   }
 
   async generateCommitMessage(diff: string): Promise<string> {
@@ -130,7 +153,7 @@ export class OpenAIClient implements ILLMClient {
           client.chat.completions.create({
             model: this.model,
             messages: [
-              { role: 'system', content: SYSTEM_PROMPT },
+              { role: 'system', content: this.systemPrompt },
               { role: 'user', content: `Here is the git diff:\n\n${diff}` },
             ],
           }),
@@ -173,13 +196,23 @@ export class OpenAIClient implements ILLMClient {
 export class AnthropicClient implements ILLMClient {
   private readonly apiKey: string;
   private readonly model: string;
+  private readonly systemPrompt: string;
 
-  constructor(apiKey: string, model?: string) {
+  constructor(
+    apiKey: string,
+    model?: string,
+    commitOutputOptions: CommitOutputOptions = DEFAULT_COMMIT_OUTPUT_OPTIONS,
+  ) {
     if (!apiKey) {
       throw new APIKeyMissingError();
     }
     this.apiKey = apiKey;
     this.model = model || DEFAULT_MODELS.anthropic;
+    this.systemPrompt = buildAgentSystemPrompt({
+      includeFindReferences: false,
+      enableTools: false,
+      commitOutputOptions: normalizeCommitOutputOptions(commitOutputOptions),
+    });
   }
 
   async generateCommitMessage(diff: string): Promise<string> {
@@ -195,7 +228,7 @@ export class AnthropicClient implements ILLMClient {
           client.messages.create({
             model: this.model,
             max_tokens: 65536,
-            system: SYSTEM_PROMPT,
+            system: this.systemPrompt,
             messages: [
               { role: 'user', content: `Here is the git diff:\n\n${diff}` },
             ],
@@ -243,10 +276,20 @@ export class AnthropicClient implements ILLMClient {
 export class OllamaClient implements ILLMClient {
   private readonly host: string;
   private readonly model: string;
+  private readonly systemPrompt: string;
 
-  constructor(host?: string, model?: string) {
+  constructor(
+    host?: string,
+    model?: string,
+    commitOutputOptions: CommitOutputOptions = DEFAULT_COMMIT_OUTPUT_OPTIONS,
+  ) {
     this.host = host || OLLAMA_DEFAULT_HOST;
     this.model = model || DEFAULT_MODELS.ollama;
+    this.systemPrompt = buildAgentSystemPrompt({
+      includeFindReferences: false,
+      enableTools: false,
+      commitOutputOptions: normalizeCommitOutputOptions(commitOutputOptions),
+    });
   }
 
   async generateCommitMessage(
@@ -288,7 +331,7 @@ export class OllamaClient implements ILLMClient {
       const response = await client.chat({
         model: this.model,
         messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'system', content: this.systemPrompt },
           { role: 'user', content: `Here is the git diff:\n\n${diff}` },
         ],
         options: {
@@ -327,17 +370,20 @@ export class OllamaClient implements ILLMClient {
 }
 
 export function createLLMClient(options: LLMClientOptions): ILLMClient {
-  const { provider, apiKey, model } = options;
+  const { provider, apiKey, model, commitOutputOptions } = options;
+  const resolvedCommitOutputOptions = normalizeCommitOutputOptions(
+    commitOutputOptions,
+  );
 
   switch (provider) {
     case 'google':
-      return new GeminiClient(apiKey, model);
+      return new GeminiClient(apiKey, model, resolvedCommitOutputOptions);
     case 'openai':
-      return new OpenAIClient(apiKey, model);
+      return new OpenAIClient(apiKey, model, resolvedCommitOutputOptions);
     case 'anthropic':
-      return new AnthropicClient(apiKey, model);
+      return new AnthropicClient(apiKey, model, resolvedCommitOutputOptions);
     case 'ollama':
-      return new OllamaClient(apiKey, model);
+      return new OllamaClient(apiKey, model, resolvedCommitOutputOptions);
     default:
       throw new Error(`Unsupported provider: ${provider}`);
   }

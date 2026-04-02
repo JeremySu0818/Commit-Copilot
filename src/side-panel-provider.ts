@@ -2,6 +2,8 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import {
   APIProvider,
+  CommitOutputOptions,
+  DEFAULT_COMMIT_OUTPUT_OPTIONS,
   DEFAULT_GENERATE_MODE,
   PROVIDER_DISPLAY_NAMES,
   GENERATE_MODE_DISPLAY_NAMES,
@@ -11,6 +13,7 @@ import {
   DEFAULT_PROVIDER,
   API_KEY_STORAGE_KEYS,
   OLLAMA_DEFAULT_HOST,
+  normalizeCommitOutputOptions,
 } from './models';
 import { GenerationStateManager, ValidationStateManager } from './state';
 
@@ -381,8 +384,12 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
           try {
             const requestedMode =
               data.generateMode === 'direct-diff' ? 'direct-diff' : 'agentic';
+            const commitOutputOptions = normalizeCommitOutputOptions(
+              data.commitOutputOptions,
+            );
             await vscode.commands.executeCommand('commit-copilot.generate', {
               generateMode: requestedMode,
+              commitOutputOptions,
             });
           } finally {
             this._view?.webview.postMessage({ type: 'generationDone' });
@@ -461,6 +468,26 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
           });
           break;
         }
+        case 'saveCommitOutputOptions': {
+          const commitOutputOptions = normalizeCommitOutputOptions(data.value);
+          await this._context.globalState.update(
+            'COMMIT_OUTPUT_OPTIONS',
+            commitOutputOptions,
+          );
+          break;
+        }
+        case 'getCommitOutputOptions': {
+          const savedOptions = normalizeCommitOutputOptions(
+            this._context.globalState.get<CommitOutputOptions>(
+              'COMMIT_OUTPUT_OPTIONS',
+            ) || DEFAULT_COMMIT_OUTPUT_OPTIONS,
+          );
+          this._view?.webview.postMessage({
+            type: 'currentCommitOutputOptions',
+            commitOutputOptions: savedOptions,
+          });
+          break;
+        }
         case 'getAllKeys': {
           const keyStatuses: Record<APIProvider, boolean> = {
             google: false,
@@ -505,6 +532,9 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
     const generateModesJson = JSON.stringify(GENERATE_MODE_DISPLAY_NAMES);
     const modelsJson = JSON.stringify(MODELS_BY_PROVIDER);
     const defaultModelsJson = JSON.stringify(DEFAULT_MODELS);
+    const defaultCommitOutputOptionsJson = JSON.stringify(
+      DEFAULT_COMMIT_OUTPUT_OPTIONS,
+    );
     const defaultProvider = DEFAULT_PROVIDER;
     const defaultGenerateMode = DEFAULT_GENERATE_MODE;
     const ollamaDefaultHost = OLLAMA_DEFAULT_HOST;
@@ -523,6 +553,10 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
       .replace(/\{\{GENERATE_MODES_JSON\}\}/g, generateModesJson)
       .replace(/\{\{MODELS_JSON\}\}/g, modelsJson)
       .replace(/\{\{DEFAULT_MODELS_JSON\}\}/g, defaultModelsJson)
+      .replace(
+        /\{\{DEFAULT_COMMIT_OUTPUT_OPTIONS_JSON\}\}/g,
+        defaultCommitOutputOptionsJson,
+      )
       .replace(/\{\{DEFAULT_PROVIDER\}\}/g, defaultProvider)
       .replace(/\{\{DEFAULT_GENERATE_MODE\}\}/g, defaultGenerateMode)
       .replace(/\{\{OLLAMA_DEFAULT_HOST\}\}/g, ollamaDefaultHost);

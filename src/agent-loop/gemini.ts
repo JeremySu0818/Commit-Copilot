@@ -3,7 +3,12 @@ import {
   buildInitialContext,
   toGeminiFunctionDeclarations,
 } from '../agent-tools';
-import { DEFAULT_MODELS } from '../models';
+import {
+  CommitOutputOptions,
+  DEFAULT_COMMIT_OUTPUT_OPTIONS,
+  DEFAULT_MODELS,
+  normalizeCommitOutputOptions,
+} from '../models';
 import {
   APIKeyMissingError,
   APIKeyInvalidError,
@@ -15,6 +20,7 @@ import { ProgressCallback } from '../llm-clients';
 import { GitOperations } from '../commit-copilot';
 import {
   buildAgentSystemPrompt,
+  buildFinalOutputReminder,
   extractCommitMessage,
   formatBatchProgressMessage,
   MAX_AGENT_STEPS,
@@ -29,6 +35,7 @@ async function runGeminiAgentLoop(
   onProgress?: ProgressCallback,
   isStaged: boolean = true,
   gitOps?: GitOperations,
+  commitOutputOptions: CommitOutputOptions = DEFAULT_COMMIT_OUTPUT_OPTIONS,
 ): Promise<string> {
   if (!apiKey) {
     throw new APIKeyMissingError();
@@ -41,9 +48,12 @@ async function runGeminiAgentLoop(
     const { GoogleGenerativeAI } = await import('@google/generative-ai');
     const client = new GoogleGenerativeAI(apiKey);
     const modelName = (model || DEFAULT_MODELS.google).replace(/^models\//, '');
+    const resolvedCommitOutputOptions =
+      normalizeCommitOutputOptions(commitOutputOptions);
 
     const systemPrompt = buildAgentSystemPrompt({
       includeFindReferences: true,
+      commitOutputOptions: resolvedCommitOutputOptions,
     });
     const generativeModel = client.getGenerativeModel({
       model: modelName,
@@ -60,6 +70,8 @@ async function runGeminiAgentLoop(
       repoRoot,
       gitOps,
       isStaged,
+      true,
+      resolvedCommitOutputOptions,
     );
     const chat = generativeModel.startChat({ history: [] });
 
@@ -141,9 +153,7 @@ async function runGeminiAgentLoop(
 
     const finalResponse = await withRetry(
       () =>
-        chat.sendMessage(
-          'You have used all available investigation steps. Output ONLY the final commit message now in type(scope): description format. Scope parentheses are MANDATORY. Do NOT include any explanation or analysis — just the commit message.',
-        ),
+        chat.sendMessage(buildFinalOutputReminder(resolvedCommitOutputOptions)),
       retryOptions,
     );
     const text = finalResponse.response.text();

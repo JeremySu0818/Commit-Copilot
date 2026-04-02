@@ -2,6 +2,12 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { GitOperations } from '../commit-copilot';
 import { DEFAULT_IGNORED_DIRS } from './staged-workspace';
+import {
+  CommitOutputOptions,
+  DEFAULT_COMMIT_OUTPUT_OPTIONS,
+  normalizeCommitOutputOptions,
+} from '../models';
+import { buildCommitOutputReminder } from '../agent-loop/shared';
 
 export function parseDiffSummary(
   diff: string,
@@ -255,7 +261,10 @@ export async function buildInitialContext(
   gitOps?: GitOperations,
   isStaged: boolean = true,
   enableTools: boolean = true,
+  commitOutputOptions: CommitOutputOptions = DEFAULT_COMMIT_OUTPUT_OPTIONS,
 ): Promise<string> {
+  const resolvedCommitOutputOptions =
+    normalizeCommitOutputOptions(commitOutputOptions);
   const fileSummary = parseDiffSummary(diff);
   const projectTree = await getProjectStructure(repoRoot, gitOps);
   const commitHistory = await formatCommitHistory(gitOps);
@@ -287,7 +296,7 @@ ${commitHistory}
 You have been given the file names and line counts above. The full diff is provided below.
 Base your classification on the provided diff and context. Do NOT guess the commit type based solely on file names.
 
-REMINDER: When you are done, your ENTIRE text output must be ONLY the commit message in \`type(scope): description\` format — scope parentheses are MANDATORY. No analysis, no explanation, no commentary.`;
+REMINDER: ${buildCommitOutputReminder(resolvedCommitOutputOptions)}`;
   }
 
   const toolList =
@@ -314,5 +323,5 @@ Use your tools to inspect the changes before classifying. You have ${toolList} �
 If you need to learn the project's commit style, you can call \`get_recent_commits\` to fetch recent commit messages.
 Do NOT guess the commit type based solely on file names.
 
-REMINDER: When you are done investigating, your ENTIRE text output must be ONLY the commit message in \`type(scope): description\` format — scope parentheses are MANDATORY. No analysis, no explanation, no commentary.`;
+REMINDER: ${buildCommitOutputReminder(resolvedCommitOutputOptions)}`;
 }

@@ -1,5 +1,11 @@
 import { buildInitialContext } from '../agent-tools';
-import { DEFAULT_MODELS, OLLAMA_DEFAULT_HOST } from '../models';
+import {
+  CommitOutputOptions,
+  DEFAULT_COMMIT_OUTPUT_OPTIONS,
+  DEFAULT_MODELS,
+  OLLAMA_DEFAULT_HOST,
+  normalizeCommitOutputOptions,
+} from '../models';
 import { APIRequestError, NoChangesError } from '../errors';
 import { ProgressCallback } from '../llm-clients';
 import { GitOperations } from '../commit-copilot';
@@ -13,6 +19,7 @@ async function runOllamaAgentLoop(
   onProgress: ProgressCallback | undefined,
   isStaged: boolean,
   gitOps?: GitOperations,
+  commitOutputOptions: CommitOutputOptions = DEFAULT_COMMIT_OUTPUT_OPTIONS,
 ): Promise<string> {
   if (!diff.trim()) {
     throw new NoChangesError();
@@ -24,6 +31,8 @@ async function runOllamaAgentLoop(
     const { Ollama } = await import('ollama');
     const client = new Ollama({ host: resolvedHost });
     const modelName = model || DEFAULT_MODELS.ollama;
+    const resolvedCommitOutputOptions =
+      normalizeCommitOutputOptions(commitOutputOptions);
 
     const pullStream = await client.pull({ model: modelName, stream: true });
     let lastPercent = 0;
@@ -55,10 +64,12 @@ async function runOllamaAgentLoop(
       gitOps,
       isStaged,
       false,
+      resolvedCommitOutputOptions,
     );
     const systemPrompt = buildAgentSystemPrompt({
       includeFindReferences: false,
       enableTools: false,
+      commitOutputOptions: resolvedCommitOutputOptions,
     });
     const enhancedPrompt = `${initialContext}\n\n## Full Diff (provided inline for local model)\n\n${diff}`;
 

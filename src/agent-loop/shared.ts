@@ -1,3 +1,9 @@
+import {
+  CommitOutputOptions,
+  DEFAULT_COMMIT_OUTPUT_OPTIONS,
+  normalizeCommitOutputOptions,
+} from '../models';
+
 const MAX_AGENT_STEPS = Infinity;
 
 const CONVENTIONAL_COMMIT_TYPES = [
@@ -14,7 +20,7 @@ const CONVENTIONAL_COMMIT_TYPES = [
   'revert',
 ];
 
-const CLASSIFICATION_AND_OUTPUT_RULES = `## Classification Rules (STRICT)
+const CLASSIFICATION_RULES = `## Classification Rules (STRICT)
 Apply these rules IN ORDER. The first matching rule wins:
 
 | Condition | Type |
@@ -33,18 +39,88 @@ Apply these rules IN ORDER. The first matching rule wins:
 ### Critical Distinctions
 - **chore vs refactor**: If the ONLY change is removing comments, TODO notes, console.logs, unused imports, or deprecated dead code — this is \`chore\`, NOT \`refactor\`. \`refactor\` requires restructuring of actual program logic (e.g., extracting functions, reorganizing class hierarchy).
 - **chore vs style**: Removing comments is \`chore\`. Reformatting existing code (indentation, bracket style) is \`style\`.
-- **feat vs refactor**: If the change exposes new functionality to the user/API, it's \`feat\`. If it only reorganizes internals, it's \`refactor\`.
+- **feat vs refactor**: If the change exposes new functionality to the user/API, it's \`feat\`. If it only reorganizes internals, it's \`refactor\`.`;
 
-## Output Format (MANDATORY — ZERO TOLERANCE FOR VIOLATIONS)
+function buildScopeRule(options: CommitOutputOptions): string {
+  if (options.includeScope) {
+    return 'Scope is MANDATORY: first line MUST be `type(scope): description`. Never output `type: description` without scope.';
+  }
+  return 'Scope is FORBIDDEN: first line MUST be `type: description`. Do NOT include scope parentheses like `type(scope): ...`.';
+}
+
+function buildBodyAndFooterRule(options: CommitOutputOptions): string {
+  if (options.includeBody && options.includeFooter) {
+    return 'Body is MANDATORY and footer is MANDATORY. Format: subject line, blank line, body text, blank line, footer line(s).';
+  }
+  if (options.includeBody && !options.includeFooter) {
+    return 'Body is MANDATORY. Add a blank line after the subject and write the body. Footer is FORBIDDEN.';
+  }
+  if (!options.includeBody && options.includeFooter) {
+    return 'Body is FORBIDDEN and footer is MANDATORY. Format: subject line, blank line, then footer line(s).';
+  }
+  return 'Body and footer are both FORBIDDEN. Output exactly one subject line with no extra blank lines.';
+}
+
+function buildCommitLayout(options: CommitOutputOptions): string {
+  if (options.includeScope && options.includeBody && options.includeFooter) {
+    return `type(scope): description
+
+Body explaining what changed and why.
+
+Refs: #123`;
+  }
+  if (options.includeScope && options.includeBody && !options.includeFooter) {
+    return `type(scope): description
+
+Body explaining what changed and why.`;
+  }
+  if (options.includeScope && !options.includeBody && options.includeFooter) {
+    return `type(scope): description
+
+Refs: #123`;
+  }
+  if (options.includeScope && !options.includeBody && !options.includeFooter) {
+    return 'type(scope): description';
+  }
+  if (!options.includeScope && options.includeBody && options.includeFooter) {
+    return `type: description
+
+Body explaining what changed and why.
+
+Refs: #123`;
+  }
+  if (!options.includeScope && options.includeBody && !options.includeFooter) {
+    return `type: description
+
+Body explaining what changed and why.`;
+  }
+  if (!options.includeScope && !options.includeBody && options.includeFooter) {
+    return `type: description
+
+Refs: #123`;
+  }
+  return 'type: description';
+}
+
+function buildOutputFormatRules(options: CommitOutputOptions): string {
+  const commitTypes = CONVENTIONAL_COMMIT_TYPES.map((type) => `\`${type}\``)
+    .join(', ');
+  const strictRules = [
+    `First line MUST start with one of: ${commitTypes}.`,
+    buildScopeRule(options),
+    'First line max 72 characters, ideally under 50.',
+    buildBodyAndFooterRule(options),
+    'English only, no emojis.',
+    'Do NOT wrap in markdown code blocks (no ```).',
+  ];
+
+  return `## Output Format (MANDATORY — ZERO TOLERANCE FOR VIOLATIONS)
 
 ### Strict Rules
-1. **Scope parentheses are MANDATORY**: The format is \`type(scope): description\`. You MUST always include a scope in parentheses. Never output \`type: description\` without a scope.
-   - The scope should describe the affected module, component, or area (e.g., \`auth\`, \`api\`, \`ui\`, \`config\`, \`deps\`, \`core\`).
-   - For initial project setup or changes spanning the entire project, use \`project\` as the scope.
-2. First line max 72 characters, ideally under 50.
-3. **Commit body is MANDATORY**: You MUST provide a body separated by a blank line after the description. The body should explain *what* and *why* (not just *how*). Footer is optional.
-4. English only, no emojis.
-5. Do NOT wrap in markdown code blocks (no \`\`\`).  
+${strictRules.map((rule, index) => `${index + 1}. ${rule}`).join('\n')}
+
+### Required Layout
+${buildCommitLayout(options)}
 
 ### CRITICAL OUTPUT CONSTRAINT
 **Your ENTIRE final text output MUST be the commit message and NOTHING ELSE.**
@@ -55,25 +131,36 @@ Apply these rules IN ORDER. The first matching rule wins:
 - The FIRST character of your output must be the start of the commit type (e.g., \`f\` in \`feat\`, \`c\` in \`chore\`).
 - The output must be PARSEABLE as a commit message directly — no surrounding text whatsoever.
 
-### Examples of CORRECT output (entire response is just this):
-feat(auth): add OAuth2 login flow with Google provider
-
-Implemented the standard OAuth2 authorization code grant to allow
-users to log in via their Google accounts. Stored session tokens
-securely in HttpOnly cookies.
-
-fix(api): resolve null pointer in user query handler
-
-Added a null check for the user metadata object before attempting
-to access the nested role property during database querying.
-
-### Examples of WRONG output (NEVER do this):
-"Based on my investigation..." followed by the commit message
-"Here's the commit message:" followed by the commit message
-Any text before or after the commit message
-A commit message without scope parentheses like "feat: add login"
-
 VIOLATING THESE OUTPUT RULES IS A CRITICAL FAILURE.`;
+}
+
+function buildCommitOutputReminder(
+  commitOutputOptions: CommitOutputOptions = DEFAULT_COMMIT_OUTPUT_OPTIONS,
+): string {
+  const options = normalizeCommitOutputOptions(commitOutputOptions);
+  const subjectFormat = options.includeScope
+    ? '`type(scope): description`'
+    : '`type: description`';
+  const scopeRule = options.includeScope
+    ? 'Scope parentheses are MANDATORY.'
+    : 'Scope parentheses are FORBIDDEN.';
+  const bodyRule = options.includeBody
+    ? 'A body section is MANDATORY.'
+    : 'A body section is FORBIDDEN.';
+  const footerRule = options.includeFooter
+    ? 'At least one footer line is MANDATORY.'
+    : 'Footer lines are FORBIDDEN.';
+
+  return `When you are done, your ENTIRE text output must be ONLY the commit message. First-line format: ${subjectFormat}. ${scopeRule} ${bodyRule} ${footerRule} No analysis, no explanation, no commentary.`;
+}
+
+function buildFinalOutputReminder(
+  commitOutputOptions: CommitOutputOptions = DEFAULT_COMMIT_OUTPUT_OPTIONS,
+): string {
+  return `You have used all available investigation steps. Output ONLY the final commit message now. ${buildCommitOutputReminder(
+    commitOutputOptions,
+  )}`;
+}
 
 function extractCommitMessage(raw: string): string {
   const trimmed = raw.trim();
@@ -116,7 +203,18 @@ function extractCommitMessage(raw: string): string {
 function buildAgentSystemPrompt(options: {
   includeFindReferences: boolean;
   enableTools?: boolean;
+  commitOutputOptions?: CommitOutputOptions;
 }): string {
+  const commitOutputOptions = normalizeCommitOutputOptions(
+    options.commitOutputOptions,
+  );
+  const scopeWorkflowLine = commitOutputOptions.includeScope
+    ? 'Determine the appropriate scope from the affected module/area.'
+    : 'Do NOT choose a scope. The subject line must omit scope parentheses.';
+  const outputRules = `${CLASSIFICATION_RULES}
+
+${buildOutputFormatRules(commitOutputOptions)}`;
+
   if (options.enableTools === false) {
     return `You are a senior software engineer acting as an autonomous commit message agent.
 You are given the full diff inline. You do NOT have access to any tools.
@@ -125,10 +223,10 @@ Base your decision solely on the provided diff and context.
 ## Required Workflow
 1. Review the provided diff and context.
 2. Classify the change type based on the Classification Rules below.
-3. Determine the appropriate scope from the affected module/area.
+3. ${scopeWorkflowLine}
 4. Output ONLY the commit message. Nothing else.
 
-${CLASSIFICATION_AND_OUTPUT_RULES}`;
+${outputRules}`;
   }
 
   const toolLines = [
@@ -190,10 +288,10 @@ ${usageLines.join('\n')}
    Prioritize the most important or ambiguous files. You do NOT need to inspect every file if the changes are clearly related.
 2. If necessary, check recent commit messages with \`get_recent_commits\` to match the project's writing style.
 3. Classify the change type based on the Classification Rules below.
-4. Determine the appropriate scope from the affected module/area.
+4. ${scopeWorkflowLine}
 5. Output ONLY the commit message. Nothing else.
 
-${CLASSIFICATION_AND_OUTPUT_RULES}`;
+${outputRules}`;
 }
 
 function formatProgressMessage(
@@ -299,6 +397,8 @@ export {
   MAX_AGENT_STEPS,
   extractCommitMessage,
   buildAgentSystemPrompt,
+  buildCommitOutputReminder,
+  buildFinalOutputReminder,
   formatProgressMessage,
   formatBatchProgressMessage,
 };
