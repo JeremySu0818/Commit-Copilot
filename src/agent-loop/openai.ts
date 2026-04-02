@@ -3,7 +3,12 @@ import {
   buildInitialContext,
   toOpenAITools,
 } from '../agent-tools';
-import { DEFAULT_MODELS } from '../models';
+import {
+  CommitOutputOptions,
+  DEFAULT_COMMIT_OUTPUT_OPTIONS,
+  DEFAULT_MODELS,
+  normalizeCommitOutputOptions,
+} from '../models';
 import {
   APIKeyMissingError,
   APIKeyInvalidError,
@@ -15,6 +20,7 @@ import { ProgressCallback } from '../llm-clients';
 import { GitOperations } from '../commit-copilot';
 import {
   buildAgentSystemPrompt,
+  buildFinalOutputReminder,
   extractCommitMessage,
   formatBatchProgressMessage,
   MAX_AGENT_STEPS,
@@ -29,6 +35,7 @@ async function runOpenAIAgentLoop(
   onProgress?: ProgressCallback,
   isStaged: boolean = true,
   gitOps?: GitOperations,
+  commitOutputOptions: CommitOutputOptions = DEFAULT_COMMIT_OUTPUT_OPTIONS,
 ): Promise<string> {
   if (!apiKey) {
     throw new APIKeyMissingError();
@@ -41,15 +48,20 @@ async function runOpenAIAgentLoop(
     const OpenAI = (await import('openai')).default;
     const client = new OpenAI({ apiKey });
     const modelName = model || DEFAULT_MODELS.openai;
+    const resolvedCommitOutputOptions =
+      normalizeCommitOutputOptions(commitOutputOptions);
 
     const initialContext = await buildInitialContext(
       diff,
       repoRoot,
       gitOps,
       isStaged,
+      true,
+      resolvedCommitOutputOptions,
     );
     const systemPrompt = buildAgentSystemPrompt({
       includeFindReferences: true,
+      commitOutputOptions: resolvedCommitOutputOptions,
     });
 
     const messages: any[] = [
@@ -138,8 +150,7 @@ async function runOpenAIAgentLoop(
 
     messages.push({
       role: 'user',
-      content:
-        'You have used all available investigation steps. Output ONLY the final commit message now in type(scope): description format. Scope parentheses are MANDATORY. Do NOT include any explanation or analysis — just the commit message.',
+      content: buildFinalOutputReminder(resolvedCommitOutputOptions),
     });
     const finalCompletion = await withRetry(
       () =>

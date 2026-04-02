@@ -3,7 +3,12 @@ import {
   buildInitialContext,
   toAnthropicTools,
 } from '../agent-tools';
-import { DEFAULT_MODELS } from '../models';
+import {
+  CommitOutputOptions,
+  DEFAULT_COMMIT_OUTPUT_OPTIONS,
+  DEFAULT_MODELS,
+  normalizeCommitOutputOptions,
+} from '../models';
 import {
   APIKeyMissingError,
   APIKeyInvalidError,
@@ -15,6 +20,7 @@ import { ProgressCallback } from '../llm-clients';
 import { GitOperations } from '../commit-copilot';
 import {
   buildAgentSystemPrompt,
+  buildFinalOutputReminder,
   extractCommitMessage,
   formatBatchProgressMessage,
   MAX_AGENT_STEPS,
@@ -29,6 +35,7 @@ async function runAnthropicAgentLoop(
   onProgress?: ProgressCallback,
   isStaged: boolean = true,
   gitOps?: GitOperations,
+  commitOutputOptions: CommitOutputOptions = DEFAULT_COMMIT_OUTPUT_OPTIONS,
 ): Promise<string> {
   if (!apiKey) {
     throw new APIKeyMissingError();
@@ -41,15 +48,20 @@ async function runAnthropicAgentLoop(
     const Anthropic = (await import('@anthropic-ai/sdk')).default;
     const client = new Anthropic({ apiKey });
     const modelName = model || DEFAULT_MODELS.anthropic;
+    const resolvedCommitOutputOptions =
+      normalizeCommitOutputOptions(commitOutputOptions);
 
     const initialContext = await buildInitialContext(
       diff,
       repoRoot,
       gitOps,
       isStaged,
+      true,
+      resolvedCommitOutputOptions,
     );
     const systemPrompt = buildAgentSystemPrompt({
       includeFindReferences: true,
+      commitOutputOptions: resolvedCommitOutputOptions,
     });
 
     const messages: any[] = [{ role: 'user', content: initialContext }];
@@ -137,7 +149,7 @@ async function runAnthropicAgentLoop(
       content: [
         {
           type: 'text',
-          text: 'You have used all available investigation steps. Output ONLY the final commit message now in type(scope): description format. Scope parentheses are MANDATORY. Do NOT include any explanation or analysis — just the commit message.',
+          text: buildFinalOutputReminder(resolvedCommitOutputOptions),
         },
       ],
     });

@@ -1,5 +1,10 @@
 export type APIProvider = 'google' | 'openai' | 'anthropic' | 'ollama';
 export type GenerateMode = 'agentic' | 'direct-diff';
+export interface CommitOutputOptions {
+  includeScope: boolean;
+  includeBody: boolean;
+  includeFooter: boolean;
+}
 export const GENERATE_MODE_DISPLAY_NAMES: Record<GenerateMode, string> = {
   agentic: 'Agentic Generate',
   'direct-diff': 'Direct Diff',
@@ -86,3 +91,32 @@ export const API_KEY_STORAGE_KEYS: Record<APIProvider, string> = {
 };
 export const OLLAMA_DEFAULT_HOST = 'http://127.0.0.1:11434';
 export const DEFAULT_GENERATE_MODE: GenerateMode = 'agentic';
+export const DEFAULT_COMMIT_OUTPUT_OPTIONS: CommitOutputOptions = {
+  includeScope: true,
+  includeBody: true,
+  includeFooter: false,
+};
+
+export function normalizeCommitOutputOptions(
+  options: unknown,
+): CommitOutputOptions {
+  const candidate =
+    options && typeof options === 'object'
+      ? (options as Partial<CommitOutputOptions>)
+      : {};
+
+  return {
+    includeScope:
+      typeof candidate.includeScope === 'boolean'
+        ? candidate.includeScope
+        : DEFAULT_COMMIT_OUTPUT_OPTIONS.includeScope,
+    includeBody:
+      typeof candidate.includeBody === 'boolean'
+        ? candidate.includeBody
+        : DEFAULT_COMMIT_OUTPUT_OPTIONS.includeBody,
+    includeFooter:
+      typeof candidate.includeFooter === 'boolean'
+        ? candidate.includeFooter
+        : DEFAULT_COMMIT_OUTPUT_OPTIONS.includeFooter,
+  };
+}

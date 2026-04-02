@@ -29,7 +29,8 @@
       color: var(--vscode-foreground);
       opacity: 0.8;
     }
-    input { 
+    input[type="password"],
+    input[type="text"] { 
       padding: 8px 10px; 
       background: var(--vscode-input-background); 
       color: var(--vscode-input-foreground); 
@@ -37,7 +38,8 @@
       border-radius: 4px;
       font-size: 13px;
     }
-    input:focus {
+    input[type="password"]:focus,
+    input[type="text"]:focus {
       outline: none;
       border-color: var(--vscode-focusBorder);
     }
@@ -133,6 +135,26 @@
     .provider-info a:hover {
       text-decoration: underline;
     }
+    .checkbox-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 4px;
+    }
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      text-transform: none;
+      letter-spacing: 0;
+      color: var(--vscode-foreground);
+      cursor: pointer;
+    }
+    .checkbox-item input[type="checkbox"] {
+      margin: 0;
+    }
   </style>
 </head>
 <body>
@@ -181,6 +203,23 @@
           Loading configuration...
         </span>
       </div>
+      <div class="input-group" style="margin-top: 10px;">
+        <label>Conventional Commit Sections</label>
+        <div class="checkbox-group">
+          <label class="checkbox-item" for="includeScopeCheckbox">
+            <input type="checkbox" id="includeScopeCheckbox">
+            Include Scope
+          </label>
+          <label class="checkbox-item" for="includeBodyCheckbox">
+            <input type="checkbox" id="includeBodyCheckbox">
+            Include Body
+          </label>
+          <label class="checkbox-item" for="includeFooterCheckbox">
+            <input type="checkbox" id="includeFooterCheckbox">
+            Include Footer
+          </label>
+        </div>
+      </div>
     </div>
     <div class="input-group">
       <button id="generateBtn" class="primary" disabled>
@@ -196,6 +235,7 @@
     const defaultModels = {{DEFAULT_MODELS_JSON}};
     const defaultProvider = '{{DEFAULT_PROVIDER}}';
     const defaultGenerateMode = '{{DEFAULT_GENERATE_MODE}}';
+    const defaultCommitOutputOptions = {{DEFAULT_COMMIT_OUTPUT_OPTIONS_JSON}};
     const ollamaDefaultHost = '{{OLLAMA_DEFAULT_HOST}}';
     const providerSelect = document.getElementById('providerSelect');
     const saveBtn = document.getElementById('saveBtn');
@@ -208,12 +248,16 @@
     const modelSelect = document.getElementById('modelSelect');
     const providerInfo = document.getElementById('providerInfo');
     const configTitle = document.getElementById('configTitle');
+    const includeScopeCheckbox = document.getElementById('includeScopeCheckbox');
+    const includeBodyCheckbox = document.getElementById('includeBodyCheckbox');
+    const includeFooterCheckbox = document.getElementById('includeFooterCheckbox');
 
     let isGenerating = false;
     let hasChanges = false;
     let currentProvider = defaultProvider;
     let currentGenerateMode = defaultGenerateMode;
     let preferredGenerateMode = defaultGenerateMode;
+    let currentCommitOutputOptions = normalizeCommitOutputOptions(defaultCommitOutputOptions);
     let keyStatuses = {};
 
     Object.entries(providers).forEach(([value, label]) => {
@@ -232,6 +276,42 @@
 
     function normalizeGenerateMode(mode) {
       return mode === 'direct-diff' ? 'direct-diff' : 'agentic';
+    }
+
+    function normalizeCommitOutputOptions(options) {
+      const candidate = options && typeof options === 'object' ? options : {};
+      return {
+        includeScope:
+          typeof candidate.includeScope === 'boolean'
+            ? candidate.includeScope
+            : !!defaultCommitOutputOptions.includeScope,
+        includeBody:
+          typeof candidate.includeBody === 'boolean'
+            ? candidate.includeBody
+            : !!defaultCommitOutputOptions.includeBody,
+        includeFooter:
+          typeof candidate.includeFooter === 'boolean'
+            ? candidate.includeFooter
+            : !!defaultCommitOutputOptions.includeFooter,
+      };
+    }
+
+    function updateCommitOutputOptionsUI(options) {
+      const normalized = normalizeCommitOutputOptions(options);
+      currentCommitOutputOptions = normalized;
+      includeScopeCheckbox.checked = normalized.includeScope;
+      includeBodyCheckbox.checked = normalized.includeBody;
+      includeFooterCheckbox.checked = normalized.includeFooter;
+    }
+
+    function saveCommitOutputOptions() {
+      const options = {
+        includeScope: includeScopeCheckbox.checked,
+        includeBody: includeBodyCheckbox.checked,
+        includeFooter: includeFooterCheckbox.checked,
+      };
+      updateCommitOutputOptionsUI(options);
+      vscode.postMessage({ type: 'saveCommitOutputOptions', value: currentCommitOutputOptions });
     }
 
     function updateGenerateModeStatus(mode) {
@@ -336,8 +416,11 @@
       }
     }
 
+    updateCommitOutputOptionsUI(defaultCommitOutputOptions);
+
     vscode.postMessage({ type: 'getProvider' });
     vscode.postMessage({ type: 'getGenerateMode' });
+    vscode.postMessage({ type: 'getCommitOutputOptions' });
     vscode.postMessage({ type: 'checkGit' });
     vscode.postMessage({ type: 'getAllKeys' });
     vscode.postMessage({ type: 'checkGenerationStatus' });
@@ -369,7 +452,11 @@
     generateBtn.addEventListener('click', () => {
       isGenerating = true;
       updateGenerateBtn();
-      vscode.postMessage({ type: 'generate', generateMode: currentGenerateMode });
+      vscode.postMessage({
+        type: 'generate',
+        generateMode: currentGenerateMode,
+        commitOutputOptions: currentCommitOutputOptions,
+      });
     });
 
     modelSelect.addEventListener('change', () => {
@@ -386,6 +473,10 @@
       updateGenerateModeStatus(mode);
       vscode.postMessage({ type: 'saveGenerateMode', value: mode });
     });
+
+    includeScopeCheckbox.addEventListener('change', saveCommitOutputOptions);
+    includeBodyCheckbox.addEventListener('change', saveCommitOutputOptions);
+    includeFooterCheckbox.addEventListener('change', saveCommitOutputOptions);
 
     window.addEventListener('message', event => {
       const message = event.data;
@@ -406,6 +497,9 @@
         case 'currentGenerateMode':
           preferredGenerateMode = normalizeGenerateMode(message.generateMode);
           updateGenerateModeUI(currentProvider);
+          break;
+        case 'currentCommitOutputOptions':
+          updateCommitOutputOptionsUI(message.commitOutputOptions);
           break;
         case 'modelsList':
           populateModels(message.models, message.currentModel);

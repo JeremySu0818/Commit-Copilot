@@ -4,7 +4,13 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { clearRequireCache, withModuleMock } from './helpers/module-mock';
 import { cleanupTempDir, createTempDir } from './helpers/temp-dir';
-import { DEFAULT_MODELS, APIProvider, GenerateMode } from '../models';
+import {
+  APIProvider,
+  CommitOutputOptions,
+  DEFAULT_COMMIT_OUTPUT_OPTIONS,
+  DEFAULT_MODELS,
+  GenerateMode,
+} from '../models';
 
 const MODULE_PATH = path.resolve(__dirname, '..', 'commit-copilot');
 
@@ -39,6 +45,7 @@ async function loadGenerateCommitMessage(options: {
     provider: APIProvider;
     apiKey: string;
     model?: string;
+    commitOutputOptions?: CommitOutputOptions;
   }) => {
     generateCommitMessage: (
       diff: string,
@@ -70,6 +77,7 @@ async function loadGenerateCommitMessage(options: {
 async function runGenerate(options: {
   provider: APIProvider;
   generateMode?: GenerateMode;
+  commitOutputOptions?: CommitOutputOptions;
   runAgentLoop: (
     options: Record<string, unknown>,
   ) => Promise<string> | string;
@@ -77,6 +85,7 @@ async function runGenerate(options: {
     provider: APIProvider;
     apiKey: string;
     model?: string;
+    commitOutputOptions?: CommitOutputOptions;
   }) => {
     generateCommitMessage: (
       diff: string,
@@ -97,6 +106,7 @@ async function runGenerate(options: {
     provider: options.provider,
     apiKey: 'token',
     generateMode: options.generateMode,
+    commitOutputOptions: options.commitOutputOptions,
   });
 
   return { result, repoRoot };
@@ -109,6 +119,11 @@ test('generateCommitMessage uses agent loop in agentic mode', async () => {
   const { result, repoRoot } = await runGenerate({
     provider: 'openai',
     generateMode: 'agentic',
+    commitOutputOptions: {
+      includeScope: false,
+      includeBody: true,
+      includeFooter: true,
+    },
     runAgentLoop: async (input) => {
       capturedAgentInput = input;
       return 'feat(core): add mode switch\n\nImplemented mode routing.';
@@ -133,10 +148,16 @@ test('generateCommitMessage uses agent loop in agentic mode', async () => {
       provider: string;
       model: string;
       repoRoot: string;
+      commitOutputOptions: CommitOutputOptions;
     };
     assert.equal(agentInput.provider, 'openai');
     assert.equal(agentInput.model, DEFAULT_MODELS.openai);
     assert.equal(agentInput.repoRoot, repoRoot);
+    assert.deepEqual(agentInput.commitOutputOptions, {
+      includeScope: false,
+      includeBody: true,
+      includeFooter: true,
+    });
   } finally {
     cleanupTempDir(repoRoot);
   }
@@ -150,6 +171,11 @@ test('generateCommitMessage uses direct diff client in direct-diff mode', async 
   const { result, repoRoot } = await runGenerate({
     provider: 'openai',
     generateMode: 'direct-diff',
+    commitOutputOptions: {
+      includeScope: true,
+      includeBody: false,
+      includeFooter: false,
+    },
     runAgentLoop: async () => {
       agentCallCount++;
       return 'should not be used';
@@ -176,9 +202,15 @@ test('generateCommitMessage uses direct diff client in direct-diff mode', async 
     const clientOptions = capturedClientOptions as unknown as {
       provider: string;
       model: string;
+      commitOutputOptions: CommitOutputOptions;
     };
     assert.equal(clientOptions.provider, 'openai');
     assert.equal(clientOptions.model, DEFAULT_MODELS.openai);
+    assert.deepEqual(clientOptions.commitOutputOptions, {
+      includeScope: true,
+      includeBody: false,
+      includeFooter: false,
+    });
     assert.match(capturedDirectDiff, /diff --git a\/a\.ts b\/a\.ts/);
   } finally {
     cleanupTempDir(repoRoot);
@@ -212,9 +244,14 @@ test('generateCommitMessage forces ollama to direct diff even if agentic request
     const clientOptions = capturedClientOptions as unknown as {
       provider: string;
       model: string;
+      commitOutputOptions: CommitOutputOptions;
     };
     assert.equal(clientOptions.provider, 'ollama');
     assert.equal(clientOptions.model, DEFAULT_MODELS.ollama);
+    assert.deepEqual(
+      clientOptions.commitOutputOptions,
+      DEFAULT_COMMIT_OUTPUT_OPTIONS,
+    );
   } finally {
     cleanupTempDir(repoRoot);
   }

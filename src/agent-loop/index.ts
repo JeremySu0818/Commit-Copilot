@@ -1,4 +1,4 @@
-import { APIProvider } from '../models';
+import { APIProvider, CommitOutputOptions } from '../models';
 import { ProgressCallback } from '../llm-clients';
 import { GitOperations } from '../commit-copilot';
 import { runGeminiAgentLoop } from './gemini';
@@ -15,6 +15,7 @@ interface AgentLoopOptions {
   onProgress?: ProgressCallback;
   isStaged: boolean;
   gitOps: GitOperations;
+  commitOutputOptions: CommitOutputOptions;
 }
 
 export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
@@ -27,6 +28,7 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
     onProgress,
     isStaged,
     gitOps,
+    commitOutputOptions,
   } = options;
 
   switch (provider) {
@@ -39,6 +41,7 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
         onProgress,
         isStaged,
         gitOps,
+        commitOutputOptions,
       );
     case 'openai':
       return runOpenAIAgentLoop(
@@ -49,6 +52,7 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
         onProgress,
         isStaged,
         gitOps,
+        commitOutputOptions,
       );
     case 'anthropic':
       return runAnthropicAgentLoop(
@@ -59,6 +63,7 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
         onProgress,
         isStaged,
         gitOps,
+        commitOutputOptions,
       );
     case 'ollama':
       return runOllamaAgentLoop(
@@ -69,6 +74,7 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
         onProgress,
         isStaged,
         gitOps,
+        commitOutputOptions,
       );
     default:
       throw new Error(`Unsupported provider for agent loop: ${provider}`);
