@@ -27,6 +27,13 @@
         "category": "Commit-Copilot",
         "icon": "$(sparkle)",
         "enablement": "!commit-copilot.isGenerating"
+      },
+      {
+        "command": "commit-copilot.cancelGeneration",
+        "title": "Commit-Copilot: Cancel Generation",
+        "category": "Commit-Copilot",
+        "icon": "$(debug-stop)",
+        "enablement": "commit-copilot.isGenerating"
       }
     ],
     "menus": {
@@ -34,7 +41,12 @@
         {
           "command": "commit-copilot.generate",
           "group": "navigation",
-          "when": "scmProvider == git"
+          "when": "scmProvider == git && !commit-copilot.isGenerating"
+        },
+        {
+          "command": "commit-copilot.cancelGeneration",
+          "group": "navigation",
+          "when": "scmProvider == git && commit-copilot.isGenerating"
         }
       ]
     },
