@@ -26,9 +26,10 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
     private readonly _context: vscode.ExtensionContext,
   ) {}
 
-  private extractValidationError(
-    error: unknown,
-  ): { status?: number; message: string } {
+  private extractValidationError(error: unknown): {
+    status?: number;
+    message: string;
+  } {
     const status =
       typeof error === 'object' && error !== null && 'status' in error
         ? (error as { status?: number }).status
@@ -65,7 +66,8 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
     const { status, message } = this.extractValidationError(error);
 
     const isInvalidKey =
-      (typeof status === 'number' && rules.invalidStatusCodes.includes(status)) ||
+      (typeof status === 'number' &&
+        rules.invalidStatusCodes.includes(status)) ||
       this.includesMessage(message, rules.invalidMessagePatterns);
     if (isInvalidKey) {
       return { valid: false, error: `Invalid API Key: ${message}` };
@@ -93,10 +95,10 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
     apiKey: string,
   ): Promise<{ valid: boolean; error?: string }> {
     try {
-      const { GoogleAIFileManager } = await import('@google/generative-ai/server');
+      const { GoogleAIFileManager } =
+        await import('@google/generative-ai/server');
       const fileManager = new GoogleAIFileManager(apiKey);
 
-      // Use a metadata list API for validation to avoid generating tokens.
       await fileManager.listFiles({ pageSize: 1 });
       return { valid: true };
     } catch (error) {
@@ -115,7 +117,6 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
       const OpenAI = (await import('openai')).default;
       const client = new OpenAI({ apiKey });
 
-      // Use model listing for validation to avoid generating tokens.
       await client.models.list();
       return { valid: true };
     } catch (error) {
@@ -133,7 +134,6 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
       const Anthropic = (await import('@anthropic-ai/sdk')).default;
       const client = new Anthropic({ apiKey });
 
-      // Use the models endpoint for validation to avoid generating tokens.
       await client.models.list({ limit: 1 });
       return { valid: true };
     } catch (error) {
@@ -400,7 +400,9 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
           break;
         }
         case 'cancelGenerate': {
-          await vscode.commands.executeCommand('commit-copilot.cancelGeneration');
+          await vscode.commands.executeCommand(
+            'commit-copilot.cancelGeneration',
+          );
           break;
         }
         case 'checkKey': {
@@ -535,17 +537,6 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
 
   private _getHtmlForWebview(webview: vscode.Webview) {
     const nonce = getNonce();
-    const providersJson = JSON.stringify(PROVIDER_DISPLAY_NAMES);
-    const generateModesJson = JSON.stringify(GENERATE_MODE_DISPLAY_NAMES);
-    const modelsJson = JSON.stringify(MODELS_BY_PROVIDER);
-    const defaultModelsJson = JSON.stringify(DEFAULT_MODELS);
-    const defaultCommitOutputOptionsJson = JSON.stringify(
-      DEFAULT_COMMIT_OUTPUT_OPTIONS,
-    );
-    const defaultProvider = DEFAULT_PROVIDER;
-    const defaultGenerateMode = DEFAULT_GENERATE_MODE;
-    const ollamaDefaultHost = OLLAMA_DEFAULT_HOST;
-
     const templateUri = vscode.Uri.joinPath(
       this._extensionUri,
       'resources',
@@ -553,21 +544,47 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
     );
     const template = fs.readFileSync(templateUri.fsPath, 'utf8');
 
-    return template
-      .replace(/\{\{CSP_SOURCE\}\}/g, webview.cspSource)
-      .replace(/\{\{NONCE\}\}/g, nonce)
-      .replace(/\{\{PROVIDERS_JSON\}\}/g, providersJson)
-      .replace(/\{\{GENERATE_MODES_JSON\}\}/g, generateModesJson)
-      .replace(/\{\{MODELS_JSON\}\}/g, modelsJson)
-      .replace(/\{\{DEFAULT_MODELS_JSON\}\}/g, defaultModelsJson)
-      .replace(
-        /\{\{DEFAULT_COMMIT_OUTPUT_OPTIONS_JSON\}\}/g,
-        defaultCommitOutputOptionsJson,
-      )
-      .replace(/\{\{DEFAULT_PROVIDER\}\}/g, defaultProvider)
-      .replace(/\{\{DEFAULT_GENERATE_MODE\}\}/g, defaultGenerateMode)
-      .replace(/\{\{OLLAMA_DEFAULT_HOST\}\}/g, ollamaDefaultHost);
+    const replacements: Record<string, string> = {
+      CSP_SOURCE: escapeHtmlAttribute(webview.cspSource),
+      NONCE: escapeHtmlAttribute(nonce),
+      PROVIDERS_JSON: serializeForInlineScript(PROVIDER_DISPLAY_NAMES),
+      GENERATE_MODES_JSON: serializeForInlineScript(
+        GENERATE_MODE_DISPLAY_NAMES,
+      ),
+      MODELS_JSON: serializeForInlineScript(MODELS_BY_PROVIDER),
+      DEFAULT_MODELS_JSON: serializeForInlineScript(DEFAULT_MODELS),
+      DEFAULT_COMMIT_OUTPUT_OPTIONS_JSON: serializeForInlineScript(
+        DEFAULT_COMMIT_OUTPUT_OPTIONS,
+      ),
+      DEFAULT_PROVIDER_JSON: serializeForInlineScript(DEFAULT_PROVIDER),
+      DEFAULT_GENERATE_MODE_JSON: serializeForInlineScript(
+        DEFAULT_GENERATE_MODE,
+      ),
+      OLLAMA_DEFAULT_HOST_JSON: serializeForInlineScript(OLLAMA_DEFAULT_HOST),
+    };
+
+    return template.replace(/\{\{([A-Z0-9_]+)\}\}/g, (match, key: string) => {
+      return replacements[key] ?? match;
+    });
   }
+}
+
+function serializeForInlineScript(value: unknown): string {
+  return JSON.stringify(value)
+    .replace(/</g, '\\u003C')
+    .replace(/>/g, '\\u003E')
+    .replace(/&/g, '\\u0026')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029');
+}
+
+function escapeHtmlAttribute(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
 }
 
 function getNonce() {

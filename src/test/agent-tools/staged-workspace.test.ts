@@ -39,6 +39,7 @@ test('createStagedWorkspaceSnapshot builds index-based snapshot', async () => {
     ].join('\n');
 
     const gitOps = {
+      listFilesFromGitApi: async () => null,
       showIndexFile: async (relPath: string) => {
         if (relPath === 'src/a.ts') {
           return { content: 'index-a', found: true };

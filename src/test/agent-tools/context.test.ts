@@ -41,6 +41,21 @@ test('parseDiffSummary parses modified, added, deleted, and renamed files', () =
   ]);
 });
 
+test('parseDiffSummary marks binary diffs as non-zero changes', () => {
+  const diff = [
+    'diff --git a/resources/icon.png b/resources/icon.png',
+    'index 1111111..2222222 100644',
+    'Binary files a/resources/icon.png and b/resources/icon.png differ',
+  ].join('\n');
+
+  const summary = parseDiffSummary(diff);
+  assert.equal(summary.length, 1);
+  assert.equal(summary[0].path, 'resources/icon.png');
+  assert.equal(summary[0].type, 'modified');
+  assert.equal(summary[0].added, 1);
+  assert.equal(summary[0].removed, 1);
+});
+
 test('getProjectStructure uses git API file list when available', async () => {
   const gitOps = {
     listFilesFromGitApi: async () => ['src/a.ts', 'src/b.ts', 'node_modules/x.js'],
