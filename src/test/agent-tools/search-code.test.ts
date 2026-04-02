@@ -65,3 +65,36 @@ test('executeSearchCode performs case-insensitive search and result capping', as
   assert.match(output, /src\/a\.ts|src\/b\.ts/);
   assert.match(output, /\.\.\. \(results capped at 1 files\)/);
 });
+
+test('executeSearchCode prefers Git file list when available', async () => {
+  const repoRoot = path.resolve('repo');
+  const srcFilePath = path.join(repoRoot, 'src', 'a.ts');
+  const gitIgnoredPath = path.join(repoRoot, 'node_modules', 'pkg', 'index.js');
+
+  const vscodeMock = createVscodeMock({
+    findFiles: async () => {
+      throw new Error('findFiles should not be called when git file list exists');
+    },
+    readFile: async (uri: MockUri) => {
+      if (uri.fsPath === srcFilePath) {
+        return Buffer.from('const needle = true;\n', 'utf-8');
+      }
+      if (uri.fsPath === gitIgnoredPath) {
+        return Buffer.from('const needle = true;\n', 'utf-8');
+      }
+      return Buffer.from('', 'utf-8');
+    },
+  });
+
+  const { executeSearchCode } = await loadModule(vscodeMock);
+  const output = await executeSearchCode(
+    repoRoot,
+    { query: 'needle' },
+    {
+      listFilesFromGitApi: async () => ['src/a.ts'],
+    } as any,
+  );
+
+  assert.match(output, /src\/a\.ts/);
+  assert.doesNotMatch(output, /node_modules\/pkg\/index\.js/);
+});

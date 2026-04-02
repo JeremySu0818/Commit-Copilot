@@ -1,6 +1,7 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { DEFAULT_IGNORED_DIRS, toPosixPath } from '../staged-workspace';
+import { GitOperations } from '../../commit-copilot';
+import { toPosixPath } from '../staged-workspace';
 import {
   MAX_SEARCH_FILES,
   MAX_SEARCH_LINE_LENGTH,
@@ -11,9 +12,31 @@ import {
   parseIntegerArg,
 } from './shared';
 
+async function resolveSearchFiles(
+  repoRoot: string,
+  gitOps?: GitOperations,
+): Promise<vscode.Uri[]> {
+  const filesFromGitApi = await gitOps?.listFilesFromGitApi();
+  if (filesFromGitApi !== null && filesFromGitApi !== undefined) {
+    return filesFromGitApi
+      .map((relPath) => relPath.trim())
+      .filter(Boolean)
+      .map((relPath) =>
+        vscode.Uri.file(path.resolve(repoRoot, relPath.replace(/\//g, path.sep))),
+      );
+  }
+
+  return vscode.workspace.findFiles(
+    new vscode.RelativePattern(repoRoot, '**/*'),
+    null,
+    MAX_SEARCH_WORKSPACE_FILES,
+  );
+}
+
 async function executeSearchCode(
   repoRoot: string,
   args: Record<string, unknown>,
+  gitOps?: GitOperations,
 ): Promise<string> {
   const query = args.query as string | undefined;
   if (!query) {
@@ -24,15 +47,9 @@ async function executeSearchCode(
   const maxResults = parseIntegerArg(args.maxResults) ?? MAX_SEARCH_FILES;
   const effectiveMaxFiles = Math.min(Math.max(1, maxResults), 50);
 
-  const excludePattern = `{${[...DEFAULT_IGNORED_DIRS].join(',')}}`;
-
   let files: vscode.Uri[];
   try {
-    files = await vscode.workspace.findFiles(
-      new vscode.RelativePattern(repoRoot, '**/*'),
-      new vscode.RelativePattern(repoRoot, `**/${excludePattern}/**`),
-      MAX_SEARCH_WORKSPACE_FILES,
-    );
+    files = await resolveSearchFiles(repoRoot, gitOps);
   } catch (err: any) {
     return `Error searching files: ${err.message}`;
   }
