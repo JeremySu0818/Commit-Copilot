@@ -52,7 +52,8 @@ export const ANTHROPIC_MODELS: ModelConfig[] = [
   { id: 'claude-haiku-4-5-20251001', alias: 'Claude Haiku 4.5' },
   { id: 'claude-sonnet-4-5-20250929', alias: 'Claude Sonnet 4.5' },
   { id: 'claude-opus-4-5-20251101', alias: 'Claude Opus 4.5' },
-  { id: 'claude-opus-4-6-20260205', alias: 'Claude Opus 4.6' },
+  { id: 'claude-sonnet-4-6', alias: 'Claude Sonnet 4.6' },
+  { id: 'claude-opus-4-6', alias: 'Claude Opus 4.6' },
 ];
 
 export const OLLAMA_MODELS: ModelConfig[] = [
@@ -77,8 +78,8 @@ export const MODELS_BY_PROVIDER: Record<APIProvider, ModelConfig[]> = {
 
 export const DEFAULT_MODELS: Record<APIProvider, string> = {
   google: 'gemini-3-flash-preview',
-  openai: 'gpt-5-mini',
-  anthropic: 'claude-haiku-4-5-20251001',
+  openai: 'gpt-5.4',
+  anthropic: 'claude-sonnet-4-6',
   ollama: 'gemma3:12b',
 };
 export const DEFAULT_PROVIDER: APIProvider = 'google';
