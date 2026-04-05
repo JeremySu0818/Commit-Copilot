@@ -95,11 +95,10 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
     apiKey: string,
   ): Promise<{ valid: boolean; error?: string }> {
     try {
-      const { GoogleAIFileManager } =
-        await import('@google/generative-ai/server');
-      const fileManager = new GoogleAIFileManager(apiKey);
+      const { GoogleGenAI } = await import('@google/genai');
+      const client = new GoogleGenAI({ apiKey });
 
-      await fileManager.listFiles({ pageSize: 1 });
+      await client.models.list({ config: { pageSize: 1 } });
       return { valid: true };
     } catch (error) {
       return this.mapProviderValidationError(error, {
