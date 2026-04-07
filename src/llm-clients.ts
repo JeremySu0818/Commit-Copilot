@@ -4,6 +4,7 @@ import {
   DEFAULT_COMMIT_OUTPUT_OPTIONS,
   DEFAULT_MODELS,
   OLLAMA_DEFAULT_HOST,
+  getAnthropicModelMaxTokens,
   normalizeCommitOutputOptions,
 } from './models';
 import { buildAgentSystemPrompt } from './agent-loop/shared';
@@ -72,23 +73,21 @@ export class GeminiClient implements ILLMClient {
     }
 
     try {
-      const { GoogleGenerativeAI } = await import('@google/generative-ai');
-      const client = new GoogleGenerativeAI(this.apiKey);
-      const generativeModel = client.getGenerativeModel({
-        model: this.model,
-        systemInstruction: this.systemPrompt,
-      });
+      const { GoogleGenAI } = await import('@google/genai');
+      const client = new GoogleGenAI({ apiKey: this.apiKey });
 
       const result = await withRetry(
         () =>
-          generativeModel.generateContent({
+          client.models.generateContent({
+            model: this.model,
             contents: [
               {
                 role: 'user',
                 parts: [{ text: `Here is the git diff:\n\n${diff}` }],
               },
             ],
-            generationConfig: {
+            config: {
+              systemInstruction: this.systemPrompt,
               temperature: 0.7,
               topP: 0.95,
               topK: 40,
@@ -97,8 +96,7 @@ export class GeminiClient implements ILLMClient {
         DEFAULT_RETRY_OPTIONS,
       );
 
-      const response = result.response;
-      const text = response.text();
+      const text = result.text;
       throwIfCancellationRequested(cancellationToken);
 
       if (!text) {
@@ -217,6 +215,7 @@ export class OpenAIClient implements ILLMClient {
 export class AnthropicClient implements ILLMClient {
   private readonly apiKey: string;
   private readonly model: string;
+  private readonly maxTokens: number;
   private readonly systemPrompt: string;
 
   constructor(
@@ -229,6 +228,7 @@ export class AnthropicClient implements ILLMClient {
     }
     this.apiKey = apiKey;
     this.model = model || DEFAULT_MODELS.anthropic;
+    this.maxTokens = getAnthropicModelMaxTokens(this.model) ?? 65536;
     this.systemPrompt = buildAgentSystemPrompt({
       includeFindReferences: false,
       enableTools: false,
@@ -251,14 +251,16 @@ export class AnthropicClient implements ILLMClient {
       const client = new Anthropic({ apiKey: this.apiKey });
       const message = await withRetry(
         () =>
-          client.messages.create({
-            model: this.model,
-            max_tokens: 65536,
-            system: this.systemPrompt,
-            messages: [
-              { role: 'user', content: `Here is the git diff:\n\n${diff}` },
-            ],
-          }),
+          client.messages
+            .stream({
+              model: this.model,
+              max_tokens: this.maxTokens,
+              system: this.systemPrompt,
+              messages: [
+                { role: 'user', content: `Here is the git diff:\n\n${diff}` },
+              ],
+            })
+            .finalMessage(),
         DEFAULT_RETRY_OPTIONS,
       );
 

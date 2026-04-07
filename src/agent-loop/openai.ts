@@ -116,21 +116,25 @@ async function runOpenAIAgentLoop(
 
       const assistantMessage = choice.message;
       messages.push(assistantMessage);
+      const functionToolCalls = (assistantMessage.tool_calls || []).filter(
+        (toolCall): toolCall is any =>
+          toolCall.type === 'function' &&
+          typeof (toolCall as any).function?.name === 'string',
+      );
 
       if (
         choice.finish_reason === 'tool_calls' &&
-        assistantMessage.tool_calls &&
-        assistantMessage.tool_calls.length > 0
+        functionToolCalls.length > 0
       ) {
         if (onProgress) {
-          const calls = assistantMessage.tool_calls.map((tc: any) => ({
+          const calls = functionToolCalls.map((tc: any) => ({
             name: tc.function.name,
             args: JSON.parse(tc.function.arguments || '{}'),
           }));
           onProgress(formatBatchProgressMessage(step + 1, calls));
         }
 
-        for (const toolCall of assistantMessage.tool_calls) {
+        for (const toolCall of functionToolCalls) {
           throwIfCancellationRequested(cancellationToken);
           const args = JSON.parse(toolCall.function.arguments || '{}');
           const result = await executeToolCall(

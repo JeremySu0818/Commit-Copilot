@@ -7,6 +7,7 @@ import {
   CommitOutputOptions,
   DEFAULT_COMMIT_OUTPUT_OPTIONS,
   DEFAULT_MODELS,
+  getAnthropicModelMaxTokens,
   normalizeCommitOutputOptions,
 } from '../models';
 import {
@@ -55,6 +56,7 @@ async function runAnthropicAgentLoop(
     const Anthropic = (await import('@anthropic-ai/sdk')).default;
     const client = new Anthropic({ apiKey });
     const modelName = model || DEFAULT_MODELS.anthropic;
+    const maxTokens = getAnthropicModelMaxTokens(modelName) ?? 16384;
     const resolvedCommitOutputOptions =
       normalizeCommitOutputOptions(commitOutputOptions);
 
@@ -97,13 +99,15 @@ async function runAnthropicAgentLoop(
       throwIfCancellationRequested(cancellationToken);
       const response = await withRetry(
         () =>
-          client.messages.create({
-            model: modelName,
-            max_tokens: 16384,
-            system: systemPrompt,
-            messages,
-            tools: toAnthropicTools(isStaged) as any,
-          }),
+          client.messages
+            .stream({
+              model: modelName,
+              max_tokens: maxTokens,
+              system: systemPrompt,
+              messages,
+              tools: toAnthropicTools(isStaged) as any,
+            })
+            .finalMessage(),
         retryOptions,
       );
 
@@ -166,12 +170,14 @@ async function runAnthropicAgentLoop(
 
     const finalResponse = await withRetry(
       () =>
-        client.messages.create({
-          model: modelName,
-          max_tokens: 16384,
-          system: systemPrompt,
-          messages,
-        }),
+        client.messages
+          .stream({
+            model: modelName,
+            max_tokens: maxTokens,
+            system: systemPrompt,
+            messages,
+          })
+          .finalMessage(),
       retryOptions,
     );
     const text = finalResponse.content
