@@ -199,6 +199,28 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
       localResourceRoots: [this._extensionUri],
     };
     webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
+    let isViewDisposed = false;
+    const gitDisposables: vscode.Disposable[] = [];
+    const observedRepos = new WeakSet<object>();
+
+    const addGitDisposable = (disposable: vscode.Disposable | undefined) => {
+      if (disposable) {
+        gitDisposables.push(disposable);
+      }
+    };
+
+    const disposeGitDisposables = () => {
+      for (const disposable of gitDisposables.splice(0)) {
+        try {
+          disposable.dispose();
+        } catch (error) {
+          console.error(
+            '[Commit-Copilot] Error disposing git listener:',
+            error,
+          );
+        }
+      }
+    };
 
     const onGenerationStateChange = () => {
       this._view?.webview.postMessage({
@@ -218,11 +240,19 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
     ValidationStateManager.addListener(onValidationStateChange);
 
     webviewView.onDidDispose(() => {
+      isViewDisposed = true;
       GenerationStateManager.removeListener(onGenerationStateChange);
       ValidationStateManager.removeListener(onValidationStateChange);
+      disposeGitDisposables();
+      if (this._view === webviewView) {
+        this._view = undefined;
+      }
     });
 
     const checkGitStatus = () => {
+      if (isViewDisposed) {
+        return;
+      }
       try {
         const gitExtension = vscode.extensions.getExtension<any>('vscode.git');
         if (!gitExtension?.isActive) {
@@ -254,56 +284,63 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
       }
     };
 
+    const attachRepoStateListener = (repo: any) => {
+      if (!repo?.state || observedRepos.has(repo)) {
+        return;
+      }
+      observedRepos.add(repo);
+      addGitDisposable(
+        repo.state.onDidChange(() => {
+          checkGitStatus();
+        }),
+      );
+    };
+
+    const setupGitListeners = (git: any) => {
+      const setupRepoListeners = () => {
+        git.repositories.forEach((repo: any) => {
+          attachRepoStateListener(repo);
+        });
+        checkGitStatus();
+      };
+
+      setupRepoListeners();
+
+      if (git.state !== 'initialized') {
+        addGitDisposable(
+          git.onDidChangeState?.((state: any) => {
+            if (state === 'initialized') {
+              setupRepoListeners();
+            }
+          }),
+        );
+      }
+
+      addGitDisposable(
+        git.onDidOpenRepository?.((repo: any) => {
+          attachRepoStateListener(repo);
+          checkGitStatus();
+        }),
+      );
+    };
+
     try {
       const gitExtension = vscode.extensions.getExtension<any>('vscode.git');
       if (gitExtension?.isActive && gitExtension.exports) {
         const git = gitExtension.exports.getAPI?.(1);
         if (git) {
-          const setupRepoListeners = () => {
-            if (git.repositories.length > 0) {
-              checkGitStatus();
-              git.repositories.forEach((repo: any) => {
-                repo.state.onDidChange(() => {
-                  checkGitStatus();
-                });
-              });
-            }
-          };
-
-          if (git.state === 'initialized') {
-            setupRepoListeners();
-          } else {
-            git.onDidChangeState?.((state: any) => {
-              if (state === 'initialized') {
-                setupRepoListeners();
-              }
-            });
-          }
-
-          git.onDidOpenRepository?.((repo: any) => {
-            repo.state.onDidChange(() => {
-              checkGitStatus();
-            });
-            checkGitStatus();
-          });
-
-          if (git.repositories.length > 0) {
-            setupRepoListeners();
-          }
+          setupGitListeners(git);
         }
       } else if (gitExtension && !gitExtension.isActive) {
         (async () => {
           try {
             await gitExtension.activate();
+            if (isViewDisposed) {
+              return;
+            }
             const git = gitExtension.exports?.getAPI?.(1);
             if (git) {
-              checkGitStatus();
-              git.onDidOpenRepository?.((repo: any) => {
-                repo.state.onDidChange(() => {
-                  checkGitStatus();
-                });
-                checkGitStatus();
-              });
+              setupGitListeners(git);
             }
           } catch (err) {
             console.error(
