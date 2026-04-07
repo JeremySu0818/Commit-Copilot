@@ -24,6 +24,46 @@ const OUTLINE_KIND_LABELS: Partial<Record<vscode.SymbolKind, string>> = {
   [vscode.SymbolKind.Constant]: 'Constant',
 };
 
+const LANGUAGE_ID_BY_EXTENSION: Readonly<Record<string, string>> = {
+  '.c': 'c',
+  '.cc': 'cpp',
+  '.cpp': 'cpp',
+  '.cs': 'csharp',
+  '.css': 'css',
+  '.go': 'go',
+  '.h': 'c',
+  '.hpp': 'cpp',
+  '.html': 'html',
+  '.java': 'java',
+  '.js': 'javascript',
+  '.json': 'json',
+  '.jsx': 'javascriptreact',
+  '.kt': 'kotlin',
+  '.kts': 'kotlin',
+  '.md': 'markdown',
+  '.mjs': 'javascript',
+  '.php': 'php',
+  '.py': 'python',
+  '.rb': 'ruby',
+  '.rs': 'rust',
+  '.scss': 'scss',
+  '.sh': 'shellscript',
+  '.sql': 'sql',
+  '.swift': 'swift',
+  '.toml': 'toml',
+  '.ts': 'typescript',
+  '.tsx': 'typescriptreact',
+  '.vue': 'vue',
+  '.xml': 'xml',
+  '.yaml': 'yaml',
+  '.yml': 'yaml',
+};
+
+const LANGUAGE_ID_BY_FILENAME: Readonly<Record<string, string>> = {
+  dockerfile: 'dockerfile',
+  makefile: 'makefile',
+};
+
 function labelForSymbol(kind: vscode.SymbolKind): string {
   return OUTLINE_KIND_LABELS[kind] ?? 'Symbol';
 }
@@ -52,9 +92,16 @@ async function resolveLanguageId(absPath: string): Promise<string | undefined> {
     const untitledUri = vscode.Uri.file(absPath).with({ scheme: 'untitled' });
     const untitledDoc = await vscode.workspace.openTextDocument(untitledUri);
     return untitledDoc.languageId;
-  } catch {
-    return undefined;
+  } catch {}
+
+  const baseName = path.basename(absPath).toLowerCase();
+  const byName = LANGUAGE_ID_BY_FILENAME[baseName];
+  if (byName) {
+    return byName;
   }
+
+  const extension = path.extname(baseName).toLowerCase();
+  return LANGUAGE_ID_BY_EXTENSION[extension];
 }
 
 function collectOutlineFromDocumentSymbols(
@@ -160,16 +207,11 @@ async function executeGetFileOutline(
 
     let document: vscode.TextDocument;
     if (isStaged) {
+      const languageId = await resolveLanguageId(absPath);
       document = await vscode.workspace.openTextDocument({
         content,
+        language: languageId,
       });
-      const languageId = await resolveLanguageId(absPath);
-      if (languageId && languageId !== document.languageId) {
-        document = await vscode.languages.setTextDocumentLanguage(
-          document,
-          languageId,
-        );
-      }
     } else {
       document = await vscode.workspace.openTextDocument(
         vscode.Uri.file(absPath),
