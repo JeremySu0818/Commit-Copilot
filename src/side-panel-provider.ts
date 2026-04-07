@@ -538,7 +538,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
             google: false,
             openai: false,
             anthropic: false,
-            ollama: true,
+            ollama: false,
           };
           for (const [provider, storageKey] of Object.entries(
             API_KEY_STORAGE_KEYS,
@@ -606,6 +606,8 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
 }
 
 function serializeForInlineScript(value: unknown): string {
+  // Keep JSON safe when inlined inside <script>; replacement strings must
+  // remain literal \uXXXX escapes in the generated HTML/JS source.
   return JSON.stringify(value)
     .replace(/</g, '\\u003C')
     .replace(/>/g, '\\u003E')
