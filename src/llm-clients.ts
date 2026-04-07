@@ -32,6 +32,94 @@ export interface LLMClientOptions {
 
 export type ProgressCallback = (message: string, increment?: number) => void;
 
+const GEMINI_AUTH_STATUS_PATTERN =
+  /\b(?:status(?:\s*code)?|http(?:\s*status)?|response(?:\s*status)?)\s*[:=]?\s*(401|403)\b/i;
+const GEMINI_QUOTA_STATUS_PATTERN =
+  /\b(?:status(?:\s*code)?|http(?:\s*status)?|response(?:\s*status)?)\s*[:=]?\s*429\b/i;
+
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  if (error && typeof error === 'object' && 'message' in error) {
+    const message = (error as { message?: unknown }).message;
+    if (typeof message === 'string') {
+      return message;
+    }
+  }
+  return String(error);
+}
+
+function getErrorStatus(error: any): number | null {
+  const status =
+    error?.status ??
+    error?.statusCode ??
+    error?.response?.status ??
+    error?.response?.statusCode;
+  if (typeof status === 'number') {
+    return status;
+  }
+  if (typeof status === 'string' && /^\d{3}$/.test(status)) {
+    return Number(status);
+  }
+  return null;
+}
+
+function getErrorCode(error: any): string {
+  return String(
+    error?.code || error?.error?.status || error?.error?.code || '',
+  ).toUpperCase();
+}
+
+function isGeminiAuthError(error: any, message: string): boolean {
+  const status = getErrorStatus(error);
+  if (status === 401 || status === 403) {
+    return true;
+  }
+
+  const code = getErrorCode(error);
+  if (
+    code === 'API_KEY_INVALID' ||
+    code === 'INVALID_API_KEY' ||
+    code === 'UNAUTHENTICATED' ||
+    code === 'AUTHENTICATION_ERROR' ||
+    code === 'PERMISSION_DENIED'
+  ) {
+    return true;
+  }
+
+  return (
+    GEMINI_AUTH_STATUS_PATTERN.test(message) ||
+    /\b(?:401\s+unauthorized|403\s+forbidden|api[_\s-]?key[_\s-]?invalid|invalid[_\s-]?api[_\s-]?key|unauthenticated|permission denied)\b/i.test(
+      message,
+    )
+  );
+}
+
+function isGeminiQuotaError(error: any, message: string): boolean {
+  const status = getErrorStatus(error);
+  if (status === 429) {
+    return true;
+  }
+
+  const code = getErrorCode(error);
+  if (
+    code === 'RESOURCE_EXHAUSTED' ||
+    code === 'QUOTA_EXCEEDED' ||
+    code === 'RATE_LIMIT_EXCEEDED' ||
+    code === 'TOO_MANY_REQUESTS'
+  ) {
+    return true;
+  }
+
+  return (
+    GEMINI_QUOTA_STATUS_PATTERN.test(message) ||
+    /\b(?:429\s+too many requests|resource[_\s-]?exhausted|rate[\s_-]?limit(?:ed)?|quota(?:\s+(?:exceeded|exhausted|reached|limit(?:ed)?)))\b/i.test(
+      message,
+    )
+  );
+}
+
 export interface ILLMClient {
   generateCommitMessage(
     diff: string,
@@ -113,15 +201,11 @@ export class GeminiClient implements ILLMClient {
         throw error;
       }
 
-      const message = error?.message || String(error);
+      const message = getErrorMessage(error);
 
-      if (
-        message.includes('API_KEY_INVALID') ||
-        message.includes('401') ||
-        message.includes('403')
-      ) {
+      if (isGeminiAuthError(error, message)) {
         throw new APIKeyInvalidError(message);
-      } else if (message.includes('429') || message.includes('quota')) {
+      } else if (isGeminiQuotaError(error, message)) {
         throw new APIQuotaExceededError(message);
       }
 

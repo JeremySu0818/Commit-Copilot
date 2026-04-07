@@ -70,6 +70,13 @@ export function activate(context: vscode.ExtensionContext) {
   let disposable = vscode.commands.registerCommand(
     'commit-copilot.generate',
     async (arg?: GenerateCommandArg) => {
+      if (GenerationStateManager.isGenerating) {
+        outputChannel.appendLine(
+          'Generation request ignored: generation already in progress.',
+        );
+        return;
+      }
+
       const cancellationSource = new vscode.CancellationTokenSource();
       let wasCancelled = false;
       currentGenerationCancellationSource = cancellationSource;

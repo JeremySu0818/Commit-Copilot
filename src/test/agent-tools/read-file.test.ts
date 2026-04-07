@@ -45,6 +45,26 @@ test('executeReadFile reads disk file and line range', async () => {
   }
 });
 
+test('executeReadFile clamps endLine to startLine for negative values', async () => {
+  const repoRoot = createTempDir();
+  try {
+    const filePath = path.join(repoRoot, 'src', 'index.ts');
+    fs.mkdirSync(path.dirname(filePath), { recursive: true });
+    fs.writeFileSync(filePath, 'a\nb\nc\n', 'utf-8');
+
+    const output = await executeReadFile(
+      repoRoot,
+      { path: 'src/index.ts', startLine: 2, endLine: -5 },
+      false,
+    );
+    assert.match(output, /File: src\/index\.ts \(lines 2-2 of 4\)/);
+    assert.match(output, /2: b/);
+    assert.doesNotMatch(output, /3: c/);
+  } finally {
+    cleanupTempDir(repoRoot);
+  }
+});
+
 test('executeReadFile prefers staged index content when available', async () => {
   const repoRoot = createTempDir();
   try {

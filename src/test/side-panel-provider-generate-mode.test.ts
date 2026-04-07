@@ -252,3 +252,24 @@ test('saveCommitOutputOptions persists normalized values', async () => {
     harness.dispose();
   }
 });
+
+test('getAllKeys reports ollama as not configured when no secret exists', async () => {
+  const harness = await createHarness();
+
+  try {
+    await harness.sendMessage({ type: 'getAllKeys' });
+    const statusMessage = harness.postedMessages.find(
+      (message) => message.type === 'allKeyStatuses',
+    );
+
+    assert.ok(statusMessage);
+    assert.deepEqual(statusMessage.statuses, {
+      google: false,
+      openai: false,
+      anthropic: false,
+      ollama: false,
+    });
+  } finally {
+    harness.dispose();
+  }
+});

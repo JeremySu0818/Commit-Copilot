@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { GitOperations } from '../../commit-copilot';
 import { isPathWithinRoot } from '../staged-workspace';
-import { MAX_FILE_LINES } from './shared';
+import { MAX_FILE_LINES, parseIntegerArg } from './shared';
 
 async function executeReadFile(
   repoRoot: string,
@@ -43,10 +43,12 @@ async function executeReadFile(
 
     const lines = content.split('\n');
 
-    const startLine = Math.max(1, (args.startLine as number) || 1);
-    const endLine = Math.min(
-      lines.length,
-      (args.endLine as number) || lines.length,
+    const parsedStartLine = parseIntegerArg(args.startLine);
+    const startLine = Math.max(1, parsedStartLine ?? 1);
+    const parsedEndLine = parseIntegerArg(args.endLine);
+    const endLine = Math.max(
+      startLine,
+      Math.min(lines.length, parsedEndLine ?? lines.length),
     );
 
     const selectedLines = lines.slice(startLine - 1, endLine);
