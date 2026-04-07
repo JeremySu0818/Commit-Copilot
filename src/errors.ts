@@ -5,6 +5,7 @@ export const EXIT_CODES = {
   NO_CHANGES: 3,
   NO_CHANGES_BUT_UNTRACKED: 4,
   NO_TRACKED_CHANGES_BUT_UNTRACKED: 5,
+  CANCELLED: 6,
   API_KEY_MISSING: 10,
   API_KEY_INVALID: 11,
   QUOTA_EXCEEDED: 12,
@@ -39,6 +40,10 @@ export const ERROR_MESSAGES: Record<
     title: 'Only untracked files found',
     action:
       'You have newly created files but no tracked modifications. Please stage them to generate a commit.',
+  },
+  [EXIT_CODES.CANCELLED]: {
+    title: 'Generation cancelled',
+    action: 'Generation was cancelled by user.',
   },
   [EXIT_CODES.MIXED_CHANGES]: {
     title: 'Mixed changes detected',
@@ -180,5 +185,16 @@ export class StageFailedError extends CommitCopilotError {
       EXIT_CODES.STAGE_FAILED,
     );
     this.name = 'StageFailedError';
+  }
+}
+
+export class GenerationCancelledError extends CommitCopilotError {
+  constructor() {
+    super(
+      'Generation canceled by user.',
+      'CANCELLED',
+      EXIT_CODES.CANCELLED,
+    );
+    this.name = 'GenerationCancelledError';
   }
 }

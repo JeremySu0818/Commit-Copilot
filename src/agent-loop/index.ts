@@ -1,6 +1,7 @@
 import { APIProvider, CommitOutputOptions } from '../models';
 import { ProgressCallback } from '../llm-clients';
 import { GitOperations } from '../commit-copilot';
+import { CancellationSignal } from '../cancellation';
 import { runGeminiAgentLoop } from './gemini';
 import { runOpenAIAgentLoop } from './openai';
 import { runAnthropicAgentLoop } from './anthropic';
@@ -16,6 +17,7 @@ interface AgentLoopOptions {
   isStaged: boolean;
   gitOps: GitOperations;
   commitOutputOptions: CommitOutputOptions;
+  cancellationToken?: CancellationSignal;
 }
 
 export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
@@ -29,6 +31,7 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
     isStaged,
     gitOps,
     commitOutputOptions,
+    cancellationToken,
   } = options;
 
   switch (provider) {
@@ -42,6 +45,7 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
         isStaged,
         gitOps,
         commitOutputOptions,
+        cancellationToken,
       );
     case 'openai':
       return runOpenAIAgentLoop(
@@ -53,6 +57,7 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
         isStaged,
         gitOps,
         commitOutputOptions,
+        cancellationToken,
       );
     case 'anthropic':
       return runAnthropicAgentLoop(
@@ -64,6 +69,7 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
         isStaged,
         gitOps,
         commitOutputOptions,
+        cancellationToken,
       );
     case 'ollama':
       return runOllamaAgentLoop(
@@ -75,6 +81,7 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
         isStaged,
         gitOps,
         commitOutputOptions,
+        cancellationToken,
       );
     default:
       throw new Error(`Unsupported provider for agent loop: ${provider}`);

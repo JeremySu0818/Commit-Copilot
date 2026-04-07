@@ -14,10 +14,15 @@ import {
   APIKeyInvalidError,
   APIQuotaExceededError,
   APIRequestError,
+  GenerationCancelledError,
   NoChangesError,
 } from '../errors';
 import { ProgressCallback } from '../llm-clients';
 import { GitOperations } from '../commit-copilot';
+import {
+  CancellationSignal,
+  throwIfCancellationRequested,
+} from '../cancellation';
 import {
   buildAgentSystemPrompt,
   buildFinalOutputReminder,
@@ -36,7 +41,9 @@ async function runGeminiAgentLoop(
   isStaged: boolean = true,
   gitOps?: GitOperations,
   commitOutputOptions: CommitOutputOptions = DEFAULT_COMMIT_OUTPUT_OPTIONS,
+  cancellationToken?: CancellationSignal,
 ): Promise<string> {
+  throwIfCancellationRequested(cancellationToken);
   if (!apiKey) {
     throw new APIKeyMissingError();
   }
@@ -100,6 +107,7 @@ async function runGeminiAgentLoop(
     let step = 0;
 
     while (step < MAX_AGENT_STEPS) {
+      throwIfCancellationRequested(cancellationToken);
       const candidate = response.response.candidates?.[0];
       if (!candidate) {
         throw new APIRequestError('Empty response from Gemini API');
@@ -127,6 +135,7 @@ async function runGeminiAgentLoop(
       }
 
       for (const part of functionCalls) {
+        throwIfCancellationRequested(cancellationToken);
         const fc = (part as any).functionCall;
         const result = await executeToolCall(
           { name: fc.name, arguments: fc.args || {} },
@@ -156,12 +165,14 @@ async function runGeminiAgentLoop(
         chat.sendMessage(buildFinalOutputReminder(resolvedCommitOutputOptions)),
       retryOptions,
     );
+    throwIfCancellationRequested(cancellationToken);
     const text = finalResponse.response.text();
     return text ? extractCommitMessage(text) : 'chore(project): update files';
   } catch (error: any) {
     if (
       error instanceof NoChangesError ||
-      error instanceof APIKeyMissingError
+      error instanceof APIKeyMissingError ||
+      error instanceof GenerationCancelledError
     ) {
       throw error;
     }

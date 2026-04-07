@@ -14,10 +14,15 @@ import {
   APIKeyInvalidError,
   APIQuotaExceededError,
   APIRequestError,
+  GenerationCancelledError,
   NoChangesError,
 } from '../errors';
 import { ProgressCallback } from '../llm-clients';
 import { GitOperations } from '../commit-copilot';
+import {
+  CancellationSignal,
+  throwIfCancellationRequested,
+} from '../cancellation';
 import {
   buildAgentSystemPrompt,
   buildFinalOutputReminder,
@@ -36,7 +41,9 @@ async function runOpenAIAgentLoop(
   isStaged: boolean = true,
   gitOps?: GitOperations,
   commitOutputOptions: CommitOutputOptions = DEFAULT_COMMIT_OUTPUT_OPTIONS,
+  cancellationToken?: CancellationSignal,
 ): Promise<string> {
+  throwIfCancellationRequested(cancellationToken);
   if (!apiKey) {
     throw new APIKeyMissingError();
   }
@@ -90,6 +97,7 @@ async function runOpenAIAgentLoop(
     let step = 0;
 
     while (step < MAX_AGENT_STEPS) {
+      throwIfCancellationRequested(cancellationToken);
       const completion = await withRetry(
         () =>
           client.chat.completions.create({
@@ -123,6 +131,7 @@ async function runOpenAIAgentLoop(
         }
 
         for (const toolCall of assistantMessage.tool_calls) {
+          throwIfCancellationRequested(cancellationToken);
           const args = JSON.parse(toolCall.function.arguments || '{}');
           const result = await executeToolCall(
             { name: toolCall.function.name, arguments: args },
@@ -152,6 +161,7 @@ async function runOpenAIAgentLoop(
       role: 'user',
       content: buildFinalOutputReminder(resolvedCommitOutputOptions),
     });
+    throwIfCancellationRequested(cancellationToken);
     const finalCompletion = await withRetry(
       () =>
         client.chat.completions.create({
@@ -165,7 +175,8 @@ async function runOpenAIAgentLoop(
   } catch (error: any) {
     if (
       error instanceof NoChangesError ||
-      error instanceof APIKeyMissingError
+      error instanceof APIKeyMissingError ||
+      error instanceof GenerationCancelledError
     ) {
       throw error;
     }

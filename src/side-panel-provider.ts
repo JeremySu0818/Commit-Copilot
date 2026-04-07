@@ -396,6 +396,10 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
           }
           break;
         }
+        case 'cancelGenerate': {
+          await vscode.commands.executeCommand('commit-copilot.cancelGeneration');
+          break;
+        }
         case 'checkKey': {
           const provider = (data.provider as APIProvider) || DEFAULT_PROVIDER;
           const storageKey = API_KEY_STORAGE_KEYS[provider];

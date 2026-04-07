@@ -14,10 +14,15 @@ import {
   APIKeyInvalidError,
   APIQuotaExceededError,
   APIRequestError,
+  GenerationCancelledError,
   NoChangesError,
 } from '../errors';
 import { ProgressCallback } from '../llm-clients';
 import { GitOperations } from '../commit-copilot';
+import {
+  CancellationSignal,
+  throwIfCancellationRequested,
+} from '../cancellation';
 import {
   buildAgentSystemPrompt,
   buildFinalOutputReminder,
@@ -36,7 +41,9 @@ async function runAnthropicAgentLoop(
   isStaged: boolean = true,
   gitOps?: GitOperations,
   commitOutputOptions: CommitOutputOptions = DEFAULT_COMMIT_OUTPUT_OPTIONS,
+  cancellationToken?: CancellationSignal,
 ): Promise<string> {
+  throwIfCancellationRequested(cancellationToken);
   if (!apiKey) {
     throw new APIKeyMissingError();
   }
@@ -87,6 +94,7 @@ async function runAnthropicAgentLoop(
     let step = 0;
 
     while (step < MAX_AGENT_STEPS) {
+      throwIfCancellationRequested(cancellationToken);
       const response = await withRetry(
         () =>
           client.messages.create({
@@ -124,6 +132,7 @@ async function runAnthropicAgentLoop(
       }
 
       for (const block of toolUseBlocks) {
+        throwIfCancellationRequested(cancellationToken);
         const toolUse = block as any;
         const result = await executeToolCall(
           { name: toolUse.name, arguments: toolUse.input || {} },
@@ -153,6 +162,7 @@ async function runAnthropicAgentLoop(
         },
       ],
     });
+    throwIfCancellationRequested(cancellationToken);
 
     const finalResponse = await withRetry(
       () =>
@@ -172,7 +182,8 @@ async function runAnthropicAgentLoop(
   } catch (error: any) {
     if (
       error instanceof NoChangesError ||
-      error instanceof APIKeyMissingError
+      error instanceof APIKeyMissingError ||
+      error instanceof GenerationCancelledError
     ) {
       throw error;
     }
