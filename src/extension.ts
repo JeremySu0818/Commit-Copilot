@@ -1,11 +1,6 @@
 import * as vscode from 'vscode';
 import { SidePanelProvider } from './side-panel-provider';
-import {
-  generateCommitMessage,
-  EXIT_CODES,
-  ERROR_MESSAGES,
-  CommitCopilotError,
-} from './commit-copilot';
+import { generateCommitMessage, EXIT_CODES, CommitCopilotError } from './commit-copilot';
 import {
   APIProvider,
   API_KEY_STORAGE_KEYS,
@@ -18,6 +13,14 @@ import {
   normalizeCommitOutputOptions,
 } from './models';
 import { GenerationStateManager } from './state';
+import {
+  DISPLAY_LANGUAGE_STATE_KEY,
+  getExtensionText,
+  getLocalizedErrorInfo,
+  localizeProgressMessage,
+  normalizeDisplayLanguage,
+  resolveEffectiveDisplayLanguage,
+} from './i18n';
 
 type GenerateCommandArg =
   | vscode.SourceControl
@@ -51,6 +54,13 @@ function parseCommitOutputOptions(
   return normalizeCommitOutputOptions(value);
 }
 
+function getCurrentLanguage(context: vscode.ExtensionContext) {
+  const displayLanguage = normalizeDisplayLanguage(
+    context.globalState.get(DISPLAY_LANGUAGE_STATE_KEY),
+  );
+  return resolveEffectiveDisplayLanguage(displayLanguage, vscode.env?.language);
+}
+
 export function activate(context: vscode.ExtensionContext) {
   console.log('Commit-Copilot extension is now active!');
 
@@ -67,13 +77,25 @@ export function activate(context: vscode.ExtensionContext) {
     ),
   );
 
-  let disposable = vscode.commands.registerCommand(
+  const openLanguageSettingsDisposable = vscode.commands.registerCommand(
+    'commit-copilot.openLanguageSettings',
+    async () => {
+      const language = getCurrentLanguage(context);
+      const text = getExtensionText(language);
+      outputChannel.appendLine(text.output.openingLanguageSettings);
+      await vscode.commands.executeCommand('commit-copilot.view.focus');
+      provider.openLanguageSettingsView();
+    },
+  );
+
+  const generateDisposable = vscode.commands.registerCommand(
     'commit-copilot.generate',
     async (arg?: GenerateCommandArg) => {
+      const language = getCurrentLanguage(context);
+      const text = getExtensionText(language);
+
       if (GenerationStateManager.isGenerating) {
-        outputChannel.appendLine(
-          'Generation request ignored: generation already in progress.',
-        );
+        outputChannel.appendLine(text.output.generationIgnored);
         return;
       }
 
@@ -90,7 +112,7 @@ export function activate(context: vscode.ExtensionContext) {
       try {
         outputChannel.appendLine('='.repeat(50));
         outputChannel.appendLine(
-          `[${new Date().toISOString()}] Starting commit-copilot generation...`,
+          text.output.generationStart(new Date().toISOString()),
         );
 
         let scm: vscode.SourceControl | undefined;
@@ -111,10 +133,8 @@ export function activate(context: vscode.ExtensionContext) {
         const gitExtension =
           vscode.extensions.getExtension('vscode.git')?.exports;
         if (!gitExtension) {
-          outputChannel.appendLine('Error: Git extension not found.');
-          vscode.window.showErrorMessage(
-            'Git extension not found. Please ensure Git is installed and the Git extension is enabled.',
-          );
+          outputChannel.appendLine(text.output.gitExtensionMissing);
+          vscode.window.showErrorMessage(text.notification.gitExtensionMissing);
           return;
         }
 
@@ -127,7 +147,7 @@ export function activate(context: vscode.ExtensionContext) {
           );
           if (repository) {
             outputChannel.appendLine(
-              `Selected repository from SCM context: ${repository.rootUri.fsPath}`,
+              text.output.selectedRepoFromScm(repository.rootUri.fsPath),
             );
           }
         }
@@ -147,16 +167,14 @@ export function activate(context: vscode.ExtensionContext) {
             }
             if (repository) {
               outputChannel.appendLine(
-                `Selected repository from active editor: ${repository.rootUri.fsPath}`,
+                text.output.selectedRepoFromEditor(repository.rootUri.fsPath),
               );
             } else {
-              outputChannel.appendLine(
-                'No repository matched the active editor.',
-              );
+              outputChannel.appendLine(text.output.noRepoMatchedActiveEditor);
             }
           } else {
             outputChannel.appendLine(
-              'No active editor found for repository selection.',
+              text.output.noActiveEditorForRepoSelection,
             );
           }
         }
@@ -165,25 +183,21 @@ export function activate(context: vscode.ExtensionContext) {
           if (api.repositories.length === 1) {
             repository = api.repositories[0];
             outputChannel.appendLine(
-              `Selected only repository: ${repository.rootUri.fsPath}`,
+              text.output.selectedOnlyRepo(repository.rootUri.fsPath),
             );
           } else if (api.repositories.length > 1) {
             outputChannel.appendLine(
-              `Found ${api.repositories.length} repositories but could not determine the active one.`,
+              text.output.multiRepoNotDetermined(api.repositories.length),
             );
-            vscode.window.showWarningMessage(
-              'Multiple Git repositories found. Please focus a file in the target repository or run from the SCM view.',
-            );
+            vscode.window.showWarningMessage(text.notification.multiRepoWarning);
             return;
           } else {
-            outputChannel.appendLine('No repositories found in API.');
+            outputChannel.appendLine(text.output.noRepoInApi);
           }
         }
 
         if (!repository) {
-          vscode.window.showErrorMessage(
-            'No Git repository found. Please open a folder containing a Git repository.',
-          );
+          vscode.window.showErrorMessage(text.notification.repoNotFound);
           return;
         }
 
@@ -208,20 +222,26 @@ export function activate(context: vscode.ExtensionContext) {
         const apiKey = await context.secrets.get(storageKey);
 
         outputChannel.appendLine(
-          `Using provider: ${PROVIDER_DISPLAY_NAMES[currentProvider]}`,
+          text.output.usingProvider(PROVIDER_DISPLAY_NAMES[currentProvider]),
         );
-        outputChannel.appendLine(`Generation mode: ${currentGenerateMode}`);
         outputChannel.appendLine(
-          `Commit output options: ${JSON.stringify(currentCommitOutputOptions)}`,
+          text.output.usingGenerateMode(currentGenerateMode),
+        );
+        outputChannel.appendLine(
+          text.output.usingCommitOutputOptions(
+            JSON.stringify(currentCommitOutputOptions),
+          ),
         );
 
         if (!apiKey && currentProvider !== 'ollama') {
           outputChannel.appendLine(
-            `Warning: No API Key found for ${currentProvider}.`,
+            text.output.missingApiKeyWarning(currentProvider),
           );
-          const setKeyAction = 'Configure API Key';
+          const setKeyAction = text.notification.configureApiKeyAction;
           const result = await vscode.window.showWarningMessage(
-            `${PROVIDER_DISPLAY_NAMES[currentProvider]} API Key is not configured. Please set your API Key in the Commit-Copilot panel first.`,
+            text.notification.apiKeyMissing(
+              PROVIDER_DISPLAY_NAMES[currentProvider],
+            ),
             setKeyAction,
           );
 
@@ -247,25 +267,26 @@ export function activate(context: vscode.ExtensionContext) {
               () => {
                 wasCancelled = true;
                 outputChannel.appendLine(
-                  'Cancellation requested from progress UI.',
+                  text.output.cancelRequestedFromProgress,
                 );
                 cancellationSource.cancel();
               },
             );
-            outputChannel.appendLine('Calling generateCommitMessage...');
+            outputChannel.appendLine(text.output.callingGenerateCommitMessage);
             outputChannel.appendLine(
-              `Repository path: ${repository.rootUri.fsPath}`,
+              text.output.repositoryPath(repository.rootUri.fsPath),
             );
 
             const savedModel = context.globalState.get<string>(
               `${currentProvider.toUpperCase()}_MODEL`,
             );
             if (savedModel) {
-              outputChannel.appendLine(`Using model: ${savedModel}`);
+              outputChannel.appendLine(text.output.usingModel(savedModel));
             }
             const reportProgress = (message: string, increment?: number) => {
-              outputChannel.appendLine(message);
-              progress.report({ message, increment });
+              const localized = localizeProgressMessage(message, language);
+              outputChannel.appendLine(localized);
+              progress.report({ message: localized, increment });
             };
             const baseGenerateOptions = {
               repository,
@@ -286,18 +307,18 @@ export function activate(context: vscode.ExtensionContext) {
 
               if (result.error?.exitCode === EXIT_CODES.MIXED_CHANGES) {
                 const selection = await vscode.window.showInformationMessage(
-                  'You have both staged and unstaged changes. How would you like to proceed?',
-                  'Stage All & Generate',
-                  'Proceed with Staged Only',
-                  'Cancel',
+                  text.notification.mixedChangesQuestion,
+                  text.notification.stageAllAndGenerate,
+                  text.notification.proceedStagedOnly,
+                  text.notification.cancel,
                 );
 
-                if (selection === 'Stage All & Generate') {
+                if (selection === text.notification.stageAllAndGenerate) {
                   result = await generateCommitMessage({
                     ...baseGenerateOptions,
                     stageChanges: true,
                   });
-                } else if (selection === 'Proceed with Staged Only') {
+                } else if (selection === text.notification.proceedStagedOnly) {
                   result = await generateCommitMessage({
                     ...baseGenerateOptions,
                     stageChanges: false,
@@ -312,17 +333,17 @@ export function activate(context: vscode.ExtensionContext) {
                 result.error?.exitCode === EXIT_CODES.NO_CHANGES_BUT_UNTRACKED
               ) {
                 const selection = await vscode.window.showInformationMessage(
-                  'No staged changes detected. Untracked files found. Would you like to stage all files (including untracked) or generate only for tracked modified files?',
-                  'Stage & Generate All',
-                  'Generate Tracked Only',
+                  text.notification.noStagedButUntrackedQuestion,
+                  text.notification.stageAndGenerateAll,
+                  text.notification.generateTrackedOnly,
                 );
 
-                if (selection === 'Stage & Generate All') {
+                if (selection === text.notification.stageAndGenerateAll) {
                   result = await generateCommitMessage({
                     ...baseGenerateOptions,
                     stageChanges: true,
                   });
-                } else if (selection === 'Generate Tracked Only') {
+                } else if (selection === text.notification.generateTrackedOnly) {
                   result = await generateCommitMessage({
                     ...baseGenerateOptions,
                     stageChanges: false,
@@ -334,12 +355,12 @@ export function activate(context: vscode.ExtensionContext) {
                 EXIT_CODES.NO_TRACKED_CHANGES_BUT_UNTRACKED
               ) {
                 const selection = await vscode.window.showInformationMessage(
-                  'Only untracked files are present with no tracked modifications. Do you want to stage and track these new files to generate a commit?',
-                  'Stage & Track',
-                  'Cancel',
+                  text.notification.onlyUntrackedQuestion,
+                  text.notification.stageAndTrack,
+                  text.notification.cancel,
                 );
 
-                if (selection === 'Stage & Track') {
+                if (selection === text.notification.stageAndTrack) {
                   result = await generateCommitMessage({
                     ...baseGenerateOptions,
                     stageChanges: true,
@@ -356,22 +377,21 @@ export function activate(context: vscode.ExtensionContext) {
 
               if (result.success && result.message) {
                 outputChannel.appendLine(
-                  `Generated message: ${result.message}`,
+                  text.output.generatedMessage(result.message),
                 );
                 repository.inputBox.value = result.message;
                 await vscode.commands.executeCommand('workbench.view.scm');
-                vscode.window.showInformationMessage(
-                  'Commit message generated!',
-                );
+                vscode.window.showInformationMessage(text.notification.commitGenerated);
               } else if (result.error) {
                 const error = result.error;
                 outputChannel.appendLine(
-                  `Error: ${error.errorCode} - ${error.message}`,
+                  text.output.generationError(error.errorCode, error.message),
                 );
 
-                const errorInfo =
-                  ERROR_MESSAGES[error.exitCode] ||
-                  ERROR_MESSAGES[EXIT_CODES.UNKNOWN_ERROR];
+                const errorInfo = getLocalizedErrorInfo(
+                  language,
+                  error.exitCode,
+                );
 
                 if (
                   error.exitCode === EXIT_CODES.API_KEY_MISSING ||
@@ -379,17 +399,17 @@ export function activate(context: vscode.ExtensionContext) {
                 ) {
                   const action = await vscode.window.showErrorMessage(
                     `${errorInfo.title}: ${error.message}`,
-                    'Configure API Key',
+                    text.notification.configureApiKeyAction,
                   );
-                  if (action === 'Configure API Key') {
+                  if (action === text.notification.configureApiKeyAction) {
                     vscode.commands.executeCommand('commit-copilot.view.focus');
                   }
                 } else if (error.exitCode === EXIT_CODES.QUOTA_EXCEEDED) {
                   const action = await vscode.window.showErrorMessage(
                     `${errorInfo.title}: ${error.message}`,
-                    'View Provider Console',
+                    text.notification.viewProviderConsoleAction,
                   );
-                  if (action === 'View Provider Console') {
+                  if (action === text.notification.viewProviderConsoleAction) {
                     const providerUrls: Record<APIProvider, string> = {
                       google: 'https://aistudio.google.com/',
                       openai: 'https://platform.openai.com/usage',
@@ -401,9 +421,7 @@ export function activate(context: vscode.ExtensionContext) {
                     );
                   }
                 } else if (error.exitCode === EXIT_CODES.NO_CHANGES) {
-                  vscode.window.showInformationMessage(
-                    'No changes to commit. Make some changes first!',
-                  );
+                  vscode.window.showInformationMessage(text.notification.noChanges);
                 } else if (
                   error.exitCode !== EXIT_CODES.NO_CHANGES_BUT_UNTRACKED &&
                   error.exitCode !== EXIT_CODES.NO_TRACKED_CHANGES_BUT_UNTRACKED
@@ -419,9 +437,7 @@ export function activate(context: vscode.ExtensionContext) {
           },
         );
         if (wasCancelled || cancellationSource.token.isCancellationRequested) {
-          vscode.window.showInformationMessage(
-            'Commit message generation canceled.',
-          );
+          vscode.window.showInformationMessage(text.notification.generationCanceled);
         }
       } catch (error) {
         const isCancellationError =
@@ -431,15 +447,13 @@ export function activate(context: vscode.ExtensionContext) {
           isCancellationError ||
           cancellationSource.token.isCancellationRequested
         ) {
-          vscode.window.showInformationMessage(
-            'Commit message generation canceled.',
-          );
+          vscode.window.showInformationMessage(text.notification.generationCanceled);
         } else {
           const errorMessage =
             error instanceof Error ? error.message : String(error);
-          outputChannel.appendLine(`Unexpected error: ${errorMessage}`);
+          outputChannel.appendLine(text.output.unexpectedError(errorMessage));
           vscode.window.showErrorMessage(
-            `Commit-Copilot failed: ${errorMessage}`,
+            `${text.notification.failedPrefix}: ${errorMessage}`,
           );
         }
       } finally {
@@ -466,7 +480,8 @@ export function activate(context: vscode.ExtensionContext) {
     },
   );
 
-  context.subscriptions.push(disposable);
+  context.subscriptions.push(openLanguageSettingsDisposable);
+  context.subscriptions.push(generateDisposable);
   context.subscriptions.push(cancelDisposable);
 }
 
