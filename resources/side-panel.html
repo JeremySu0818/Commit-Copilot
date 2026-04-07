@@ -64,6 +64,9 @@
     button.primary {
       background: var(--vscode-button-background);
     }
+    button.primary:hover:not(:disabled) {
+      background: var(--vscode-button-hoverBackground);
+    }
     button.secondary {
       background: var(--vscode-button-secondaryBackground);
       color: var(--vscode-button-secondaryForeground);
@@ -452,10 +455,6 @@
 
     generateBtn.addEventListener('click', () => {
       if (isGenerating) {
-        const shouldCancel = window.confirm('Cancel current generation?');
-        if (!shouldCancel) {
-          return;
-        }
         vscode.postMessage({ type: 'cancelGenerate' });
         return;
       }
