@@ -12,12 +12,14 @@ import { cleanupTempDir, createTempDir } from '../helpers/temp-dir';
 
 const MODULE_PATH = '../../agent-tools/executors/find-references';
 
-async function loadModule(vscodeMock: unknown): Promise<
-  typeof import('../../agent-tools/executors/find-references')
-> {
+async function loadModule(
+  vscodeMock: unknown,
+): Promise<typeof import('../../agent-tools/executors/find-references')> {
   clearRequireCache(MODULE_PATH);
   return withModuleMock('vscode', vscodeMock, async () => {
-    return require(MODULE_PATH) as typeof import('../../agent-tools/executors/find-references');
+    return require(
+      MODULE_PATH,
+    ) as typeof import('../../agent-tools/executors/find-references');
   });
 }
 
@@ -48,7 +50,11 @@ test('executeFindReferences validates line and character range', async () => {
         if (!(input instanceof MockUri)) {
           throw new Error('Expected file URI');
         }
-        return new MockTextDocument(input, fs.readFileSync(input.fsPath, 'utf-8'), 'typescript');
+        return new MockTextDocument(
+          input,
+          fs.readFileSync(input.fsPath, 'utf-8'),
+          'typescript',
+        );
       },
     });
 
@@ -133,7 +139,10 @@ test('executeFindReferences formats grouped references with snippets', async () 
       '',
     );
 
-    assert.match(output, /References for src\/a\.ts:1:1 \(includeDeclaration: true\)/);
+    assert.match(
+      output,
+      /References for src\/a\.ts:1:1 \(includeDeclaration: true\)/,
+    );
     assert.match(output, /Found 2 references in 2 files\./);
     assert.match(output, /src[\\/]+a\.ts/);
     assert.match(output, /L1:C1/);

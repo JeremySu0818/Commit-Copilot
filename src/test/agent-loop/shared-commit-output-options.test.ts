@@ -64,8 +64,5 @@ test('reminder builders reflect selected commit output options', () => {
   assert.match(reminder, /Scope parentheses are FORBIDDEN/);
   assert.match(reminder, /A body section is FORBIDDEN/);
   assert.match(reminder, /Footer lines are FORBIDDEN/);
-  assert.match(
-    finalReminder,
-    /Output ONLY the final commit message now\./,
-  );
+  assert.match(finalReminder, /Output ONLY the final commit message now\./);
 });

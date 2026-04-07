@@ -190,11 +190,7 @@ export class StageFailedError extends CommitCopilotError {
 
 export class GenerationCancelledError extends CommitCopilotError {
   constructor() {
-    super(
-      'Generation canceled by user.',
-      'CANCELLED',
-      EXIT_CODES.CANCELLED,
-    );
+    super('Generation canceled by user.', 'CANCELLED', EXIT_CODES.CANCELLED);
     this.name = 'GenerationCancelledError';
   }
 }

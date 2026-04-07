@@ -103,8 +103,9 @@ Refs: #123`;
 }
 
 function buildOutputFormatRules(options: CommitOutputOptions): string {
-  const commitTypes = CONVENTIONAL_COMMIT_TYPES.map((type) => `\`${type}\``)
-    .join(', ');
+  const commitTypes = CONVENTIONAL_COMMIT_TYPES.map(
+    (type) => `\`${type}\``,
+  ).join(', ');
   const strictRules = [
     `First line MUST start with one of: ${commitTypes}.`,
     buildScopeRule(options),

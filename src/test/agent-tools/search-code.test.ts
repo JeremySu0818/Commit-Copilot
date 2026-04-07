@@ -6,12 +6,14 @@ import { MockUri, createVscodeMock } from '../helpers/vscode-mock';
 
 const MODULE_PATH = '../../agent-tools/executors/search-code';
 
-async function loadModule(vscodeMock: unknown): Promise<
-  typeof import('../../agent-tools/executors/search-code')
-> {
+async function loadModule(
+  vscodeMock: unknown,
+): Promise<typeof import('../../agent-tools/executors/search-code')> {
   clearRequireCache(MODULE_PATH);
   return withModuleMock('vscode', vscodeMock, async () => {
-    return require(MODULE_PATH) as typeof import('../../agent-tools/executors/search-code');
+    return require(
+      MODULE_PATH,
+    ) as typeof import('../../agent-tools/executors/search-code');
   });
 }
 
@@ -73,7 +75,9 @@ test('executeSearchCode prefers Git file list when available', async () => {
 
   const vscodeMock = createVscodeMock({
     findFiles: async () => {
-      throw new Error('findFiles should not be called when git file list exists');
+      throw new Error(
+        'findFiles should not be called when git file list exists',
+      );
     },
     readFile: async (uri: MockUri) => {
       if (uri.fsPath === srcFilePath) {
@@ -87,13 +91,9 @@ test('executeSearchCode prefers Git file list when available', async () => {
   });
 
   const { executeSearchCode } = await loadModule(vscodeMock);
-  const output = await executeSearchCode(
-    repoRoot,
-    { query: 'needle' },
-    {
-      listFilesFromGitApi: async () => ['src/a.ts'],
-    } as any,
-  );
+  const output = await executeSearchCode(repoRoot, { query: 'needle' }, {
+    listFilesFromGitApi: async () => ['src/a.ts'],
+  } as any);
 
   assert.match(output, /src\/a\.ts/);
   assert.doesNotMatch(output, /node_modules\/pkg\/index\.js/);
