@@ -145,3 +145,71 @@ test('executeGetFileOutline handles empty symbol results', async () => {
     cleanupTempDir(repoRoot);
   }
 });
+
+test('executeGetFileOutline infers language for staged new files', async () => {
+  const repoRoot = createTempDir();
+  try {
+    const relPath = 'src/new-file.ts';
+    const openInputs: unknown[] = [];
+
+    const vscodeMock = createVscodeMock({
+      openTextDocument: async (input) => {
+        openInputs.push(input);
+
+        if (input instanceof MockUri) {
+          throw new Error('Document is not available on disk.');
+        }
+
+        if (input && typeof input === 'object' && 'content' in input) {
+          const options = input as { content?: unknown; language?: unknown };
+          const languageId =
+            typeof options.language === 'string'
+              ? options.language
+              : 'plaintext';
+          return new MockTextDocument(
+            new MockUri('untitled://staged', 'untitled'),
+            String(options.content ?? ''),
+            languageId,
+          );
+        }
+
+        throw new Error('Unsupported openTextDocument input');
+      },
+      executeCommand: async (command: string, ..._args: unknown[]) => {
+        if (command !== 'vscode.executeDocumentSymbolProvider') {
+          return [];
+        }
+        return [];
+      },
+    });
+
+    const { executeGetFileOutline } = await loadModule(vscodeMock);
+    const gitOps = {
+      showIndexFile: async () => ({
+        content: 'export const x = 1;\n',
+        found: true,
+      }),
+    } as any;
+
+    const output = await executeGetFileOutline(
+      repoRoot,
+      { path: relPath },
+      true,
+      gitOps,
+    );
+
+    assert.match(output, /language "typescript"/);
+
+    const stagedOpen = openInputs.find(
+      (value) =>
+        value &&
+        typeof value === 'object' &&
+        'content' in (value as Record<string, unknown>),
+    ) as { language?: unknown } | undefined;
+
+    assert.ok(stagedOpen);
+    assert.equal(stagedOpen.language, 'typescript');
+  } finally {
+    cleanupTempDir(repoRoot);
+  }
+});
