@@ -70,6 +70,11 @@ export function parseDiffSummary(
       currentFile.path = `${currentAPath}${RENAME_PATH_SEPARATOR}${currentBPath}`;
       continue;
     }
+    if (line.startsWith('Binary files ') && line.endsWith(' differ')) {
+      currentFile.added = Math.max(currentFile.added, 1);
+      currentFile.removed = Math.max(currentFile.removed, 1);
+      continue;
+    }
 
     if (line.startsWith('+') && !line.startsWith('+++')) {
       currentFile.added++;

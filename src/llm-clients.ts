@@ -380,7 +380,10 @@ export class OllamaClient implements ILLMClient {
 
       return text.trim();
     } catch (error: any) {
-      if (error instanceof NoChangesError || error instanceof GenerationCancelledError) {
+      if (
+        error instanceof NoChangesError ||
+        error instanceof GenerationCancelledError
+      ) {
         throw error;
       }
 
@@ -403,9 +406,8 @@ export class OllamaClient implements ILLMClient {
 
 export function createLLMClient(options: LLMClientOptions): ILLMClient {
   const { provider, apiKey, ollamaHost, model, commitOutputOptions } = options;
-  const resolvedCommitOutputOptions = normalizeCommitOutputOptions(
-    commitOutputOptions,
-  );
+  const resolvedCommitOutputOptions =
+    normalizeCommitOutputOptions(commitOutputOptions);
 
   switch (provider) {
     case 'google':
@@ -415,8 +417,6 @@ export function createLLMClient(options: LLMClientOptions): ILLMClient {
     case 'anthropic':
       return new AnthropicClient(apiKey, model, resolvedCommitOutputOptions);
     case 'ollama': {
-      // Keep `apiKey` as a legacy fallback because older call sites store
-      // Ollama host in that field.
       const resolvedOllamaHost = ollamaHost || apiKey;
       return new OllamaClient(
         resolvedOllamaHost,
