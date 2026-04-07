@@ -15,16 +15,66 @@ import {
   OLLAMA_DEFAULT_HOST,
   normalizeCommitOutputOptions,
 } from './models';
+import {
+  DISPLAY_LANGUAGE_OPTIONS,
+  DISPLAY_LANGUAGE_STATE_KEY,
+  DisplayLanguage,
+  EffectiveDisplayLanguage,
+  WEBVIEW_LANGUAGE_PACKS,
+  getDisplayLanguageLabel,
+  getSidePanelText,
+  normalizeDisplayLanguage,
+  resolveEffectiveDisplayLanguage,
+} from './i18n';
 import { GenerationStateManager, ValidationStateManager } from './state';
 
 export class SidePanelProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = 'commit-copilot.view';
   private _view?: vscode.WebviewView;
+  private _currentScreen: 'main' | 'settings' = 'main';
 
   constructor(
     private readonly _extensionUri: vscode.Uri,
     private readonly _context: vscode.ExtensionContext,
   ) {}
+
+  public openLanguageSettingsView() {
+    this._currentScreen = 'settings';
+    if (this._view) {
+      this._view.show?.(true);
+      this._view.webview.postMessage({ type: 'openSettingsView' });
+    }
+  }
+
+  private getVSCodeLanguage(): string | undefined {
+    return vscode.env?.language;
+  }
+
+  private getDisplayLanguage(): DisplayLanguage {
+    const storedLanguage = this._context?.globalState?.get?.(
+      DISPLAY_LANGUAGE_STATE_KEY,
+    );
+    return normalizeDisplayLanguage(
+      storedLanguage,
+    );
+  }
+
+  private getEffectiveDisplayLanguage(): EffectiveDisplayLanguage {
+    return resolveEffectiveDisplayLanguage(
+      this.getDisplayLanguage(),
+      this.getVSCodeLanguage(),
+    );
+  }
+
+  private getWebviewLanguagePayload() {
+    const displayLanguage = this.getDisplayLanguage();
+    const effectiveLanguage = this.getEffectiveDisplayLanguage();
+    return {
+      displayLanguage,
+      effectiveLanguage,
+      languageOptions: DISPLAY_LANGUAGE_OPTIONS,
+    };
+  }
 
   private extractValidationError(error: unknown): {
     status?: number;
@@ -64,13 +114,14 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
     },
   ): { valid: false; error: string } {
     const { status, message } = this.extractValidationError(error);
+    const text = getSidePanelText(this.getEffectiveDisplayLanguage());
 
     const isInvalidKey =
       (typeof status === 'number' &&
         rules.invalidStatusCodes.includes(status)) ||
       this.includesMessage(message, rules.invalidMessagePatterns);
     if (isInvalidKey) {
-      return { valid: false, error: `Invalid API Key: ${message}` };
+      return { valid: false, error: `${text.invalidApiKeyPrefix}: ${message}` };
     }
 
     const quotaStatusCodes = rules.quotaStatusCodes || [429];
@@ -78,17 +129,17 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
       (typeof status === 'number' && quotaStatusCodes.includes(status)) ||
       this.includesMessage(message, rules.quotaMessagePatterns);
     if (isQuotaExceeded) {
-      return { valid: false, error: `API quota exceeded: ${message}` };
+      return { valid: false, error: `${text.quotaExceededPrefix}: ${message}` };
     }
 
     if (typeof status === 'number') {
       return {
         valid: false,
-        error: `API request failed (${status}): ${message}`,
+        error: `${text.apiRequestFailedPrefix} (${status}): ${message}`,
       };
     }
 
-    return { valid: false, error: `Connection error: ${message}` };
+    return { valid: false, error: `${text.connectionErrorPrefix}: ${message}` };
   }
 
   private async validateGoogleApiKey(
@@ -147,6 +198,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
   private async validateOllamaHost(
     host: string,
   ): Promise<{ valid: boolean; error?: string }> {
+    const text = getSidePanelText(this.getEffectiveDisplayLanguage());
     try {
       const hostUrl = host || OLLAMA_DEFAULT_HOST;
       const response = await fetch(`${hostUrl}/api/tags`, {
@@ -157,14 +209,14 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
       }
       return {
         valid: false,
-        error: `Cannot connect to Ollama at ${hostUrl}`,
+        error: text.cannotConnectOllamaAt(hostUrl),
       };
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : String(error);
       return {
         valid: false,
-        error: `Cannot connect to Ollama: ${errorMessage}. Make sure Ollama is running.`,
+        error: text.cannotConnectOllama(errorMessage),
       };
     }
   }
@@ -183,13 +235,17 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
       case 'ollama':
         return this.validateOllamaHost(apiKey);
       default:
-        return { valid: false, error: 'Unknown provider' };
+        return {
+          valid: false,
+          error: getSidePanelText(this.getEffectiveDisplayLanguage())
+            .unknownProvider,
+        };
     }
   }
 
   public resolveWebviewView(
     webviewView: vscode.WebviewView,
-    context: vscode.WebviewViewResolveContext,
+    _context: vscode.WebviewViewResolveContext,
     _token: vscode.CancellationToken,
   ) {
     this._view = webviewView;
@@ -356,10 +412,11 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
     webviewView.webview.onDidReceiveMessage(async (data) => {
       switch (data.type) {
         case 'saveKey': {
+          const text = getSidePanelText(this.getEffectiveDisplayLanguage());
           const provider = data.provider as APIProvider;
           const apiKey = data.value;
           if (!apiKey && provider !== 'ollama') {
-            vscode.window.showErrorMessage('API Key cannot be empty');
+            vscode.window.showErrorMessage(text.apiKeyCannotBeEmpty);
             this._view?.webview.postMessage({
               type: 'validationResult',
               success: false,
@@ -376,7 +433,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
             );
             if (!validationResult.valid) {
               vscode.window.showWarningMessage(
-                `Validation failed: ${validationResult.error || 'Unable to connect'}`,
+                `${text.validationFailedPrefix}: ${validationResult.error || text.unableToConnectFallback}`,
               );
               this._view?.webview.postMessage({
                 type: 'validationResult',
@@ -393,7 +450,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
                 apiKey || OLLAMA_DEFAULT_HOST,
               );
               vscode.window.showInformationMessage(
-                `${PROVIDER_DISPLAY_NAMES[provider]} configuration saved successfully!`,
+                text.saveConfigSuccess(PROVIDER_DISPLAY_NAMES[provider]),
               );
               this._view?.webview.postMessage({
                 type: 'validationResult',
@@ -407,7 +464,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
                 provider,
               });
             } catch (e) {
-              vscode.window.showErrorMessage('Failed to save configuration');
+              vscode.window.showErrorMessage(text.saveConfigFailed);
               this._view?.webview.postMessage({
                 type: 'validationResult',
                 success: false,
@@ -567,6 +624,40 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
           });
           break;
         }
+        case 'saveDisplayLanguage': {
+          const nextLanguage = normalizeDisplayLanguage(data.value);
+          await this._context.globalState.update(
+            DISPLAY_LANGUAGE_STATE_KEY,
+            nextLanguage,
+          );
+          const effectiveLanguage = resolveEffectiveDisplayLanguage(
+            nextLanguage,
+            this.getVSCodeLanguage(),
+          );
+          const text = getSidePanelText(effectiveLanguage);
+          vscode.window.showInformationMessage(
+            text.languageSaved(
+              getDisplayLanguageLabel(nextLanguage, effectiveLanguage),
+            ),
+          );
+          this._view?.webview.postMessage({
+            type: 'displayLanguageUpdated',
+            ...this.getWebviewLanguagePayload(),
+          });
+          break;
+        }
+        case 'getDisplayLanguage': {
+          this._view?.webview.postMessage({
+            type: 'displayLanguageUpdated',
+            ...this.getWebviewLanguagePayload(),
+          });
+          break;
+        }
+        case 'setCurrentScreen': {
+          this._currentScreen =
+            data.value === 'settings' ? 'settings' : 'main';
+          break;
+        }
       }
     });
   }
@@ -579,6 +670,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
       'side-panel.html',
     );
     const template = fs.readFileSync(templateUri.fsPath, 'utf8');
+    const languagePayload = this.getWebviewLanguagePayload();
 
     const replacements: Record<string, string> = {
       CSP_SOURCE: escapeHtmlAttribute(webview.cspSource),
@@ -597,6 +689,19 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
         DEFAULT_GENERATE_MODE,
       ),
       OLLAMA_DEFAULT_HOST_JSON: serializeForInlineScript(OLLAMA_DEFAULT_HOST),
+      WEBVIEW_LANGUAGE_PACKS_JSON: serializeForInlineScript(
+        WEBVIEW_LANGUAGE_PACKS,
+      ),
+      DISPLAY_LANGUAGE_JSON: serializeForInlineScript(
+        languagePayload.displayLanguage,
+      ),
+      EFFECTIVE_LANGUAGE_JSON: serializeForInlineScript(
+        languagePayload.effectiveLanguage,
+      ),
+      DISPLAY_LANGUAGE_OPTIONS_JSON: serializeForInlineScript(
+        languagePayload.languageOptions,
+      ),
+      INITIAL_SCREEN_JSON: serializeForInlineScript(this._currentScreen),
     };
 
     return template.replace(/\{\{([A-Z0-9_]+)\}\}/g, (match, key: string) => {

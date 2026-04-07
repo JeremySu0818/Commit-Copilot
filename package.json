@@ -2,7 +2,7 @@
   "name": "commit-copilot",
   "displayName": "Commit Copilot",
   "description": "Generate conventional commit messages using LLMs.",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "publisher": "JeremySu0818",
   "icon": "assets/icon.png",
   "repository": {
@@ -34,6 +34,12 @@
         "category": "Commit-Copilot",
         "icon": "$(debug-stop)",
         "enablement": "commit-copilot.isGenerating"
+      },
+      {
+        "command": "commit-copilot.openLanguageSettings",
+        "title": "Commit-Copilot: Open Language Settings",
+        "category": "Commit-Copilot",
+        "icon": "$(settings-gear)"
       }
     ],
     "menus": {
@@ -47,6 +53,13 @@
           "command": "commit-copilot.cancelGeneration",
           "group": "navigation",
           "when": "scmProvider == git && commit-copilot.isGenerating"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "commit-copilot.openLanguageSettings",
+          "group": "navigation",
+          "when": "view == commit-copilot.view"
         }
       ]
     },

@@ -6,23 +6,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Commit Copilot</title>
   <style>
-    body { 
-      font-family: var(--vscode-font-family); 
-      padding: 12px; 
+    body {
+      font-family: var(--vscode-font-family);
+      padding: 12px;
       margin: 0;
     }
-    .container { 
-      display: flex; 
-      flex-direction: column; 
-      gap: 16px; 
+    .container {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
     }
-    .input-group { 
-      display: flex; 
-      flex-direction: column; 
-      gap: 6px; 
+    .hidden {
+      display: none;
     }
-    label { 
-      font-weight: 600; 
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    label {
+      font-weight: 600;
       font-size: 12px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
@@ -30,10 +33,10 @@
       opacity: 0.8;
     }
     input[type="password"],
-    input[type="text"] { 
-      padding: 8px 10px; 
-      background: var(--vscode-input-background); 
-      color: var(--vscode-input-foreground); 
+    input[type="text"] {
+      padding: 8px 10px;
+      background: var(--vscode-input-background);
+      color: var(--vscode-input-foreground);
       border: 1px solid var(--vscode-input-border);
       border-radius: 4px;
       font-size: 13px;
@@ -43,19 +46,19 @@
       outline: none;
       border-color: var(--vscode-focusBorder);
     }
-    button { 
-      padding: 10px 14px; 
-      background: var(--vscode-button-background); 
-      color: var(--vscode-button-foreground); 
-      border: none; 
+    button {
+      padding: 10px 14px;
+      background: var(--vscode-button-background);
+      color: var(--vscode-button-foreground);
+      border: none;
       cursor: pointer;
       border-radius: 4px;
       font-weight: 500;
       font-size: 13px;
       transition: background 0.15s ease;
     }
-    button:hover { 
-      background: var(--vscode-button-hoverBackground); 
+    button:hover {
+      background: var(--vscode-button-hoverBackground);
     }
     button:disabled, select:disabled {
       opacity: 0.5;
@@ -84,9 +87,9 @@
       outline: none;
       border-color: var(--vscode-focusBorder);
     }
-    .status { 
-      font-size: 11px; 
-      color: var(--vscode-descriptionForeground); 
+    .status {
+      font-size: 11px;
+      color: var(--vscode-descriptionForeground);
       margin-top: 4px;
       display: flex;
       align-items: center;
@@ -152,76 +155,82 @@
     .checkbox-item input[type="checkbox"] {
       margin: 0;
     }
+    .settings-header {
+      display: flex;
+      justify-content: flex-start;
+    }
   </style>
 </head>
 <body>
-  <div class="container">
+  <div id="mainView" class="container">
     <div class="config-section">
-      <div class="section-title"> API Provider</div>
+      <div class="section-title" id="apiProviderSectionTitle"></div>
       <div class="input-group" style="margin-top: 10px;">
-        <label>Provider</label>
-        <select id="providerSelect">
-          <option value="" disabled>Select a provider...</option>
-        </select>
+        <label id="providerLabel"></label>
+        <select id="providerSelect"></select>
       </div>
     </div>
     <div class="config-section">
-      <div class="section-title" id="configTitle"> Configuration</div>
+      <div class="section-title" id="configTitle"></div>
       <div class="input-group" style="margin-top: 10px;">
-        <label id="apiKeyLabel">API Key</label>
-        <input type="password" id="apiKey" placeholder="Enter your API Key">
-        <button id="saveBtn" disabled>Save</button>
-        <span id="keyStatus" class="status">
-          <span class="status-dot warning"></span>
-          Checking status...
-        </span>
+        <label id="apiKeyLabel"></label>
+        <input type="password" id="apiKey">
+        <button id="saveBtn" disabled></button>
+        <span id="keyStatus" class="status"></span>
       </div>
       <div class="provider-info" id="providerInfo"></div>
     </div>
     <div class="config-section">
-      <div class="section-title"> Model</div>
+      <div class="section-title" id="modelSectionTitle"></div>
       <div class="input-group" style="margin-top: 10px;">
-        <label>Model</label>
-        <select id="modelSelect" disabled>
-          <option value="" disabled selected>Select a model...</option>
-        </select>
+        <label id="modelLabel"></label>
+        <select id="modelSelect" disabled></select>
       </div>
     </div>
     <div class="config-section">
-      <div class="section-title"> Generate Configuration</div>
+      <div class="section-title" id="generateSectionTitle"></div>
       <div class="input-group" style="margin-top: 10px;">
-        <label>Mode</label>
-        <select id="generateModeSelect">
-          <option value="" disabled selected>Select generate mode...</option>
-        </select>
-        <span id="generateModeStatus" class="status">
-          Loading configuration...
-        </span>
+        <label id="modeLabel"></label>
+        <select id="generateModeSelect"></select>
+        <span id="generateModeStatus" class="status"></span>
       </div>
       <div class="input-group" style="margin-top: 10px;">
-        <label>Conventional Commit Sections</label>
+        <label id="commitSectionsLabel"></label>
         <div class="checkbox-group">
           <label class="checkbox-item" for="includeScopeCheckbox">
             <input type="checkbox" id="includeScopeCheckbox">
-            Include Scope
+            <span id="includeScopeLabel"></span>
           </label>
           <label class="checkbox-item" for="includeBodyCheckbox">
             <input type="checkbox" id="includeBodyCheckbox">
-            Include Body
+            <span id="includeBodyLabel"></span>
           </label>
           <label class="checkbox-item" for="includeFooterCheckbox">
             <input type="checkbox" id="includeFooterCheckbox">
-            Include Footer
+            <span id="includeFooterLabel"></span>
           </label>
         </div>
       </div>
     </div>
     <div class="input-group">
-      <button id="generateBtn" class="primary" disabled>
-         Generate Commit Message
-      </button>
+      <button id="generateBtn" class="primary" disabled></button>
     </div>
   </div>
+
+  <div id="settingsView" class="container hidden">
+    <div class="settings-header">
+      <button id="backBtn" class="secondary"></button>
+    </div>
+    <div class="config-section">
+      <div class="section-title" id="settingsSectionTitle"></div>
+      <div class="input-group" style="margin-top: 10px;">
+        <label id="languageLabel"></label>
+        <select id="languageSelect"></select>
+        <span id="languageStatus" class="status"></span>
+      </div>
+    </div>
+  </div>
+
   <script nonce="{{NONCE}}">
     const vscode = acquireVsCodeApi();
     const providers = {{PROVIDERS_JSON}};
@@ -232,6 +241,14 @@
     const defaultGenerateMode = {{DEFAULT_GENERATE_MODE_JSON}};
     const defaultCommitOutputOptions = {{DEFAULT_COMMIT_OUTPUT_OPTIONS_JSON}};
     const ollamaDefaultHost = {{OLLAMA_DEFAULT_HOST_JSON}};
+    const languagePacks = {{WEBVIEW_LANGUAGE_PACKS_JSON}};
+    const initialDisplayLanguage = {{DISPLAY_LANGUAGE_JSON}};
+    const initialEffectiveLanguage = {{EFFECTIVE_LANGUAGE_JSON}};
+    const displayLanguageOptions = {{DISPLAY_LANGUAGE_OPTIONS_JSON}};
+    const initialScreen = {{INITIAL_SCREEN_JSON}};
+
+    const mainView = document.getElementById('mainView');
+    const settingsView = document.getElementById('settingsView');
     const providerSelect = document.getElementById('providerSelect');
     const saveBtn = document.getElementById('saveBtn');
     const generateBtn = document.getElementById('generateBtn');
@@ -246,6 +263,22 @@
     const includeScopeCheckbox = document.getElementById('includeScopeCheckbox');
     const includeBodyCheckbox = document.getElementById('includeBodyCheckbox');
     const includeFooterCheckbox = document.getElementById('includeFooterCheckbox');
+    const backBtn = document.getElementById('backBtn');
+    const languageSelect = document.getElementById('languageSelect');
+    const languageStatus = document.getElementById('languageStatus');
+
+    const apiProviderSectionTitle = document.getElementById('apiProviderSectionTitle');
+    const providerLabel = document.getElementById('providerLabel');
+    const modelSectionTitle = document.getElementById('modelSectionTitle');
+    const modelLabel = document.getElementById('modelLabel');
+    const generateSectionTitle = document.getElementById('generateSectionTitle');
+    const modeLabel = document.getElementById('modeLabel');
+    const commitSectionsLabel = document.getElementById('commitSectionsLabel');
+    const includeScopeLabel = document.getElementById('includeScopeLabel');
+    const includeBodyLabel = document.getElementById('includeBodyLabel');
+    const includeFooterLabel = document.getElementById('includeFooterLabel');
+    const settingsSectionTitle = document.getElementById('settingsSectionTitle');
+    const languageLabel = document.getElementById('languageLabel');
 
     let isGenerating = false;
     let hasChanges = false;
@@ -253,21 +286,9 @@
     let currentGenerateMode = defaultGenerateMode;
     let preferredGenerateMode = defaultGenerateMode;
     let currentCommitOutputOptions = normalizeCommitOutputOptions(defaultCommitOutputOptions);
-    let keyStatuses = {};
-
-    Object.entries(providers).forEach(([value, label]) => {
-      const option = document.createElement('option');
-      option.value = value;
-      option.textContent = label;
-      providerSelect.appendChild(option);
-    });
-
-    Object.entries(generateModes).forEach(([value, label]) => {
-      const option = document.createElement('option');
-      option.value = value;
-      option.textContent = label;
-      generateModeSelect.appendChild(option);
-    });
+    let displayLanguage = initialDisplayLanguage;
+    let effectiveLanguage = initialEffectiveLanguage;
+    let currentPack = languagePacks[effectiveLanguage] || languagePacks.en;
 
     function normalizeGenerateMode(mode) {
       return mode === 'direct-diff' ? 'direct-diff' : 'agentic';
@@ -291,6 +312,108 @@
       };
     }
 
+    function fillTemplate(template, values) {
+      return String(template).replace(/\{([a-zA-Z0-9_]+)\}/g, (_, key) => {
+        return values[key] || '';
+      });
+    }
+
+    function renderStatus(target, type, text) {
+      target.innerHTML = '<span class="status-dot ' + type + '"></span>' + text;
+    }
+
+    function renderProviderSelect() {
+      const selected = currentProvider;
+      providerSelect.innerHTML = '';
+      const placeholder = document.createElement('option');
+      placeholder.value = '';
+      placeholder.disabled = true;
+      placeholder.textContent = currentPack.placeholders.selectProvider;
+      providerSelect.appendChild(placeholder);
+      Object.entries(providers).forEach(([value, label]) => {
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = label;
+        providerSelect.appendChild(option);
+      });
+      providerSelect.value = selected;
+      if (!providerSelect.value) {
+        providerSelect.selectedIndex = 0;
+      }
+    }
+
+    function getGenerateModeLabel(mode) {
+      if (mode === 'agentic') {
+        return currentPack.options.agentic || generateModes[mode];
+      }
+      if (mode === 'direct-diff') {
+        return currentPack.options.directDiff || generateModes[mode];
+      }
+      return generateModes[mode] || mode;
+    }
+
+    function renderGenerateModeSelect() {
+      const selected = normalizeGenerateMode(currentGenerateMode);
+      generateModeSelect.innerHTML = '';
+      const placeholder = document.createElement('option');
+      placeholder.value = '';
+      placeholder.disabled = true;
+      placeholder.textContent = currentPack.placeholders.selectGenerateMode;
+      generateModeSelect.appendChild(placeholder);
+      Object.keys(generateModes).forEach((mode) => {
+        const option = document.createElement('option');
+        option.value = mode;
+        option.textContent = getGenerateModeLabel(mode);
+        generateModeSelect.appendChild(option);
+      });
+      generateModeSelect.value = selected;
+    }
+
+    function renderLanguageOptions() {
+      languageSelect.innerHTML = '';
+      displayLanguageOptions.forEach((option) => {
+        const entry = document.createElement('option');
+        entry.value = option.value;
+        entry.textContent = (option.labels && option.labels[effectiveLanguage]) || option.value;
+        languageSelect.appendChild(entry);
+      });
+      languageSelect.value = displayLanguage;
+    }
+
+    function renderStaticText() {
+      apiProviderSectionTitle.textContent = currentPack.sections.apiProvider;
+      providerLabel.textContent = currentPack.labels.provider;
+      modelSectionTitle.textContent = currentPack.sections.model;
+      modelLabel.textContent = currentPack.labels.model;
+      generateSectionTitle.textContent = currentPack.sections.generateConfiguration;
+      modeLabel.textContent = currentPack.labels.mode;
+      commitSectionsLabel.textContent = currentPack.labels.conventionalCommitSections;
+      includeScopeLabel.textContent = currentPack.labels.includeScope;
+      includeBodyLabel.textContent = currentPack.labels.includeBody;
+      includeFooterLabel.textContent = currentPack.labels.includeFooter;
+      settingsSectionTitle.textContent = currentPack.sections.settings;
+      languageLabel.textContent = currentPack.labels.language;
+      backBtn.textContent = currentPack.buttons.back;
+      saveBtn.textContent = currentPack.buttons.save;
+      renderStatus(keyStatus, 'warning', currentPack.statuses.checkingStatus);
+      languageStatus.textContent = '';
+      apiKeyInput.placeholder = currentPack.placeholders.enterApiKey;
+      renderProviderSelect();
+      renderGenerateModeSelect();
+      updateGenerateBtn();
+      updateGenerateModeStatus(currentGenerateMode);
+    }
+
+    function applyLanguage(nextDisplayLanguage, nextEffectiveLanguage) {
+      displayLanguage = nextDisplayLanguage;
+      effectiveLanguage = nextEffectiveLanguage === 'zh-TW' ? 'zh-TW' : 'en';
+      currentPack = languagePacks[effectiveLanguage] || languagePacks.en;
+      renderStaticText();
+      renderLanguageOptions();
+      updateProviderUI(currentProvider);
+      updateCommitOutputOptionsUI(currentCommitOutputOptions);
+    }
+
     function updateCommitOutputOptionsUI(options) {
       const normalized = normalizeCommitOutputOptions(options);
       currentCommitOutputOptions = normalized;
@@ -311,13 +434,13 @@
 
     function updateGenerateModeStatus(mode) {
       if (currentProvider === 'ollama') {
-        generateModeStatus.textContent = 'Ollama is fixed to Direct Diff mode';
+        generateModeStatus.textContent = currentPack.descriptions.ollamaFixedToDirectDiff;
         return;
       }
       if (mode === 'agentic') {
-        generateModeStatus.textContent = 'Agentic mode uses repository tools for deeper analysis';
+        generateModeStatus.textContent = currentPack.descriptions.agenticModeDescription;
       } else {
-        generateModeStatus.textContent = 'Direct Diff sends the raw diff directly to the model';
+        generateModeStatus.textContent = currentPack.descriptions.directDiffDescription;
       }
     }
 
@@ -341,39 +464,29 @@
       currentProvider = provider;
       providerSelect.value = provider;
       if (provider === 'ollama') {
-        apiKeyLabel.textContent = 'Ollama Host URL';
+        apiKeyLabel.textContent = currentPack.labels.ollamaHostUrl;
         apiKeyInput.placeholder = ollamaDefaultHost;
         apiKeyInput.value = ollamaDefaultHost;
         apiKeyInput.type = 'text';
-        configTitle.textContent = ' Ollama Configuration';
-        providerInfo.innerHTML = `
-          <strong>Ollama</strong> runs locally on your machine.<br>
-          Default host: <code>${ollamaDefaultHost}</code><br>
-          Make sure Ollama is running before generating.
-        `;
+        configTitle.textContent = currentPack.sections.ollamaConfiguration;
+        providerInfo.innerHTML = fillTemplate(currentPack.descriptions.ollamaInfo, { host: ollamaDefaultHost });
       } else {
-        apiKeyLabel.textContent = 'API Key';
+        apiKeyLabel.textContent = currentPack.labels.apiKey;
         apiKeyInput.value = '';
         apiKeyInput.type = 'password';
-        configTitle.textContent = ' API Configuration';
+        configTitle.textContent = currentPack.sections.configuration;
         if (provider === 'google') {
-          apiKeyInput.placeholder = 'Enter your Gemini API Key';
-          providerInfo.innerHTML = `
-            Get your API key from <strong>Google AI Studio</strong>:<br>
-            <a href="https://aistudio.google.com/app/apikey" style="color: var(--vscode-textLink-foreground);">aistudio.google.com</a>
-          `;
+          apiKeyInput.placeholder = currentPack.placeholders.enterGeminiApiKey;
+          providerInfo.innerHTML = currentPack.descriptions.googleInfo;
         } else if (provider === 'openai') {
-          apiKeyInput.placeholder = 'Enter your OpenAI API Key';
-          providerInfo.innerHTML = `
-            Get your API key from <strong>OpenAI Platform</strong>:<br>
-            <a href="https://platform.openai.com/api-keys" style="color: var(--vscode-textLink-foreground);">platform.openai.com</a>
-          `;
+          apiKeyInput.placeholder = currentPack.placeholders.enterOpenAIApiKey;
+          providerInfo.innerHTML = currentPack.descriptions.openaiInfo;
         } else if (provider === 'anthropic') {
-          apiKeyInput.placeholder = 'Enter your Anthropic API Key';
-          providerInfo.innerHTML = `
-            Get your API key from <strong>Anthropic Console</strong>:<br>
-            <a href="https://platform.claude.com/settings/keys" style="color: var(--vscode-textLink-foreground);">platform.claude.com</a>
-          `;
+          apiKeyInput.placeholder = currentPack.placeholders.enterAnthropicApiKey;
+          providerInfo.innerHTML = currentPack.descriptions.anthropicInfo;
+        } else {
+          apiKeyInput.placeholder = currentPack.placeholders.enterApiKey;
+          providerInfo.innerHTML = '';
         }
       }
       updateGenerateModeUI(provider);
@@ -384,35 +497,65 @@
     function updateGenerateBtn() {
       if (isGenerating) {
         generateBtn.disabled = false;
-        generateBtn.textContent = ' Cancel Generating';
-        generateBtn.title = 'Cancel current generation';
+        generateBtn.textContent = currentPack.buttons.cancelGenerating;
+        generateBtn.title = currentPack.statuses.cancelCurrentGeneration;
       } else if (!hasChanges) {
         generateBtn.disabled = true;
-        generateBtn.textContent = ' Generate Commit Message';
-        generateBtn.title = 'No changes detected';
+        generateBtn.textContent = currentPack.buttons.generateCommitMessage;
+        generateBtn.title = currentPack.statuses.noChangesDetected;
       } else {
         generateBtn.disabled = false;
-        generateBtn.textContent = ' Generate Commit Message';
+        generateBtn.textContent = currentPack.buttons.generateCommitMessage;
         generateBtn.title = '';
       }
     }
 
     function updateKeyStatus(hasKey, provider) {
-      const statusDot = keyStatus.querySelector('.status-dot');
       if (hasKey) {
-        statusDot.className = 'status-dot success';
-        keyStatus.innerHTML = '<span class="status-dot success"></span>Configured ';
+        renderStatus(keyStatus, 'success', currentPack.statuses.configured);
         modelSelect.disabled = false;
       } else {
-        statusDot.className = 'status-dot error';
-        keyStatus.innerHTML = '<span class="status-dot error"></span>Not configured';
+        renderStatus(keyStatus, 'error', currentPack.statuses.notConfigured);
         if (provider !== 'ollama') {
           modelSelect.disabled = true;
         }
       }
     }
 
+    function setScreen(screen, notifyExtension) {
+      const showSettings = screen === 'settings';
+      mainView.classList.toggle('hidden', showSettings);
+      settingsView.classList.toggle('hidden', !showSettings);
+      if (notifyExtension) {
+        vscode.postMessage({ type: 'setCurrentScreen', value: showSettings ? 'settings' : 'main' });
+      }
+    }
+
+    function populateModels(models, currentModel) {
+      modelSelect.innerHTML = '';
+      let foundCurrent = false;
+      models.forEach(model => {
+        const option = document.createElement('option');
+        option.value = model.id;
+        option.textContent = model.alias;
+        if (model.id === currentModel) {
+          option.selected = true;
+          foundCurrent = true;
+        }
+        modelSelect.appendChild(option);
+      });
+      modelSelect.disabled = false;
+      if (!foundCurrent && models.length > 0) {
+        const preferredDefaultId = defaultModels[currentProvider];
+        const preferred = models.find(m => m.id === preferredDefaultId) || models[0];
+        modelSelect.value = preferred.id;
+        vscode.postMessage({ type: 'saveModel', value: preferred.id, provider: currentProvider });
+      }
+    }
+
+    applyLanguage(displayLanguage, effectiveLanguage);
     updateCommitOutputOptionsUI(defaultCommitOutputOptions);
+    setScreen(initialScreen === 'settings' ? 'settings' : 'main', false);
 
     vscode.postMessage({ type: 'getProvider' });
     vscode.postMessage({ type: 'getGenerateMode' });
@@ -421,6 +564,7 @@
     vscode.postMessage({ type: 'getAllKeys' });
     vscode.postMessage({ type: 'checkGenerationStatus' });
     vscode.postMessage({ type: 'checkValidationStatus' });
+    vscode.postMessage({ type: 'getDisplayLanguage' });
 
     providerSelect.addEventListener('change', () => {
       const provider = providerSelect.value;
@@ -431,7 +575,7 @@
 
     apiKeyInput.addEventListener('input', () => {
       if (currentProvider === 'ollama') {
-        saveBtn.disabled = false; 
+        saveBtn.disabled = false;
       } else {
         saveBtn.disabled = !apiKeyInput.value.trim();
       }
@@ -440,8 +584,8 @@
     saveBtn.addEventListener('click', () => {
       const key = apiKeyInput.value || (currentProvider === 'ollama' ? ollamaDefaultHost : '');
       saveBtn.disabled = true;
-      saveBtn.textContent = 'Validating...';
-      keyStatus.innerHTML = '<span class="status-dot warning"></span>Validating...';
+      saveBtn.textContent = currentPack.buttons.validating;
+      renderStatus(keyStatus, 'warning', currentPack.statuses.validating);
       vscode.postMessage({ type: 'saveKey', value: key, provider: currentProvider });
     });
 
@@ -478,6 +622,19 @@
     includeBodyCheckbox.addEventListener('change', saveCommitOutputOptions);
     includeFooterCheckbox.addEventListener('change', saveCommitOutputOptions);
 
+    languageSelect.addEventListener('change', () => {
+      const nextDisplayLanguage = languageSelect.value;
+      if (nextDisplayLanguage === 'en' || nextDisplayLanguage === 'zh-TW') {
+        applyLanguage(nextDisplayLanguage, nextDisplayLanguage);
+      }
+      renderStatus(languageStatus, 'warning', currentPack.statuses.loadingConfiguration);
+      vscode.postMessage({ type: 'saveDisplayLanguage', value: nextDisplayLanguage });
+    });
+
+    backBtn.addEventListener('click', () => {
+      setScreen('main', true);
+    });
+
     window.addEventListener('message', event => {
       const message = event.data;
       switch (message.type) {
@@ -491,9 +648,6 @@
         case 'keyStatus':
           updateKeyStatus(message.hasKey, message.provider);
           break;
-        case 'allKeyStatuses':
-          keyStatuses = message.statuses;
-          break;
         case 'currentGenerateMode':
           preferredGenerateMode = normalizeGenerateMode(message.generateMode);
           updateGenerateModeUI(currentProvider);
@@ -506,25 +660,25 @@
           break;
         case 'validating':
           saveBtn.disabled = true;
-          saveBtn.textContent = 'Validating...';
-          keyStatus.innerHTML = '<span class="status-dot warning"></span>Validating...';
+          saveBtn.textContent = currentPack.buttons.validating;
+          renderStatus(keyStatus, 'warning', currentPack.statuses.validating);
           break;
         case 'validationResult':
           if (message.success) {
-            keyStatus.innerHTML = '<span class="status-dot success"></span>Saved ';
+            renderStatus(keyStatus, 'success', currentPack.statuses.configured);
             if (currentProvider !== 'ollama') {
               apiKeyInput.value = '';
             }
             saveBtn.disabled = currentProvider !== 'ollama';
-            saveBtn.textContent = 'Save';
+            saveBtn.textContent = currentPack.buttons.save;
             if (message.models) {
               populateModels(message.models);
             }
             modelSelect.disabled = false;
           } else {
-            keyStatus.innerHTML = '<span class="status-dot error"></span>' + (message.error || 'Validation failed');
+            renderStatus(keyStatus, 'error', message.error || currentPack.statuses.notConfigured);
             saveBtn.disabled = currentProvider === 'ollama' ? false : !apiKeyInput.value.trim();
-            saveBtn.textContent = 'Save';
+            saveBtn.textContent = currentPack.buttons.save;
           }
           break;
         case 'generationDone':
@@ -538,34 +692,19 @@
         case 'validationStatusUpdate':
           if (message.isValidating && message.provider === currentProvider) {
             saveBtn.disabled = true;
-            saveBtn.textContent = 'Validating...';
-            keyStatus.innerHTML = '<span class="status-dot warning"></span>Validating...';
+            saveBtn.textContent = currentPack.buttons.validating;
+            renderStatus(keyStatus, 'warning', currentPack.statuses.validating);
           }
+          break;
+        case 'displayLanguageUpdated':
+          applyLanguage(message.displayLanguage, message.effectiveLanguage);
+          renderStatus(languageStatus, 'success', currentPack.statuses.languageSaved);
+          break;
+        case 'openSettingsView':
+          setScreen('settings', false);
           break;
       }
     });
-
-    function populateModels(models, currentModel) {
-      modelSelect.innerHTML = '';
-      let foundCurrent = false;
-      models.forEach(model => {
-        const option = document.createElement('option');
-        option.value = model.id;
-        option.textContent = model.alias;
-        if (model.id === currentModel) {
-          option.selected = true;
-          foundCurrent = true;
-        }
-        modelSelect.appendChild(option);
-      });
-      modelSelect.disabled = false;
-      if (!foundCurrent && models.length > 0) {
-        const preferredDefaultId = defaultModels[currentProvider];
-        const preferred = models.find(m => m.id === preferredDefaultId) || models[0];
-        modelSelect.value = preferred.id;
-        vscode.postMessage({ type: 'saveModel', value: preferred.id, provider: currentProvider });
-      }
-    }
   </script>
 </body>
 </html>
