@@ -122,10 +122,7 @@ async function runOpenAIAgentLoop(
           typeof (toolCall as any).function?.name === 'string',
       );
 
-      if (
-        choice.finish_reason === 'tool_calls' &&
-        functionToolCalls.length > 0
-      ) {
+      if (functionToolCalls.length > 0) {
         if (onProgress) {
           const calls = functionToolCalls.map((tc: any) => ({
             name: tc.function.name,
