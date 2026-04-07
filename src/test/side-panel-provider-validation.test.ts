@@ -131,27 +131,29 @@ async function createHarness(): Promise<Harness> {
   };
 }
 
-test('validateGoogleApiKey uses Google SDK file manager list API', async () => {
+test('validateGoogleApiKey uses Google SDK models.list API', async () => {
   const calls = {
     apiKeys: [] as string[],
     listArgs: [] as Array<Record<string, unknown> | undefined>,
   };
 
-  class GoogleAIFileManagerMock {
-    constructor(apiKey: string) {
-      calls.apiKeys.push(apiKey);
-    }
+  class GoogleGenAIMock {
+    models = {
+      list: async (params?: Record<string, unknown>) => {
+        calls.listArgs.push(params);
+        return { data: [] };
+      },
+    };
 
-    async listFiles(params?: Record<string, unknown>) {
-      calls.listArgs.push(params);
-      return { files: [] };
+    constructor(options: { apiKey: string }) {
+      calls.apiKeys.push(options.apiKey);
     }
   }
 
   await withModuleMock('vscode', baseVscodeMock, async () =>
     withModuleMock(
-      '@google/generative-ai/server',
-      { GoogleAIFileManager: GoogleAIFileManagerMock },
+      '@google/genai',
+      { GoogleGenAI: GoogleGenAIMock },
       async () => {
         clearRequireCache(MODULE_PATH);
         const mod = require(
@@ -161,7 +163,7 @@ test('validateGoogleApiKey uses Google SDK file manager list API', async () => {
         const result = await provider.validateGoogleApiKey('google-test-key');
 
         assert.deepEqual(calls.apiKeys, ['google-test-key']);
-        assert.deepEqual(calls.listArgs, [{ pageSize: 1 }]);
+        assert.deepEqual(calls.listArgs, [{ config: { pageSize: 1 } }]);
         assert.deepEqual(result, { valid: true });
       },
     ),
@@ -208,16 +210,18 @@ test('validateOpenAIApiKey uses OpenAI SDK models.list', async () => {
 });
 
 test('validation errors use unified API request failed format for Google/OpenAI/Anthropic', async () => {
-  class GoogleAIFileManagerMock {
-    constructor(_apiKey: string) {}
+  class GoogleGenAIMock {
+    models = {
+      list: async () => {
+        const error = new Error('google upstream failed') as Error & {
+          status?: number;
+        };
+        error.status = 500;
+        throw error;
+      },
+    };
 
-    async listFiles() {
-      const error = new Error('google upstream failed') as Error & {
-        status?: number;
-      };
-      error.status = 500;
-      throw error;
-    }
+    constructor(_options: { apiKey: string }) {}
   }
 
   class OpenAIMock {
@@ -250,8 +254,8 @@ test('validation errors use unified API request failed format for Google/OpenAI/
 
   await withModuleMock('vscode', baseVscodeMock, async () =>
     withModuleMock(
-      '@google/generative-ai/server',
-      { GoogleAIFileManager: GoogleAIFileManagerMock },
+      '@google/genai',
+      { GoogleGenAI: GoogleGenAIMock },
       async () =>
         withModuleMock(
           'openai',
