@@ -17,7 +17,7 @@ import {
   PROVIDER_DISPLAY_NAMES,
   normalizeCommitOutputOptions,
 } from './models';
-import { GenerationStateManager, ValidationStateManager } from './state';
+import { GenerationStateManager } from './state';
 
 type GenerateCommandArg =
   | vscode.SourceControl
@@ -70,6 +70,9 @@ export function activate(context: vscode.ExtensionContext) {
   let disposable = vscode.commands.registerCommand(
     'commit-copilot.generate',
     async (arg?: GenerateCommandArg) => {
+      const cancellationSource = new vscode.CancellationTokenSource();
+      let wasCancelled = false;
+      currentGenerationCancellationSource = cancellationSource;
       GenerationStateManager.setGenerating(true);
       await vscode.commands.executeCommand(
         'setContext',
@@ -230,9 +233,16 @@ export function activate(context: vscode.ExtensionContext) {
           {
             location: vscode.ProgressLocation.Notification,
             title: progressTitle,
-            cancellable: false,
+            cancellable: true,
           },
-          async (progress) => {
+          async (progress, progressToken) => {
+            const cancelSubscription = progressToken.onCancellationRequested(
+              () => {
+                wasCancelled = true;
+                outputChannel.appendLine('Cancellation requested from progress UI.');
+                cancellationSource.cancel();
+              },
+            );
             outputChannel.appendLine('Calling generateCommitMessage...');
             outputChannel.appendLine(
               `Repository path: ${repository.rootUri.fsPath}`,
@@ -256,143 +266,171 @@ export function activate(context: vscode.ExtensionContext) {
               commitOutputOptions: currentCommitOutputOptions,
               model: savedModel,
               onProgress: reportProgress,
+              cancellationToken: cancellationSource.token,
             };
 
-            let result = await generateCommitMessage({
-              ...baseGenerateOptions,
-              stageChanges: false,
-            });
+            try {
+              let result = await generateCommitMessage({
+                ...baseGenerateOptions,
+                stageChanges: false,
+              });
 
-            if (result.error?.exitCode === EXIT_CODES.MIXED_CHANGES) {
-              const selection = await vscode.window.showInformationMessage(
-                'You have both staged and unstaged changes. How would you like to proceed?',
-                'Stage All & Generate',
-                'Proceed with Staged Only',
-                'Cancel',
-              );
+              if (result.error?.exitCode === EXIT_CODES.MIXED_CHANGES) {
+                const selection = await vscode.window.showInformationMessage(
+                  'You have both staged and unstaged changes. How would you like to proceed?',
+                  'Stage All & Generate',
+                  'Proceed with Staged Only',
+                  'Cancel',
+                );
 
-              if (selection === 'Stage All & Generate') {
-                result = await generateCommitMessage({
-                  ...baseGenerateOptions,
-                  stageChanges: true,
-                });
-              } else if (selection === 'Proceed with Staged Only') {
-                result = await generateCommitMessage({
-                  ...baseGenerateOptions,
-                  stageChanges: false,
-                  proceedWithStagedOnly: true,
-                });
-              } else {
-                return;
+                if (selection === 'Stage All & Generate') {
+                  result = await generateCommitMessage({
+                    ...baseGenerateOptions,
+                    stageChanges: true,
+                  });
+                } else if (selection === 'Proceed with Staged Only') {
+                  result = await generateCommitMessage({
+                    ...baseGenerateOptions,
+                    stageChanges: false,
+                    proceedWithStagedOnly: true,
+                  });
+                } else {
+                  return;
+                }
               }
-            }
-
-            if (
-              result.error?.exitCode === EXIT_CODES.NO_CHANGES_BUT_UNTRACKED
-            ) {
-              const selection = await vscode.window.showInformationMessage(
-                'No staged changes detected. Untracked files found. Would you like to stage all files (including untracked) or generate only for tracked modified files?',
-                'Stage & Generate All',
-                'Generate Tracked Only',
-              );
-
-              if (selection === 'Stage & Generate All') {
-                result = await generateCommitMessage({
-                  ...baseGenerateOptions,
-                  stageChanges: true,
-                });
-              } else if (selection === 'Generate Tracked Only') {
-                result = await generateCommitMessage({
-                  ...baseGenerateOptions,
-                  stageChanges: false,
-                  ignoreUntracked: true,
-                });
-              }
-            } else if (
-              result.error?.exitCode ===
-              EXIT_CODES.NO_TRACKED_CHANGES_BUT_UNTRACKED
-            ) {
-              const selection = await vscode.window.showInformationMessage(
-                'Only untracked files are present with no tracked modifications. Do you want to stage and track these new files to generate a commit?',
-                'Stage & Track',
-                'Cancel',
-              );
-
-              if (selection === 'Stage & Track') {
-                result = await generateCommitMessage({
-                  ...baseGenerateOptions,
-                  stageChanges: true,
-                });
-              } else {
-                return;
-              }
-            }
-
-            if (result.success && result.message) {
-              outputChannel.appendLine(`Generated message: ${result.message}`);
-              repository.inputBox.value = result.message;
-              await vscode.commands.executeCommand('workbench.view.scm');
-              vscode.window.showInformationMessage('Commit message generated!');
-            } else if (result.error) {
-              const error = result.error;
-              outputChannel.appendLine(
-                `Error: ${error.errorCode} - ${error.message}`,
-              );
-
-              const errorInfo =
-                ERROR_MESSAGES[error.exitCode] ||
-                ERROR_MESSAGES[EXIT_CODES.UNKNOWN_ERROR];
 
               if (
-                error.exitCode === EXIT_CODES.API_KEY_MISSING ||
-                error.exitCode === EXIT_CODES.API_KEY_INVALID
+                result.error?.exitCode === EXIT_CODES.NO_CHANGES_BUT_UNTRACKED
               ) {
-                const action = await vscode.window.showErrorMessage(
-                  `${errorInfo.title}: ${error.message}`,
-                  'Configure API Key',
+                const selection = await vscode.window.showInformationMessage(
+                  'No staged changes detected. Untracked files found. Would you like to stage all files (including untracked) or generate only for tracked modified files?',
+                  'Stage & Generate All',
+                  'Generate Tracked Only',
                 );
-                if (action === 'Configure API Key') {
-                  vscode.commands.executeCommand('commit-copilot.view.focus');
+
+                if (selection === 'Stage & Generate All') {
+                  result = await generateCommitMessage({
+                    ...baseGenerateOptions,
+                    stageChanges: true,
+                  });
+                } else if (selection === 'Generate Tracked Only') {
+                  result = await generateCommitMessage({
+                    ...baseGenerateOptions,
+                    stageChanges: false,
+                    ignoreUntracked: true,
+                  });
                 }
-              } else if (error.exitCode === EXIT_CODES.QUOTA_EXCEEDED) {
-                const action = await vscode.window.showErrorMessage(
-                  `${errorInfo.title}: ${error.message}`,
-                  'View Provider Console',
+              } else if (
+                result.error?.exitCode ===
+                EXIT_CODES.NO_TRACKED_CHANGES_BUT_UNTRACKED
+              ) {
+                const selection = await vscode.window.showInformationMessage(
+                  'Only untracked files are present with no tracked modifications. Do you want to stage and track these new files to generate a commit?',
+                  'Stage & Track',
+                  'Cancel',
                 );
-                if (action === 'View Provider Console') {
-                  const providerUrls: Record<APIProvider, string> = {
-                    google: 'https://aistudio.google.com/',
-                    openai: 'https://platform.openai.com/usage',
-                    anthropic: 'https://console.anthropic.com/',
-                    ollama: 'http://127.0.0.1:11434',
-                  };
-                  vscode.env.openExternal(
-                    vscode.Uri.parse(providerUrls[currentProvider]),
+
+                if (selection === 'Stage & Track') {
+                  result = await generateCommitMessage({
+                    ...baseGenerateOptions,
+                    stageChanges: true,
+                  });
+                } else {
+                  return;
+                }
+              }
+
+              if (result.error?.exitCode === EXIT_CODES.CANCELLED) {
+                wasCancelled = true;
+                return;
+              }
+
+              if (result.success && result.message) {
+                outputChannel.appendLine(`Generated message: ${result.message}`);
+                repository.inputBox.value = result.message;
+                await vscode.commands.executeCommand('workbench.view.scm');
+                vscode.window.showInformationMessage('Commit message generated!');
+              } else if (result.error) {
+                const error = result.error;
+                outputChannel.appendLine(
+                  `Error: ${error.errorCode} - ${error.message}`,
+                );
+
+                const errorInfo =
+                  ERROR_MESSAGES[error.exitCode] ||
+                  ERROR_MESSAGES[EXIT_CODES.UNKNOWN_ERROR];
+
+                if (
+                  error.exitCode === EXIT_CODES.API_KEY_MISSING ||
+                  error.exitCode === EXIT_CODES.API_KEY_INVALID
+                ) {
+                  const action = await vscode.window.showErrorMessage(
+                    `${errorInfo.title}: ${error.message}`,
+                    'Configure API Key',
+                  );
+                  if (action === 'Configure API Key') {
+                    vscode.commands.executeCommand('commit-copilot.view.focus');
+                  }
+                } else if (error.exitCode === EXIT_CODES.QUOTA_EXCEEDED) {
+                  const action = await vscode.window.showErrorMessage(
+                    `${errorInfo.title}: ${error.message}`,
+                    'View Provider Console',
+                  );
+                  if (action === 'View Provider Console') {
+                    const providerUrls: Record<APIProvider, string> = {
+                      google: 'https://aistudio.google.com/',
+                      openai: 'https://platform.openai.com/usage',
+                      anthropic: 'https://console.anthropic.com/',
+                      ollama: 'http://127.0.0.1:11434',
+                    };
+                    vscode.env.openExternal(
+                      vscode.Uri.parse(providerUrls[currentProvider]),
+                    );
+                  }
+                } else if (error.exitCode === EXIT_CODES.NO_CHANGES) {
+                  vscode.window.showInformationMessage(
+                    'No changes to commit. Make some changes first!',
+                  );
+                } else if (
+                  error.exitCode !== EXIT_CODES.NO_CHANGES_BUT_UNTRACKED &&
+                  error.exitCode !== EXIT_CODES.NO_TRACKED_CHANGES_BUT_UNTRACKED
+                ) {
+                  vscode.window.showErrorMessage(
+                    `${errorInfo.title}: ${error.message}. ${errorInfo.action || ''}`,
                   );
                 }
-              } else if (error.exitCode === EXIT_CODES.NO_CHANGES) {
-                vscode.window.showInformationMessage(
-                  'No changes to commit. Make some changes first!',
-                );
-              } else if (
-                error.exitCode !== EXIT_CODES.NO_CHANGES_BUT_UNTRACKED &&
-                error.exitCode !== EXIT_CODES.NO_TRACKED_CHANGES_BUT_UNTRACKED
-              ) {
-                vscode.window.showErrorMessage(
-                  `${errorInfo.title}: ${error.message}. ${errorInfo.action || ''}`,
-                );
               }
+            } finally {
+              cancelSubscription.dispose();
             }
           },
         );
+        if (wasCancelled || cancellationSource.token.isCancellationRequested) {
+          vscode.window.showInformationMessage(
+            'Commit message generation canceled.',
+          );
+        }
       } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : String(error);
-        outputChannel.appendLine(`Unexpected error: ${errorMessage}`);
-        vscode.window.showErrorMessage(
-          `Commit-Copilot failed: ${errorMessage}`,
-        );
+        const isCancellationError =
+          error instanceof CommitCopilotError &&
+          error.exitCode === EXIT_CODES.CANCELLED;
+        if (isCancellationError || cancellationSource.token.isCancellationRequested) {
+          vscode.window.showInformationMessage(
+            'Commit message generation canceled.',
+          );
+        } else {
+          const errorMessage =
+            error instanceof Error ? error.message : String(error);
+          outputChannel.appendLine(`Unexpected error: ${errorMessage}`);
+          vscode.window.showErrorMessage(
+            `Commit-Copilot failed: ${errorMessage}`,
+          );
+        }
       } finally {
+        if (currentGenerationCancellationSource === cancellationSource) {
+          currentGenerationCancellationSource = null;
+        }
+        cancellationSource.dispose();
         GenerationStateManager.setGenerating(false);
         await vscode.commands.executeCommand(
           'setContext',
@@ -403,7 +441,20 @@ export function activate(context: vscode.ExtensionContext) {
     },
   );
 
+  const cancelDisposable = vscode.commands.registerCommand(
+    'commit-copilot.cancelGeneration',
+    () => {
+      if (currentGenerationCancellationSource) {
+        currentGenerationCancellationSource.cancel();
+      }
+    },
+  );
+
   context.subscriptions.push(disposable);
+  context.subscriptions.push(cancelDisposable);
 }
+
+let currentGenerationCancellationSource: vscode.CancellationTokenSource | null =
+  null;
 
 export function deactivate() {}

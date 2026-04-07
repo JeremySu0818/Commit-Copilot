@@ -11,6 +11,7 @@ import {
   DEFAULT_MODELS,
   GenerateMode,
 } from '../models';
+import { EXIT_CODES } from '../errors';
 
 const MODULE_PATH = path.resolve(__dirname, '..', 'commit-copilot');
 
@@ -50,6 +51,7 @@ async function loadGenerateCommitMessage(options: {
     generateCommitMessage: (
       diff: string,
       onProgress?: (message: string, increment?: number) => void,
+      cancellationToken?: { isCancellationRequested: boolean },
     ) => Promise<string> | string;
   };
 }): Promise<GenerateCommitMessageFn> {
@@ -90,8 +92,10 @@ async function runGenerate(options: {
     generateCommitMessage: (
       diff: string,
       onProgress?: (message: string, increment?: number) => void,
+      cancellationToken?: { isCancellationRequested: boolean },
     ) => Promise<string> | string;
   };
+  cancellationToken?: { isCancellationRequested: boolean };
 }): Promise<{ result: Awaited<ReturnType<GenerateCommitMessageFn>>; repoRoot: string }> {
   const repoRoot = createTempDir();
   fs.mkdirSync(path.join(repoRoot, '.git'), { recursive: true });
@@ -107,6 +111,7 @@ async function runGenerate(options: {
     apiKey: 'token',
     generateMode: options.generateMode,
     commitOutputOptions: options.commitOutputOptions,
+    cancellationToken: options.cancellationToken,
   });
 
   return { result, repoRoot };
@@ -252,6 +257,36 @@ test('generateCommitMessage forces ollama to direct diff even if agentic request
       clientOptions.commitOutputOptions,
       DEFAULT_COMMIT_OUTPUT_OPTIONS,
     );
+  } finally {
+    cleanupTempDir(repoRoot);
+  }
+});
+
+test('generateCommitMessage returns cancelled when cancellation is already requested', async () => {
+  let directCallCount = 0;
+  let agentCallCount = 0;
+
+  const { result, repoRoot } = await runGenerate({
+    provider: 'openai',
+    generateMode: 'direct-diff',
+    cancellationToken: { isCancellationRequested: true },
+    runAgentLoop: async () => {
+      agentCallCount++;
+      return 'should not be used';
+    },
+    createLLMClient: () => {
+      directCallCount++;
+      return {
+        generateCommitMessage: async () => 'should not be used',
+      };
+    },
+  });
+
+  try {
+    assert.equal(result.success, false);
+    assert.equal(result.error?.exitCode, EXIT_CODES.CANCELLED);
+    assert.equal(agentCallCount, 0);
+    assert.equal(directCallCount, 0);
   } finally {
     cleanupTempDir(repoRoot);
   }

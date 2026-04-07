@@ -388,8 +388,9 @@
 
     function updateGenerateBtn() {
       if (isGenerating) {
-        generateBtn.disabled = true;
-        generateBtn.textContent = ' Generating...';
+        generateBtn.disabled = false;
+        generateBtn.textContent = ' Cancel Generating';
+        generateBtn.title = 'Cancel current generation';
       } else if (!hasChanges) {
         generateBtn.disabled = true;
         generateBtn.textContent = ' Generate Commit Message';
@@ -450,6 +451,14 @@
     });
 
     generateBtn.addEventListener('click', () => {
+      if (isGenerating) {
+        const shouldCancel = window.confirm('Cancel current generation?');
+        if (!shouldCancel) {
+          return;
+        }
+        vscode.postMessage({ type: 'cancelGenerate' });
+        return;
+      }
       isGenerating = true;
       updateGenerateBtn();
       vscode.postMessage({
