@@ -54,3 +54,40 @@ test('withRetry does not retry auth errors', async () => {
 
   assert.equal(attempts, 1);
 });
+
+test('withRetry clamps retry-after delay by maxDelayMs', async () => {
+  const originalSetTimeout = globalThis.setTimeout;
+  const scheduledDelays: number[] = [];
+
+  globalThis.setTimeout = ((handler: (...args: any[]) => void, ms?: number) => {
+    scheduledDelays.push(ms ?? 0);
+    handler();
+    return { hasRef: () => false, ref: () => undefined, unref: () => undefined } as any;
+  }) as typeof setTimeout;
+
+  try {
+    await assert.rejects(
+      withRetry(
+        async () => {
+          const err = new Error('rate limited') as Error & {
+            status?: number;
+            headers?: Record<string, string>;
+          };
+          err.status = 429;
+          err.headers = { 'retry-after': '3600' };
+          throw err;
+        },
+        {
+          maxAttempts: 2,
+          baseDelayMs: 1,
+          maxDelayMs: 5,
+          jitterMs: 0,
+        },
+      ),
+    );
+
+    assert.deepEqual(scheduledDelays, [5]);
+  } finally {
+    globalThis.setTimeout = originalSetTimeout;
+  }
+});

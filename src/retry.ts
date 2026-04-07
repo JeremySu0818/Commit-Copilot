@@ -61,7 +61,11 @@ function getRetryDelayMs(
   const jitter = Math.floor(Math.random() * (options.jitterMs + 1));
 
   if (retryAfterMs !== null && retryAfterMs !== undefined) {
-    return Math.max(options.baseDelayMs, retryAfterMs) + jitter;
+    const clampedRetryAfterDelay = Math.min(
+      options.maxDelayMs,
+      Math.max(options.baseDelayMs, retryAfterMs),
+    );
+    return clampedRetryAfterDelay + jitter;
   }
 
   const clampedDelay = Math.min(

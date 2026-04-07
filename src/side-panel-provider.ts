@@ -26,44 +26,85 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
     private readonly _context: vscode.ExtensionContext,
   ) {}
 
+  private extractValidationError(
+    error: unknown,
+  ): { status?: number; message: string } {
+    const status =
+      typeof error === 'object' && error !== null && 'status' in error
+        ? (error as { status?: number }).status
+        : undefined;
+    const message =
+      typeof error === 'object' && error !== null && 'message' in error
+        ? String((error as { message?: string }).message || '')
+        : String(error);
+    return { status, message };
+  }
+
+  private includesMessage(
+    message: string,
+    patterns: string[] | undefined,
+  ): boolean {
+    if (!patterns || patterns.length === 0) {
+      return false;
+    }
+    const normalized = message.toLowerCase();
+    return patterns.some((pattern) =>
+      normalized.includes(pattern.toLowerCase()),
+    );
+  }
+
+  private mapProviderValidationError(
+    error: unknown,
+    rules: {
+      invalidStatusCodes: number[];
+      invalidMessagePatterns?: string[];
+      quotaStatusCodes?: number[];
+      quotaMessagePatterns?: string[];
+    },
+  ): { valid: false; error: string } {
+    const { status, message } = this.extractValidationError(error);
+
+    const isInvalidKey =
+      (typeof status === 'number' && rules.invalidStatusCodes.includes(status)) ||
+      this.includesMessage(message, rules.invalidMessagePatterns);
+    if (isInvalidKey) {
+      return { valid: false, error: `Invalid API Key: ${message}` };
+    }
+
+    const quotaStatusCodes = rules.quotaStatusCodes || [429];
+    const isQuotaExceeded =
+      (typeof status === 'number' && quotaStatusCodes.includes(status)) ||
+      this.includesMessage(message, rules.quotaMessagePatterns);
+    if (isQuotaExceeded) {
+      return { valid: false, error: `API quota exceeded: ${message}` };
+    }
+
+    if (typeof status === 'number') {
+      return {
+        valid: false,
+        error: `API request failed (${status}): ${message}`,
+      };
+    }
+
+    return { valid: false, error: `Connection error: ${message}` };
+  }
+
   private async validateGoogleApiKey(
     apiKey: string,
   ): Promise<{ valid: boolean; error?: string }> {
     try {
-      const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        },
-      );
-      if (response.ok) {
-        return { valid: true };
-      }
-      const errorData = (await response.json().catch(() => ({}))) as {
-        error?: { message?: string };
-      };
-      const errorMessage = errorData?.error?.message || response.statusText;
-      if (
-        response.status === 400 ||
-        response.status === 401 ||
-        response.status === 403
-      ) {
-        return { valid: false, error: `Invalid API Key: ${errorMessage}` };
-      } else if (response.status === 429) {
-        return { valid: false, error: `API quota exceeded: ${errorMessage}` };
-      } else {
-        return {
-          valid: false,
-          error: `API request failed (${response.status}): ${errorMessage}`,
-        };
-      }
+      const { GoogleAIFileManager } = await import('@google/generative-ai/server');
+      const fileManager = new GoogleAIFileManager(apiKey);
+
+      // Use a metadata list API for validation to avoid generating tokens.
+      await fileManager.listFiles({ pageSize: 1 });
+      return { valid: true };
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      return { valid: false, error: `Connection error: ${errorMessage}` };
+      return this.mapProviderValidationError(error, {
+        invalidStatusCodes: [400, 401, 403],
+        invalidMessagePatterns: ['API key not valid', 'PERMISSION_DENIED'],
+        quotaMessagePatterns: ['RESOURCE_EXHAUSTED', 'quota'],
+      });
     }
   }
 
@@ -71,33 +112,17 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
     apiKey: string,
   ): Promise<{ valid: boolean; error?: string }> {
     try {
-      const response = await fetch('https://api.openai.com/v1/models', {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-        },
-      });
-      if (response.ok) {
-        return { valid: true };
-      }
-      const errorData = (await response.json().catch(() => ({}))) as {
-        error?: { message?: string };
-      };
-      const errorMessage = errorData?.error?.message || response.statusText;
-      if (response.status === 401 || response.status === 403) {
-        return { valid: false, error: `Invalid API Key: ${errorMessage}` };
-      } else if (response.status === 429) {
-        return { valid: false, error: `API quota exceeded: ${errorMessage}` };
-      } else {
-        return {
-          valid: false,
-          error: `API request failed (${response.status}): ${errorMessage}`,
-        };
-      }
+      const OpenAI = (await import('openai')).default;
+      const client = new OpenAI({ apiKey });
+
+      // Use model listing for validation to avoid generating tokens.
+      await client.models.list();
+      return { valid: true };
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      return { valid: false, error: `Connection error: ${errorMessage}` };
+      return this.mapProviderValidationError(error, {
+        invalidStatusCodes: [401, 403],
+        invalidMessagePatterns: ['Invalid API Key'],
+      });
     }
   }
 
@@ -105,40 +130,18 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
     apiKey: string,
   ): Promise<{ valid: boolean; error?: string }> {
     try {
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-          'content-type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: MODELS_BY_PROVIDER.anthropic[0].id,
-          max_tokens: 1,
-          messages: [{ role: 'user', content: 'Hi' }],
-        }),
-      });
-      if (response.ok) {
-        return { valid: true };
-      }
-      const errorData = (await response.json().catch(() => ({}))) as {
-        error?: { message?: string };
-      };
-      const errorMessage = errorData?.error?.message || response.statusText;
-      if (response.status === 401 || response.status === 403) {
-        return { valid: false, error: `Invalid API Key: ${errorMessage}` };
-      } else if (response.status === 429) {
-        return { valid: false, error: `API quota exceeded: ${errorMessage}` };
-      } else {
-        return {
-          valid: false,
-          error: `API error (${response.status}): ${errorMessage}`,
-        };
-      }
+      const Anthropic = (await import('@anthropic-ai/sdk')).default;
+      const client = new Anthropic({ apiKey });
+
+      // Use the models endpoint for validation to avoid generating tokens.
+      await client.models.list({ limit: 1 });
+      return { valid: true };
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      return { valid: false, error: `Connection error: ${errorMessage}` };
+      return this.mapProviderValidationError(error, {
+        invalidStatusCodes: [401, 403],
+        invalidMessagePatterns: ['invalid_api_key'],
+        quotaMessagePatterns: ['rate_limit'],
+      });
     }
   }
 
