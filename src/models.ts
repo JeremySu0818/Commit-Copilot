@@ -15,7 +15,7 @@ export const PROVIDER_DISPLAY_NAMES: Record<APIProvider, string> = {
   anthropic: 'Anthropic (Claude)',
   ollama: 'Ollama (Local)',
 };
-export type ModelConfig = { id: string; alias: string };
+export type ModelConfig = { id: string; alias: string; max_tokens?: number };
 
 export const GEMINI_MODELS: ModelConfig[] = [
   { id: 'gemini-2.5-flash-lite', alias: 'Gemini 2.5 Flash-Lite' },
@@ -46,14 +46,46 @@ export const OPENAI_MODELS: ModelConfig[] = [
 ];
 
 export const ANTHROPIC_MODELS: ModelConfig[] = [
-  { id: 'claude-sonnet-4-20250514', alias: 'Claude Sonnet 4' },
-  { id: 'claude-opus-4-20250514', alias: 'Claude Opus 4' },
-  { id: 'claude-opus-4-1-20250805', alias: 'Claude Opus 4.1' },
-  { id: 'claude-haiku-4-5-20251001', alias: 'Claude Haiku 4.5' },
-  { id: 'claude-sonnet-4-5-20250929', alias: 'Claude Sonnet 4.5' },
-  { id: 'claude-opus-4-5-20251101', alias: 'Claude Opus 4.5' },
-  { id: 'claude-sonnet-4-6', alias: 'Claude Sonnet 4.6' },
-  { id: 'claude-opus-4-6', alias: 'Claude Opus 4.6' },
+  {
+    id: 'claude-sonnet-4-20250514',
+    alias: 'Claude Sonnet 4',
+    max_tokens: 64000,
+  },
+  {
+    id: 'claude-opus-4-20250514',
+    alias: 'Claude Opus 4',
+    max_tokens: 32000,
+  },
+  {
+    id: 'claude-opus-4-1-20250805',
+    alias: 'Claude Opus 4.1',
+    max_tokens: 32000,
+  },
+  {
+    id: 'claude-haiku-4-5-20251001',
+    alias: 'Claude Haiku 4.5',
+    max_tokens: 64000,
+  },
+  {
+    id: 'claude-sonnet-4-5-20250929',
+    alias: 'Claude Sonnet 4.5',
+    max_tokens: 64000,
+  },
+  {
+    id: 'claude-opus-4-5-20251101',
+    alias: 'Claude Opus 4.5',
+    max_tokens: 64000,
+  },
+  {
+    id: 'claude-sonnet-4-6',
+    alias: 'Claude Sonnet 4.6',
+    max_tokens: 128000,
+  },
+  {
+    id: 'claude-opus-4-6',
+    alias: 'Claude Opus 4.6',
+    max_tokens: 128000,
+  },
 ];
 
 export const OLLAMA_MODELS: ModelConfig[] = [
@@ -82,6 +114,22 @@ export const DEFAULT_MODELS: Record<APIProvider, string> = {
   anthropic: 'claude-sonnet-4-6',
   ollama: 'gemma3:12b',
 };
+export function getAnthropicModelMaxTokens(
+  modelId?: string,
+): number | undefined {
+  const resolvedModelId = modelId || DEFAULT_MODELS.anthropic;
+  const selectedModel = ANTHROPIC_MODELS.find(
+    ({ id }) => id === resolvedModelId,
+  );
+  if (selectedModel?.max_tokens !== undefined) {
+    return selectedModel.max_tokens;
+  }
+  if (resolvedModelId === DEFAULT_MODELS.anthropic) {
+    return undefined;
+  }
+  return ANTHROPIC_MODELS.find(({ id }) => id === DEFAULT_MODELS.anthropic)
+    ?.max_tokens;
+}
 export const DEFAULT_PROVIDER: APIProvider = 'google';
 export const DEFAULT_MODEL = DEFAULT_MODELS[DEFAULT_PROVIDER];
 export const API_KEY_STORAGE_KEYS: Record<APIProvider, string> = {
