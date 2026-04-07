@@ -202,7 +202,6 @@
           <option value="" disabled selected>Select generate mode...</option>
         </select>
         <span id="generateModeStatus" class="status">
-          <span class="status-dot warning"></span>
           Loading configuration...
         </span>
       </div>
@@ -319,13 +318,13 @@
 
     function updateGenerateModeStatus(mode) {
       if (currentProvider === 'ollama') {
-        generateModeStatus.innerHTML = '<span class="status-dot warning"></span>Ollama is fixed to Direct Diff mode';
+        generateModeStatus.textContent = 'Ollama is fixed to Direct Diff mode';
         return;
       }
       if (mode === 'agentic') {
-        generateModeStatus.innerHTML = '<span class="status-dot success"></span>Agentic mode uses repository tools for deeper analysis';
+        generateModeStatus.textContent = 'Agentic mode uses repository tools for deeper analysis';
       } else {
-        generateModeStatus.innerHTML = '<span class="status-dot warning"></span>Direct Diff sends the raw diff directly to the model';
+        generateModeStatus.textContent = 'Direct Diff sends the raw diff directly to the model';
       }
     }
 
