@@ -4,21 +4,6 @@ import { GitOperations } from '../commit-copilot';
 
 const STAGED_WORKSPACE_DIR_NAME = 'commit-copilot-temp';
 const STAGED_WORKSPACE_SUBDIR_NAME = 'staged-workspace';
-const DEFAULT_IGNORED_DIRS = new Set([
-  '.git',
-  'node_modules',
-  '.next',
-  'dist',
-  'build',
-  'out',
-  '.cache',
-  'coverage',
-  '__pycache__',
-  '.vscode',
-  '.idea',
-  '.venv',
-  STAGED_WORKSPACE_DIR_NAME,
-]);
 
 type StagedDiffEntry = {
   aPath: string;
@@ -347,7 +332,6 @@ function cleanupStagedWorkspaceSnapshot(workspaceRoot: string): void {
 export {
   STAGED_WORKSPACE_DIR_NAME,
   STAGED_WORKSPACE_SUBDIR_NAME,
-  DEFAULT_IGNORED_DIRS,
   isPathWithinRoot,
   toPosixPath,
   createStagedWorkspaceSnapshot,
