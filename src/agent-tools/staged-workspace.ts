@@ -101,7 +101,25 @@ function removePath(
   }
 }
 
-function copyWorkspaceSnapshot(repoRoot: string, destRoot: string): void {
+async function copyWorkspaceSnapshot(
+  repoRoot: string,
+  destRoot: string,
+  gitOps: GitOperations,
+): Promise<void> {
+  const trackedFiles = await gitOps.listFilesFromGitApi();
+  if (trackedFiles !== null) {
+    for (const relPath of trackedFiles) {
+      const nativePath = relPath.replace(/\//g, path.sep);
+      const srcPath = path.join(repoRoot, nativePath);
+      const destPath = path.join(destRoot, nativePath);
+      try {
+        fs.mkdirSync(path.dirname(destPath), { recursive: true });
+        fs.copyFileSync(srcPath, destPath);
+      } catch {}
+    }
+    return;
+  }
+
   const stack: Array<{ src: string; dest: string }> = [
     { src: repoRoot, dest: destRoot },
   ];
@@ -127,7 +145,7 @@ function copyWorkspaceSnapshot(repoRoot: string, destRoot: string): void {
       const destPath = path.join(dest, entry.name);
 
       if (entry.isDirectory()) {
-        if (DEFAULT_IGNORED_DIRS.has(entry.name)) {
+        if (entry.name === STAGED_WORKSPACE_DIR_NAME || entry.name === '.git') {
           continue;
         }
         stack.push({ src: srcPath, dest: destPath });
@@ -242,7 +260,7 @@ async function createStagedWorkspaceSnapshot(
     throwOnFailure: true,
     operation: 'clean staged workspace snapshot',
   });
-  copyWorkspaceSnapshot(repoRoot, workspaceRoot);
+  await copyWorkspaceSnapshot(repoRoot, workspaceRoot, gitOps);
   await scrubWorkspaceToIndex(repoRoot, workspaceRoot, gitOps);
 
   const stagedEntries = parseStagedDiffEntries(diffContent);
