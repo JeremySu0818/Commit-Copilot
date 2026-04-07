@@ -25,7 +25,7 @@
         "command": "commit-copilot.generate",
         "title": "Commit-Copilot: Generate Commit Message",
         "category": "Commit-Copilot",
-        "icon": "$(sparkle)",
+        "icon": "$(wand)",
         "enablement": "!commit-copilot.isGenerating"
       },
       {
@@ -55,7 +55,7 @@
         {
           "id": "commit-copilot-activitybar",
           "title": "Commit Copilot",
-          "icon": "$(sparkle)"
+          "icon": "resources/icon.svg"
         }
       ]
     },
@@ -65,7 +65,7 @@
           "type": "webview",
           "id": "commit-copilot.view",
           "name": "Commit Copilot",
-          "icon": "$(sparkle)"
+          "icon": "resources/icon.svg"
         }
       ]
     }
