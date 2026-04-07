@@ -19,6 +19,7 @@ import {
 export interface LLMClientOptions {
   provider: APIProvider;
   apiKey: string;
+  ollamaHost?: string;
   model?: string;
   commitOutputOptions?: CommitOutputOptions;
 }
@@ -370,7 +371,7 @@ export class OllamaClient implements ILLMClient {
 }
 
 export function createLLMClient(options: LLMClientOptions): ILLMClient {
-  const { provider, apiKey, model, commitOutputOptions } = options;
+  const { provider, apiKey, ollamaHost, model, commitOutputOptions } = options;
   const resolvedCommitOutputOptions = normalizeCommitOutputOptions(
     commitOutputOptions,
   );
@@ -382,8 +383,16 @@ export function createLLMClient(options: LLMClientOptions): ILLMClient {
       return new OpenAIClient(apiKey, model, resolvedCommitOutputOptions);
     case 'anthropic':
       return new AnthropicClient(apiKey, model, resolvedCommitOutputOptions);
-    case 'ollama':
-      return new OllamaClient(apiKey, model, resolvedCommitOutputOptions);
+    case 'ollama': {
+      // Keep `apiKey` as a legacy fallback because older call sites store
+      // Ollama host in that field.
+      const resolvedOllamaHost = ollamaHost || apiKey;
+      return new OllamaClient(
+        resolvedOllamaHost,
+        model,
+        resolvedCommitOutputOptions,
+      );
+    }
     default:
       throw new Error(`Unsupported provider: ${provider}`);
   }
