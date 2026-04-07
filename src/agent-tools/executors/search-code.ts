@@ -22,7 +22,9 @@ async function resolveSearchFiles(
       .map((relPath) => relPath.trim())
       .filter(Boolean)
       .map((relPath) =>
-        vscode.Uri.file(path.resolve(repoRoot, relPath.replace(/\//g, path.sep))),
+        vscode.Uri.file(
+          path.resolve(repoRoot, relPath.replace(/\//g, path.sep)),
+        ),
       );
   }
 

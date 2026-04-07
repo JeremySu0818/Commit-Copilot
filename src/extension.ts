@@ -239,7 +239,9 @@ export function activate(context: vscode.ExtensionContext) {
             const cancelSubscription = progressToken.onCancellationRequested(
               () => {
                 wasCancelled = true;
-                outputChannel.appendLine('Cancellation requested from progress UI.');
+                outputChannel.appendLine(
+                  'Cancellation requested from progress UI.',
+                );
                 cancellationSource.cancel();
               },
             );
@@ -346,10 +348,14 @@ export function activate(context: vscode.ExtensionContext) {
               }
 
               if (result.success && result.message) {
-                outputChannel.appendLine(`Generated message: ${result.message}`);
+                outputChannel.appendLine(
+                  `Generated message: ${result.message}`,
+                );
                 repository.inputBox.value = result.message;
                 await vscode.commands.executeCommand('workbench.view.scm');
-                vscode.window.showInformationMessage('Commit message generated!');
+                vscode.window.showInformationMessage(
+                  'Commit message generated!',
+                );
               } else if (result.error) {
                 const error = result.error;
                 outputChannel.appendLine(
@@ -414,7 +420,10 @@ export function activate(context: vscode.ExtensionContext) {
         const isCancellationError =
           error instanceof CommitCopilotError &&
           error.exitCode === EXIT_CODES.CANCELLED;
-        if (isCancellationError || cancellationSource.token.isCancellationRequested) {
+        if (
+          isCancellationError ||
+          cancellationSource.token.isCancellationRequested
+        ) {
           vscode.window.showInformationMessage(
             'Commit message generation canceled.',
           );

@@ -16,7 +16,10 @@ test('executeGetRecentCommits validates positive count', async () => {
   } as any;
 
   const output = await executeGetRecentCommits({ count: 0 }, gitOps);
-  assert.equal(output, "Error: 'count' is required and must be a positive integer.");
+  assert.equal(
+    output,
+    "Error: 'count' is required and must be a positive integer.",
+  );
 });
 
 test('executeGetRecentCommits handles empty commit history', async () => {
@@ -30,7 +33,10 @@ test('executeGetRecentCommits handles empty commit history', async () => {
 
 test('executeGetRecentCommits formats multiline commit messages', async () => {
   const gitOps = {
-    getRecentCommitMessages: async () => ['feat(core): add x\n\nbody', 'fix(ui): y'],
+    getRecentCommitMessages: async () => [
+      'feat(core): add x\n\nbody',
+      'fix(ui): y',
+    ],
   } as any;
 
   const output = await executeGetRecentCommits({ count: 2 }, gitOps);

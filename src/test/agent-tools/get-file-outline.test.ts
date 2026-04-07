@@ -12,12 +12,14 @@ import { cleanupTempDir, createTempDir } from '../helpers/temp-dir';
 
 const MODULE_PATH = '../../agent-tools/executors/get-file-outline';
 
-async function loadModule(vscodeMock: unknown): Promise<
-  typeof import('../../agent-tools/executors/get-file-outline')
-> {
+async function loadModule(
+  vscodeMock: unknown,
+): Promise<typeof import('../../agent-tools/executors/get-file-outline')> {
   clearRequireCache(MODULE_PATH);
   return withModuleMock('vscode', vscodeMock, async () => {
-    return require(MODULE_PATH) as typeof import('../../agent-tools/executors/get-file-outline');
+    return require(
+      MODULE_PATH,
+    ) as typeof import('../../agent-tools/executors/get-file-outline');
   });
 }
 
@@ -29,7 +31,11 @@ test('executeGetFileOutline validates required path', async () => {
 
 test('executeGetFileOutline prevents path traversal', async () => {
   const { executeGetFileOutline } = await loadModule(createVscodeMock());
-  const output = await executeGetFileOutline('repo', { path: '../x.ts' }, false);
+  const output = await executeGetFileOutline(
+    'repo',
+    { path: '../x.ts' },
+    false,
+  );
   assert.equal(output, 'Error: path traversal is not allowed.');
 });
 
@@ -99,7 +105,10 @@ test('executeGetFileOutline renders outline from document symbols', async () => 
 
     const { executeGetFileOutline } = await loadModule(vscodeMock);
     const gitOps = {
-      showIndexFile: async () => ({ content: 'class A {\n run() {}\n}\n', found: true }),
+      showIndexFile: async () => ({
+        content: 'class A {\n run() {}\n}\n',
+        found: true,
+      }),
     } as any;
 
     const output = await executeGetFileOutline(
@@ -139,7 +148,11 @@ test('executeGetFileOutline handles empty symbol results', async () => {
     });
 
     const { executeGetFileOutline } = await loadModule(vscodeMock);
-    const output = await executeGetFileOutline(repoRoot, { path: relPath }, false);
+    const output = await executeGetFileOutline(
+      repoRoot,
+      { path: relPath },
+      false,
+    );
     assert.match(output, /No document symbols available/);
   } finally {
     cleanupTempDir(repoRoot);

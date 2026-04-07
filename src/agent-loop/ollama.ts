@@ -103,7 +103,10 @@ async function runOllamaAgentLoop(
     }
     return extractCommitMessage(text);
   } catch (error: any) {
-    if (error instanceof NoChangesError || error instanceof GenerationCancelledError) {
+    if (
+      error instanceof NoChangesError ||
+      error instanceof GenerationCancelledError
+    ) {
       throw error;
     }
     const message = error?.message || String(error);

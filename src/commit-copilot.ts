@@ -188,7 +188,11 @@ export class GitOperations {
             continue;
           }
           const relPath = path.relative(repoRoot, candidate);
-          if (!relPath || relPath.startsWith('..') || path.isAbsolute(relPath)) {
+          if (
+            !relPath ||
+            relPath.startsWith('..') ||
+            path.isAbsolute(relPath)
+          ) {
             continue;
           }
           candidate = relPath;
@@ -495,9 +499,8 @@ export async function generateCommitMessage(
     }
     const resolvedGenerateMode: GenerateMode =
       provider === 'ollama' ? 'direct-diff' : generateMode;
-    const resolvedCommitOutputOptions = normalizeCommitOutputOptions(
-      commitOutputOptions,
-    );
+    const resolvedCommitOutputOptions =
+      normalizeCommitOutputOptions(commitOutputOptions);
     const resolvedModel = model || DEFAULT_MODELS[provider];
 
     const repoRoot = repository.rootUri.fsPath;

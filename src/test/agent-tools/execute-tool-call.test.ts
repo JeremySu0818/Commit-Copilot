@@ -10,7 +10,9 @@ async function loadExecuteToolCall(): Promise<
 > {
   clearRequireCache(MODULE_PATH);
   return withModuleMock('vscode', createVscodeMock(), async () => {
-    return require(MODULE_PATH) as typeof import('../../agent-tools/executors/execute-tool-call');
+    return require(
+      MODULE_PATH,
+    ) as typeof import('../../agent-tools/executors/execute-tool-call');
   });
 }
 

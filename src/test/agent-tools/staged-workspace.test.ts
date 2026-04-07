@@ -28,7 +28,11 @@ test('createStagedWorkspaceSnapshot builds index-based snapshot', async () => {
     fs.mkdirSync(path.join(repoRoot, 'src'), { recursive: true });
     fs.writeFileSync(path.join(repoRoot, 'src', 'a.ts'), 'working-a', 'utf-8');
     fs.writeFileSync(path.join(repoRoot, 'src', 'b.ts'), 'working-b', 'utf-8');
-    fs.writeFileSync(path.join(repoRoot, 'src', 'deleted.ts'), 'remove-me', 'utf-8');
+    fs.writeFileSync(
+      path.join(repoRoot, 'src', 'deleted.ts'),
+      'remove-me',
+      'utf-8',
+    );
 
     const diffContent = [
       'diff --git a/src/a.ts b/src/a.ts',
@@ -73,7 +77,13 @@ test('createStagedWorkspaceSnapshot builds index-based snapshot', async () => {
     cleanupStagedWorkspaceSnapshot(snapshot);
     assert.equal(fs.existsSync(snapshot), false);
     assert.equal(
-      fs.existsSync(path.join(repoRoot, STAGED_WORKSPACE_DIR_NAME, STAGED_WORKSPACE_SUBDIR_NAME)),
+      fs.existsSync(
+        path.join(
+          repoRoot,
+          STAGED_WORKSPACE_DIR_NAME,
+          STAGED_WORKSPACE_SUBDIR_NAME,
+        ),
+      ),
       false,
     );
   } finally {

@@ -62,7 +62,11 @@ test('withRetry clamps retry-after delay by maxDelayMs', async () => {
   globalThis.setTimeout = ((handler: (...args: any[]) => void, ms?: number) => {
     scheduledDelays.push(ms ?? 0);
     handler();
-    return { hasRef: () => false, ref: () => undefined, unref: () => undefined } as any;
+    return {
+      hasRef: () => false,
+      ref: () => undefined,
+      unref: () => undefined,
+    } as any;
   }) as typeof setTimeout;
 
   try {
