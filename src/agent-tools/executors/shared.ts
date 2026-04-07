@@ -2,11 +2,11 @@ import { isBinaryFile } from 'isbinaryfile';
 
 const MAX_FILE_LINES = Infinity;
 const MAX_OUTLINE_LINES = Infinity;
-const MAX_REFERENCE_SNIPPET_LENGTH = 200;
-const MAX_SEARCH_MATCHES_PER_FILE = 10;
-const MAX_SEARCH_FILES = 20;
-const MAX_SEARCH_LINE_LENGTH = 200;
-const MAX_SEARCH_WORKSPACE_FILES = 10000;
+const MAX_REFERENCE_SNIPPET_LENGTH = Infinity;
+const MAX_SEARCH_MATCHES_PER_FILE = Infinity;
+const MAX_SEARCH_FILES = Infinity;
+const MAX_SEARCH_LINE_LENGTH = Infinity;
+const MAX_SEARCH_WORKSPACE_FILES = Infinity;
 
 function parseIntegerArg(value: unknown): number | null {
   if (typeof value === 'number' && Number.isFinite(value)) {

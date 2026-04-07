@@ -50,7 +50,7 @@ export async function executeToolCall(
         content = await executeGetRecentCommits(toolCall.arguments, gitOps);
         break;
       case 'search_code':
-        content = await executeSearchCode(repoRoot, toolCall.arguments);
+        content = await executeSearchCode(repoRoot, toolCall.arguments, gitOps);
         break;
       default:
         content = `Unknown tool: ${toolCall.name}`;

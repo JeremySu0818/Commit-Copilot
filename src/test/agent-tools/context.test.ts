@@ -49,7 +49,7 @@ test('getProjectStructure uses git API file list when available', async () => {
   const structure = await getProjectStructure('unused', gitOps);
   assert.match(structure, /src\//);
   assert.match(structure, /a\.ts/);
-  assert.doesNotMatch(structure, /node_modules/);
+  assert.match(structure, /node_modules/);
 });
 
 test('buildInitialContext includes tool guidance when tools are enabled', async () => {

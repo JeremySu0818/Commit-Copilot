@@ -1,7 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { GitOperations } from '../commit-copilot';
-import { DEFAULT_IGNORED_DIRS } from './staged-workspace';
 import {
   CommitOutputOptions,
   DEFAULT_COMMIT_OUTPUT_OPTIONS,
@@ -114,9 +113,6 @@ export async function getProjectStructure(
       if (parts.length === 0) {
         return;
       }
-      if (parts.some((part) => DEFAULT_IGNORED_DIRS.has(part))) {
-        return;
-      }
 
       const fileName = parts[parts.length - 1];
       if (!fileName) {
@@ -220,9 +216,6 @@ export async function getProjectStructure(
       const childPrefix = isLast ? '    ' : '│   ';
 
       if (entry.isDirectory()) {
-        if (DEFAULT_IGNORED_DIRS.has(entry.name)) {
-          continue;
-        }
         lines.push(`${prefix}${connector}${entry.name}/`);
         const childLines = walk(
           path.join(dir, entry.name),
