@@ -17,7 +17,10 @@ export const DISPLAY_LANGUAGE_OPTIONS: LanguageOption[] = [
     labels: { en: 'Auto (Follow VS Code)', 'zh-TW': '自動（跟隨 VS Code）' },
   },
   { value: 'en', labels: { en: 'English', 'zh-TW': '英文' } },
-  { value: 'zh-TW', labels: { en: 'Traditional Chinese', 'zh-TW': '繁體中文' } },
+  {
+    value: 'zh-TW',
+    labels: { en: 'Traditional Chinese', 'zh-TW': '繁體中文' },
+  },
 ];
 
 export function normalizeDisplayLanguage(value: unknown): DisplayLanguage {
@@ -97,7 +100,8 @@ const LOCALIZED_ERROR_MESSAGES: Record<
     },
     [EXIT_CODES.API_ERROR]: {
       title: 'API request failed',
-      action: 'There was an error communicating with the API. Please try again.',
+      action:
+        'There was an error communicating with the API. Please try again.',
     },
     [EXIT_CODES.COMMIT_FAILED]: {
       title: 'Failed to commit changes',
@@ -225,7 +229,8 @@ export type ExtensionText = {
 const EXTENSION_TEXTS: Record<EffectiveDisplayLanguage, ExtensionText> = {
   en: {
     output: {
-      generationIgnored: 'Generation request ignored: generation already in progress.',
+      generationIgnored:
+        'Generation request ignored: generation already in progress.',
       generationStart: (timestamp) =>
         `[${timestamp}] Starting commit-copilot generation...`,
       gitExtensionMissing: 'Error: Git extension not found.',
@@ -246,13 +251,13 @@ const EXTENSION_TEXTS: Record<EffectiveDisplayLanguage, ExtensionText> = {
         `Commit output options: ${optionsJson}`,
       missingApiKeyWarning: (provider) =>
         `Warning: No API Key found for ${provider}.`,
-      cancelRequestedFromProgress:
-        'Cancellation requested from progress UI.',
+      cancelRequestedFromProgress: 'Cancellation requested from progress UI.',
       callingGenerateCommitMessage: 'Calling generateCommitMessage...',
       repositoryPath: (path) => `Repository path: ${path}`,
       usingModel: (model) => `Using model: ${model}`,
       generatedMessage: (message) => `Generated message: ${message}`,
-      generationError: (errorCode, message) => `Error: ${errorCode} - ${message}`,
+      generationError: (errorCode, message) =>
+        `Error: ${errorCode} - ${message}`,
       unexpectedError: (message) => `Unexpected error: ${message}`,
       openingLanguageSettings: 'Opening language settings in activity view...',
     },
@@ -288,7 +293,8 @@ const EXTENSION_TEXTS: Record<EffectiveDisplayLanguage, ExtensionText> = {
   'zh-TW': {
     output: {
       generationIgnored: '忽略產生請求：目前已有產生流程進行中。',
-      generationStart: (timestamp) => `[${timestamp}] 開始執行 commit-copilot 產生流程...`,
+      generationStart: (timestamp) =>
+        `[${timestamp}] 開始執行 commit-copilot 產生流程...`,
       gitExtensionMissing: '錯誤：找不到 Git extension。',
       selectedRepoFromScm: (path) => `從 SCM 內容選擇儲存庫：${path}`,
       selectedRepoFromEditor: (path) => `從目前編輯器選擇儲存庫：${path}`,
@@ -309,7 +315,8 @@ const EXTENSION_TEXTS: Record<EffectiveDisplayLanguage, ExtensionText> = {
       repositoryPath: (path) => `儲存庫路徑：${path}`,
       usingModel: (model) => `使用模型：${model}`,
       generatedMessage: (message) => `已產生訊息：${message}`,
-      generationError: (errorCode, message) => `錯誤：${errorCode} - ${message}`,
+      generationError: (errorCode, message) =>
+        `錯誤：${errorCode} - ${message}`,
       unexpectedError: (message) => `未預期錯誤：${message}`,
       openingLanguageSettings: '正在開啟 Activity View 的語言設定...',
     },
@@ -343,7 +350,9 @@ const EXTENSION_TEXTS: Record<EffectiveDisplayLanguage, ExtensionText> = {
   },
 };
 
-export function getExtensionText(language: EffectiveDisplayLanguage): ExtensionText {
+export function getExtensionText(
+  language: EffectiveDisplayLanguage,
+): ExtensionText {
   return EXTENSION_TEXTS[language];
 }
 
@@ -399,7 +408,9 @@ const SIDE_PANEL_TEXTS: Record<EffectiveDisplayLanguage, SidePanelText> = {
   },
 };
 
-export function getSidePanelText(language: EffectiveDisplayLanguage): SidePanelText {
+export function getSidePanelText(
+  language: EffectiveDisplayLanguage,
+): SidePanelText {
   return SIDE_PANEL_TEXTS[language];
 }
 
@@ -520,7 +531,8 @@ export const WEBVIEW_LANGUAGE_PACKS: Record<
       ollamaFixedToDirectDiff: 'Ollama is fixed to Direct Diff mode',
       agenticModeDescription:
         'Agentic mode uses repository tools for deeper analysis',
-      directDiffDescription: 'Direct Diff sends the raw diff directly to the model',
+      directDiffDescription:
+        'Direct Diff sends the raw diff directly to the model',
       ollamaInfo:
         '<strong>Ollama</strong> runs locally on your machine.<br>Default host: <code>{host}</code><br>Make sure Ollama is running before generating.',
       googleInfo:
@@ -550,7 +562,7 @@ export const WEBVIEW_LANGUAGE_PACKS: Record<
       ollamaHostUrl: 'Ollama 主機 URL',
       model: '模型',
       mode: '模式',
-      conventionalCommitSections: 'Conventional Commit 區段',
+      conventionalCommitSections: '約定式提交區塊',
       includeScope: '包含 Scope',
       includeBody: '包含 Body',
       includeFooter: '包含 Footer',
@@ -602,7 +614,10 @@ export const WEBVIEW_LANGUAGE_PACKS: Record<
   },
 };
 
-function replacePlaceholders(template: string, values: Record<string, string>): string {
+function replacePlaceholders(
+  template: string,
+  values: Record<string, string>,
+): string {
   return template.replace(/\{([a-zA-Z0-9_]+)\}/g, (_match, key) => {
     return values[key] ?? '';
   });
@@ -627,23 +642,74 @@ export function localizeProgressMessage(
   }
 
   const linePatterns: Array<[RegExp, (...groups: string[]) => string]> = [
-    [/^\[Step (\d+)\] Analyzing diff: (.+)$/, (step, path) => `[步驟 ${step}] 分析 diff：${path}`],
-    [/^\[Step (\d+)\] Reading file: (.+)$/, (step, path) => `[步驟 ${step}] 讀取檔案：${path}`],
-    [/^\[Step (\d+)\] Getting outline: (.+)$/, (step, path) => `[步驟 ${step}] 取得結構：${path}`],
-    [/^\[Step (\d+)\] Finding references: (.+)$/, (step, target) => `[步驟 ${step}] 查找參照：${target}`],
-    [/^\[Step (\d+)\] Fetching recent commits: (.+) entries$/, (step, count) => `[步驟 ${step}] 取得近期 commits：${count} 筆`],
-    [/^\[Step (\d+)\] Searching project for: (.+)$/, (step, keyword) => `[步驟 ${step}] 在專案中搜尋：${keyword}`],
-    [/^\[Step (\d+)\] Calling (.+)\.\.\.$/, (step, toolName) => `[步驟 ${step}] 呼叫 ${toolName}...`],
-    [/^\[Step (\d+)\] Analyzing diffs: (.+)$/, (step, paths) => `[步驟 ${step}] 分析多個 diff：${paths}`],
-    [/^\[Step (\d+)\] Analyzing diffs for (\d+) files\.\.\.$/, (step, count) => `[步驟 ${step}] 分析 ${count} 個檔案的 diff...`],
-    [/^\[Step (\d+)\] Reading files: (.+)$/, (step, paths) => `[步驟 ${step}] 讀取多個檔案：${paths}`],
-    [/^\[Step (\d+)\] Reading (\d+) files\.\.\.$/, (step, count) => `[步驟 ${step}] 讀取 ${count} 個檔案...`],
-    [/^\[Step (\d+)\] Getting outlines: (.+)$/, (step, paths) => `[步驟 ${step}] 取得多個檔案結構：${paths}`],
-    [/^\[Step (\d+)\] Getting outlines for (\d+) files\.\.\.$/, (step, count) => `[步驟 ${step}] 取得 ${count} 個檔案結構...`],
-    [/^\[Step (\d+)\] Finding references for (\d+) symbols\.\.\.$/, (step, count) => `[步驟 ${step}] 查找 ${count} 個符號的參照...`],
-    [/^\[Step (\d+)\] Fetching recent commits\.\.\.$/, (step) => `[步驟 ${step}] 取得近期 commits...`],
-    [/^\[Step (\d+)\] Searching project for (\d+) keywords\.\.\.$/, (step, count) => `[步驟 ${step}] 在專案中搜尋 ${count} 個關鍵字...`],
-    [/^\[Step (\d+)\] Executing (\d+) investigation tools\.\.\.$/, (step, count) => `[步驟 ${step}] 執行 ${count} 個調查工具...`],
+    [
+      /^\[Step (\d+)\] Analyzing diff: (.+)$/,
+      (step, path) => `[步驟 ${step}] 分析 diff：${path}`,
+    ],
+    [
+      /^\[Step (\d+)\] Reading file: (.+)$/,
+      (step, path) => `[步驟 ${step}] 讀取檔案：${path}`,
+    ],
+    [
+      /^\[Step (\d+)\] Getting outline: (.+)$/,
+      (step, path) => `[步驟 ${step}] 取得結構：${path}`,
+    ],
+    [
+      /^\[Step (\d+)\] Finding references: (.+)$/,
+      (step, target) => `[步驟 ${step}] 查找參照：${target}`,
+    ],
+    [
+      /^\[Step (\d+)\] Fetching recent commits: (.+) entries$/,
+      (step, count) => `[步驟 ${step}] 取得近期 commits：${count} 筆`,
+    ],
+    [
+      /^\[Step (\d+)\] Searching project for: (.+)$/,
+      (step, keyword) => `[步驟 ${step}] 在專案中搜尋：${keyword}`,
+    ],
+    [
+      /^\[Step (\d+)\] Calling (.+)\.\.\.$/,
+      (step, toolName) => `[步驟 ${step}] 呼叫 ${toolName}...`,
+    ],
+    [
+      /^\[Step (\d+)\] Analyzing diffs: (.+)$/,
+      (step, paths) => `[步驟 ${step}] 分析多個 diff：${paths}`,
+    ],
+    [
+      /^\[Step (\d+)\] Analyzing diffs for (\d+) files\.\.\.$/,
+      (step, count) => `[步驟 ${step}] 分析 ${count} 個檔案的 diff...`,
+    ],
+    [
+      /^\[Step (\d+)\] Reading files: (.+)$/,
+      (step, paths) => `[步驟 ${step}] 讀取多個檔案：${paths}`,
+    ],
+    [
+      /^\[Step (\d+)\] Reading (\d+) files\.\.\.$/,
+      (step, count) => `[步驟 ${step}] 讀取 ${count} 個檔案...`,
+    ],
+    [
+      /^\[Step (\d+)\] Getting outlines: (.+)$/,
+      (step, paths) => `[步驟 ${step}] 取得多個檔案結構：${paths}`,
+    ],
+    [
+      /^\[Step (\d+)\] Getting outlines for (\d+) files\.\.\.$/,
+      (step, count) => `[步驟 ${step}] 取得 ${count} 個檔案結構...`,
+    ],
+    [
+      /^\[Step (\d+)\] Finding references for (\d+) symbols\.\.\.$/,
+      (step, count) => `[步驟 ${step}] 查找 ${count} 個符號的參照...`,
+    ],
+    [
+      /^\[Step (\d+)\] Fetching recent commits\.\.\.$/,
+      (step) => `[步驟 ${step}] 取得近期 commits...`,
+    ],
+    [
+      /^\[Step (\d+)\] Searching project for (\d+) keywords\.\.\.$/,
+      (step, count) => `[步驟 ${step}] 在專案中搜尋 ${count} 個關鍵字...`,
+    ],
+    [
+      /^\[Step (\d+)\] Executing (\d+) investigation tools\.\.\.$/,
+      (step, count) => `[步驟 ${step}] 執行 ${count} 個調查工具...`,
+    ],
   ];
 
   for (const [pattern, formatter] of linePatterns) {
@@ -660,7 +726,9 @@ export function getDisplayLanguageLabel(
   language: DisplayLanguage,
   uiLanguage: EffectiveDisplayLanguage,
 ): string {
-  const option = DISPLAY_LANGUAGE_OPTIONS.find((item) => item.value === language);
+  const option = DISPLAY_LANGUAGE_OPTIONS.find(
+    (item) => item.value === language,
+  );
   return option ? option.labels[uiLanguage] : language;
 }
 
