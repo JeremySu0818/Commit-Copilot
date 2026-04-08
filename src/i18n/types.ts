@@ -80,6 +80,7 @@ export type WebviewLanguagePack = {
     model: string;
     generateConfiguration: string;
     settings: string;
+    addProvider: string;
   };
   labels: {
     provider: string;
@@ -93,6 +94,8 @@ export type WebviewLanguagePack = {
     includeFooter: string;
     language: string;
     maxAgentSteps: string;
+    providerName: string;
+    apiBaseUrl: string;
   };
   placeholders: {
     selectProvider: string;
@@ -102,6 +105,9 @@ export type WebviewLanguagePack = {
     enterGeminiApiKey: string;
     enterOpenAIApiKey: string;
     enterAnthropicApiKey: string;
+    enterProviderName: string;
+    enterApiBaseUrl: string;
+    enterCustomApiKey: string;
   };
   buttons: {
     save: string;
@@ -109,6 +115,9 @@ export type WebviewLanguagePack = {
     generateCommitMessage: string;
     cancelGenerating: string;
     back: string;
+    editProvider: string;
+    addProvider: string;
+    deleteProvider: string;
   };
   statuses: {
     checkingStatus: string;
@@ -119,6 +128,12 @@ export type WebviewLanguagePack = {
     noChangesDetected: string;
     cancelCurrentGeneration: string;
     languageSaved: string;
+    providerNameConflict: string;
+    providerNameRequired: string;
+    baseUrlRequired: string;
+    apiKeyRequired: string;
+    providerSaved: string;
+    providerDeleted: string;
   };
   descriptions: {
     ollamaFixedToDirectDiff: string;
@@ -129,6 +144,7 @@ export type WebviewLanguagePack = {
     openaiInfo: string;
     anthropicInfo: string;
     maxAgentStepsDescription: string;
+    customProviderInfo: string;
   };
   options: {
     agentic: string;

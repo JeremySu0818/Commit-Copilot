@@ -423,6 +423,7 @@ export interface GenerateCommitMessageOptions {
   repository: GitRepository;
   provider: APIProvider;
   apiKey: string;
+  baseUrl?: string;
   cancellationToken?: CancellationSignal;
   model?: string;
   generateMode?: GenerateMode;
@@ -447,6 +448,7 @@ export async function generateCommitMessage(
     repository,
     provider,
     apiKey,
+    baseUrl,
     cancellationToken,
     model,
     generateMode = DEFAULT_GENERATE_MODE,
@@ -511,6 +513,7 @@ export async function generateCommitMessage(
         ? await runAgentLoop({
             provider,
             apiKey,
+            baseUrl,
             model: resolvedModel,
             diff,
             repoRoot,
@@ -524,6 +527,7 @@ export async function generateCommitMessage(
         : await createLLMClient({
             provider,
             apiKey,
+            baseUrl,
             ollamaHost: provider === 'ollama' ? apiKey : undefined,
             model: resolvedModel,
             commitOutputOptions: resolvedCommitOutputOptions,

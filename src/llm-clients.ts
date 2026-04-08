@@ -26,6 +26,7 @@ export interface LLMClientOptions {
   provider: APIProvider;
   apiKey: string;
   ollamaHost?: string;
+  baseUrl?: string;
   model?: string;
   commitOutputOptions?: CommitOutputOptions;
 }
@@ -217,18 +218,21 @@ export class GeminiClient implements ILLMClient {
 export class OpenAIClient implements ILLMClient {
   private readonly apiKey: string;
   private readonly model: string;
+  private readonly baseURL?: string;
   private readonly systemPrompt: string;
 
   constructor(
     apiKey: string,
     model?: string,
     commitOutputOptions: CommitOutputOptions = DEFAULT_COMMIT_OUTPUT_OPTIONS,
+    baseURL?: string,
   ) {
     if (!apiKey) {
       throw new APIKeyMissingError();
     }
     this.apiKey = apiKey;
     this.model = model || DEFAULT_MODELS.openai;
+    this.baseURL = baseURL;
     this.systemPrompt = buildAgentSystemPrompt({
       includeFindReferences: false,
       enableTools: false,
@@ -248,7 +252,7 @@ export class OpenAIClient implements ILLMClient {
 
     try {
       const OpenAI = (await import('openai')).default;
-      const client = new OpenAI({ apiKey: this.apiKey });
+      const client = new OpenAI({ apiKey: this.apiKey, ...(this.baseURL ? { baseURL: this.baseURL } : {}) });
       const completion = await withRetry(
         () =>
           client.chat.completions.create({
@@ -491,9 +495,13 @@ export class OllamaClient implements ILLMClient {
 }
 
 export function createLLMClient(options: LLMClientOptions): ILLMClient {
-  const { provider, apiKey, ollamaHost, model, commitOutputOptions } = options;
+  const { provider, apiKey, ollamaHost, baseUrl, model, commitOutputOptions } = options;
   const resolvedCommitOutputOptions =
     normalizeCommitOutputOptions(commitOutputOptions);
+
+  if (baseUrl) {
+    return new OpenAIClient(apiKey, model, resolvedCommitOutputOptions, baseUrl);
+  }
 
   switch (provider) {
     case 'google':

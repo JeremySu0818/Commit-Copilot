@@ -11,6 +11,7 @@ interface AgentLoopOptions {
   provider: APIProvider;
   apiKey: string;
   model?: string;
+  baseUrl?: string;
   diff: string;
   repoRoot: string;
   onProgress?: ProgressCallback;
@@ -26,6 +27,7 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
     provider,
     apiKey,
     model,
+    baseUrl,
     diff,
     repoRoot,
     onProgress,
@@ -35,6 +37,22 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
     cancellationToken,
     maxAgentSteps,
   } = options;
+
+  if (baseUrl) {
+    return runOpenAIAgentLoop(
+      apiKey,
+      model,
+      diff,
+      repoRoot,
+      onProgress,
+      isStaged,
+      gitOps,
+      commitOutputOptions,
+      cancellationToken,
+      maxAgentSteps,
+      baseUrl,
+    );
+  }
 
   switch (provider) {
     case 'google':
