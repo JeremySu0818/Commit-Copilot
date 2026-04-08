@@ -29,6 +29,23 @@ import {
 } from './i18n';
 import { GenerationStateManager, ValidationStateManager } from './state';
 
+function normalizeMaxAgentStepsValue(value: unknown): number {
+  const raw =
+    typeof value === 'string'
+      ? value.trim()
+      : typeof value === 'number'
+        ? String(value)
+        : '';
+  if (!raw || !/^\d+$/.test(raw)) {
+    return 0;
+  }
+  const parsed = Number.parseInt(raw, 10);
+  if (!Number.isSafeInteger(parsed) || parsed <= 0) {
+    return 0;
+  }
+  return parsed;
+}
+
 export class SidePanelProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = 'commit-copilot.view';
   private _view?: vscode.WebviewView;
@@ -655,12 +672,19 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
           break;
         }
         case 'saveMaxAgentSteps': {
-          const steps = typeof data.value === 'number' && data.value > 0 ? data.value : 0;
-          await this._context.globalState.update(MAX_AGENT_STEPS_STATE_KEY, steps || null);
+          const steps = normalizeMaxAgentStepsValue(data.value);
+          await this._context.globalState.update(
+            MAX_AGENT_STEPS_STATE_KEY,
+            steps > 0 ? steps : null,
+          );
           break;
         }
         case 'getMaxAgentSteps': {
-          const steps = this._context.globalState.get<number>(MAX_AGENT_STEPS_STATE_KEY) || 0;
+          const steps = normalizeMaxAgentStepsValue(
+            this._context.globalState.get<number | string | null>(
+              MAX_AGENT_STEPS_STATE_KEY,
+            ),
+          );
           this._view?.webview.postMessage({
             type: 'currentMaxAgentSteps',
             maxAgentSteps: steps,

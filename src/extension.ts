@@ -81,9 +81,6 @@ export function activate(context: vscode.ExtensionContext) {
   const openLanguageSettingsDisposable = vscode.commands.registerCommand(
     'commit-copilot.openLanguageSettings',
     async () => {
-      const language = getCurrentLanguage(context);
-      const text = getExtensionText(language);
-      outputChannel.appendLine(text.output.openingLanguageSettings);
       await vscode.commands.executeCommand('commit-copilot.view.focus');
       provider.openLanguageSettingsView();
     },

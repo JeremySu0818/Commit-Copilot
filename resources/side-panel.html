@@ -252,7 +252,8 @@
       </div>
       <div class="input-group" style="margin-top: 10px;">
         <label id="maxAgentStepsLabel"></label>
-        <input type="number" id="maxAgentStepsInput" min="0" step="1">
+        <input type="text" id="maxAgentStepsInput" inputmode="numeric" pattern="[0-9]*">
+        <button id="saveMaxAgentStepsBtn" disabled></button>
         <span id="maxAgentStepsStatus" class="status"></span>
       </div>
     </div>
@@ -295,6 +296,7 @@
     const languageStatus = document.getElementById('languageStatus');
     const maxAgentStepsInput = document.getElementById('maxAgentStepsInput');
     const maxAgentStepsStatus = document.getElementById('maxAgentStepsStatus');
+    const saveMaxAgentStepsBtn = document.getElementById('saveMaxAgentStepsBtn');
 
     const apiProviderSectionTitle = document.getElementById('apiProviderSectionTitle');
     const providerLabel = document.getElementById('providerLabel');
@@ -318,6 +320,7 @@
     let displayLanguage = initialDisplayLanguage;
     let effectiveLanguage = initialEffectiveLanguage;
     let currentPack = languagePacks[effectiveLanguage] || languagePacks.en;
+    let currentMaxAgentSteps = 0;
 
     function normalizeGenerateMode(mode) {
       return mode === 'direct-diff' ? 'direct-diff' : 'agentic';
@@ -339,6 +342,23 @@
             ? candidate.includeFooter
             : !!defaultCommitOutputOptions.includeFooter,
       };
+    }
+
+    function normalizeMaxAgentStepsValue(value) {
+      const raw = String(value || '').trim();
+      if (!raw || !/^\d+$/.test(raw)) {
+        return 0;
+      }
+      const parsed = Number.parseInt(raw, 10);
+      if (!Number.isSafeInteger(parsed) || parsed <= 0) {
+        return 0;
+      }
+      return parsed;
+    }
+
+    function updateMaxAgentStepsSaveBtn() {
+      const value = normalizeMaxAgentStepsValue(maxAgentStepsInput.value);
+      saveMaxAgentStepsBtn.disabled = value === currentMaxAgentSteps;
     }
 
     function fillTemplate(template, values) {
@@ -424,6 +444,7 @@
       languageLabel.textContent = currentPack.labels.language;
       maxAgentStepsLabel.textContent = currentPack.labels.maxAgentSteps;
       maxAgentStepsStatus.textContent = currentPack.descriptions.maxAgentStepsDescription;
+      saveMaxAgentStepsBtn.textContent = currentPack.buttons.save;
       backBtn.title = currentPack.buttons.back;
       saveBtn.textContent = currentPack.buttons.save;
       renderStatus(keyStatus, 'warning', currentPack.statuses.checkingStatus);
@@ -663,10 +684,15 @@
       vscode.postMessage({ type: 'saveDisplayLanguage', value: nextDisplayLanguage });
     });
 
-    maxAgentStepsInput.addEventListener('change', () => {
-      const raw = parseInt(maxAgentStepsInput.value);
-      const value = isNaN(raw) || raw <= 0 ? 0 : raw;
+    maxAgentStepsInput.addEventListener('input', () => {
+      updateMaxAgentStepsSaveBtn();
+    });
+
+    saveMaxAgentStepsBtn.addEventListener('click', () => {
+      const value = normalizeMaxAgentStepsValue(maxAgentStepsInput.value);
       maxAgentStepsInput.value = value > 0 ? String(value) : '';
+      currentMaxAgentSteps = value;
+      updateMaxAgentStepsSaveBtn();
       vscode.postMessage({ type: 'saveMaxAgentSteps', value });
     });
 
@@ -740,7 +766,9 @@
           renderStatus(languageStatus, 'success', currentPack.statuses.languageSaved);
           break;
         case 'currentMaxAgentSteps':
-          maxAgentStepsInput.value = message.maxAgentSteps > 0 ? String(message.maxAgentSteps) : '';
+          currentMaxAgentSteps = normalizeMaxAgentStepsValue(message.maxAgentSteps);
+          maxAgentStepsInput.value = currentMaxAgentSteps > 0 ? String(currentMaxAgentSteps) : '';
+          updateMaxAgentStepsSaveBtn();
           break;
         case 'openSettingsView':
           setScreen('settings', false);
