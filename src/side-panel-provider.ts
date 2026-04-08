@@ -72,9 +72,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
     const storedLanguage = this._context?.globalState?.get?.(
       DISPLAY_LANGUAGE_STATE_KEY,
     );
-    return normalizeDisplayLanguage(
-      storedLanguage,
-    );
+    return normalizeDisplayLanguage(storedLanguage);
   }
 
   private getEffectiveDisplayLanguage(): EffectiveDisplayLanguage {
@@ -692,8 +690,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
           break;
         }
         case 'setCurrentScreen': {
-          this._currentScreen =
-            data.value === 'settings' ? 'settings' : 'main';
+          this._currentScreen = data.value === 'settings' ? 'settings' : 'main';
           break;
         }
       }
@@ -749,8 +746,6 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
 }
 
 function serializeForInlineScript(value: unknown): string {
-  // Keep JSON safe when inlined inside <script>; replacement strings must
-  // remain literal \uXXXX escapes in the generated HTML/JS source.
   return JSON.stringify(value)
     .replace(/</g, '\\u003C')
     .replace(/>/g, '\\u003E')
