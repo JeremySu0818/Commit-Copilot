@@ -18,6 +18,7 @@ interface AgentLoopOptions {
   gitOps: GitOperations;
   commitOutputOptions: CommitOutputOptions;
   cancellationToken?: CancellationSignal;
+  maxAgentSteps?: number;
 }
 
 export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
@@ -32,6 +33,7 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
     gitOps,
     commitOutputOptions,
     cancellationToken,
+    maxAgentSteps,
   } = options;
 
   switch (provider) {
@@ -46,6 +48,7 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
         gitOps,
         commitOutputOptions,
         cancellationToken,
+        maxAgentSteps,
       );
     case 'openai':
       return runOpenAIAgentLoop(
@@ -58,6 +61,7 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
         gitOps,
         commitOutputOptions,
         cancellationToken,
+        maxAgentSteps,
       );
     case 'anthropic':
       return runAnthropicAgentLoop(
@@ -70,6 +74,7 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
         gitOps,
         commitOutputOptions,
         cancellationToken,
+        maxAgentSteps,
       );
     case 'ollama':
       return runOllamaAgentLoop(

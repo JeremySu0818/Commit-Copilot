@@ -92,6 +92,7 @@ export type WebviewLanguagePack = {
     includeBody: string;
     includeFooter: string;
     language: string;
+    maxAgentSteps: string;
   };
   placeholders: {
     selectProvider: string;
@@ -127,6 +128,7 @@ export type WebviewLanguagePack = {
     googleInfo: string;
     openaiInfo: string;
     anthropicInfo: string;
+    maxAgentStepsDescription: string;
   };
   options: {
     agentic: string;

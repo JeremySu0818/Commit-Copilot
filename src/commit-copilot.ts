@@ -431,6 +431,7 @@ export interface GenerateCommitMessageOptions {
   ignoreUntracked?: boolean;
   onProgress?: ProgressCallback;
   proceedWithStagedOnly?: boolean;
+  maxAgentSteps?: number;
 }
 
 export interface GenerateCommitMessageResult {
@@ -454,6 +455,7 @@ export async function generateCommitMessage(
     ignoreUntracked = false,
     onProgress,
     proceedWithStagedOnly = false,
+    maxAgentSteps,
   } = options;
   try {
     throwIfCancellationRequested(cancellationToken);
@@ -517,6 +519,7 @@ export async function generateCommitMessage(
             gitOps,
             commitOutputOptions: resolvedCommitOutputOptions,
             cancellationToken,
+            maxAgentSteps,
           })
         : await createLLMClient({
             provider,

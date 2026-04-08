@@ -33,7 +33,8 @@
       opacity: 0.8;
     }
     input[type="password"],
-    input[type="text"] {
+    input[type="text"],
+    input[type="number"] {
       padding: 8px 10px;
       background: var(--vscode-input-background);
       color: var(--vscode-input-foreground);
@@ -42,7 +43,8 @@
       font-size: 13px;
     }
     input[type="password"]:focus,
-    input[type="text"]:focus {
+    input[type="text"]:focus,
+    input[type="number"]:focus {
       outline: none;
       border-color: var(--vscode-focusBorder);
     }
@@ -248,6 +250,11 @@
         <select id="languageSelect"></select>
         <span id="languageStatus" class="status"></span>
       </div>
+      <div class="input-group" style="margin-top: 10px;">
+        <label id="maxAgentStepsLabel"></label>
+        <input type="number" id="maxAgentStepsInput" min="0" step="1">
+        <span id="maxAgentStepsStatus" class="status"></span>
+      </div>
     </div>
   </div>
 
@@ -286,6 +293,8 @@
     const backBtn = document.getElementById('backBtn');
     const languageSelect = document.getElementById('languageSelect');
     const languageStatus = document.getElementById('languageStatus');
+    const maxAgentStepsInput = document.getElementById('maxAgentStepsInput');
+    const maxAgentStepsStatus = document.getElementById('maxAgentStepsStatus');
 
     const apiProviderSectionTitle = document.getElementById('apiProviderSectionTitle');
     const providerLabel = document.getElementById('providerLabel');
@@ -413,6 +422,8 @@
       includeFooterLabel.textContent = currentPack.labels.includeFooter;
       settingsSectionTitle.textContent = currentPack.sections.settings;
       languageLabel.textContent = currentPack.labels.language;
+      maxAgentStepsLabel.textContent = currentPack.labels.maxAgentSteps;
+      maxAgentStepsStatus.textContent = currentPack.descriptions.maxAgentStepsDescription;
       backBtn.title = currentPack.buttons.back;
       saveBtn.textContent = currentPack.buttons.save;
       renderStatus(keyStatus, 'warning', currentPack.statuses.checkingStatus);
@@ -580,6 +591,7 @@
     vscode.postMessage({ type: 'getProvider' });
     vscode.postMessage({ type: 'getGenerateMode' });
     vscode.postMessage({ type: 'getCommitOutputOptions' });
+    vscode.postMessage({ type: 'getMaxAgentSteps' });
     vscode.postMessage({ type: 'checkGit' });
     vscode.postMessage({ type: 'getAllKeys' });
     vscode.postMessage({ type: 'checkGenerationStatus' });
@@ -651,6 +663,13 @@
       vscode.postMessage({ type: 'saveDisplayLanguage', value: nextDisplayLanguage });
     });
 
+    maxAgentStepsInput.addEventListener('change', () => {
+      const raw = parseInt(maxAgentStepsInput.value);
+      const value = isNaN(raw) || raw <= 0 ? 0 : raw;
+      maxAgentStepsInput.value = value > 0 ? String(value) : '';
+      vscode.postMessage({ type: 'saveMaxAgentSteps', value });
+    });
+
     backBtn.addEventListener('click', () => {
       setScreen('main', true);
     });
@@ -719,6 +738,9 @@
         case 'displayLanguageUpdated':
           applyLanguage(message.displayLanguage, message.effectiveLanguage);
           renderStatus(languageStatus, 'success', currentPack.statuses.languageSaved);
+          break;
+        case 'currentMaxAgentSteps':
+          maxAgentStepsInput.value = message.maxAgentSteps > 0 ? String(message.maxAgentSteps) : '';
           break;
         case 'openSettingsView':
           setScreen('settings', false);

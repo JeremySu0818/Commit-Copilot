@@ -140,6 +140,8 @@ export const API_KEY_STORAGE_KEYS: Record<APIProvider, string> = {
 };
 export const OLLAMA_DEFAULT_HOST = 'http://127.0.0.1:11434';
 export const DEFAULT_GENERATE_MODE: GenerateMode = 'agentic';
+export const MAX_AGENT_STEPS_STATE_KEY = 'MAX_AGENT_STEPS';
+export const DEFAULT_MAX_AGENT_STEPS = 0;
 export const DEFAULT_COMMIT_OUTPUT_OPTIONS: CommitOutputOptions = {
   includeScope: true,
   includeBody: true,
