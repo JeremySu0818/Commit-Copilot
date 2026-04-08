@@ -42,6 +42,7 @@ async function runOpenAIAgentLoop(
   commitOutputOptions: CommitOutputOptions = DEFAULT_COMMIT_OUTPUT_OPTIONS,
   cancellationToken?: CancellationSignal,
   maxAgentSteps?: number,
+  baseUrl?: string,
 ): Promise<string> {
   throwIfCancellationRequested(cancellationToken);
   if (!apiKey) {
@@ -53,7 +54,7 @@ async function runOpenAIAgentLoop(
 
   try {
     const OpenAI = (await import('openai')).default;
-    const client = new OpenAI({ apiKey });
+    const client = new OpenAI({ apiKey, ...(baseUrl ? { baseURL: baseUrl } : {}) });
     const modelName = model || DEFAULT_MODELS.openai;
     const resolvedCommitOutputOptions =
       normalizeCommitOutputOptions(commitOutputOptions);

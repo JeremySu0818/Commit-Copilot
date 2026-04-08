@@ -137,6 +137,7 @@ export const zhTWLocale: LocaleTextBundle = {
       model: '模型',
       generateConfiguration: '產生設定',
       settings: '設定',
+      addProvider: '新增自訂供應商',
     },
     labels: {
       provider: '供應商',
@@ -150,6 +151,8 @@ export const zhTWLocale: LocaleTextBundle = {
       includeFooter: '包含 Footer',
       language: 'Extension 語言',
       maxAgentSteps: '最大 Agent 步數',
+      providerName: '供應商名稱',
+      apiBaseUrl: 'API Base URL',
     },
     placeholders: {
       selectProvider: '請選擇供應商...',
@@ -159,6 +162,9 @@ export const zhTWLocale: LocaleTextBundle = {
       enterGeminiApiKey: '請輸入 Gemini API Key',
       enterOpenAIApiKey: '請輸入 OpenAI API Key',
       enterAnthropicApiKey: '請輸入 Anthropic API Key',
+      enterProviderName: '例如 DeepSeek、Groq、Together AI...',
+      enterApiBaseUrl: '例如 https://api.deepseek.com/v1',
+      enterCustomApiKey: '請輸入 API Key',
     },
     buttons: {
       save: '儲存',
@@ -166,6 +172,9 @@ export const zhTWLocale: LocaleTextBundle = {
       generateCommitMessage: '產生 Commit Message',
       cancelGenerating: '取消產生',
       back: '返回',
+      editProvider: '編輯 Provider',
+      addProvider: '+ 新增 Provider...',
+      deleteProvider: '刪除 Provider',
     },
     statuses: {
       checkingStatus: '檢查狀態中...',
@@ -176,6 +185,12 @@ export const zhTWLocale: LocaleTextBundle = {
       noChangesDetected: '未偵測到變更',
       cancelCurrentGeneration: '取消目前產生流程',
       languageSaved: '語言已更新。',
+      providerNameConflict: '已存在相同名稱的供應商。',
+      providerNameRequired: '請輸入供應商名稱。',
+      baseUrlRequired: '請輸入 API Base URL。',
+      apiKeyRequired: '請輸入 API Key。',
+      providerSaved: '已儲存自訂供應商！',
+      providerDeleted: '已刪除自訂供應商。',
     },
     descriptions: {
       ollamaFixedToDirectDiff: 'Ollama 固定使用 Direct Diff 模式',
@@ -190,6 +205,7 @@ export const zhTWLocale: LocaleTextBundle = {
       anthropicInfo:
         '請到 <strong>Anthropic Console</strong> 取得 API Key：<br><a href="https://platform.claude.com/settings/keys" style="color: var(--vscode-textLink-foreground);">platform.claude.com</a>',
       maxAgentStepsDescription: '限制每次產生的 Agent 工具呼叫次數。輸入 0 或留空表示無限制。',
+      customProviderInfo: '自訂供應商必須<strong>兼容 OpenAI</strong>。<br>API Base URL 需指向支援 OpenAI Chat Completions API 的服務。',
     },
     options: {
       agentic: 'Agentic 產生',

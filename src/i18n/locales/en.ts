@@ -150,6 +150,7 @@ export const enLocale: LocaleTextBundle = {
       model: 'Model',
       generateConfiguration: 'Generate Configuration',
       settings: 'Settings',
+      addProvider: 'Add Custom Provider',
     },
     labels: {
       provider: 'Provider',
@@ -163,6 +164,8 @@ export const enLocale: LocaleTextBundle = {
       includeFooter: 'Include Footer',
       language: 'Extension Language',
       maxAgentSteps: 'Max Agent Steps',
+      providerName: 'Provider Name',
+      apiBaseUrl: 'API Base URL',
     },
     placeholders: {
       selectProvider: 'Select a provider...',
@@ -172,6 +175,9 @@ export const enLocale: LocaleTextBundle = {
       enterGeminiApiKey: 'Enter your Gemini API Key',
       enterOpenAIApiKey: 'Enter your OpenAI API Key',
       enterAnthropicApiKey: 'Enter your Anthropic API Key',
+      enterProviderName: 'e.g. DeepSeek, Groq, Together AI...',
+      enterApiBaseUrl: 'e.g. https://api.deepseek.com/v1',
+      enterCustomApiKey: 'Enter your API Key',
     },
     buttons: {
       save: 'Save',
@@ -179,6 +185,9 @@ export const enLocale: LocaleTextBundle = {
       generateCommitMessage: 'Generate Commit Message',
       cancelGenerating: 'Cancel Generating',
       back: 'Back',
+      editProvider: 'Edit Provider',
+      addProvider: '+ Add Provider...',
+      deleteProvider: 'Delete Provider',
     },
     statuses: {
       checkingStatus: 'Checking status...',
@@ -189,6 +198,12 @@ export const enLocale: LocaleTextBundle = {
       noChangesDetected: 'No changes detected',
       cancelCurrentGeneration: 'Cancel current generation',
       languageSaved: 'Language updated.',
+      providerNameConflict: 'A provider with this name already exists.',
+      providerNameRequired: 'Provider name is required.',
+      baseUrlRequired: 'API Base URL is required.',
+      apiKeyRequired: 'API Key is required.',
+      providerSaved: 'Custom provider saved!',
+      providerDeleted: 'Custom provider deleted.',
     },
     descriptions: {
       ollamaFixedToDirectDiff: 'Ollama is fixed to Direct Diff mode',
@@ -205,6 +220,7 @@ export const enLocale: LocaleTextBundle = {
       anthropicInfo:
         'Get your API key from <strong>Anthropic Console</strong>:<br><a href="https://platform.claude.com/settings/keys" style="color: var(--vscode-textLink-foreground);">platform.claude.com</a>',
       maxAgentStepsDescription: 'Limit agentic tool calls per generation. Enter 0 or leave empty for unlimited.',
+      customProviderInfo: 'Custom providers must be <strong>OpenAI-compatible</strong>.<br>The API Base URL should point to a service that implements the OpenAI Chat Completions API.',
     },
     options: {
       agentic: 'Agentic Generate',

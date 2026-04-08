@@ -5,12 +5,17 @@ import {
   APIProvider,
   API_KEY_STORAGE_KEYS,
   CommitOutputOptions,
+  CustomProviderConfig,
+  CUSTOM_PROVIDERS_STATE_KEY,
   DEFAULT_COMMIT_OUTPUT_OPTIONS,
   DEFAULT_GENERATE_MODE,
   DEFAULT_PROVIDER,
   GenerateMode,
   MAX_AGENT_STEPS_STATE_KEY,
   PROVIDER_DISPLAY_NAMES,
+  isCustomProvider,
+  getCustomProviderId,
+  getCustomProviderStorageKey,
   normalizeCommitOutputOptions,
 } from './models';
 import { GenerationStateManager } from './state';
@@ -199,9 +204,20 @@ export function activate(context: vscode.ExtensionContext) {
           return;
         }
 
-        const currentProvider =
-          context.globalState.get<APIProvider>('CURRENT_PROVIDER') ||
+        const currentProviderRaw =
+          context.globalState.get<string>('CURRENT_PROVIDER') ||
           DEFAULT_PROVIDER;
+        const isCustom = isCustomProvider(currentProviderRaw);
+        let customProviderConfig: CustomProviderConfig | undefined;
+        let currentProvider: APIProvider;
+        if (isCustom) {
+          const customId = getCustomProviderId(currentProviderRaw);
+          const customProviders = context.globalState.get<CustomProviderConfig[]>(CUSTOM_PROVIDERS_STATE_KEY) || [];
+          customProviderConfig = customProviders.find((cp) => cp.id === customId);
+          currentProvider = 'openai';
+        } else {
+          currentProvider = currentProviderRaw as APIProvider;
+        }
         const savedGenerateMode =
           context.globalState.get<GenerateMode>('GENERATE_MODE') ||
           DEFAULT_GENERATE_MODE;
@@ -219,11 +235,22 @@ export function activate(context: vscode.ExtensionContext) {
         const savedMaxAgentSteps =
           context.globalState.get<number>(MAX_AGENT_STEPS_STATE_KEY) || 0;
         const maxAgentSteps = savedMaxAgentSteps > 0 ? savedMaxAgentSteps : undefined;
-        const storageKey = API_KEY_STORAGE_KEYS[currentProvider];
-        const apiKey = await context.secrets.get(storageKey);
+
+        let apiKey: string | undefined;
+        if (isCustom) {
+          const customId = getCustomProviderId(currentProviderRaw);
+          apiKey = await context.secrets.get(getCustomProviderStorageKey(customId));
+        } else {
+          const storageKey = API_KEY_STORAGE_KEYS[currentProvider];
+          apiKey = await context.secrets.get(storageKey);
+        }
+
+        const providerDisplayName = isCustom && customProviderConfig
+          ? customProviderConfig.name
+          : PROVIDER_DISPLAY_NAMES[currentProvider];
 
         outputChannel.appendLine(
-          text.output.usingProvider(PROVIDER_DISPLAY_NAMES[currentProvider]),
+          text.output.usingProvider(providerDisplayName),
         );
         outputChannel.appendLine(
           text.output.usingGenerateMode(currentGenerateMode),
@@ -240,9 +267,7 @@ export function activate(context: vscode.ExtensionContext) {
           );
           const setKeyAction = text.notification.configureApiKeyAction;
           const result = await vscode.window.showWarningMessage(
-            text.notification.apiKeyMissing(
-              PROVIDER_DISPLAY_NAMES[currentProvider],
-            ),
+            text.notification.apiKeyMissing(providerDisplayName),
             setKeyAction,
           );
 
@@ -255,7 +280,7 @@ export function activate(context: vscode.ExtensionContext) {
         const progressTitle =
           currentProvider === 'ollama'
             ? 'Ollama'
-            : `${PROVIDER_DISPLAY_NAMES[currentProvider]}`;
+            : providerDisplayName;
 
         await vscode.window.withProgress(
           {
@@ -278,9 +303,17 @@ export function activate(context: vscode.ExtensionContext) {
               text.output.repositoryPath(repository.rootUri.fsPath),
             );
 
-            const savedModel = context.globalState.get<string>(
-              `${currentProvider.toUpperCase()}_MODEL`,
-            );
+            let savedModel: string | undefined;
+            if (isCustom) {
+              const customId = getCustomProviderId(currentProviderRaw);
+              savedModel = context.globalState.get<string>(
+                `CUSTOM_${customId}_MODEL`,
+              );
+            } else {
+              savedModel = context.globalState.get<string>(
+                `${currentProvider.toUpperCase()}_MODEL`,
+              );
+            }
             if (savedModel) {
               outputChannel.appendLine(text.output.usingModel(savedModel));
             }
@@ -293,6 +326,7 @@ export function activate(context: vscode.ExtensionContext) {
               repository,
               provider: currentProvider,
               apiKey: apiKey || '',
+              baseUrl: customProviderConfig?.baseUrl,
               generateMode: currentGenerateMode,
               commitOutputOptions: currentCommitOutputOptions,
               maxAgentSteps,
@@ -418,9 +452,10 @@ export function activate(context: vscode.ExtensionContext) {
                       anthropic: 'https://console.anthropic.com/',
                       ollama: 'http://127.0.0.1:11434',
                     };
-                    vscode.env.openExternal(
-                      vscode.Uri.parse(providerUrls[currentProvider]),
-                    );
+                    const url = isCustom && customProviderConfig
+                      ? customProviderConfig.baseUrl
+                      : providerUrls[currentProvider];
+                    vscode.env.openExternal(vscode.Uri.parse(url));
                   }
                 } else if (error.exitCode === EXIT_CODES.NO_CHANGES) {
                   vscode.window.showInformationMessage(text.notification.noChanges);

@@ -3,6 +3,9 @@ import * as fs from 'fs';
 import {
   APIProvider,
   CommitOutputOptions,
+  CustomProviderConfig,
+  CUSTOM_PROVIDERS_STATE_KEY,
+  CUSTOM_PROVIDER_PREFIX,
   DEFAULT_COMMIT_OUTPUT_OPTIONS,
   DEFAULT_GENERATE_MODE,
   MAX_AGENT_STEPS_STATE_KEY,
@@ -14,6 +17,9 @@ import {
   DEFAULT_PROVIDER,
   API_KEY_STORAGE_KEYS,
   OLLAMA_DEFAULT_HOST,
+  isCustomProvider,
+  getCustomProviderId,
+  getCustomProviderStorageKey,
   normalizeCommitOutputOptions,
 } from './models';
 import {
@@ -49,7 +55,7 @@ function normalizeMaxAgentStepsValue(value: unknown): number {
 export class SidePanelProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = 'commit-copilot.view';
   private _view?: vscode.WebviewView;
-  private _currentScreen: 'main' | 'settings' = 'main';
+  private _currentScreen: 'main' | 'settings' | 'addProvider' = 'main';
 
   constructor(
     private readonly _extensionUri: vscode.Uri,
@@ -62,6 +68,14 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
       this._view.show?.(true);
       this._view.webview.postMessage({ type: 'openSettingsView' });
     }
+  }
+
+  private getCustomProviders(): CustomProviderConfig[] {
+    return this._context.globalState.get<CustomProviderConfig[]>(CUSTOM_PROVIDERS_STATE_KEY) || [];
+  }
+
+  private async saveCustomProviders(providers: CustomProviderConfig[]): Promise<void> {
+    await this._context.globalState.update(CUSTOM_PROVIDERS_STATE_KEY, providers);
   }
 
   private getVSCodeLanguage(): string | undefined {
@@ -234,6 +248,23 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
         valid: false,
         error: text.cannotConnectOllama(errorMessage),
       };
+    }
+  }
+
+  private async validateCustomProviderKey(
+    apiKey: string,
+    baseUrl: string,
+  ): Promise<{ valid: boolean; error?: string }> {
+    try {
+      const OpenAI = (await import('openai')).default;
+      const client = new OpenAI({ apiKey, baseURL: baseUrl });
+      await client.models.list();
+      return { valid: true };
+    } catch (error) {
+      return this.mapProviderValidationError(error, {
+        invalidStatusCodes: [401, 403],
+        invalidMessagePatterns: ['Invalid API Key', 'Unauthorized'],
+      });
     }
   }
 
@@ -429,7 +460,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
       switch (data.type) {
         case 'saveKey': {
           const text = getSidePanelText(this.getEffectiveDisplayLanguage());
-          const provider = data.provider as APIProvider;
+          const provider = String(data.provider);
           const apiKey = data.value;
           if (!apiKey && provider !== 'ollama') {
             vscode.window.showErrorMessage(text.apiKeyCannotBeEmpty);
@@ -443,49 +474,108 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
           ValidationStateManager.setValidating(true, provider);
           this._view?.webview.postMessage({ type: 'validating', provider });
           try {
-            const validationResult = await this.validateApiKey(
-              provider,
-              apiKey || OLLAMA_DEFAULT_HOST,
-            );
-            if (!validationResult.valid) {
-              vscode.window.showWarningMessage(
-                `${text.validationFailedPrefix}: ${validationResult.error || text.unableToConnectFallback}`,
-              );
-              this._view?.webview.postMessage({
-                type: 'validationResult',
-                success: false,
-                error: validationResult.error,
-                provider,
-              });
-              return;
-            }
-            try {
-              const storageKey = API_KEY_STORAGE_KEYS[provider];
-              await this._context.secrets.store(
-                storageKey,
+            if (isCustomProvider(provider)) {
+              const customId = getCustomProviderId(provider);
+              const customProviders = this.getCustomProviders();
+              const cp = customProviders.find((c) => c.id === customId);
+              if (!cp) {
+                this._view?.webview.postMessage({
+                  type: 'validationResult',
+                  success: false,
+                  error: text.unknownProvider,
+                  provider,
+                });
+                return;
+              }
+              try {
+                const validationResult = await this.validateCustomProviderKey(apiKey, cp.baseUrl);
+                if (!validationResult.valid) {
+                  vscode.window.showWarningMessage(
+                    `${text.validationFailedPrefix}: ${validationResult.error || text.unableToConnectFallback}`,
+                  );
+                  this._view?.webview.postMessage({
+                    type: 'validationResult',
+                    success: false,
+                    error: validationResult.error,
+                    provider,
+                  });
+                  return;
+                }
+                const storageKey = getCustomProviderStorageKey(customId);
+                await this._context.secrets.store(storageKey, apiKey);
+                const savedModel = this._context.globalState.get<string>(
+                  `CUSTOM_${customId}_MODEL`,
+                );
+                vscode.window.showInformationMessage(
+                  text.saveConfigSuccess(cp.name),
+                );
+                this._view?.webview.postMessage({
+                  type: 'validationResult',
+                  success: true,
+                  models: [],
+                  currentModel: savedModel || '',
+                  allowCustomModel: true,
+                  provider,
+                });
+                this._view?.webview.postMessage({
+                  type: 'keyStatus',
+                  hasKey: true,
+                  provider,
+                });
+              } catch (e) {
+                vscode.window.showErrorMessage(text.saveConfigFailed);
+                this._view?.webview.postMessage({
+                  type: 'validationResult',
+                  success: false,
+                  provider,
+                });
+              }
+            } else {
+              const builtIn = provider as APIProvider;
+              const validationResult = await this.validateApiKey(
+                builtIn,
                 apiKey || OLLAMA_DEFAULT_HOST,
               );
-              vscode.window.showInformationMessage(
-                text.saveConfigSuccess(PROVIDER_DISPLAY_NAMES[provider]),
-              );
-              this._view?.webview.postMessage({
-                type: 'validationResult',
-                success: true,
-                models: MODELS_BY_PROVIDER[provider],
-                provider,
-              });
-              this._view?.webview.postMessage({
-                type: 'keyStatus',
-                hasKey: true,
-                provider,
-              });
-            } catch (e) {
-              vscode.window.showErrorMessage(text.saveConfigFailed);
-              this._view?.webview.postMessage({
-                type: 'validationResult',
-                success: false,
-                provider,
-              });
+              if (!validationResult.valid) {
+                vscode.window.showWarningMessage(
+                  `${text.validationFailedPrefix}: ${validationResult.error || text.unableToConnectFallback}`,
+                );
+                this._view?.webview.postMessage({
+                  type: 'validationResult',
+                  success: false,
+                  error: validationResult.error,
+                  provider,
+                });
+                return;
+              }
+              try {
+                const storageKey = API_KEY_STORAGE_KEYS[builtIn];
+                await this._context.secrets.store(
+                  storageKey,
+                  apiKey || OLLAMA_DEFAULT_HOST,
+                );
+                vscode.window.showInformationMessage(
+                  text.saveConfigSuccess(PROVIDER_DISPLAY_NAMES[builtIn]),
+                );
+                this._view?.webview.postMessage({
+                  type: 'validationResult',
+                  success: true,
+                  models: MODELS_BY_PROVIDER[builtIn],
+                  provider,
+                });
+                this._view?.webview.postMessage({
+                  type: 'keyStatus',
+                  hasKey: true,
+                  provider,
+                });
+              } catch (e) {
+                vscode.window.showErrorMessage(text.saveConfigFailed);
+                this._view?.webview.postMessage({
+                  type: 'validationResult',
+                  success: false,
+                  provider,
+                });
+              }
             }
           } finally {
             ValidationStateManager.setValidating(false, null);
@@ -515,9 +605,15 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
           break;
         }
         case 'checkKey': {
-          const provider = (data.provider as APIProvider) || DEFAULT_PROVIDER;
-          const storageKey = API_KEY_STORAGE_KEYS[provider];
-          const key = await this._context.secrets.get(storageKey);
+          const provider = String(data.provider || DEFAULT_PROVIDER);
+          let key: string | undefined;
+          if (isCustomProvider(provider)) {
+            const customId = getCustomProviderId(provider);
+            key = await this._context.secrets.get(getCustomProviderStorageKey(customId));
+          } else {
+            const storageKey = API_KEY_STORAGE_KEYS[provider as APIProvider];
+            key = await this._context.secrets.get(storageKey);
+          }
           this._view?.webview.postMessage({
             type: 'keyStatus',
             hasKey: !!key,
@@ -530,28 +626,54 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
           break;
         }
         case 'getModels': {
-          const provider = (data.provider as APIProvider) || DEFAULT_PROVIDER;
-          const storageKey = API_KEY_STORAGE_KEYS[provider];
-          const key = await this._context.secrets.get(storageKey);
-          if (key || provider === 'ollama') {
-            const savedModel = this._context.globalState.get<string>(
-              `${provider.toUpperCase()}_MODEL`,
-            );
-            this._view?.webview.postMessage({
-              type: 'modelsList',
-              models: MODELS_BY_PROVIDER[provider],
-              currentModel: savedModel || DEFAULT_MODELS[provider],
-              provider,
-            });
+          const provider = String(data.provider || DEFAULT_PROVIDER);
+          if (isCustomProvider(provider)) {
+            const customId = getCustomProviderId(provider);
+            const key = await this._context.secrets.get(getCustomProviderStorageKey(customId));
+            if (key) {
+              const savedModel = this._context.globalState.get<string>(
+                `CUSTOM_${customId}_MODEL`,
+              );
+              this._view?.webview.postMessage({
+                type: 'modelsList',
+                models: [],
+                currentModel: savedModel || '',
+                provider,
+                allowCustomModel: true,
+              });
+            }
+          } else {
+            const builtIn = provider as APIProvider;
+            const storageKey = API_KEY_STORAGE_KEYS[builtIn];
+            const key = await this._context.secrets.get(storageKey);
+            if (key || builtIn === 'ollama') {
+              const savedModel = this._context.globalState.get<string>(
+                `${builtIn.toUpperCase()}_MODEL`,
+              );
+              this._view?.webview.postMessage({
+                type: 'modelsList',
+                models: MODELS_BY_PROVIDER[builtIn],
+                currentModel: savedModel || DEFAULT_MODELS[builtIn],
+                provider,
+              });
+            }
           }
           break;
         }
         case 'saveModel': {
-          const provider = (data.provider as APIProvider) || DEFAULT_PROVIDER;
-          await this._context.globalState.update(
-            `${provider.toUpperCase()}_MODEL`,
-            data.value,
-          );
+          const provider = String(data.provider || DEFAULT_PROVIDER);
+          if (isCustomProvider(provider)) {
+            const customId = getCustomProviderId(provider);
+            await this._context.globalState.update(
+              `CUSTOM_${customId}_MODEL`,
+              data.value,
+            );
+          } else {
+            await this._context.globalState.update(
+              `${provider.toUpperCase()}_MODEL`,
+              data.value,
+            );
+          }
           break;
         }
         case 'saveProvider': {
@@ -607,7 +729,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
           break;
         }
         case 'getAllKeys': {
-          const keyStatuses: Record<APIProvider, boolean> = {
+          const keyStatuses: Record<string, boolean> = {
             google: false,
             openai: false,
             anthropic: false,
@@ -617,7 +739,11 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
             API_KEY_STORAGE_KEYS,
           )) {
             const key = await this._context.secrets.get(storageKey);
-            keyStatuses[provider as APIProvider] = !!key;
+            keyStatuses[provider] = !!key;
+          }
+          for (const cp of this.getCustomProviders()) {
+            const key = await this._context.secrets.get(getCustomProviderStorageKey(cp.id));
+            keyStatuses[`${CUSTOM_PROVIDER_PREFIX}${cp.id}`] = !!key;
           }
           this._view?.webview.postMessage({
             type: 'allKeyStatuses',
@@ -689,8 +815,111 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
           });
           break;
         }
+        case 'saveCustomProvider': {
+          const text = getSidePanelText(this.getEffectiveDisplayLanguage());
+          const customProviders = this.getCustomProviders();
+          const name = String(data.name || '').trim();
+          const baseUrl = String(data.baseUrl || '').trim();
+          const apiKey = String(data.apiKey || '').trim();
+          const editId = data.editId as string | null;
+
+          if (!editId && !apiKey) {
+            this._view?.webview.postMessage({
+              type: 'customProviderSaveFailed',
+              error: text.apiKeyCannotBeEmpty,
+            });
+            break;
+          }
+
+          const shouldValidate = !editId || !!apiKey;
+          if (shouldValidate) {
+            const validationResult = await this.validateCustomProviderKey(
+              apiKey,
+              baseUrl,
+            );
+            if (!validationResult.valid) {
+              this._view?.webview.postMessage({
+                type: 'customProviderSaveFailed',
+                error:
+                  validationResult.error || text.unableToConnectFallback,
+              });
+              break;
+            }
+          }
+
+          let id: string;
+          if (editId) {
+            id = editId;
+            const idx = customProviders.findIndex((cp) => cp.id === id);
+            if (idx >= 0) {
+              customProviders[idx] = { id, name, baseUrl };
+            } else {
+              customProviders.push({ id, name, baseUrl });
+            }
+          } else {
+            id = name
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, '_')
+              .replace(/^_|_$/g, '');
+            if (!id) {
+              id = 'provider';
+            }
+            const existingIds = new Set(customProviders.map((cp) => cp.id));
+            let uniqueId = id;
+            let counter = 1;
+            while (existingIds.has(uniqueId)) {
+              uniqueId = `${id}_${counter++}`;
+            }
+            id = uniqueId;
+            customProviders.push({ id, name, baseUrl });
+          }
+
+          await this.saveCustomProviders(customProviders);
+
+          if (apiKey) {
+            const storageKey = getCustomProviderStorageKey(id);
+            await this._context.secrets.store(storageKey, apiKey);
+          }
+
+          this._view?.webview.postMessage({
+            type: 'customProviderSaved',
+            savedId: id,
+            customProviders,
+          });
+          break;
+        }
+        case 'deleteCustomProvider': {
+          const deleteId = String(data.id || '');
+          let customProviders = this.getCustomProviders();
+          customProviders = customProviders.filter((cp) => cp.id !== deleteId);
+          await this.saveCustomProviders(customProviders);
+
+          const storageKey = getCustomProviderStorageKey(deleteId);
+          await this._context.secrets.delete(storageKey);
+
+          const currentProviderValue = this._context.globalState.get<string>('CURRENT_PROVIDER');
+          if (currentProviderValue === `${CUSTOM_PROVIDER_PREFIX}${deleteId}`) {
+            await this._context.globalState.update('CURRENT_PROVIDER', DEFAULT_PROVIDER);
+          }
+
+          this._view?.webview.postMessage({
+            type: 'customProviderDeleted',
+            customProviders,
+          });
+          break;
+        }
+        case 'getCustomProviders': {
+          this._view?.webview.postMessage({
+            type: 'customProvidersLoaded',
+            customProviders: this.getCustomProviders(),
+          });
+          break;
+        }
         case 'setCurrentScreen': {
-          this._currentScreen = data.value === 'settings' ? 'settings' : 'main';
+          this._currentScreen =
+            data.value === 'settings' || data.value === 'addProvider'
+              ? data.value
+              : 'main';
           break;
         }
       }
@@ -737,6 +966,8 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
         languagePayload.languageOptions,
       ),
       INITIAL_SCREEN_JSON: serializeForInlineScript(this._currentScreen),
+      CUSTOM_PROVIDER_PREFIX_JSON: serializeForInlineScript(CUSTOM_PROVIDER_PREFIX),
+      CUSTOM_PROVIDERS_JSON: serializeForInlineScript(this.getCustomProviders()),
     };
 
     return template.replace(/\{\{([A-Z0-9_]+)\}\}/g, (match, key: string) => {
@@ -746,7 +977,9 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
 }
 
 function serializeForInlineScript(value: unknown): string {
-  return JSON.stringify(value)
+  const serialized = JSON.stringify(value);
+  const safeSerialized = typeof serialized === 'string' ? serialized : 'null';
+  return safeSerialized
     .replace(/</g, '\\u003C')
     .replace(/>/g, '\\u003E')
     .replace(/&/g, '\\u0026')

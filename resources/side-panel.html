@@ -197,6 +197,9 @@
         <span id="keyStatus" class="status"></span>
       </div>
       <div class="provider-info" id="providerInfo"></div>
+      <div style="margin-top: 8px;">
+        <button id="editProviderBtn" class="secondary hidden"></button>
+      </div>
     </div>
     <div class="config-section">
       <div class="section-title" id="modelSectionTitle"></div>
@@ -259,6 +262,37 @@
     </div>
   </div>
 
+  <div id="addProviderView" class="container hidden">
+    <div class="settings-header">
+      <button id="addProviderBackBtn" class="icon-btn" title="">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M7 3.093L1.093 9 7 14.907l.707-.707-4.7-4.7H14v-1H3.007l4.7-4.7L7 3.093z"/>
+        </svg>
+      </button>
+    </div>
+    <div class="config-section">
+      <div class="section-title" id="addProviderSectionTitle"></div>
+      <div class="provider-info" id="addProviderInfo"></div>
+      <div class="input-group" style="margin-top: 10px;">
+        <label id="providerNameLabel"></label>
+        <input type="text" id="providerNameInput">
+      </div>
+      <div class="input-group" style="margin-top: 10px;">
+        <label id="apiBaseUrlLabel"></label>
+        <input type="text" id="apiBaseUrlInput">
+      </div>
+      <div class="input-group" style="margin-top: 10px;">
+        <label id="customApiKeyLabel"></label>
+        <input type="password" id="customApiKeyInput">
+      </div>
+      <span id="addProviderStatus" class="status"></span>
+      <div style="margin-top: 12px; display: flex; gap: 8px;">
+        <button id="saveProviderBtn" class="primary" disabled></button>
+        <button id="deleteProviderBtn" class="secondary hidden"></button>
+      </div>
+    </div>
+  </div>
+
   <script nonce="{{NONCE}}">
     const vscode = acquireVsCodeApi();
     const providers = {{PROVIDERS_JSON}};
@@ -274,9 +308,12 @@
     const initialEffectiveLanguage = {{EFFECTIVE_LANGUAGE_JSON}};
     const displayLanguageOptions = {{DISPLAY_LANGUAGE_OPTIONS_JSON}};
     const initialScreen = {{INITIAL_SCREEN_JSON}};
+    const customProviderPrefix = {{CUSTOM_PROVIDER_PREFIX_JSON}};
+    let customProviders = {{CUSTOM_PROVIDERS_JSON}};
 
     const mainView = document.getElementById('mainView');
     const settingsView = document.getElementById('settingsView');
+    const addProviderView = document.getElementById('addProviderView');
     const providerSelect = document.getElementById('providerSelect');
     const saveBtn = document.getElementById('saveBtn');
     const generateBtn = document.getElementById('generateBtn');
@@ -287,6 +324,7 @@
     const keyStatus = document.getElementById('keyStatus');
     const modelSelect = document.getElementById('modelSelect');
     const providerInfo = document.getElementById('providerInfo');
+    const editProviderBtn = document.getElementById('editProviderBtn');
     const configTitle = document.getElementById('configTitle');
     const includeScopeCheckbox = document.getElementById('includeScopeCheckbox');
     const includeBodyCheckbox = document.getElementById('includeBodyCheckbox');
@@ -297,6 +335,18 @@
     const maxAgentStepsInput = document.getElementById('maxAgentStepsInput');
     const maxAgentStepsStatus = document.getElementById('maxAgentStepsStatus');
     const saveMaxAgentStepsBtn = document.getElementById('saveMaxAgentStepsBtn');
+    const addProviderBackBtn = document.getElementById('addProviderBackBtn');
+    const addProviderSectionTitle = document.getElementById('addProviderSectionTitle');
+    const addProviderInfo = document.getElementById('addProviderInfo');
+    const providerNameLabel = document.getElementById('providerNameLabel');
+    const providerNameInput = document.getElementById('providerNameInput');
+    const apiBaseUrlLabel = document.getElementById('apiBaseUrlLabel');
+    const apiBaseUrlInput = document.getElementById('apiBaseUrlInput');
+    const customApiKeyLabel = document.getElementById('customApiKeyLabel');
+    const customApiKeyInput = document.getElementById('customApiKeyInput');
+    const addProviderStatus = document.getElementById('addProviderStatus');
+    const saveProviderBtn = document.getElementById('saveProviderBtn');
+    const deleteProviderBtn = document.getElementById('deleteProviderBtn');
 
     const apiProviderSectionTitle = document.getElementById('apiProviderSectionTitle');
     const providerLabel = document.getElementById('providerLabel');
@@ -321,6 +371,7 @@
     let effectiveLanguage = initialEffectiveLanguage;
     let currentPack = languagePacks[effectiveLanguage] || languagePacks.en;
     let currentMaxAgentSteps = 0;
+    let editingCustomProviderId = null;
 
     function normalizeGenerateMode(mode) {
       return mode === 'direct-diff' ? 'direct-diff' : 'agentic';
@@ -385,6 +436,18 @@
         option.textContent = label;
         providerSelect.appendChild(option);
       });
+      if (customProviders && customProviders.length > 0) {
+        customProviders.forEach((cp) => {
+          const option = document.createElement('option');
+          option.value = customProviderPrefix + cp.id;
+          option.textContent = cp.name;
+          providerSelect.appendChild(option);
+        });
+      }
+      const addOption = document.createElement('option');
+      addOption.value = '__add_provider__';
+      addOption.textContent = currentPack.buttons.addProvider;
+      providerSelect.appendChild(addOption);
       providerSelect.value = selected;
       if (!providerSelect.value) {
         providerSelect.selectedIndex = 0;
@@ -447,6 +510,7 @@
       saveMaxAgentStepsBtn.textContent = currentPack.buttons.save;
       backBtn.title = currentPack.buttons.back;
       saveBtn.textContent = currentPack.buttons.save;
+      editProviderBtn.textContent = currentPack.buttons.editProvider;
       renderStatus(keyStatus, 'warning', currentPack.statuses.checkingStatus);
       languageStatus.textContent = '';
       apiKeyInput.placeholder = currentPack.placeholders.enterApiKey;
@@ -512,17 +576,40 @@
       updateGenerateModeStatus(mode);
     }
 
+    function isCustomProvider(provider) {
+      return typeof provider === 'string' && provider.startsWith(customProviderPrefix);
+    }
+
+    function getCustomProviderConfig(provider) {
+      if (!isCustomProvider(provider)) { return null; }
+      const id = provider.slice(customProviderPrefix.length);
+      return (customProviders || []).find(function(cp) { return cp.id === id; }) || null;
+    }
+
     function updateProviderUI(provider) {
       currentProvider = provider;
       providerSelect.value = provider;
       if (provider === 'ollama') {
+        editProviderBtn.classList.add('hidden');
         apiKeyLabel.textContent = currentPack.labels.ollamaHostUrl;
         apiKeyInput.placeholder = ollamaDefaultHost;
         apiKeyInput.value = ollamaDefaultHost;
         apiKeyInput.type = 'text';
         configTitle.textContent = currentPack.sections.ollamaConfiguration;
         providerInfo.innerHTML = fillTemplate(currentPack.descriptions.ollamaInfo, { host: ollamaDefaultHost });
+      } else if (isCustomProvider(provider)) {
+        const cp = getCustomProviderConfig(provider);
+        editProviderBtn.classList.toggle('hidden', !cp);
+        apiKeyLabel.textContent = currentPack.labels.apiKey;
+        apiKeyInput.value = '';
+        apiKeyInput.type = 'password';
+        configTitle.textContent = currentPack.sections.configuration;
+        apiKeyInput.placeholder = currentPack.placeholders.enterCustomApiKey;
+        providerInfo.innerHTML = cp
+          ? currentPack.descriptions.customProviderInfo + '<br><code>' + cp.baseUrl + '</code>'
+          : currentPack.descriptions.customProviderInfo;
       } else {
+        editProviderBtn.classList.add('hidden');
         apiKeyLabel.textContent = currentPack.labels.apiKey;
         apiKeyInput.value = '';
         apiKeyInput.type = 'password';
@@ -575,15 +662,34 @@
     }
 
     function setScreen(screen, notifyExtension) {
-      const showSettings = screen === 'settings';
-      mainView.classList.toggle('hidden', showSettings);
-      settingsView.classList.toggle('hidden', !showSettings);
+      mainView.classList.toggle('hidden', screen !== 'main');
+      settingsView.classList.toggle('hidden', screen !== 'settings');
+      addProviderView.classList.toggle('hidden', screen !== 'addProvider');
       if (notifyExtension) {
-        vscode.postMessage({ type: 'setCurrentScreen', value: showSettings ? 'settings' : 'main' });
+        vscode.postMessage({ type: 'setCurrentScreen', value: screen });
       }
     }
 
-    function populateModels(models, currentModel) {
+    function populateModels(models, currentModel, allowCustomModel) {
+      const modelGroup = modelSelect.parentElement;
+      const existingInput = document.getElementById('customModelInput');
+      if (existingInput) { existingInput.remove(); }
+
+      if (allowCustomModel) {
+        modelSelect.classList.add('hidden');
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.id = 'customModelInput';
+        input.value = currentModel || '';
+        input.placeholder = 'e.g. deepseek-chat, gpt-4o...';
+        input.addEventListener('change', () => {
+          vscode.postMessage({ type: 'saveModel', value: input.value.trim(), provider: currentProvider });
+        });
+        modelGroup.appendChild(input);
+        return;
+      }
+
+      modelSelect.classList.remove('hidden');
       modelSelect.innerHTML = '';
       let foundCurrent = false;
       models.forEach(model => {
@@ -607,9 +713,15 @@
 
     applyLanguage(displayLanguage, effectiveLanguage);
     updateCommitOutputOptionsUI(defaultCommitOutputOptions);
-    setScreen(initialScreen === 'settings' ? 'settings' : 'main', false);
+    setScreen(
+      initialScreen === 'settings' || initialScreen === 'addProvider'
+        ? initialScreen
+        : 'main',
+      false,
+    );
 
     vscode.postMessage({ type: 'getProvider' });
+    vscode.postMessage({ type: 'getCustomProviders' });
     vscode.postMessage({ type: 'getGenerateMode' });
     vscode.postMessage({ type: 'getCommitOutputOptions' });
     vscode.postMessage({ type: 'getMaxAgentSteps' });
@@ -621,6 +733,11 @@
 
     providerSelect.addEventListener('change', () => {
       const provider = providerSelect.value;
+      if (provider === '__add_provider__') {
+        providerSelect.value = currentProvider;
+        openAddProviderView(null);
+        return;
+      }
       updateProviderUI(provider);
       vscode.postMessage({ type: 'saveProvider', value: provider });
       saveBtn.disabled = provider !== 'ollama';
@@ -640,6 +757,17 @@
       saveBtn.textContent = currentPack.buttons.validating;
       renderStatus(keyStatus, 'warning', currentPack.statuses.validating);
       vscode.postMessage({ type: 'saveKey', value: key, provider: currentProvider });
+    });
+
+    editProviderBtn.addEventListener('click', () => {
+      if (!isCustomProvider(currentProvider)) {
+        return;
+      }
+      const cp = getCustomProviderConfig(currentProvider);
+      if (!cp) {
+        return;
+      }
+      openAddProviderView(cp.id);
     });
 
     generateBtn.addEventListener('click', () => {
@@ -700,6 +828,99 @@
       setScreen('main', true);
     });
 
+    function openAddProviderView(existingId) {
+      editingCustomProviderId = existingId;
+      providerNameInput.value = '';
+      apiBaseUrlInput.value = '';
+      customApiKeyInput.value = '';
+      addProviderStatus.innerHTML = '';
+      deleteProviderBtn.classList.add('hidden');
+
+      if (existingId) {
+        const cp = (customProviders || []).find(function(c) { return c.id === existingId; });
+        if (cp) {
+          providerNameInput.value = cp.name;
+          apiBaseUrlInput.value = cp.baseUrl;
+          deleteProviderBtn.classList.remove('hidden');
+        }
+      }
+      renderAddProviderStaticText();
+      updateSaveProviderBtn();
+      setScreen('addProvider', true);
+    }
+
+    function renderAddProviderStaticText() {
+      addProviderSectionTitle.textContent = currentPack.sections.addProvider;
+      addProviderInfo.innerHTML = currentPack.descriptions.customProviderInfo;
+      providerNameLabel.textContent = currentPack.labels.providerName;
+      providerNameInput.placeholder = currentPack.placeholders.enterProviderName;
+      apiBaseUrlLabel.textContent = currentPack.labels.apiBaseUrl;
+      apiBaseUrlInput.placeholder = currentPack.placeholders.enterApiBaseUrl;
+      customApiKeyLabel.textContent = currentPack.labels.apiKey;
+      customApiKeyInput.placeholder = currentPack.placeholders.enterCustomApiKey;
+      saveProviderBtn.textContent = currentPack.buttons.save;
+      deleteProviderBtn.textContent = currentPack.buttons.deleteProvider;
+      addProviderBackBtn.title = currentPack.buttons.back;
+    }
+
+    function updateSaveProviderBtn() {
+      const hasName = !!providerNameInput.value.trim();
+      const hasUrl = !!apiBaseUrlInput.value.trim();
+      const hasKey = !!customApiKeyInput.value.trim() || !!editingCustomProviderId;
+      saveProviderBtn.disabled = !(hasName && hasUrl && hasKey);
+    }
+
+    providerNameInput.addEventListener('input', updateSaveProviderBtn);
+    apiBaseUrlInput.addEventListener('input', updateSaveProviderBtn);
+    customApiKeyInput.addEventListener('input', updateSaveProviderBtn);
+
+    addProviderBackBtn.addEventListener('click', () => {
+      setScreen('main', true);
+    });
+
+    saveProviderBtn.addEventListener('click', () => {
+      const name = providerNameInput.value.trim();
+      const baseUrl = apiBaseUrlInput.value.trim();
+      const apiKey = customApiKeyInput.value.trim();
+
+      if (!name) {
+        renderStatus(addProviderStatus, 'error', currentPack.statuses.providerNameRequired);
+        return;
+      }
+      if (!baseUrl) {
+        renderStatus(addProviderStatus, 'error', currentPack.statuses.baseUrlRequired);
+        return;
+      }
+
+      const allNames = Object.values(providers).map(function(n) { return n.toLowerCase(); });
+      (customProviders || []).forEach(function(cp) {
+        if (cp.id !== editingCustomProviderId) {
+          allNames.push(cp.name.toLowerCase());
+        }
+      });
+      if (allNames.indexOf(name.toLowerCase()) !== -1) {
+        renderStatus(addProviderStatus, 'error', currentPack.statuses.providerNameConflict);
+        return;
+      }
+
+      saveProviderBtn.disabled = true;
+      saveProviderBtn.textContent = currentPack.buttons.validating;
+      renderStatus(addProviderStatus, 'warning', currentPack.statuses.validating);
+      vscode.postMessage({
+        type: 'saveCustomProvider',
+        name: name,
+        baseUrl: baseUrl,
+        apiKey: apiKey || '',
+        editId: editingCustomProviderId || null,
+      });
+    });
+
+    deleteProviderBtn.addEventListener('click', () => {
+      if (editingCustomProviderId) {
+        vscode.postMessage({ type: 'deleteCustomProvider', id: editingCustomProviderId });
+      }
+    });
+
     window.addEventListener('message', event => {
       const message = event.data;
       switch (message.type) {
@@ -721,7 +942,7 @@
           updateCommitOutputOptionsUI(message.commitOutputOptions);
           break;
         case 'modelsList':
-          populateModels(message.models, message.currentModel);
+          populateModels(message.models, message.currentModel, message.allowCustomModel);
           break;
         case 'validating':
           saveBtn.disabled = true;
@@ -736,8 +957,12 @@
             }
             saveBtn.disabled = currentProvider !== 'ollama';
             saveBtn.textContent = currentPack.buttons.save;
-            if (message.models) {
-              populateModels(message.models);
+            if (Array.isArray(message.models) || message.allowCustomModel) {
+              populateModels(
+                message.models || [],
+                message.currentModel,
+                !!message.allowCustomModel,
+              );
             }
             modelSelect.disabled = false;
           } else {
@@ -772,6 +997,44 @@
           break;
         case 'openSettingsView':
           setScreen('settings', false);
+          break;
+        case 'customProviderSaved': {
+          customProviders = message.customProviders || [];
+          saveProviderBtn.textContent = currentPack.buttons.save;
+          const savedKey = customProviderPrefix + message.savedId;
+          renderProviderSelect();
+          updateProviderUI(savedKey);
+          vscode.postMessage({ type: 'saveProvider', value: savedKey });
+          setScreen('main', true);
+          break;
+        }
+        case 'customProviderDeleted': {
+          customProviders = message.customProviders || [];
+          saveProviderBtn.textContent = currentPack.buttons.save;
+          renderProviderSelect();
+          updateProviderUI(defaultProvider);
+          vscode.postMessage({ type: 'saveProvider', value: defaultProvider });
+          setScreen('main', true);
+          break;
+        }
+        case 'customProviderSaveFailed':
+          saveProviderBtn.textContent = currentPack.buttons.save;
+          updateSaveProviderBtn();
+          renderStatus(
+            addProviderStatus,
+            'error',
+            message.error || currentPack.statuses.notConfigured,
+          );
+          break;
+        case 'customProvidersLoaded':
+          customProviders = message.customProviders || [];
+          renderProviderSelect();
+          if (isCustomProvider(currentProvider)) {
+            updateProviderUI(currentProvider);
+          }
+          break;
+        case 'openAddProviderView':
+          openAddProviderView(message.editId || null);
           break;
       }
     });
