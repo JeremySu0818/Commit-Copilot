@@ -149,6 +149,7 @@ export const zhTWLocale: LocaleTextBundle = {
       includeBody: '包含 Body',
       includeFooter: '包含 Footer',
       language: 'Extension 語言',
+      maxAgentSteps: '最大 Agent 步數',
     },
     placeholders: {
       selectProvider: '請選擇供應商...',
@@ -188,6 +189,7 @@ export const zhTWLocale: LocaleTextBundle = {
         '請到 <strong>OpenAI Platform</strong> 取得 API Key：<br><a href="https://platform.openai.com/api-keys" style="color: var(--vscode-textLink-foreground);">platform.openai.com</a>',
       anthropicInfo:
         '請到 <strong>Anthropic Console</strong> 取得 API Key：<br><a href="https://platform.claude.com/settings/keys" style="color: var(--vscode-textLink-foreground);">platform.claude.com</a>',
+      maxAgentStepsDescription: '限制每次產生的 Agent 工具呼叫次數。輸入 0 或留空表示無限制。',
     },
     options: {
       agentic: 'Agentic 產生',

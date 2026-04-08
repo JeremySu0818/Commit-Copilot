@@ -5,6 +5,7 @@ import {
   CommitOutputOptions,
   DEFAULT_COMMIT_OUTPUT_OPTIONS,
   DEFAULT_GENERATE_MODE,
+  MAX_AGENT_STEPS_STATE_KEY,
   PROVIDER_DISPLAY_NAMES,
   GENERATE_MODE_DISPLAY_NAMES,
   GenerateMode,
@@ -650,6 +651,19 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
           this._view?.webview.postMessage({
             type: 'displayLanguageUpdated',
             ...this.getWebviewLanguagePayload(),
+          });
+          break;
+        }
+        case 'saveMaxAgentSteps': {
+          const steps = typeof data.value === 'number' && data.value > 0 ? data.value : 0;
+          await this._context.globalState.update(MAX_AGENT_STEPS_STATE_KEY, steps || null);
+          break;
+        }
+        case 'getMaxAgentSteps': {
+          const steps = this._context.globalState.get<number>(MAX_AGENT_STEPS_STATE_KEY) || 0;
+          this._view?.webview.postMessage({
+            type: 'currentMaxAgentSteps',
+            maxAgentSteps: steps,
           });
           break;
         }

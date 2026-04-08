@@ -29,7 +29,6 @@ import {
   buildFinalOutputReminder,
   extractCommitMessage,
   formatBatchProgressMessage,
-  MAX_AGENT_STEPS,
 } from './shared';
 import { DEFAULT_RETRY_OPTIONS, RetryInfo, withRetry } from '../retry';
 
@@ -43,6 +42,7 @@ async function runAnthropicAgentLoop(
   gitOps?: GitOperations,
   commitOutputOptions: CommitOutputOptions = DEFAULT_COMMIT_OUTPUT_OPTIONS,
   cancellationToken?: CancellationSignal,
+  maxAgentSteps?: number,
 ): Promise<string> {
   throwIfCancellationRequested(cancellationToken);
   if (!apiKey) {
@@ -95,7 +95,7 @@ async function runAnthropicAgentLoop(
 
     let step = 0;
 
-    while (step < MAX_AGENT_STEPS) {
+    while (step < (maxAgentSteps && maxAgentSteps > 0 ? maxAgentSteps : Infinity)) {
       throwIfCancellationRequested(cancellationToken);
       const response = await withRetry(
         () =>

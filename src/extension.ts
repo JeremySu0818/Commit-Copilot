@@ -9,6 +9,7 @@ import {
   DEFAULT_GENERATE_MODE,
   DEFAULT_PROVIDER,
   GenerateMode,
+  MAX_AGENT_STEPS_STATE_KEY,
   PROVIDER_DISPLAY_NAMES,
   normalizeCommitOutputOptions,
 } from './models';
@@ -218,6 +219,9 @@ export function activate(context: vscode.ExtensionContext) {
             : (requestedGenerateMode ?? savedGenerateMode);
         const currentCommitOutputOptions =
           requestedCommitOutputOptions ?? savedCommitOutputOptions;
+        const savedMaxAgentSteps =
+          context.globalState.get<number>(MAX_AGENT_STEPS_STATE_KEY) || 0;
+        const maxAgentSteps = savedMaxAgentSteps > 0 ? savedMaxAgentSteps : undefined;
         const storageKey = API_KEY_STORAGE_KEYS[currentProvider];
         const apiKey = await context.secrets.get(storageKey);
 
@@ -294,6 +298,7 @@ export function activate(context: vscode.ExtensionContext) {
               apiKey: apiKey || '',
               generateMode: currentGenerateMode,
               commitOutputOptions: currentCommitOutputOptions,
+              maxAgentSteps,
               model: savedModel,
               onProgress: reportProgress,
               cancellationToken: cancellationSource.token,
