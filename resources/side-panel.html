@@ -407,6 +407,19 @@
       return parsed;
     }
 
+    function escapeHtml(value) {
+      return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function renderCustomProviderInfo(cp) {
+      return '';
+    }
+
     function updateMaxAgentStepsSaveBtn() {
       const value = normalizeMaxAgentStepsValue(maxAgentStepsInput.value);
       saveMaxAgentStepsBtn.disabled = value === currentMaxAgentSteps;
@@ -605,9 +618,7 @@
         apiKeyInput.type = 'password';
         configTitle.textContent = currentPack.sections.configuration;
         apiKeyInput.placeholder = currentPack.placeholders.enterCustomApiKey;
-        providerInfo.innerHTML = cp
-          ? currentPack.descriptions.customProviderInfo + '<br><code>' + cp.baseUrl + '</code>'
-          : currentPack.descriptions.customProviderInfo;
+        providerInfo.innerHTML = renderCustomProviderInfo(cp);
       } else {
         editProviderBtn.classList.add('hidden');
         apiKeyLabel.textContent = currentPack.labels.apiKey;
