@@ -202,6 +202,7 @@ async function runGeminiAgentLoop(
     const systemPrompt = buildAgentSystemPrompt({
       includeFindReferences: true,
       commitOutputOptions: resolvedCommitOutputOptions,
+      maxAgentSteps,
     });
     const generationConfig = {
       systemInstruction: systemPrompt,

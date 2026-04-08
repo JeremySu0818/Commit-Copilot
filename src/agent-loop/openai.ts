@@ -69,6 +69,7 @@ async function runOpenAIAgentLoop(
     const systemPrompt = buildAgentSystemPrompt({
       includeFindReferences: true,
       commitOutputOptions: resolvedCommitOutputOptions,
+      maxAgentSteps,
     });
 
     const messages: any[] = [
