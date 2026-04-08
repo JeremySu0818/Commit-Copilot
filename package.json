@@ -59,7 +59,7 @@
         {
           "command": "commit-copilot.openLanguageSettings",
           "group": "navigation",
-          "when": "view == commit-copilot.view"
+          "when": "view == commit-copilot.view && commit-copilot.currentScreen == main"
         }
       ]
     },

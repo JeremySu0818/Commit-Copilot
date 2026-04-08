@@ -171,8 +171,11 @@ test('generate forwards normalized generateMode to command payload', async () =>
     });
     await harness.sendMessage({ type: 'generate', generateMode: 'unknown' });
 
-    assert.equal(harness.commandCalls.length, 2);
-    assert.deepEqual(harness.commandCalls[0], [
+    const generateCalls = harness.commandCalls.filter(
+      (call) => call[0] === 'commit-copilot.generate',
+    );
+    assert.equal(generateCalls.length, 2);
+    assert.deepEqual(generateCalls[0], [
       'commit-copilot.generate',
       {
         generateMode: 'direct-diff',
@@ -183,7 +186,7 @@ test('generate forwards normalized generateMode to command payload', async () =>
         },
       },
     ]);
-    assert.deepEqual(harness.commandCalls[1], [
+    assert.deepEqual(generateCalls[1], [
       'commit-copilot.generate',
       {
         generateMode: 'agentic',
