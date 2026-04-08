@@ -205,10 +205,15 @@ function buildAgentSystemPrompt(options: {
   includeFindReferences: boolean;
   enableTools?: boolean;
   commitOutputOptions?: CommitOutputOptions;
+  maxAgentSteps?: number;
 }): string {
   const commitOutputOptions = normalizeCommitOutputOptions(
     options.commitOutputOptions,
   );
+  const maxAgentStepsLine =
+    typeof options.maxAgentSteps === 'number' && options.maxAgentSteps > 0
+      ? `You may use at most ${options.maxAgentSteps} investigation steps. To use these steps efficiently, batch multiple tool calls in the same step whenever possible.`
+      : '';
   const scopeWorkflowLine = commitOutputOptions.includeScope
     ? 'Determine the appropriate scope from the affected module/area.'
     : 'Do NOT choose a scope. The subject line must omit scope parentheses.';
@@ -269,6 +274,15 @@ ${outputRules}`;
   const investigationTools = options.includeFindReferences
     ? '`get_diff`, `read_file`, `get_file_outline`, `find_references`, `search_code`'
     : '`get_diff`, `read_file`, `get_file_outline`, `search_code`';
+  const workflowLines = [
+    `1. Investigate the changes using your tools (${investigationTools} — use any combination).
+   Prioritize the most important or ambiguous files. You do NOT need to inspect every file if the changes are clearly related.`,
+    ...(maxAgentStepsLine ? [`2. ${maxAgentStepsLine}`] : []),
+    `${maxAgentStepsLine ? '3' : '2'}. If necessary, check recent commit messages with \`get_recent_commits\` to match the project's writing style.`,
+    `${maxAgentStepsLine ? '4' : '3'}. Classify the change type based on the Classification Rules below.`,
+    `${maxAgentStepsLine ? '5' : '4'}. ${scopeWorkflowLine}`,
+    `${maxAgentStepsLine ? '6' : '5'}. Output ONLY the commit message. Nothing else.`,
+  ];
 
   return `You are a senior software engineer acting as an autonomous commit message agent.
 You have access to tools that let you inspect the repository to make informed decisions.
@@ -285,12 +299,7 @@ You are NOT limited to \`get_diff\`. Choose the best tool(s) for the situation. 
 ${usageLines.join('\n')}
 
 ## Required Workflow
-1. Investigate the changes using your tools (${investigationTools} — use any combination).
-   Prioritize the most important or ambiguous files. You do NOT need to inspect every file if the changes are clearly related.
-2. If necessary, check recent commit messages with \`get_recent_commits\` to match the project's writing style.
-3. Classify the change type based on the Classification Rules below.
-4. ${scopeWorkflowLine}
-5. Output ONLY the commit message. Nothing else.
+${workflowLines.join('\n')}
 
 ${outputRules}`;
 }

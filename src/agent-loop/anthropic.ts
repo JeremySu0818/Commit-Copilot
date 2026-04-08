@@ -71,6 +71,7 @@ async function runAnthropicAgentLoop(
     const systemPrompt = buildAgentSystemPrompt({
       includeFindReferences: true,
       commitOutputOptions: resolvedCommitOutputOptions,
+      maxAgentSteps,
     });
 
     const messages: any[] = [{ role: 'user', content: initialContext }];
