@@ -121,7 +121,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
         rules.invalidStatusCodes.includes(status)) ||
       this.includesMessage(message, rules.invalidMessagePatterns);
     if (isInvalidKey) {
-      return { valid: false, error: `${text.invalidApiKeyPrefix}: ${message}` };
+      return { valid: false, error: text.invalidApiKeyPrefix };
     }
 
     const quotaStatusCodes = rules.quotaStatusCodes || [429];
@@ -129,17 +129,17 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
       (typeof status === 'number' && quotaStatusCodes.includes(status)) ||
       this.includesMessage(message, rules.quotaMessagePatterns);
     if (isQuotaExceeded) {
-      return { valid: false, error: `${text.quotaExceededPrefix}: ${message}` };
+      return { valid: false, error: text.quotaExceededPrefix };
     }
 
     if (typeof status === 'number') {
       return {
         valid: false,
-        error: `${text.apiRequestFailedPrefix} (${status}): ${message}`,
+        error: `${text.apiRequestFailedPrefix} (${status})`,
       };
     }
 
-    return { valid: false, error: `${text.connectionErrorPrefix}: ${message}` };
+    return { valid: false, error: text.connectionErrorPrefix };
   }
 
   private async validateGoogleApiKey(
