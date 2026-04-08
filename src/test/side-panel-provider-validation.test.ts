@@ -281,17 +281,17 @@ test('validation errors use unified API request failed format for Google/OpenAI/
                 assert.equal(googleResult.valid, false);
                 assert.equal(openaiResult.valid, false);
                 assert.equal(anthropicResult.valid, false);
-                assert.match(
+                assert.equal(
                   String(googleResult.error),
-                  /^API request failed \(500\):/,
+                  'API request failed (500)',
                 );
-                assert.match(
+                assert.equal(
                   String(openaiResult.error),
-                  /^API request failed \(500\):/,
+                  'API request failed (500)',
                 );
-                assert.match(
+                assert.equal(
                   String(anthropicResult.error),
-                  /^API request failed \(500\):/,
+                  'API request failed (500)',
                 );
               },
             ),
