@@ -60,10 +60,23 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
   constructor(
     private readonly _extensionUri: vscode.Uri,
     private readonly _context: vscode.ExtensionContext,
-  ) {}
+  ) {
+    this.updateCurrentScreen('main');
+  }
+
+  private updateCurrentScreen(screen: unknown): void {
+    const normalizedScreen =
+      screen === 'settings' || screen === 'addProvider' ? screen : 'main';
+    this._currentScreen = normalizedScreen;
+    void vscode.commands.executeCommand(
+      'setContext',
+      'commit-copilot.currentScreen',
+      normalizedScreen,
+    );
+  }
 
   public openLanguageSettingsView() {
-    this._currentScreen = 'settings';
+    this.updateCurrentScreen('settings');
     if (this._view) {
       this._view.show?.(true);
       this._view.webview.postMessage({ type: 'openSettingsView' });
@@ -296,6 +309,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
     _token: vscode.CancellationToken,
   ) {
     this._view = webviewView;
+    this.updateCurrentScreen(this._currentScreen);
     webviewView.webview.options = {
       enableScripts: true,
       localResourceRoots: [this._extensionUri],
@@ -916,10 +930,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
           break;
         }
         case 'setCurrentScreen': {
-          this._currentScreen =
-            data.value === 'settings' || data.value === 'addProvider'
-              ? data.value
-              : 'main';
+          this.updateCurrentScreen(data.value);
           break;
         }
       }
