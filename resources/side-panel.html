@@ -159,6 +159,22 @@
       display: flex;
       justify-content: flex-start;
     }
+    button.icon-btn {
+      background: transparent;
+      border: none;
+      padding: 4px;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      color: var(--vscode-foreground);
+      cursor: pointer;
+    }
+    button.icon-btn:hover {
+      background: var(--vscode-toolbar-hoverBackground);
+    }
   </style>
 </head>
 <body>
@@ -219,7 +235,11 @@
 
   <div id="settingsView" class="container hidden">
     <div class="settings-header">
-      <button id="backBtn" class="secondary"></button>
+      <button id="backBtn" class="icon-btn" title="">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M7 3.093L1.093 9 7 14.907l.707-.707-4.7-4.7H14v-1H3.007l4.7-4.7L7 3.093z"/>
+        </svg>
+      </button>
     </div>
     <div class="config-section">
       <div class="section-title" id="settingsSectionTitle"></div>
@@ -393,7 +413,7 @@
       includeFooterLabel.textContent = currentPack.labels.includeFooter;
       settingsSectionTitle.textContent = currentPack.sections.settings;
       languageLabel.textContent = currentPack.labels.language;
-      backBtn.textContent = currentPack.buttons.back;
+      backBtn.title = currentPack.buttons.back;
       saveBtn.textContent = currentPack.buttons.save;
       renderStatus(keyStatus, 'warning', currentPack.statuses.checkingStatus);
       languageStatus.textContent = '';
