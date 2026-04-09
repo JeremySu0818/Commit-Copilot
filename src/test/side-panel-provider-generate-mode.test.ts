@@ -2,7 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as path from 'path';
 import { clearRequireCache, withModuleMock } from './helpers/module-mock';
-import { DEFAULT_COMMIT_OUTPUT_OPTIONS } from '../models';
+import {
+  API_KEY_STORAGE_KEYS,
+  DEFAULT_COMMIT_OUTPUT_OPTIONS,
+  OLLAMA_DEFAULT_HOST,
+} from '../models';
 
 const MODULE_PATH = path.resolve(__dirname, '..', 'side-panel-provider');
 
@@ -18,12 +22,14 @@ type Harness = {
 
 async function createHarness(
   initialState?: Record<string, unknown>,
+  initialSecrets?: Record<string, string>,
 ): Promise<Harness> {
   clearRequireCache(MODULE_PATH);
 
   const postedMessages: any[] = [];
   const commandCalls: any[][] = [];
   const state = new Map<string, unknown>(Object.entries(initialState || {}));
+  const secrets = new Map<string, string>(Object.entries(initialSecrets || {}));
 
   let messageHandler: MessageHandler | null = null;
   let disposeHandler: (() => void) | null = null;
@@ -84,8 +90,10 @@ async function createHarness(
       },
     },
     secrets: {
-      get: async () => undefined,
-      store: async () => {},
+      get: async (key: string) => secrets.get(key),
+      store: async (key: string, value: string) => {
+        secrets.set(key, value);
+      },
     },
   } as any;
 
@@ -272,6 +280,43 @@ test('getAllKeys reports ollama as not configured when no secret exists', async 
       anthropic: false,
       ollama: false,
     });
+  } finally {
+    harness.dispose();
+  }
+});
+
+test('checkKey returns stored Ollama host value', async () => {
+  const customHost = 'http://192.168.1.100:11434';
+  const harness = await createHarness(undefined, {
+    [API_KEY_STORAGE_KEYS.ollama]: customHost,
+  });
+
+  try {
+    await harness.sendMessage({ type: 'checkKey', provider: 'ollama' });
+    const statusMessage = harness.postedMessages.find(
+      (message) => message.type === 'keyStatus' && message.provider === 'ollama',
+    );
+
+    assert.ok(statusMessage);
+    assert.equal(statusMessage.hasKey, true);
+    assert.equal(statusMessage.value, customHost);
+  } finally {
+    harness.dispose();
+  }
+});
+
+test('checkKey returns default Ollama host value when secret is missing', async () => {
+  const harness = await createHarness();
+
+  try {
+    await harness.sendMessage({ type: 'checkKey', provider: 'ollama' });
+    const statusMessage = harness.postedMessages.find(
+      (message) => message.type === 'keyStatus' && message.provider === 'ollama',
+    );
+
+    assert.ok(statusMessage);
+    assert.equal(statusMessage.hasKey, false);
+    assert.equal(statusMessage.value, OLLAMA_DEFAULT_HOST);
   } finally {
     harness.dispose();
   }

@@ -151,6 +151,7 @@ export const enLocale: LocaleTextBundle = {
       generateConfiguration: 'Generate Configuration',
       settings: 'Settings',
       addProvider: 'Add Custom Provider',
+      editProvider: 'Edit Custom Provider',
     },
     labels: {
       provider: 'Provider',
@@ -175,8 +176,6 @@ export const enLocale: LocaleTextBundle = {
       enterGeminiApiKey: 'Enter your Gemini API Key',
       enterOpenAIApiKey: 'Enter your OpenAI API Key',
       enterAnthropicApiKey: 'Enter your Anthropic API Key',
-      enterProviderName: 'e.g. DeepSeek, Groq, Together AI...',
-      enterApiBaseUrl: 'e.g. https://api.deepseek.com/v1',
       enterCustomApiKey: 'Enter your API Key',
     },
     buttons: {
@@ -204,6 +203,7 @@ export const enLocale: LocaleTextBundle = {
       apiKeyRequired: 'API Key is required.',
       providerSaved: 'Custom provider saved!',
       providerDeleted: 'Custom provider deleted.',
+      modelNameRequired: 'Please enter a model name before generating.',
     },
     descriptions: {
       ollamaFixedToDirectDiff: 'Ollama is fixed to Direct Diff mode',

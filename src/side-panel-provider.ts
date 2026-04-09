@@ -100,6 +100,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
     return {
       displayLanguage,
       effectiveLanguage,
+      vscodeLanguage: this.getVSCodeLanguage(),
       languageOptions: DISPLAY_LANGUAGE_OPTIONS,
     };
   }
@@ -365,14 +366,28 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
         }
         const repos = git.repositories;
         if (repos.length > 0) {
-          const hasChanges = repos.some((repo: any) => {
-            const state = repo?.state;
-            return (
-              (state?.workingTreeChanges?.length ?? 0) > 0 ||
-              (state?.indexChanges?.length ?? 0) > 0 ||
-              (state?.untrackedChanges?.length ?? 0) > 0
-            );
-          });
+          let targetRepo: any = null;
+          if (repos.length === 1) {
+            targetRepo = repos[0];
+          } else {
+            const activeUri = vscode.window.activeTextEditor?.document?.uri;
+            if (activeUri) {
+              if (typeof git.getRepository === 'function') {
+                targetRepo = git.getRepository(activeUri);
+              }
+              if (!targetRepo) {
+                const activeUriString = activeUri.toString();
+                targetRepo = repos.find((r: any) =>
+                  activeUriString.startsWith(r.rootUri?.toString() ?? ''),
+                );
+              }
+            }
+          }
+          const hasChanges = targetRepo
+            ? ((targetRepo.state?.workingTreeChanges?.length ?? 0) > 0 ||
+                (targetRepo.state?.indexChanges?.length ?? 0) > 0 ||
+                (targetRepo.state?.untrackedChanges?.length ?? 0) > 0)
+            : false;
           webviewView.webview.postMessage({ type: 'repoUpdate', hasChanges });
         } else {
           webviewView.webview.postMessage({
@@ -566,6 +581,9 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
                   type: 'keyStatus',
                   hasKey: true,
                   provider,
+                  ...(builtIn === 'ollama'
+                    ? { value: apiKey || OLLAMA_DEFAULT_HOST }
+                    : {}),
                 });
               } catch (e) {
                 vscode.window.showErrorMessage(text.saveConfigFailed);
@@ -617,6 +635,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
             type: 'keyStatus',
             hasKey: !!key,
             provider,
+            ...(provider === 'ollama' ? { value: key || OLLAMA_DEFAULT_HOST } : {}),
           });
           break;
         }
@@ -901,6 +920,8 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
             await this._context.globalState.update('CURRENT_PROVIDER', DEFAULT_PROVIDER);
           }
 
+          await this._context.globalState.update(`CUSTOM_${deleteId}_MODEL`, undefined);
+
           this._view?.webview.postMessage({
             type: 'customProviderDeleted',
             customProviders,
@@ -912,6 +933,13 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
             type: 'customProvidersLoaded',
             customProviders: this.getCustomProviders(),
           });
+          break;
+        }
+        case 'showWarning': {
+          const message = String(data.message || '');
+          if (message) {
+            vscode.window.showWarningMessage(message);
+          }
           break;
         }
         case 'setCurrentScreen': {
@@ -957,6 +985,9 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
       ),
       EFFECTIVE_LANGUAGE_JSON: serializeForInlineScript(
         languagePayload.effectiveLanguage,
+      ),
+      VSCODE_LANGUAGE_JSON: serializeForInlineScript(
+        languagePayload.vscodeLanguage,
       ),
       DISPLAY_LANGUAGE_OPTIONS_JSON: serializeForInlineScript(
         languagePayload.languageOptions,
