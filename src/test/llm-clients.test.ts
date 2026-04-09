@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createLLMClient } from '../llm-clients';
 import { OLLAMA_DEFAULT_HOST } from '../models';
-import { EXIT_CODES } from '../errors';
+import { APIRequestError, EXIT_CODES } from '../errors';
 import { withModuleMock } from './helpers/module-mock';
 
 function getOllamaHost(client: unknown): string {
@@ -93,6 +93,76 @@ test('Anthropic direct diff uses streaming API', async () => {
   assert.equal(calls.streamCalls, 1);
   assert.equal(calls.finalMessageCalls, 1);
   assert.equal(calls.createCalls, 0);
+});
+
+test('OpenAI direct diff rethrows existing APIRequestError without wrapping', async () => {
+  const originalError = new APIRequestError('upstream failure');
+
+  class OpenAIMock {
+    chat = {
+      completions: {
+        create: async () => {
+          throw originalError;
+        },
+      },
+    };
+
+    constructor(_options: { apiKey: string; baseURL?: string }) {}
+  }
+
+  await withModuleMock(
+    'openai',
+    { __esModule: true, default: OpenAIMock },
+    async () => {
+      const client = createLLMClient({
+        provider: 'openai',
+        apiKey: 'openai-test-key',
+      });
+
+      await assert.rejects(
+        () => client.generateCommitMessage('diff --git a/a b/a\n+change'),
+        (error: unknown) => {
+          assert.equal(error, originalError);
+          return true;
+        },
+      );
+    },
+  );
+});
+
+test('Anthropic direct diff rethrows existing APIRequestError without wrapping', async () => {
+  const originalError = new APIRequestError('upstream failure');
+
+  class AnthropicMock {
+    messages = {
+      stream: (_params: Record<string, unknown>) => ({
+        finalMessage: async () => {
+          throw originalError;
+        },
+      }),
+    };
+
+    constructor(_options: { apiKey: string }) {}
+  }
+
+  await withModuleMock(
+    '@anthropic-ai/sdk',
+    { __esModule: true, default: AnthropicMock },
+    async () => {
+      const client = createLLMClient({
+        provider: 'anthropic',
+        apiKey: 'anthropic-test-key',
+      });
+
+      await assert.rejects(
+        () => client.generateCommitMessage('diff --git a/a b/a\n+change'),
+        (error: unknown) => {
+          assert.equal(error, originalError);
+          return true;
+        },
+      );
+    },
+  );
 });
 
 test('Gemini direct diff maps status 401 to API key invalid', async () => {

@@ -98,3 +98,49 @@ test('executeSearchCode prefers Git file list when available', async () => {
   assert.match(output, /src\/a\.ts/);
   assert.doesNotMatch(output, /node_modules\/pkg\/index\.js/);
 });
+
+test('executeSearchCode skips known binary extensions without reading file', async () => {
+  const repoRoot = path.resolve('repo');
+  const binaryFile = MockUri.file(path.join(repoRoot, 'assets', 'logo.png'));
+  let readCount = 0;
+
+  const vscodeMock = createVscodeMock({
+    findFiles: async () => [binaryFile],
+    readFile: async () => {
+      readCount += 1;
+      return Buffer.from('should not be read', 'utf-8');
+    },
+  });
+
+  const { executeSearchCode } = await loadModule(vscodeMock);
+  const output = await executeSearchCode(repoRoot, { query: 'logo' });
+
+  assert.equal(output, 'No matches found for "logo" in the project.');
+  assert.equal(readCount, 0);
+});
+
+test('executeSearchCode skips oversized files before reading content', async () => {
+  const repoRoot = path.resolve('repo');
+  const largeFile = MockUri.file(path.join(repoRoot, 'src', 'big.ts'));
+  let readCount = 0;
+
+  const vscodeMock = createVscodeMock({
+    findFiles: async () => [largeFile],
+    stat: async () => ({
+      type: 0,
+      ctime: 0,
+      mtime: 0,
+      size: 2 * 1024 * 1024,
+    }),
+    readFile: async () => {
+      readCount += 1;
+      return Buffer.from('const value = true;\n', 'utf-8');
+    },
+  });
+
+  const { executeSearchCode } = await loadModule(vscodeMock);
+  const output = await executeSearchCode(repoRoot, { query: 'value' });
+
+  assert.equal(output, 'No matches found for "value" in the project.');
+  assert.equal(readCount, 0);
+});

@@ -4,6 +4,7 @@ import { GitOperations } from '../../commit-copilot';
 import { toPosixPath } from '../staged-workspace';
 import {
   MAX_SEARCH_FILES,
+  MAX_SEARCH_FILE_SIZE_BYTES,
   MAX_SEARCH_LINE_LENGTH,
   MAX_SEARCH_MATCHES_PER_FILE,
   MAX_SEARCH_WORKSPACE_FILES,
@@ -12,6 +13,56 @@ import {
   parseIntegerArg,
 } from './shared';
 
+const KNOWN_BINARY_EXTENSIONS = new Set([
+  '.7z',
+  '.a',
+  '.avif',
+  '.bin',
+  '.bmp',
+  '.class',
+  '.db',
+  '.dll',
+  '.dylib',
+  '.eot',
+  '.exe',
+  '.flac',
+  '.gif',
+  '.gz',
+  '.heic',
+  '.ico',
+  '.jar',
+  '.jpeg',
+  '.jpg',
+  '.lockb',
+  '.mkv',
+  '.mov',
+  '.mp3',
+  '.mp4',
+  '.o',
+  '.obj',
+  '.otf',
+  '.pdf',
+  '.png',
+  '.pyc',
+  '.rar',
+  '.so',
+  '.tar',
+  '.ttf',
+  '.war',
+  '.wasm',
+  '.wav',
+  '.webm',
+  '.webp',
+  '.woff',
+  '.woff2',
+  '.zip',
+]);
+
+function hasKnownBinaryExtension(filePath: string): boolean {
+  const ext = path.extname(filePath).toLowerCase();
+  return KNOWN_BINARY_EXTENSIONS.has(ext);
+}
+
 async function resolveSearchFiles(
   repoRoot: string,
   gitOps?: GitOperations,
@@ -19,6 +70,7 @@ async function resolveSearchFiles(
   const filesFromGitApi = await gitOps?.listFilesFromGitApi();
   if (filesFromGitApi !== null && filesFromGitApi !== undefined) {
     return filesFromGitApi
+      .slice(0, MAX_SEARCH_WORKSPACE_FILES)
       .map((relPath) => relPath.trim())
       .filter(Boolean)
       .map((relPath) =>
@@ -64,6 +116,9 @@ async function executeSearchCode(
   };
 
   const fileMatches: FileMatch[] = [];
+  const fsApi = vscode.workspace.fs as vscode.FileSystem & {
+    stat?: (uri: vscode.Uri) => Promise<vscode.FileStat>;
+  };
 
   for (const fileUri of files) {
     if (fileMatches.length >= effectiveMaxFiles) break;
@@ -71,6 +126,16 @@ async function executeSearchCode(
     const relPath = path.relative(repoRoot, fileUri.fsPath);
     if (!relPath || relPath.startsWith('..') || path.isAbsolute(relPath))
       continue;
+    if (hasKnownBinaryExtension(fileUri.fsPath)) continue;
+
+    if (fsApi.stat) {
+      try {
+        const fileStat = await fsApi.stat(fileUri);
+        if (fileStat.size > MAX_SEARCH_FILE_SIZE_BYTES) continue;
+      } catch {
+        continue;
+      }
+    }
 
     let raw: Uint8Array;
     let content: string;

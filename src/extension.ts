@@ -17,6 +17,7 @@ import {
   getCustomProviderId,
   getCustomProviderStorageKey,
   normalizeCommitOutputOptions,
+  normalizeMaxAgentStepsValue,
 } from './models';
 import { GenerationStateManager } from './state';
 import {
@@ -232,8 +233,11 @@ export function activate(context: vscode.ExtensionContext) {
             : (requestedGenerateMode ?? savedGenerateMode);
         const currentCommitOutputOptions =
           requestedCommitOutputOptions ?? savedCommitOutputOptions;
-        const savedMaxAgentSteps =
-          context.globalState.get<number>(MAX_AGENT_STEPS_STATE_KEY) || 0;
+        const savedMaxAgentSteps = normalizeMaxAgentStepsValue(
+          context.globalState.get<number | string | null>(
+            MAX_AGENT_STEPS_STATE_KEY,
+          ),
+        );
         const maxAgentSteps = savedMaxAgentSteps > 0 ? savedMaxAgentSteps : undefined;
 
         let apiKey: string | undefined;

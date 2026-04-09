@@ -31,6 +31,28 @@ import {
 } from './shared';
 import { DEFAULT_RETRY_OPTIONS, RetryInfo, withRetry } from '../retry';
 
+function parseToolArguments(
+  rawArguments: unknown,
+): { args: Record<string, unknown>; error?: string } {
+  if (typeof rawArguments !== 'string' || rawArguments.trim() === '') {
+    return { args: {} };
+  }
+
+  try {
+    const parsed = JSON.parse(rawArguments);
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      return { args: parsed as Record<string, unknown> };
+    }
+    return {
+      args: {},
+      error: 'arguments must be a JSON object',
+    };
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    return { args: {}, error: message };
+  }
+}
+
 async function runOpenAIAgentLoop(
   apiKey: string,
   model: string | undefined,
@@ -84,6 +106,7 @@ async function runOpenAIAgentLoop(
 
     const retryOptions = {
       ...DEFAULT_RETRY_OPTIONS,
+      checkAbort: () => throwIfCancellationRequested(cancellationToken),
       onRetry: ({ attempt, maxAttempts, delayMs }: RetryInfo) => {
         if (onProgress) {
           const nextAttempt = attempt + 1;
@@ -125,29 +148,46 @@ async function runOpenAIAgentLoop(
       );
 
       if (functionToolCalls.length > 0) {
+        const parsedToolCalls = functionToolCalls.map((toolCall: any) => {
+          const parsed = parseToolArguments(toolCall.function.arguments);
+          return {
+            toolCall,
+            name: toolCall.function.name,
+            args: parsed.args,
+            parseError: parsed.error,
+          };
+        });
+
         if (onProgress) {
-          const calls = functionToolCalls.map((tc: any) => ({
-            name: tc.function.name,
-            args: JSON.parse(tc.function.arguments || '{}'),
+          const calls = parsedToolCalls.map(({ name, args }) => ({
+            name,
+            args,
           }));
           onProgress(formatBatchProgressMessage(step + 1, calls));
         }
 
-        for (const toolCall of functionToolCalls) {
+        for (const parsedToolCall of parsedToolCalls) {
           throwIfCancellationRequested(cancellationToken);
-          const args = JSON.parse(toolCall.function.arguments || '{}');
-          const result = await executeToolCall(
-            { name: toolCall.function.name, arguments: args },
-            repoRoot,
-            diff,
-            isStaged,
-            gitOps,
-          );
+          const { toolCall, name, args, parseError } = parsedToolCall;
+          let content: string;
+
+          if (parseError) {
+            content = `Tool execution error: Invalid JSON arguments for ${name}: ${parseError}`;
+          } else {
+            const result = await executeToolCall(
+              { name, arguments: args },
+              repoRoot,
+              diff,
+              isStaged,
+              gitOps,
+            );
+            content = result.content;
+          }
 
           messages.push({
             role: 'tool',
             tool_call_id: toolCall.id,
-            content: result.content,
+            content,
           });
         }
         step++;
