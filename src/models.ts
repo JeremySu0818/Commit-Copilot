@@ -196,3 +196,22 @@ export function normalizeCommitOutputOptions(
         : DEFAULT_COMMIT_OUTPUT_OPTIONS.includeFooter,
   };
 }
+
+export function normalizeMaxAgentStepsValue(value: unknown): number {
+  const raw =
+    typeof value === 'string'
+      ? value.trim()
+      : typeof value === 'number'
+        ? String(value)
+        : '';
+  if (!raw || !/^\d+$/.test(raw)) {
+    return 0;
+  }
+
+  const parsed = Number.parseInt(raw, 10);
+  if (!Number.isSafeInteger(parsed) || parsed <= 0) {
+    return 0;
+  }
+
+  return parsed;
+}

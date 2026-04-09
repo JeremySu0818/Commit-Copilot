@@ -82,6 +82,7 @@ async function runAnthropicAgentLoop(
 
     const retryOptions = {
       ...DEFAULT_RETRY_OPTIONS,
+      checkAbort: () => throwIfCancellationRequested(cancellationToken),
       onRetry: ({ attempt, maxAttempts, delayMs }: RetryInfo) => {
         if (onProgress) {
           const nextAttempt = attempt + 1;
@@ -117,12 +118,24 @@ async function runAnthropicAgentLoop(
         (b: any) => b.type === 'tool_use',
       );
 
-      if (response.stop_reason === 'end_turn' || toolUseBlocks.length === 0) {
+      const stopReason = response.stop_reason;
+      const hasNoToolCalls = toolUseBlocks.length === 0;
+      const isCompleteTextResponse =
+        hasNoToolCalls &&
+        (stopReason === 'end_turn' || stopReason === 'stop_sequence');
+
+      if (isCompleteTextResponse) {
         const text = textBlocks.map((b: any) => b.text).join('');
         if (!text) {
           throw new APIRequestError('Empty response from Anthropic API');
         }
         return extractCommitMessage(text);
+      }
+
+      if (hasNoToolCalls && stopReason === 'max_tokens') {
+        throw new APIRequestError(
+          'Anthropic response was truncated (stop_reason=max_tokens)',
+        );
       }
 
       messages.push({ role: 'assistant', content: response.content });
@@ -185,6 +198,13 @@ async function runAnthropicAgentLoop(
       .filter((b: any) => b.type === 'text')
       .map((b: any) => b.text)
       .join('');
+
+    if (finalResponse.stop_reason === 'max_tokens') {
+      throw new APIRequestError(
+        'Anthropic final response was truncated (stop_reason=max_tokens)',
+      );
+    }
+
     return text ? extractCommitMessage(text) : 'chore(project): update files';
   } catch (error: any) {
     if (

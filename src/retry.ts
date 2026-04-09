@@ -4,6 +4,7 @@ export interface RetryOptions {
   maxDelayMs: number;
   jitterMs: number;
   shouldRetry?: (error: unknown) => boolean;
+  checkAbort?: () => void;
   onRetry?: (info: RetryInfo) => void;
 }
 
@@ -29,10 +30,17 @@ export async function withRetry<T>(
   let attempt = 0;
 
   while (true) {
+    options.checkAbort?.();
     try {
       attempt += 1;
       return await operation();
     } catch (error) {
+      if (isCancellationError(error)) {
+        throw error;
+      }
+
+      options.checkAbort?.();
+
       if (attempt >= options.maxAttempts || !shouldRetry(error)) {
         throw error;
       }
@@ -43,7 +51,7 @@ export async function withRetry<T>(
         delayMs,
         error,
       });
-      await sleep(delayMs);
+      await sleep(delayMs, options.checkAbort);
     }
   }
 }
@@ -115,6 +123,10 @@ function parseRetryAfterMs(value: unknown): number | null {
 }
 
 function isRetryableError(error: any): boolean {
+  if (isCancellationError(error)) {
+    return false;
+  }
+
   const status = getStatus(error);
   if (isAuthError(status, error)) {
     return false;
@@ -153,6 +165,13 @@ function isRetryableError(error: any): boolean {
   return false;
 }
 
+function isCancellationError(error: any): boolean {
+  return (
+    error?.name === 'GenerationCancelledError' ||
+    String(error?.code || '').toUpperCase() === 'CANCELLED'
+  );
+}
+
 function isAuthError(status: number | null, error: any): boolean {
   if (status === 401 || status === 403) {
     return true;
@@ -176,6 +195,21 @@ function getStatus(error: any): number | null {
   return typeof status === 'number' ? status : null;
 }
 
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+async function sleep(ms: number, checkAbort?: () => void): Promise<void> {
+  if (!checkAbort) {
+    await new Promise((resolve) => setTimeout(resolve, ms));
+    return;
+  }
+
+  const pollIntervalMs = 100;
+  let remainingMs = ms;
+
+  while (remainingMs > 0) {
+    checkAbort();
+    const waitMs = Math.min(pollIntervalMs, remainingMs);
+    await new Promise((resolve) => setTimeout(resolve, waitMs));
+    remainingMs -= waitMs;
+  }
+
+  checkAbort();
 }

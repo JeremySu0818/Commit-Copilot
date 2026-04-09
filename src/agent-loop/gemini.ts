@@ -212,6 +212,9 @@ async function runGeminiAgentLoop(
         },
       ],
     };
+    const finalGenerationConfig = {
+      systemInstruction: systemPrompt,
+    };
 
     const initialContext = await buildInitialContext(
       diff,
@@ -234,6 +237,7 @@ async function runGeminiAgentLoop(
 
     const retryOptions = {
       ...DEFAULT_RETRY_OPTIONS,
+      checkAbort: () => throwIfCancellationRequested(cancellationToken),
       onRetry: ({ attempt, maxAttempts, delayMs }: RetryInfo) => {
         if (onProgress) {
           const nextAttempt = attempt + 1;
@@ -246,15 +250,33 @@ async function runGeminiAgentLoop(
       },
     };
 
-    let response = await withRetry(
-      () =>
-        client.models.generateContent({
-          model: modelName,
-          contents: history,
-          config: generationConfig as any,
-        }),
-      retryOptions,
-    );
+    const requestGeminiResponse = async (
+      contents: any[],
+      config: any = generationConfig,
+    ) => {
+      throwIfCancellationRequested(cancellationToken);
+      const result = await withRetry(
+        () => {
+          throwIfCancellationRequested(cancellationToken);
+          return client.models.generateContent({
+            model: modelName,
+            contents,
+            config: config as any,
+          });
+        },
+        {
+          ...retryOptions,
+          onRetry: (info: RetryInfo) => {
+            throwIfCancellationRequested(cancellationToken);
+            retryOptions.onRetry?.(info);
+          },
+        },
+      );
+      throwIfCancellationRequested(cancellationToken);
+      return result;
+    };
+
+    let response = await requestGeminiResponse(history);
     let step = 0;
 
     while (step < (maxAgentSteps && maxAgentSteps > 0 ? maxAgentSteps : Infinity)) {
@@ -273,6 +295,19 @@ async function runGeminiAgentLoop(
         }
         return extractCommitMessage(text);
       }
+
+      history.push(
+        candidate.content || {
+          role: 'model',
+          parts: functionCalls.map((fc: any) => ({
+            functionCall: {
+              id: fc.id,
+              name: fc.name,
+              args: fc.args || {},
+            },
+          })),
+        },
+      );
 
       const toolResults: any[] = [];
       if (onProgress && functionCalls.length > 0) {
@@ -301,50 +336,22 @@ async function runGeminiAgentLoop(
         });
       }
 
-      history.push(
-        candidate.content || {
-          role: 'model',
-          parts: functionCalls.map((fc: any) => ({
-            functionCall: {
-              id: fc.id,
-              name: fc.name,
-              args: fc.args || {},
-            },
-          })),
-        },
-      );
       history.push({ role: 'user', parts: toolResults });
 
-      response = await withRetry(
-        () =>
-          client.models.generateContent({
-            model: modelName,
-            contents: history,
-            config: generationConfig as any,
-          }),
-        retryOptions,
-      );
+      response = await requestGeminiResponse(history);
       step++;
     }
 
-    const finalResponse = await withRetry(
-      () =>
-        client.models.generateContent({
-          model: modelName,
-          contents: [
-            ...history,
-            {
-              role: 'user',
-              parts: [
-                { text: buildFinalOutputReminder(resolvedCommitOutputOptions) },
-              ],
-            },
-          ],
-          config: generationConfig as any,
-        }),
-      retryOptions,
+    const finalResponse = await requestGeminiResponse(
+      [
+        ...history,
+        {
+          role: 'user',
+          parts: [{ text: buildFinalOutputReminder(resolvedCommitOutputOptions) }],
+        },
+      ],
+      finalGenerationConfig,
     );
-    throwIfCancellationRequested(cancellationToken);
     const text = finalResponse.text;
     return text ? extractCommitMessage(text) : 'chore(project): update files';
   } catch (error: any) {

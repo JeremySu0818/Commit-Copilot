@@ -59,17 +59,18 @@ async function executeFindReferences(
     }
   }
 
-  const absPath = path.resolve(workspaceRoot, relPath);
-  if (!isPathWithinRoot(workspaceRoot, absPath)) {
-    return 'Error: path traversal is not allowed.';
-  }
-  if (!fs.existsSync(absPath)) {
-    return `Error: file '${relPath}' does not exist on disk.`;
-  }
-
-  const includeDeclaration = parseBooleanArg(args.includeDeclaration) ?? false;
-
   try {
+    const absPath = path.resolve(workspaceRoot, relPath);
+    if (!isPathWithinRoot(workspaceRoot, absPath)) {
+      return 'Error: path traversal is not allowed.';
+    }
+    if (!fs.existsSync(absPath)) {
+      return `Error: file '${relPath}' does not exist on disk.`;
+    }
+
+    const includeDeclaration =
+      parseBooleanArg(args.includeDeclaration) ?? false;
+
     const document = await vscode.workspace.openTextDocument(
       vscode.Uri.file(absPath),
     );

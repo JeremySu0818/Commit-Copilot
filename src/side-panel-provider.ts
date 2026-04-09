@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
+import { randomBytes } from 'crypto';
 import {
   APIProvider,
   CommitOutputOptions,
@@ -21,6 +22,7 @@ import {
   getCustomProviderId,
   getCustomProviderStorageKey,
   normalizeCommitOutputOptions,
+  normalizeMaxAgentStepsValue,
 } from './models';
 import {
   DISPLAY_LANGUAGE_OPTIONS,
@@ -34,23 +36,6 @@ import {
   resolveEffectiveDisplayLanguage,
 } from './i18n';
 import { GenerationStateManager, ValidationStateManager } from './state';
-
-function normalizeMaxAgentStepsValue(value: unknown): number {
-  const raw =
-    typeof value === 'string'
-      ? value.trim()
-      : typeof value === 'number'
-        ? String(value)
-        : '';
-  if (!raw || !/^\d+$/.test(raw)) {
-    return 0;
-  }
-  const parsed = Number.parseInt(raw, 10);
-  if (!Number.isSafeInteger(parsed) || parsed <= 0) {
-    return 0;
-  }
-  return parsed;
-}
 
 export class SidePanelProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = 'commit-copilot.view';
@@ -1008,11 +993,5 @@ function escapeHtmlAttribute(value: string): string {
 }
 
 function getNonce() {
-  let text = '';
-  const possible =
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  for (let i = 0; i < 32; i++) {
-    text += possible.charAt(Math.floor(Math.random() * possible.length));
-  }
-  return text;
+  return randomBytes(16).toString('hex');
 }

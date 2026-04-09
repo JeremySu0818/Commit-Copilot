@@ -91,6 +91,12 @@ type VscodeMockFactoryOptions = {
   ) => Promise<MockTextDocument>;
   findFiles?: (...args: unknown[]) => Promise<MockUri[]>;
   readFile?: (uri: MockUri) => Promise<Uint8Array>;
+  stat?: (uri: MockUri) => Promise<{
+    type: number;
+    ctime: number;
+    mtime: number;
+    size: number;
+  }>;
 };
 
 function createVscodeMock(options: VscodeMockFactoryOptions = {}): any {
@@ -170,6 +176,17 @@ function createVscodeMock(options: VscodeMockFactoryOptions = {}): any {
             return options.readFile(uri);
           }
           return new Uint8Array();
+        },
+        stat: async (uri: MockUri) => {
+          if (options.stat) {
+            return options.stat(uri);
+          }
+          return {
+            type: 0,
+            ctime: 0,
+            mtime: 0,
+            size: 0,
+          };
         },
       },
     },

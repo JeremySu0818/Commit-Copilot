@@ -164,6 +164,10 @@ export class GeminiClient implements ILLMClient {
     try {
       const { GoogleGenAI } = await import('@google/genai');
       const client = new GoogleGenAI({ apiKey: this.apiKey });
+      const retryOptions = {
+        ...DEFAULT_RETRY_OPTIONS,
+        checkAbort: () => throwIfCancellationRequested(cancellationToken),
+      };
 
       const result = await withRetry(
         () =>
@@ -182,7 +186,7 @@ export class GeminiClient implements ILLMClient {
               topK: 40,
             },
           }),
-        DEFAULT_RETRY_OPTIONS,
+        retryOptions,
       );
 
       const text = result.text;
@@ -197,6 +201,9 @@ export class GeminiClient implements ILLMClient {
       if (
         error instanceof NoChangesError ||
         error instanceof APIKeyMissingError ||
+        error instanceof APIKeyInvalidError ||
+        error instanceof APIQuotaExceededError ||
+        error instanceof APIRequestError ||
         error instanceof GenerationCancelledError
       ) {
         throw error;
@@ -253,6 +260,10 @@ export class OpenAIClient implements ILLMClient {
     try {
       const OpenAI = (await import('openai')).default;
       const client = new OpenAI({ apiKey: this.apiKey, ...(this.baseURL ? { baseURL: this.baseURL } : {}) });
+      const retryOptions = {
+        ...DEFAULT_RETRY_OPTIONS,
+        checkAbort: () => throwIfCancellationRequested(cancellationToken),
+      };
       const completion = await withRetry(
         () =>
           client.chat.completions.create({
@@ -262,7 +273,7 @@ export class OpenAIClient implements ILLMClient {
               { role: 'user', content: `Here is the git diff:\n\n${diff}` },
             ],
           }),
-        DEFAULT_RETRY_OPTIONS,
+        retryOptions,
       );
 
       const text = completion.choices[0]?.message?.content;
@@ -277,6 +288,9 @@ export class OpenAIClient implements ILLMClient {
       if (
         error instanceof NoChangesError ||
         error instanceof APIKeyMissingError ||
+        error instanceof APIKeyInvalidError ||
+        error instanceof APIQuotaExceededError ||
+        error instanceof APIRequestError ||
         error instanceof GenerationCancelledError
       ) {
         throw error;
@@ -337,6 +351,10 @@ export class AnthropicClient implements ILLMClient {
     try {
       const Anthropic = (await import('@anthropic-ai/sdk')).default;
       const client = new Anthropic({ apiKey: this.apiKey });
+      const retryOptions = {
+        ...DEFAULT_RETRY_OPTIONS,
+        checkAbort: () => throwIfCancellationRequested(cancellationToken),
+      };
       const message = await withRetry(
         () =>
           client.messages
@@ -349,7 +367,7 @@ export class AnthropicClient implements ILLMClient {
               ],
             })
             .finalMessage(),
-        DEFAULT_RETRY_OPTIONS,
+        retryOptions,
       );
 
       const textBlock = message.content.find(
@@ -368,6 +386,9 @@ export class AnthropicClient implements ILLMClient {
       if (
         error instanceof NoChangesError ||
         error instanceof APIKeyMissingError ||
+        error instanceof APIKeyInvalidError ||
+        error instanceof APIQuotaExceededError ||
+        error instanceof APIRequestError ||
         error instanceof GenerationCancelledError
       ) {
         throw error;
