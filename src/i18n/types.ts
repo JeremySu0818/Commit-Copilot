@@ -81,6 +81,7 @@ export type WebviewLanguagePack = {
     generateConfiguration: string;
     settings: string;
     addProvider: string;
+    editProvider: string;
   };
   labels: {
     provider: string;
@@ -105,8 +106,6 @@ export type WebviewLanguagePack = {
     enterGeminiApiKey: string;
     enterOpenAIApiKey: string;
     enterAnthropicApiKey: string;
-    enterProviderName: string;
-    enterApiBaseUrl: string;
     enterCustomApiKey: string;
   };
   buttons: {
@@ -134,6 +133,7 @@ export type WebviewLanguagePack = {
     apiKeyRequired: string;
     providerSaved: string;
     providerDeleted: string;
+    modelNameRequired: string;
   };
   descriptions: {
     ollamaFixedToDirectDiff: string;

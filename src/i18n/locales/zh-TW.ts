@@ -138,6 +138,7 @@ export const zhTWLocale: LocaleTextBundle = {
       generateConfiguration: '產生設定',
       settings: '設定',
       addProvider: '新增自訂供應商',
+      editProvider: '編輯自訂供應商',
     },
     labels: {
       provider: '供應商',
@@ -162,8 +163,6 @@ export const zhTWLocale: LocaleTextBundle = {
       enterGeminiApiKey: '請輸入 Gemini API Key',
       enterOpenAIApiKey: '請輸入 OpenAI API Key',
       enterAnthropicApiKey: '請輸入 Anthropic API Key',
-      enterProviderName: '例如 DeepSeek、Groq、Together AI...',
-      enterApiBaseUrl: '例如 https://api.deepseek.com/v1',
       enterCustomApiKey: '請輸入 API Key',
     },
     buttons: {
@@ -191,6 +190,7 @@ export const zhTWLocale: LocaleTextBundle = {
       apiKeyRequired: '請輸入 API Key。',
       providerSaved: '已儲存自訂供應商！',
       providerDeleted: '已刪除自訂供應商。',
+      modelNameRequired: '請先輸入模型名稱再進行產生。',
     },
     descriptions: {
       ollamaFixedToDirectDiff: 'Ollama 固定使用 Direct Diff 模式',
