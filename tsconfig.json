@@ -14,10 +14,11 @@
     "forceConsistentCasingInFileNames": true
   },
   "include": [
-    "src"
+    "src/**/*.ts"
   ],
   "exclude": [
     "node_modules",
-    ".vscode-test"
+    ".vscode-test",
+    "src/webview"
   ]
 }
