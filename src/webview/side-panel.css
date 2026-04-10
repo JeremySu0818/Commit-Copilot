@@ -1,0 +1,166 @@
+body {
+  font-family: var(--vscode-font-family);
+  padding: 12px;
+  margin: 0;
+}
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.hidden {
+  display: none;
+}
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+label {
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--vscode-foreground);
+  opacity: 0.8;
+}
+input[type='password'],
+input[type='text'],
+input[type='number'] {
+  padding: 8px 10px;
+  background: var(--vscode-input-background);
+  color: var(--vscode-input-foreground);
+  border: 1px solid var(--vscode-input-border);
+  border-radius: 4px;
+  font-size: 13px;
+}
+input[type='password']:focus,
+input[type='text']:focus,
+input[type='number']:focus {
+  outline: none;
+  border-color: var(--vscode-focusBorder);
+}
+button {
+  padding: 10px 14px;
+  background: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+  font-weight: 500;
+  font-size: 13px;
+  transition: background 0.15s ease;
+}
+button:hover {
+  background: var(--vscode-button-hoverBackground);
+}
+button:disabled,
+select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+button.secondary {
+  background: var(--vscode-button-secondaryBackground);
+  color: var(--vscode-button-secondaryForeground);
+}
+select {
+  padding: 8px 10px;
+  background: var(--vscode-dropdown-background);
+  color: var(--vscode-dropdown-foreground);
+  border: 1px solid var(--vscode-dropdown-border);
+  border-radius: 4px;
+  font-size: 13px;
+  cursor: pointer;
+}
+select:focus {
+  outline: none;
+  border-color: var(--vscode-focusBorder);
+}
+.status {
+  font-size: 11px;
+  color: var(--vscode-descriptionForeground);
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.status-dot.success {
+  background: var(--vscode-testing-iconPassed);
+}
+.status-dot.error {
+  background: var(--vscode-testing-iconFailed);
+}
+.status-dot.warning {
+  background: var(--vscode-testing-iconQueued);
+}
+.section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--vscode-foreground);
+  margin-bottom: 4px;
+}
+.config-section {
+  background: var(--vscode-editor-background);
+  border: 1px solid var(--vscode-widget-border);
+  border-radius: 6px;
+  padding: 12px;
+}
+.provider-info {
+  font-size: 12px;
+  color: var(--vscode-descriptionForeground);
+  margin-top: 8px;
+  line-height: 1.5;
+}
+.provider-info a {
+  color: var(--vscode-textLink-foreground);
+  text-decoration: none;
+}
+.provider-info a:hover {
+  text-decoration: underline;
+}
+.checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+.checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--vscode-foreground);
+  cursor: pointer;
+}
+.checkbox-item input[type='checkbox'] {
+  margin: 0;
+}
+.settings-header {
+  display: flex;
+  justify-content: flex-start;
+}
+button.icon-btn {
+  background: transparent;
+  border: none;
+  padding: 4px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  color: var(--vscode-foreground);
+  cursor: pointer;
+}
+button.icon-btn:hover {
+  background: var(--vscode-toolbar-hoverBackground);
+}

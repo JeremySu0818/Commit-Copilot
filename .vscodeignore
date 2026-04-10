@@ -10,6 +10,10 @@ tsconfig.test.json
 package-lock.json
 out/**
 !out/extension.js
+!out/webview/
+out/webview/**
+!out/webview/side-panel.js
+!out/webview/side-panel.css
 esbuild.js
 build.bat
 build.sh

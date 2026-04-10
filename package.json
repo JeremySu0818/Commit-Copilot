@@ -90,8 +90,9 @@
     "watch": "npm-run-all -p watch:*",
     "watch:esbuild": "node esbuild.js --watch",
     "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
-    "check-types": "tsc --noEmit",
-    "lint": "eslint src --ext ts",
+    "watch:tsc:webview": "tsc --noEmit --watch --project tsconfig.webview.json",
+    "check-types": "tsc --noEmit --project tsconfig.json && tsc --noEmit --project tsconfig.webview.json",
+    "lint": "eslint src --ext ts,tsx",
     "test:build": "tsc --project tsconfig.test.json",
     "test:unit": "npm run test:build && node --test --test-concurrency=1 out/test/**/*.test.js",
     "test": "npm run test:unit"
@@ -101,10 +102,14 @@
     "@google/genai": "^1.48.0",
     "isbinaryfile": "^4.0.10",
     "ollama": "^0.6.3",
-    "openai": "^6.33.0"
+    "openai": "^6.33.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
     "@types/node": "20.x",
+    "@types/react": "^18.3.28",
+    "@types/react-dom": "^18.3.7",
     "@types/vscode": "1.91.0",
     "esbuild": "^0.27.2",
     "eslint": "^8.41.0",

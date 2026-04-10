@@ -67,6 +67,9 @@ test('inline script serialization escapes html terminators and unicode separator
 
   const webview = {
     cspSource: 'mock-csp-source',
+    asWebviewUri: (uri: { fsPath: string }) => ({
+      toString: () => `mock-webview://${uri.fsPath.replace(/\\/g, '/')}`,
+    }),
     options: undefined as unknown,
     html: '',
     postMessage: async () => true,
@@ -95,20 +98,15 @@ test('inline script serialization escapes html terminators and unicode separator
   );
   provider.resolveWebviewView(webviewView as any, {} as any, {} as any);
 
-  const providersLine = webview.html
+  const bootstrapLine = webview.html
     .split('\n')
-    .find((line) => line.includes('const providers = '));
-  assert.ok(providersLine);
-  assert.doesNotMatch(providersLine, /</);
-  assert.match(providersLine, /\\u003C\/script\\u003E\\u0026/);
+    .find((line) => line.includes('window.__COMMIT_COPILOT_WEBVIEW_BOOTSTRAP__'));
+  assert.ok(bootstrapLine);
+  assert.doesNotMatch(bootstrapLine, /<(?!\/)/);
+  assert.match(bootstrapLine, /\\u003C\/script\\u003E\\u0026/);
 
-  const ollamaHostLine = webview.html
-    .split('\n')
-    .find((line) => line.includes('const ollamaDefaultHost = '));
-  assert.ok(ollamaHostLine);
-  assert.equal(ollamaHostLine.includes(lineSeparator), false);
-  assert.equal(ollamaHostLine.includes(paragraphSeparator), false);
-  assert.match(ollamaHostLine, /\\u2028/);
-  assert.match(ollamaHostLine, /\\u2029/);
+  assert.equal(bootstrapLine.includes(lineSeparator), false);
+  assert.equal(bootstrapLine.includes(paragraphSeparator), false);
+  assert.match(bootstrapLine, /\\u2028/);
+  assert.match(bootstrapLine, /\\u2029/);
 });
-

@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import * as fs from 'fs';
 import { randomBytes } from 'crypto';
 import {
   APIProvider,
@@ -36,11 +35,15 @@ import {
   resolveEffectiveDisplayLanguage,
 } from './i18n';
 import { GenerationStateManager, ValidationStateManager } from './state';
+import {
+  SidePanelScreen,
+  WebviewBootstrapData,
+} from './side-panel-webview-bootstrap';
 
 export class SidePanelProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = 'commit-copilot.view';
   private _view?: vscode.WebviewView;
-  private _currentScreen: 'main' | 'settings' | 'addProvider' = 'main';
+  private _currentScreen: SidePanelScreen = 'main';
 
   constructor(
     private readonly _extensionUri: vscode.Uri,
@@ -50,7 +53,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
   }
 
   private updateCurrentScreen(screen: unknown): void {
-    const normalizedScreen =
+    const normalizedScreen: SidePanelScreen =
       screen === 'settings' || screen === 'addProvider' ? screen : 'main';
     this._currentScreen = normalizedScreen;
     void vscode.commands.executeCommand(
@@ -976,60 +979,63 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
     });
   }
 
-  private _getHtmlForWebview(webview: vscode.Webview) {
-    const nonce = getNonce();
-    const templateUri = vscode.Uri.joinPath(
-      this._extensionUri,
-      'resources',
-      'side-panel.html',
-    );
-    const template = fs.readFileSync(templateUri.fsPath, 'utf8');
+  private getWebviewBootstrapData(): WebviewBootstrapData {
     const languagePayload = this.getWebviewLanguagePayload();
-
-    const replacements: Record<string, string> = {
-      CSP_SOURCE: escapeHtmlAttribute(webview.cspSource),
-      NONCE: escapeHtmlAttribute(nonce),
-      PROVIDERS_JSON: serializeForInlineScript(PROVIDER_DISPLAY_NAMES),
-      GENERATE_MODES_JSON: serializeForInlineScript(
-        GENERATE_MODE_DISPLAY_NAMES,
-      ),
-      MODELS_JSON: serializeForInlineScript(MODELS_BY_PROVIDER),
-      DEFAULT_MODELS_JSON: serializeForInlineScript(DEFAULT_MODELS),
-      DEFAULT_COMMIT_OUTPUT_OPTIONS_JSON: serializeForInlineScript(
-        DEFAULT_COMMIT_OUTPUT_OPTIONS,
-      ),
-      DEFAULT_PROVIDER_JSON: serializeForInlineScript(DEFAULT_PROVIDER),
-      DEFAULT_GENERATE_MODE_JSON: serializeForInlineScript(
-        DEFAULT_GENERATE_MODE,
-      ),
-      OLLAMA_DEFAULT_HOST_JSON: serializeForInlineScript(OLLAMA_DEFAULT_HOST),
-      WEBVIEW_LANGUAGE_PACKS_JSON: serializeForInlineScript(
-        WEBVIEW_LANGUAGE_PACKS,
-      ),
-      DISPLAY_LANGUAGE_JSON: serializeForInlineScript(
-        languagePayload.displayLanguage,
-      ),
-      EFFECTIVE_LANGUAGE_JSON: serializeForInlineScript(
-        languagePayload.effectiveLanguage,
-      ),
-      VSCODE_LANGUAGE_JSON: serializeForInlineScript(
-        languagePayload.vscodeLanguage,
-      ),
-      DISPLAY_LANGUAGE_OPTIONS_JSON: serializeForInlineScript(
-        languagePayload.languageOptions,
-      ),
-      INITIAL_SCREEN_JSON: serializeForInlineScript(this._currentScreen),
-      CUSTOM_PROVIDER_PREFIX_JSON: serializeForInlineScript(
-        CUSTOM_PROVIDER_PREFIX,
-      ),
-      CUSTOM_PROVIDERS_JSON: serializeForInlineScript(
-        this.getCustomProviders(),
-      ),
+    return {
+      providers: PROVIDER_DISPLAY_NAMES,
+      generateModes: GENERATE_MODE_DISPLAY_NAMES,
+      modelsByProvider: MODELS_BY_PROVIDER,
+      defaultModels: DEFAULT_MODELS,
+      defaultProvider: DEFAULT_PROVIDER,
+      defaultGenerateMode: DEFAULT_GENERATE_MODE,
+      defaultCommitOutputOptions: DEFAULT_COMMIT_OUTPUT_OPTIONS,
+      ollamaDefaultHost: OLLAMA_DEFAULT_HOST,
+      languagePacks: WEBVIEW_LANGUAGE_PACKS,
+      initialDisplayLanguage: languagePayload.displayLanguage,
+      initialEffectiveLanguage: languagePayload.effectiveLanguage,
+      initialVSCodeLanguage: languagePayload.vscodeLanguage,
+      displayLanguageOptions: languagePayload.languageOptions,
+      initialScreen: this._currentScreen,
+      customProviderPrefix: CUSTOM_PROVIDER_PREFIX,
+      customProviders: this.getCustomProviders(),
     };
+  }
 
-    return template.replace(/\{\{([A-Z0-9_]+)\}\}/g, (match, key: string) => {
-      return replacements[key] ?? match;
-    });
+  private _getHtmlForWebview(webview: vscode.Webview): string {
+    const nonce = getNonce();
+    const styleUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, 'out', 'webview', 'side-panel.css'),
+    );
+    const scriptUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, 'out', 'webview', 'side-panel.js'),
+    );
+    const bootstrap = serializeForInlineScript(this.getWebviewBootstrapData());
+
+    const cspSource = escapeHtmlAttribute(webview.cspSource);
+    const escapedNonce = escapeHtmlAttribute(nonce);
+    const escapedStyleUri = escapeHtmlAttribute(styleUri.toString());
+    const escapedScriptUri = escapeHtmlAttribute(scriptUri.toString());
+
+    return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; style-src ${cspSource} 'unsafe-inline'; script-src 'nonce-${escapedNonce}';"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Commit Copilot</title>
+    <link rel="stylesheet" href="${escapedStyleUri}" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script nonce="${escapedNonce}">
+      window.__COMMIT_COPILOT_WEBVIEW_BOOTSTRAP__ = ${bootstrap};
+    </script>
+    <script nonce="${escapedNonce}" src="${escapedScriptUri}"></script>
+  </body>
+</html>`;
   }
 }
 

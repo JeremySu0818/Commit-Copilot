@@ -55,6 +55,9 @@ async function createHarness(): Promise<Harness> {
 
   const webview = {
     cspSource: 'mock-csp-source',
+    asWebviewUri: (uri: { fsPath: string }) => ({
+      toString: () => `mock-webview://${uri.fsPath.replace(/\\/g, '/')}`,
+    }),
     options: undefined as unknown,
     html: '',
     postMessage: (message: any) => {

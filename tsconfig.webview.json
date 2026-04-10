@@ -1,0 +1,23 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "lib": [
+      "ES2020",
+      "DOM"
+    ],
+    "jsx": "react-jsx"
+  },
+  "include": [
+    "src/webview/**/*.ts",
+    "src/webview/**/*.tsx",
+    "src/side-panel-webview-bootstrap.ts",
+    "src/models.ts",
+    "src/i18n.ts",
+    "src/i18n/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    ".vscode-test"
+  ]
+}
