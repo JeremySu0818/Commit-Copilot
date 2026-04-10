@@ -1,5 +1,5 @@
-export type DisplayLanguage = 'auto' | 'en' | 'zh-TW' | 'zh-CN';
-export type EffectiveDisplayLanguage = 'en' | 'zh-TW' | 'zh-CN';
+export type DisplayLanguage = 'auto' | 'en' | 'zh-TW' | 'zh-CN' | 'ja';
+export type EffectiveDisplayLanguage = 'en' | 'zh-TW' | 'zh-CN' | 'ja';
 
 export type LanguageOption = {
   value: DisplayLanguage;
