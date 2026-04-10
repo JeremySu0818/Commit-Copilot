@@ -219,8 +219,10 @@ export const enLocale: LocaleTextBundle = {
         'Get your API key from <strong>OpenAI Platform</strong>:<br><a href="https://platform.openai.com/api-keys" style="color: var(--vscode-textLink-foreground);">platform.openai.com</a>',
       anthropicInfo:
         'Get your API key from <strong>Anthropic Console</strong>:<br><a href="https://platform.claude.com/settings/keys" style="color: var(--vscode-textLink-foreground);">platform.claude.com</a>',
-      maxAgentStepsDescription: 'Limit agentic tool calls per generation. Enter 0 or leave empty for unlimited.',
-      customProviderInfo: 'Custom providers must be <strong>OpenAI-compatible</strong>.<br>The API Base URL should point to a service that implements the OpenAI Chat Completions API.',
+      maxAgentStepsDescription:
+        'Limit agentic tool calls per generation. Enter 0 or leave empty for unlimited.',
+      customProviderInfo:
+        'Custom providers must be <strong>OpenAI-compatible</strong>.<br>The API Base URL should point to a service that implements the OpenAI Chat Completions API.',
     },
     options: {
       agentic: 'Agentic Generate',

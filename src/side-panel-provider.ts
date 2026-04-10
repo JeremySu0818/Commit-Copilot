@@ -69,11 +69,20 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
   }
 
   private getCustomProviders(): CustomProviderConfig[] {
-    return this._context.globalState.get<CustomProviderConfig[]>(CUSTOM_PROVIDERS_STATE_KEY) || [];
+    return (
+      this._context.globalState.get<CustomProviderConfig[]>(
+        CUSTOM_PROVIDERS_STATE_KEY,
+      ) || []
+    );
   }
 
-  private async saveCustomProviders(providers: CustomProviderConfig[]): Promise<void> {
-    await this._context.globalState.update(CUSTOM_PROVIDERS_STATE_KEY, providers);
+  private async saveCustomProviders(
+    providers: CustomProviderConfig[],
+  ): Promise<void> {
+    await this._context.globalState.update(
+      CUSTOM_PROVIDERS_STATE_KEY,
+      providers,
+    );
   }
 
   private getVSCodeLanguage(): string | undefined {
@@ -384,9 +393,9 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
             }
           }
           const hasChanges = targetRepo
-            ? ((targetRepo.state?.workingTreeChanges?.length ?? 0) > 0 ||
-                (targetRepo.state?.indexChanges?.length ?? 0) > 0 ||
-                (targetRepo.state?.untrackedChanges?.length ?? 0) > 0)
+            ? (targetRepo.state?.workingTreeChanges?.length ?? 0) > 0 ||
+              (targetRepo.state?.indexChanges?.length ?? 0) > 0 ||
+              (targetRepo.state?.untrackedChanges?.length ?? 0) > 0
             : false;
           webviewView.webview.postMessage({ type: 'repoUpdate', hasChanges });
         } else {
@@ -502,7 +511,10 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
                 return;
               }
               try {
-                const validationResult = await this.validateCustomProviderKey(apiKey, cp.baseUrl);
+                const validationResult = await this.validateCustomProviderKey(
+                  apiKey,
+                  cp.baseUrl,
+                );
                 if (!validationResult.valid) {
                   vscode.window.showWarningMessage(
                     `${text.validationFailedPrefix}: ${validationResult.error || text.unableToConnectFallback}`,
@@ -626,7 +638,9 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
           let key: string | undefined;
           if (isCustomProvider(provider)) {
             const customId = getCustomProviderId(provider);
-            key = await this._context.secrets.get(getCustomProviderStorageKey(customId));
+            key = await this._context.secrets.get(
+              getCustomProviderStorageKey(customId),
+            );
           } else {
             const storageKey = API_KEY_STORAGE_KEYS[provider as APIProvider];
             key = await this._context.secrets.get(storageKey);
@@ -635,7 +649,9 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
             type: 'keyStatus',
             hasKey: !!key,
             provider,
-            ...(provider === 'ollama' ? { value: key || OLLAMA_DEFAULT_HOST } : {}),
+            ...(provider === 'ollama'
+              ? { value: key || OLLAMA_DEFAULT_HOST }
+              : {}),
           });
           break;
         }
@@ -647,7 +663,9 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
           const provider = String(data.provider || DEFAULT_PROVIDER);
           if (isCustomProvider(provider)) {
             const customId = getCustomProviderId(provider);
-            const key = await this._context.secrets.get(getCustomProviderStorageKey(customId));
+            const key = await this._context.secrets.get(
+              getCustomProviderStorageKey(customId),
+            );
             if (key) {
               const savedModel = this._context.globalState.get<string>(
                 `CUSTOM_${customId}_MODEL`,
@@ -760,7 +778,9 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
             keyStatuses[provider] = !!key;
           }
           for (const cp of this.getCustomProviders()) {
-            const key = await this._context.secrets.get(getCustomProviderStorageKey(cp.id));
+            const key = await this._context.secrets.get(
+              getCustomProviderStorageKey(cp.id),
+            );
             keyStatuses[`${CUSTOM_PROVIDER_PREFIX}${cp.id}`] = !!key;
           }
           this._view?.webview.postMessage({
@@ -858,8 +878,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
             if (!validationResult.valid) {
               this._view?.webview.postMessage({
                 type: 'customProviderSaveFailed',
-                error:
-                  validationResult.error || text.unableToConnectFallback,
+                error: validationResult.error || text.unableToConnectFallback,
               });
               break;
             }
@@ -915,12 +934,19 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
           const storageKey = getCustomProviderStorageKey(deleteId);
           await this._context.secrets.delete(storageKey);
 
-          const currentProviderValue = this._context.globalState.get<string>('CURRENT_PROVIDER');
+          const currentProviderValue =
+            this._context.globalState.get<string>('CURRENT_PROVIDER');
           if (currentProviderValue === `${CUSTOM_PROVIDER_PREFIX}${deleteId}`) {
-            await this._context.globalState.update('CURRENT_PROVIDER', DEFAULT_PROVIDER);
+            await this._context.globalState.update(
+              'CURRENT_PROVIDER',
+              DEFAULT_PROVIDER,
+            );
           }
 
-          await this._context.globalState.update(`CUSTOM_${deleteId}_MODEL`, undefined);
+          await this._context.globalState.update(
+            `CUSTOM_${deleteId}_MODEL`,
+            undefined,
+          );
 
           this._view?.webview.postMessage({
             type: 'customProviderDeleted',
@@ -993,8 +1019,12 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
         languagePayload.languageOptions,
       ),
       INITIAL_SCREEN_JSON: serializeForInlineScript(this._currentScreen),
-      CUSTOM_PROVIDER_PREFIX_JSON: serializeForInlineScript(CUSTOM_PROVIDER_PREFIX),
-      CUSTOM_PROVIDERS_JSON: serializeForInlineScript(this.getCustomProviders()),
+      CUSTOM_PROVIDER_PREFIX_JSON: serializeForInlineScript(
+        CUSTOM_PROVIDER_PREFIX,
+      ),
+      CUSTOM_PROVIDERS_JSON: serializeForInlineScript(
+        this.getCustomProviders(),
+      ),
     };
 
     return template.replace(/\{\{([A-Z0-9_]+)\}\}/g, (match, key: string) => {
