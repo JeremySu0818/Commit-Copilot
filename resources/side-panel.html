@@ -70,12 +70,6 @@
         opacity: 0.5;
         cursor: not-allowed;
       }
-      button.primary {
-        background: var(--vscode-button-background);
-      }
-      button.primary:hover:not(:disabled) {
-        background: var(--vscode-button-hoverBackground);
-      }
       button.secondary {
         background: var(--vscode-button-secondaryBackground);
         color: var(--vscode-button-secondaryForeground);
@@ -238,7 +232,7 @@
         </div>
       </div>
       <div class="input-group">
-        <button id="generateBtn" class="primary" disabled></button>
+        <button id="generateBtn" disabled></button>
       </div>
     </div>
 
@@ -310,13 +304,17 @@
           <label id="apiBaseUrlLabel"></label>
           <input type="text" id="apiBaseUrlInput" />
         </div>
-        <div class="input-group" id="customApiKeyGroup" style="margin-top: 10px">
+        <div
+          class="input-group"
+          id="customApiKeyGroup"
+          style="margin-top: 10px"
+        >
           <label id="customApiKeyLabel"></label>
           <input type="password" id="customApiKeyInput" />
         </div>
         <span id="addProviderStatus" class="status"></span>
         <div style="margin-top: 12px; display: flex; gap: 8px">
-          <button id="saveProviderBtn" class="primary" disabled></button>
+          <button id="saveProviderBtn" disabled></button>
           <button id="deleteProviderBtn" class="secondary hidden"></button>
         </div>
       </div>
