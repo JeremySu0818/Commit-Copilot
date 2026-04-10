@@ -1,6 +1,10 @@
 import * as vscode from 'vscode';
 import { SidePanelProvider } from './side-panel-provider';
-import { generateCommitMessage, EXIT_CODES, CommitCopilotError } from './commit-copilot';
+import {
+  generateCommitMessage,
+  EXIT_CODES,
+  CommitCopilotError,
+} from './commit-copilot';
 import {
   APIProvider,
   API_KEY_STORAGE_KEYS,
@@ -193,7 +197,9 @@ export function activate(context: vscode.ExtensionContext) {
             outputChannel.appendLine(
               text.output.multiRepoNotDetermined(api.repositories.length),
             );
-            vscode.window.showWarningMessage(text.notification.multiRepoWarning);
+            vscode.window.showWarningMessage(
+              text.notification.multiRepoWarning,
+            );
             return;
           } else {
             outputChannel.appendLine(text.output.noRepoInApi);
@@ -213,8 +219,13 @@ export function activate(context: vscode.ExtensionContext) {
         let currentProvider: APIProvider;
         if (isCustom) {
           const customId = getCustomProviderId(currentProviderRaw);
-          const customProviders = context.globalState.get<CustomProviderConfig[]>(CUSTOM_PROVIDERS_STATE_KEY) || [];
-          customProviderConfig = customProviders.find((cp) => cp.id === customId);
+          const customProviders =
+            context.globalState.get<CustomProviderConfig[]>(
+              CUSTOM_PROVIDERS_STATE_KEY,
+            ) || [];
+          customProviderConfig = customProviders.find(
+            (cp) => cp.id === customId,
+          );
           currentProvider = 'openai';
         } else {
           currentProvider = currentProviderRaw as APIProvider;
@@ -238,20 +249,24 @@ export function activate(context: vscode.ExtensionContext) {
             MAX_AGENT_STEPS_STATE_KEY,
           ),
         );
-        const maxAgentSteps = savedMaxAgentSteps > 0 ? savedMaxAgentSteps : undefined;
+        const maxAgentSteps =
+          savedMaxAgentSteps > 0 ? savedMaxAgentSteps : undefined;
 
         let apiKey: string | undefined;
         if (isCustom) {
           const customId = getCustomProviderId(currentProviderRaw);
-          apiKey = await context.secrets.get(getCustomProviderStorageKey(customId));
+          apiKey = await context.secrets.get(
+            getCustomProviderStorageKey(customId),
+          );
         } else {
           const storageKey = API_KEY_STORAGE_KEYS[currentProvider];
           apiKey = await context.secrets.get(storageKey);
         }
 
-        const providerDisplayName = isCustom && customProviderConfig
-          ? customProviderConfig.name
-          : PROVIDER_DISPLAY_NAMES[currentProvider];
+        const providerDisplayName =
+          isCustom && customProviderConfig
+            ? customProviderConfig.name
+            : PROVIDER_DISPLAY_NAMES[currentProvider];
 
         outputChannel.appendLine(
           text.output.usingProvider(providerDisplayName),
@@ -282,9 +297,7 @@ export function activate(context: vscode.ExtensionContext) {
         }
 
         const progressTitle =
-          currentProvider === 'ollama'
-            ? 'Ollama'
-            : providerDisplayName;
+          currentProvider === 'ollama' ? 'Ollama' : providerDisplayName;
 
         await vscode.window.withProgress(
           {
@@ -383,7 +396,9 @@ export function activate(context: vscode.ExtensionContext) {
                     ...baseGenerateOptions,
                     stageChanges: true,
                   });
-                } else if (selection === text.notification.generateTrackedOnly) {
+                } else if (
+                  selection === text.notification.generateTrackedOnly
+                ) {
                   result = await generateCommitMessage({
                     ...baseGenerateOptions,
                     stageChanges: false,
@@ -421,7 +436,9 @@ export function activate(context: vscode.ExtensionContext) {
                 );
                 repository.inputBox.value = result.message;
                 await vscode.commands.executeCommand('workbench.view.scm');
-                vscode.window.showInformationMessage(text.notification.commitGenerated);
+                vscode.window.showInformationMessage(
+                  text.notification.commitGenerated,
+                );
               } else if (result.error) {
                 const error = result.error;
                 outputChannel.appendLine(
@@ -456,13 +473,16 @@ export function activate(context: vscode.ExtensionContext) {
                       anthropic: 'https://console.anthropic.com/',
                       ollama: 'http://127.0.0.1:11434',
                     };
-                    const url = isCustom && customProviderConfig
-                      ? customProviderConfig.baseUrl
-                      : providerUrls[currentProvider];
+                    const url =
+                      isCustom && customProviderConfig
+                        ? customProviderConfig.baseUrl
+                        : providerUrls[currentProvider];
                     vscode.env.openExternal(vscode.Uri.parse(url));
                   }
                 } else if (error.exitCode === EXIT_CODES.NO_CHANGES) {
-                  vscode.window.showInformationMessage(text.notification.noChanges);
+                  vscode.window.showInformationMessage(
+                    text.notification.noChanges,
+                  );
                 } else if (
                   error.exitCode !== EXIT_CODES.NO_CHANGES_BUT_UNTRACKED &&
                   error.exitCode !== EXIT_CODES.NO_TRACKED_CHANGES_BUT_UNTRACKED
@@ -478,7 +498,9 @@ export function activate(context: vscode.ExtensionContext) {
           },
         );
         if (wasCancelled || cancellationSource.token.isCancellationRequested) {
-          vscode.window.showInformationMessage(text.notification.generationCanceled);
+          vscode.window.showInformationMessage(
+            text.notification.generationCanceled,
+          );
         }
       } catch (error) {
         const isCancellationError =
@@ -488,7 +510,9 @@ export function activate(context: vscode.ExtensionContext) {
           isCancellationError ||
           cancellationSource.token.isCancellationRequested
         ) {
-          vscode.window.showInformationMessage(text.notification.generationCanceled);
+          vscode.window.showInformationMessage(
+            text.notification.generationCanceled,
+          );
         } else {
           const errorMessage =
             error instanceof Error ? error.message : String(error);

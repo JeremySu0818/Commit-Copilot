@@ -74,7 +74,8 @@ export const zhTWLocale: LocaleTextBundle = {
       usingGenerateMode: (mode) => `產生模式：${mode}`,
       usingCommitOutputOptions: (optionsJson) =>
         `Commit 輸出選項：${optionsJson}`,
-      missingApiKeyWarning: (provider) => `警告：${provider} 尚未設定 API Key。`,
+      missingApiKeyWarning: (provider) =>
+        `警告：${provider} 尚未設定 API Key。`,
       cancelRequestedFromProgress: '已從進度通知請求取消。',
       callingGenerateCommitMessage: '呼叫 generateCommitMessage...',
       repositoryPath: (path) => `儲存庫路徑：${path}`,
@@ -204,12 +205,14 @@ export const zhTWLocale: LocaleTextBundle = {
         '請到 <strong>OpenAI Platform</strong> 取得 API Key：<br><a href="https://platform.openai.com/api-keys" style="color: var(--vscode-textLink-foreground);">platform.openai.com</a>',
       anthropicInfo:
         '請到 <strong>Anthropic Console</strong> 取得 API Key：<br><a href="https://platform.claude.com/settings/keys" style="color: var(--vscode-textLink-foreground);">platform.claude.com</a>',
-      maxAgentStepsDescription: '限制每次產生的 Agent 工具呼叫次數。輸入 0 或留空表示無限制。',
-      customProviderInfo: '自訂供應商必須<strong>兼容 OpenAI</strong>。<br>API Base URL 需指向支援 OpenAI Chat Completions API 的服務。',
+      maxAgentStepsDescription:
+        '限制每次產生的 Agent 工具呼叫次數。輸入 0 或留空表示無限制。',
+      customProviderInfo:
+        '自訂供應商必須<strong>兼容 OpenAI</strong>。<br>API Base URL 需指向支援 OpenAI Chat Completions API 的服務。',
     },
     options: {
       agentic: 'Agentic 產生',
-      directDiff: 'Direct Diff',
+      directDiff: '直接diff產生',
     },
   },
   progressMessages: {
@@ -256,7 +259,8 @@ export const zhTWLocale: LocaleTextBundle = {
       },
       {
         pattern: /^\[Step (\d+)\] Analyzing diffs for (\d+) files\.\.\.$/,
-        format: (step, count) => `[步驟 ${step}] 分析 ${count} 個檔案的 diff...`,
+        format: (step, count) =>
+          `[步驟 ${step}] 分析 ${count} 個檔案的 diff...`,
       },
       {
         pattern: /^\[Step (\d+)\] Reading files: (.+)$/,

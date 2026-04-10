@@ -259,7 +259,10 @@ export class OpenAIClient implements ILLMClient {
 
     try {
       const OpenAI = (await import('openai')).default;
-      const client = new OpenAI({ apiKey: this.apiKey, ...(this.baseURL ? { baseURL: this.baseURL } : {}) });
+      const client = new OpenAI({
+        apiKey: this.apiKey,
+        ...(this.baseURL ? { baseURL: this.baseURL } : {}),
+      });
       const retryOptions = {
         ...DEFAULT_RETRY_OPTIONS,
         checkAbort: () => throwIfCancellationRequested(cancellationToken),
@@ -516,12 +519,18 @@ export class OllamaClient implements ILLMClient {
 }
 
 export function createLLMClient(options: LLMClientOptions): ILLMClient {
-  const { provider, apiKey, ollamaHost, baseUrl, model, commitOutputOptions } = options;
+  const { provider, apiKey, ollamaHost, baseUrl, model, commitOutputOptions } =
+    options;
   const resolvedCommitOutputOptions =
     normalizeCommitOutputOptions(commitOutputOptions);
 
   if (baseUrl) {
-    return new OpenAIClient(apiKey, model, resolvedCommitOutputOptions, baseUrl);
+    return new OpenAIClient(
+      apiKey,
+      model,
+      resolvedCommitOutputOptions,
+      baseUrl,
+    );
   }
 
   switch (provider) {
