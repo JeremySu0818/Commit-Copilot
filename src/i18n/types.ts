@@ -1,9 +1,10 @@
-export type DisplayLanguage = 'auto' | 'en' | 'zh-TW' | 'zh-CN' | 'ja';
-export type EffectiveDisplayLanguage = 'en' | 'zh-TW' | 'zh-CN' | 'ja';
+export type DisplayLanguage = 'auto' | 'en' | 'zh-TW' | 'zh-CN' | 'ja' | 'ko';
+export type EffectiveDisplayLanguage = 'en' | 'zh-TW' | 'zh-CN' | 'ja' | 'ko';
 
 export type LanguageOption = {
   value: DisplayLanguage;
-  labels: Record<EffectiveDisplayLanguage, string>;
+  label?: string;
+  labels?: Record<EffectiveDisplayLanguage, string>;
 };
 
 export type ErrorInfo = { title: string; action?: string };

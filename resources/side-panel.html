@@ -539,7 +539,7 @@
         displayLanguageOptions.forEach((option) => {
           const entry = document.createElement('option');
           entry.value = option.value;
-          entry.textContent = (option.labels && option.labels[effectiveLanguage]) || option.value;
+          entry.textContent = option.label || (option.labels && option.labels[effectiveLanguage]) || option.value;
           languageSelect.appendChild(entry);
         });
         languageSelect.value = displayLanguage;

@@ -1,0 +1,9 @@
+{
+  "extension.displayName": "Commit Copilot",
+  "extension.description": "LLM을 사용하여 커밋 메시지 생성",
+  "command.generate.title": "커밋 메시지 생성",
+  "command.cancelGeneration.title": "생성 취소",
+  "command.openLanguageSettings.title": "언어 설정 열기",
+  "viewsContainer.title": "Commit Copilot",
+  "view.name": "Commit Copilot"
+}

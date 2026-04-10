@@ -25,21 +25,13 @@ export const DEFAULT_DISPLAY_LANGUAGE: DisplayLanguage = 'auto';
 export const DISPLAY_LANGUAGE_OPTIONS: LanguageOption[] = [
   {
     value: 'auto',
-    labels: { en: 'Auto (Follow VS Code)', 'zh-TW': '自動（跟隨 VS Code）', 'zh-CN': '自动（跟随 VS Code）', ja: '自動（VS Code に従う）' },
+    labels: { en: 'Auto (Follow VS Code)', 'zh-TW': '自動（跟隨 VS Code）', 'zh-CN': '自动（跟随 VS Code）', ja: '自動（VS Code に従う）', ko: '자동 (VS Code 설정 따름)' },
   },
-  { value: 'en', labels: { en: 'English', 'zh-TW': '英文', 'zh-CN': '英文', ja: '英語' } },
-  {
-    value: 'zh-TW',
-    labels: { en: 'Traditional Chinese', 'zh-TW': '繁體中文', 'zh-CN': '繁体中文', ja: '繁体字中国語' },
-  },
-  {
-    value: 'zh-CN',
-    labels: { en: 'Simplified Chinese', 'zh-TW': '簡體中文', 'zh-CN': '简体中文', ja: '簡体字中国語' },
-  },
-  {
-    value: 'ja',
-    labels: { en: 'Japanese', 'zh-TW': '日文', 'zh-CN': '日文', ja: '日本語' },
-  },
+  { value: 'en', label: 'English' },
+  { value: 'zh-TW', label: '繁體中文' },
+  { value: 'zh-CN', label: '简体中文' },
+  { value: 'ja', label: '日本語' },
+  { value: 'ko', label: '한국어' },
 ];
 
 export const WEBVIEW_LANGUAGE_PACKS: Record<
@@ -50,10 +42,11 @@ export const WEBVIEW_LANGUAGE_PACKS: Record<
   'zh-TW': LOCALES['zh-TW'].webviewLanguagePack,
   'zh-CN': LOCALES['zh-CN'].webviewLanguagePack,
   ja: LOCALES.ja.webviewLanguagePack,
+  ko: LOCALES.ko.webviewLanguagePack,
 };
 
 export function normalizeDisplayLanguage(value: unknown): DisplayLanguage {
-  if (value === 'en' || value === 'zh-TW' || value === 'zh-CN' || value === 'ja' || value === 'auto') {
+  if (value === 'en' || value === 'zh-TW' || value === 'zh-CN' || value === 'ja' || value === 'ko' || value === 'auto') {
     return value;
   }
   return DEFAULT_DISPLAY_LANGUAGE;
@@ -63,7 +56,7 @@ export function resolveEffectiveDisplayLanguage(
   displayLanguage: DisplayLanguage,
   vscodeLanguage?: string,
 ): EffectiveDisplayLanguage {
-  if (displayLanguage === 'en' || displayLanguage === 'zh-TW' || displayLanguage === 'zh-CN' || displayLanguage === 'ja') {
+  if (displayLanguage === 'en' || displayLanguage === 'zh-TW' || displayLanguage === 'zh-CN' || displayLanguage === 'ja' || displayLanguage === 'ko') {
     return displayLanguage;
   }
   const normalized = String(vscodeLanguage || '')
@@ -78,6 +71,9 @@ export function resolveEffectiveDisplayLanguage(
   }
   if (normalized.startsWith('ja')) {
     return 'ja';
+  }
+  if (normalized.startsWith('ko')) {
+    return 'ko';
   }
   return 'en';
 }
@@ -111,7 +107,8 @@ export function getDisplayLanguageLabel(
   const option = DISPLAY_LANGUAGE_OPTIONS.find(
     (item) => item.value === language,
   );
-  return option ? option.labels[uiLanguage] : language;
+  if (!option) return language;
+  return option.label || (option.labels && option.labels[uiLanguage]) || language;
 }
 
 function replacePlaceholders(
