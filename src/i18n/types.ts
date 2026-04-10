@@ -152,14 +152,31 @@ export type WebviewLanguagePack = {
   };
 };
 
-export type ProgressMessagePattern = {
-  pattern: RegExp;
-  format: (...groups: string[]) => string;
-};
-
 export type ProgressMessages = {
-  exact?: Record<string, string>;
-  patterns?: ProgressMessagePattern[];
+  analyzingChanges: string;
+  generatingMessage: string;
+  transientApiError: (attempt: number, maxAttempts: number, seconds: number) => string;
+  pulling: (model: string, status: string, percent?: number) => string;
+  
+  stepAnalyzingDiff: (step: number, path: string) => string;
+  stepReadingFile: (step: number, path: string) => string;
+  stepGettingOutline: (step: number, path: string) => string;
+  stepFindingReferences: (step: number, target: string) => string;
+  stepFetchingRecentCommits: (step: number, count?: number) => string;
+  stepSearchingProject: (step: number, keyword: string) => string;
+  stepCalling: (step: number, toolName: string) => string;
+  
+  stepAnalyzingMultipleDiffs: (step: number, paths: string) => string;
+  stepAnalyzingDiffsForCount: (step: number, count: number) => string;
+  stepReadingMultipleFiles: (step: number, paths: string) => string;
+  stepReadingFilesForCount: (step: number, count: number) => string;
+  stepGettingMultipleOutlines: (step: number, paths: string) => string;
+  stepGettingOutlinesForCount: (step: number, count: number) => string;
+  stepFindingReferencesForMultiple: (step: number, targets: string) => string;
+  stepFindingReferencesForCount: (step: number, count: number) => string;
+  stepSearchingProjectForMultiple: (step: number, keywords: string) => string;
+  stepSearchingProjectForCount: (step: number, count: number) => string;
+  stepExecutingMultipleTools: (step: number, count: number) => string;
 };
 
 export type LocaleTextBundle = {
@@ -167,5 +184,5 @@ export type LocaleTextBundle = {
   extensionText: ExtensionText;
   sidePanelText: SidePanelText;
   webviewLanguagePack: WebviewLanguagePack;
-  progressMessages?: ProgressMessages;
+  progressMessages: ProgressMessages;
 };

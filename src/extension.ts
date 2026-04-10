@@ -28,7 +28,7 @@ import {
   DISPLAY_LANGUAGE_STATE_KEY,
   getExtensionText,
   getLocalizedErrorInfo,
-  localizeProgressMessage,
+  getDisplayLanguageLabel,
   normalizeDisplayLanguage,
   resolveEffectiveDisplayLanguage,
 } from './i18n';
@@ -335,9 +335,8 @@ export function activate(context: vscode.ExtensionContext) {
               outputChannel.appendLine(text.output.usingModel(savedModel));
             }
             const reportProgress = (message: string, increment?: number) => {
-              const localized = localizeProgressMessage(message, language);
-              outputChannel.appendLine(localized);
-              progress.report({ message: localized, increment });
+              outputChannel.appendLine(message);
+              progress.report({ message, increment });
             };
             const baseGenerateOptions = {
               repository,
@@ -350,6 +349,7 @@ export function activate(context: vscode.ExtensionContext) {
               model: savedModel,
               onProgress: reportProgress,
               cancellationToken: cancellationSource.token,
+              language,
             };
 
             try {

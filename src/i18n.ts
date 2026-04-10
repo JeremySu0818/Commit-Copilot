@@ -85,29 +85,7 @@ export function getSidePanelText(
   return LOCALES[language].sidePanelText;
 }
 
-export function localizeProgressMessage(
-  message: string,
-  language: EffectiveDisplayLanguage,
-): string {
-  if (language === 'en') {
-    return message;
-  }
 
-  const progressMessages = LOCALES[language].progressMessages;
-  const exactMessage = progressMessages?.exact?.[message];
-  if (exactMessage) {
-    return exactMessage;
-  }
-
-  for (const item of progressMessages?.patterns || []) {
-    const match = message.match(item.pattern);
-    if (match) {
-      return item.format(...match.slice(1));
-    }
-  }
-
-  return message;
-}
 
 export function getDisplayLanguageLabel(
   language: DisplayLanguage,

@@ -31,6 +31,8 @@ import {
   MAX_AGENT_STEPS,
 } from './shared';
 import { DEFAULT_RETRY_OPTIONS, RetryInfo, withRetry } from '../retry';
+import { LOCALES } from '../i18n/locales';
+import type { EffectiveDisplayLanguage } from '../i18n/types';
 
 type GeminiFunctionCall = {
   id?: string;
@@ -183,6 +185,7 @@ async function runGeminiAgentLoop(
   commitOutputOptions: CommitOutputOptions = DEFAULT_COMMIT_OUTPUT_OPTIONS,
   cancellationToken?: CancellationSignal,
   maxAgentSteps?: number,
+  language: EffectiveDisplayLanguage = 'en',
 ): Promise<string> {
   throwIfCancellationRequested(cancellationToken);
   if (!apiKey) {
@@ -232,7 +235,7 @@ async function runGeminiAgentLoop(
     ];
 
     if (onProgress) {
-      onProgress('Agent analyzing changes...');
+      onProgress(LOCALES[language].progressMessages.analyzingChanges);
     }
 
     const retryOptions = {
@@ -242,9 +245,11 @@ async function runGeminiAgentLoop(
         if (onProgress) {
           const nextAttempt = attempt + 1;
           onProgress(
-            `Transient API error. Retrying (${nextAttempt}/${maxAttempts}) in ${Math.ceil(
-              delayMs / 1000,
-            )}s...`,
+            LOCALES[language].progressMessages.transientApiError(
+              nextAttempt,
+              maxAttempts,
+              Math.ceil(delayMs / 1000)
+            ),
           );
         }
       },
@@ -315,7 +320,7 @@ async function runGeminiAgentLoop(
           name: call.name,
           args: call.args || {},
         }));
-        onProgress(formatBatchProgressMessage(step + 1, calls));
+        onProgress(formatBatchProgressMessage(step + 1, calls, language));
       }
 
       for (const fc of functionCalls) {

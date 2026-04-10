@@ -115,6 +115,7 @@ async function runGenerate(options: {
     generateMode: options.generateMode,
     commitOutputOptions: options.commitOutputOptions,
     cancellationToken: options.cancellationToken,
+    language: 'en',
   });
 
   return { result, repoRoot };
