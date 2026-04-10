@@ -26,6 +26,7 @@ import {
   StageFailedError,
   MixedChangesError,
 } from './errors';
+import type { EffectiveDisplayLanguage } from './i18n/types';
 
 export {
   EXIT_CODES,
@@ -433,6 +434,7 @@ export interface GenerateCommitMessageOptions {
   onProgress?: ProgressCallback;
   proceedWithStagedOnly?: boolean;
   maxAgentSteps?: number;
+  language: EffectiveDisplayLanguage;
 }
 
 export interface GenerateCommitMessageResult {
@@ -458,6 +460,7 @@ export async function generateCommitMessage(
     onProgress,
     proceedWithStagedOnly = false,
     maxAgentSteps,
+    language,
   } = options;
   try {
     throwIfCancellationRequested(cancellationToken);
@@ -523,6 +526,7 @@ export async function generateCommitMessage(
             commitOutputOptions: resolvedCommitOutputOptions,
             cancellationToken,
             maxAgentSteps,
+            language,
           })
         : await createLLMClient({
             provider,

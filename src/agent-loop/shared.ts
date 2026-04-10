@@ -3,6 +3,8 @@ import {
   DEFAULT_COMMIT_OUTPUT_OPTIONS,
   normalizeCommitOutputOptions,
 } from '../models';
+import { LOCALES } from '../i18n/locales';
+import type { EffectiveDisplayLanguage } from '../i18n/types';
 
 const MAX_AGENT_STEPS = Infinity;
 
@@ -308,39 +310,42 @@ function formatProgressMessage(
   step: number,
   toolName: string,
   args: any,
+  language: EffectiveDisplayLanguage = 'en'
 ): string {
-  const stepPrefix = `[Step ${step}] `;
+  const msgs = LOCALES[language].progressMessages;
   switch (toolName) {
     case 'get_diff':
-      return `${stepPrefix}Analyzing diff: ${args.path || 'unknown file'}`;
+      return msgs.stepAnalyzingDiff(step, args.path || 'unknown file');
     case 'read_file':
-      return `${stepPrefix}Reading file: ${args.path || 'unknown file'}`;
+      return msgs.stepReadingFile(step, args.path || 'unknown file');
     case 'get_file_outline':
-      return `${stepPrefix}Getting outline: ${args.path || 'unknown file'}`;
+      return msgs.stepGettingOutline(step, args.path || 'unknown file');
     case 'find_references': {
       const line = args.line ?? 'unknown line';
       const character = args.character ?? 'unknown char';
-      return `${stepPrefix}Finding references: ${args.path || 'unknown file'}:${line}:${character}`;
+      return msgs.stepFindingReferences(step, `${args.path || 'unknown file'}:${line}:${character}`);
     }
     case 'get_recent_commits':
-      return `${stepPrefix}Fetching recent commits: ${args.count || 'default'} entries`;
+      return msgs.stepFetchingRecentCommits(step, args.count);
     case 'search_code':
-      return `${stepPrefix}Searching project for: ${args.query || 'unknown keyword'}`;
+      return msgs.stepSearchingProject(step, args.query || 'unknown keyword');
     default:
-      return `${stepPrefix}Calling ${toolName}...`;
+      return msgs.stepCalling(step, toolName);
   }
 }
 
 function formatBatchProgressMessage(
   step: number,
   toolCalls: { name: string; args: any }[],
+  language: EffectiveDisplayLanguage = 'en'
 ): string {
   if (toolCalls.length === 0) return '';
+  const msgs = LOCALES[language].progressMessages;
+
   if (toolCalls.length === 1) {
-    return formatProgressMessage(step, toolCalls[0].name, toolCalls[0].args);
+    return formatProgressMessage(step, toolCalls[0].name, toolCalls[0].args, language);
   }
 
-  const stepPrefix = `[Step ${step}] `;
   const toolNames = Array.from(new Set(toolCalls.map((tc) => tc.name)));
 
   if (toolNames.length === 1) {
@@ -349,18 +354,18 @@ function formatBatchProgressMessage(
 
     if (name === 'get_diff') {
       if (paths.length <= 2)
-        return `${stepPrefix}Analyzing diffs: ${paths.join(', ')}`;
-      return `${stepPrefix}Analyzing diffs for ${paths.length} files...`;
+        return msgs.stepAnalyzingMultipleDiffs(step, paths.join(', '));
+      return msgs.stepAnalyzingDiffsForCount(step, paths.length);
     }
     if (name === 'read_file') {
       if (paths.length <= 2)
-        return `${stepPrefix}Reading files: ${paths.join(', ')}`;
-      return `${stepPrefix}Reading ${paths.length} files...`;
+        return msgs.stepReadingMultipleFiles(step, paths.join(', '));
+      return msgs.stepReadingFilesForCount(step, paths.length);
     }
     if (name === 'get_file_outline') {
       if (paths.length <= 2)
-        return `${stepPrefix}Getting outlines: ${paths.join(', ')}`;
-      return `${stepPrefix}Getting outlines for ${paths.length} files...`;
+        return msgs.stepGettingMultipleOutlines(step, paths.join(', '));
+      return msgs.stepGettingOutlinesForCount(step, paths.length);
     }
     if (name === 'find_references') {
       const targets = toolCalls
@@ -376,31 +381,31 @@ function formatBatchProgressMessage(
         })
         .filter(Boolean) as string[];
       if (targets.length <= 2) {
-        return `${stepPrefix}Finding references: ${targets.join(', ')}`;
+        return msgs.stepFindingReferencesForMultiple(step, targets.join(', '));
       }
-      return `${stepPrefix}Finding references for ${targets.length} symbols...`;
+      return msgs.stepFindingReferencesForCount(step, targets.length);
     }
     if (name === 'get_recent_commits') {
       const counts = toolCalls
         .map((tc) => tc.args.count)
         .filter((count) => typeof count !== 'undefined');
       if (counts.length === 1) {
-        return `${stepPrefix}Fetching recent commits: ${counts[0]} entries`;
+        return msgs.stepFetchingRecentCommits(step, counts[0]);
       }
-      return `${stepPrefix}Fetching recent commits...`;
+      return msgs.stepFetchingRecentCommits(step);
     }
     if (name === 'search_code') {
       const queries = toolCalls
         .map((tc) => tc.args.query)
         .filter(Boolean) as string[];
       if (queries.length <= 2) {
-        return `${stepPrefix}Searching project for: ${queries.join(', ')}`;
+        return msgs.stepSearchingProjectForMultiple(step, queries.join(', '));
       }
-      return `${stepPrefix}Searching project for ${queries.length} keywords...`;
+      return msgs.stepSearchingProjectForCount(step, queries.length);
     }
   }
 
-  return `${stepPrefix}Executing ${toolCalls.length} investigation tools...`;
+  return msgs.stepExecutingMultipleTools(step, toolCalls.length);
 }
 
 export {

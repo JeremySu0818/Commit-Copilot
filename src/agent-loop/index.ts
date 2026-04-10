@@ -6,6 +6,7 @@ import { runGeminiAgentLoop } from './gemini';
 import { runOpenAIAgentLoop } from './openai';
 import { runAnthropicAgentLoop } from './anthropic';
 import { runOllamaAgentLoop } from './ollama';
+import type { EffectiveDisplayLanguage } from '../i18n/types';
 
 interface AgentLoopOptions {
   provider: APIProvider;
@@ -20,6 +21,7 @@ interface AgentLoopOptions {
   commitOutputOptions: CommitOutputOptions;
   cancellationToken?: CancellationSignal;
   maxAgentSteps?: number;
+  language: EffectiveDisplayLanguage;
 }
 
 export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
@@ -36,6 +38,7 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
     commitOutputOptions,
     cancellationToken,
     maxAgentSteps,
+    language,
   } = options;
 
   if (baseUrl) {
@@ -51,6 +54,7 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
       cancellationToken,
       maxAgentSteps,
       baseUrl,
+      language,
     );
   }
 
@@ -67,6 +71,7 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
         commitOutputOptions,
         cancellationToken,
         maxAgentSteps,
+        language,
       );
     case 'openai':
       return runOpenAIAgentLoop(
@@ -80,6 +85,8 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
         commitOutputOptions,
         cancellationToken,
         maxAgentSteps,
+        undefined, // baseUrl
+        language,
       );
     case 'anthropic':
       return runAnthropicAgentLoop(
@@ -93,6 +100,7 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
         commitOutputOptions,
         cancellationToken,
         maxAgentSteps,
+        language,
       );
     case 'ollama':
       return runOllamaAgentLoop(
@@ -105,6 +113,7 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
         gitOps,
         commitOutputOptions,
         cancellationToken,
+        language,
       );
     default:
       throw new Error(`Unsupported provider for agent loop: ${provider}`);

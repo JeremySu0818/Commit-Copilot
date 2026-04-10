@@ -18,6 +18,8 @@ import {
   CancellationSignal,
   throwIfCancellationRequested,
 } from '../cancellation';
+import { LOCALES } from '../i18n/locales';
+import type { EffectiveDisplayLanguage } from '../i18n/types';
 
 async function runOllamaAgentLoop(
   host: string | undefined,
@@ -29,6 +31,7 @@ async function runOllamaAgentLoop(
   gitOps?: GitOperations,
   commitOutputOptions: CommitOutputOptions = DEFAULT_COMMIT_OUTPUT_OPTIONS,
   cancellationToken?: CancellationSignal,
+  language: EffectiveDisplayLanguage = 'en',
 ): Promise<string> {
   throwIfCancellationRequested(cancellationToken);
   if (!diff.trim()) {
@@ -55,18 +58,22 @@ async function runOllamaAgentLoop(
           lastPercent = percent;
           if (onProgress) {
             onProgress(
-              `Pulling ${modelName}: ${part.status} (${percent}%)`,
+              LOCALES[language].progressMessages.pulling(
+                modelName,
+                part.status || 'unknown',
+                percent
+              ),
               increment,
             );
           }
         }
       } else if (part.status && onProgress) {
-        onProgress(`Pulling ${modelName}: ${part.status}`);
+        onProgress(LOCALES[language].progressMessages.pulling(modelName, part.status));
       }
     }
 
     if (onProgress) {
-      onProgress('Generating commit message...', 0);
+      onProgress(LOCALES[language].progressMessages.generatingMessage, 0);
     }
 
     const initialContext = await buildInitialContext(

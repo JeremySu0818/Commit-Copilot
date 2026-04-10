@@ -30,6 +30,8 @@ import {
   formatBatchProgressMessage,
 } from './shared';
 import { DEFAULT_RETRY_OPTIONS, RetryInfo, withRetry } from '../retry';
+import { LOCALES } from '../i18n/locales';
+import type { EffectiveDisplayLanguage } from '../i18n/types';
 
 function parseToolArguments(
   rawArguments: unknown,
@@ -65,6 +67,7 @@ async function runOpenAIAgentLoop(
   cancellationToken?: CancellationSignal,
   maxAgentSteps?: number,
   baseUrl?: string,
+  language: EffectiveDisplayLanguage = 'en',
 ): Promise<string> {
   throwIfCancellationRequested(cancellationToken);
   if (!apiKey) {
@@ -101,7 +104,7 @@ async function runOpenAIAgentLoop(
     ];
 
     if (onProgress) {
-      onProgress('Agent analyzing changes...');
+      onProgress(LOCALES[language].progressMessages.analyzingChanges);
     }
 
     const retryOptions = {
@@ -111,9 +114,11 @@ async function runOpenAIAgentLoop(
         if (onProgress) {
           const nextAttempt = attempt + 1;
           onProgress(
-            `Transient API error. Retrying (${nextAttempt}/${maxAttempts}) in ${Math.ceil(
-              delayMs / 1000,
-            )}s...`,
+            LOCALES[language].progressMessages.transientApiError(
+              nextAttempt,
+              maxAttempts,
+              Math.ceil(delayMs / 1000)
+            )
           );
         }
       },
@@ -163,7 +168,7 @@ async function runOpenAIAgentLoop(
             name,
             args,
           }));
-          onProgress(formatBatchProgressMessage(step + 1, calls));
+          onProgress(formatBatchProgressMessage(step + 1, calls, language));
         }
 
         for (const parsedToolCall of parsedToolCalls) {
