@@ -575,7 +575,7 @@
 
       function applyLanguage(nextDisplayLanguage, nextEffectiveLanguage) {
         displayLanguage = nextDisplayLanguage;
-        effectiveLanguage = nextEffectiveLanguage === 'zh-TW' ? 'zh-TW' : 'en';
+        effectiveLanguage = nextEffectiveLanguage || 'en';
         currentPack = languagePacks[effectiveLanguage] || languagePacks.en;
         renderStaticText();
         renderLanguageOptions();
@@ -583,16 +583,6 @@
         updateCommitOutputOptionsUI(currentCommitOutputOptions);
       }
 
-      function resolveEffectiveDisplayLanguage(nextDisplayLanguage) {
-        if (nextDisplayLanguage === 'en' || nextDisplayLanguage === 'zh-TW') {
-          return nextDisplayLanguage;
-        }
-        const normalized = String(vscodeLanguage || '').trim().toLowerCase();
-        if (normalized.startsWith('zh')) {
-          return 'zh-TW';
-        }
-        return 'en';
-      }
 
       function updateCommitOutputOptionsUI(options) {
         const normalized = normalizeCommitOutputOptions(options);
@@ -903,8 +893,6 @@
 
       languageSelect.addEventListener('change', () => {
         const nextDisplayLanguage = languageSelect.value;
-        const nextEffectiveLanguage = resolveEffectiveDisplayLanguage(nextDisplayLanguage);
-        applyLanguage(nextDisplayLanguage, nextEffectiveLanguage);
         renderStatus(languageStatus, 'warning', currentPack.statuses.loadingConfiguration);
         vscode.postMessage({ type: 'saveDisplayLanguage', value: nextDisplayLanguage });
       });
