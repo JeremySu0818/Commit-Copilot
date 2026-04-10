@@ -1,7 +1,7 @@
 {
   "name": "commit-copilot",
-  "displayName": "Commit Copilot",
-  "description": "Generate conventional commit messages using LLMs.",
+  "displayName": "%extension.displayName%",
+  "description": "%extension.description%",
   "version": "1.9.0",
   "publisher": "JeremySu0818",
   "icon": "assets/icon.png",
@@ -23,21 +23,21 @@
     "commands": [
       {
         "command": "commit-copilot.generate",
-        "title": "Commit-Copilot: Generate Commit Message",
+        "title": "%command.generate.title%",
         "category": "Commit-Copilot",
         "icon": "$(wand)",
         "enablement": "!commit-copilot.isGenerating"
       },
       {
         "command": "commit-copilot.cancelGeneration",
-        "title": "Commit-Copilot: Cancel Generation",
+        "title": "%command.cancelGeneration.title%",
         "category": "Commit-Copilot",
         "icon": "$(debug-stop)",
         "enablement": "commit-copilot.isGenerating"
       },
       {
         "command": "commit-copilot.openLanguageSettings",
-        "title": "Commit-Copilot: Open Language Settings",
+        "title": "%command.openLanguageSettings.title%",
         "category": "Commit-Copilot",
         "icon": "$(settings-gear)"
       }
@@ -67,7 +67,7 @@
       "activitybar": [
         {
           "id": "commit-copilot-activitybar",
-          "title": "Commit Copilot",
+          "title": "%viewsContainer.title%",
           "icon": "assets/icon.svg"
         }
       ]
@@ -77,7 +77,7 @@
         {
           "type": "webview",
           "id": "commit-copilot.view",
-          "name": "Commit Copilot",
+          "name": "%view.name%",
           "icon": "assets/icon.svg"
         }
       ]
