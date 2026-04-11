@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useSidePanel } from '../SidePanelContext';
 import { BackIcon } from '../components/BackIcon';
 import { normalizeMaxAgentStepsValue, renderStatusHtml } from '../utils';
@@ -8,6 +8,10 @@ export function SettingsView() {
   const { state, dispatch, vscode, bootstrap } = useSidePanel();
   const { currentPack: pack, displayLanguage, currentMaxAgentSteps } = state;
   const [maxStepsInput, setMaxStepsInput] = useState(currentMaxAgentSteps > 0 ? String(currentMaxAgentSteps) : '');
+
+  useEffect(() => {
+    setMaxStepsInput(currentMaxAgentSteps > 0 ? String(currentMaxAgentSteps) : '');
+  }, [currentMaxAgentSteps]);
 
   const maxStepsInputValue = normalizeMaxAgentStepsValue(maxStepsInput);
   const saveMaxStepsDisabled = maxStepsInputValue === currentMaxAgentSteps;
