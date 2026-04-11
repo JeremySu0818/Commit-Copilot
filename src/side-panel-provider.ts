@@ -315,7 +315,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
     webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
     let isViewDisposed = false;
     const gitDisposables: vscode.Disposable[] = [];
-    const observedRepos = new WeakSet<object>();
+    const observedRepos = new WeakSet();
 
     const addGitDisposable = (disposable: vscode.Disposable | undefined) => {
       if (disposable) {
@@ -368,7 +368,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
         return;
       }
       try {
-        const gitExtension = vscode.extensions.getExtension<any>('vscode.git');
+        const gitExtension = vscode.extensions.getExtension('vscode.git');
         if (!gitExtension?.isActive) {
           return;
         }
@@ -453,7 +453,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
     };
 
     try {
-      const gitExtension = vscode.extensions.getExtension<any>('vscode.git');
+      const gitExtension = vscode.extensions.getExtension('vscode.git');
       if (gitExtension?.isActive && gitExtension.exports) {
         const git = gitExtension.exports.getAPI?.(1);
         if (git) {

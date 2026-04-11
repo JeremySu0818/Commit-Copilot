@@ -26,7 +26,7 @@ async function withOllamaModule<T>(
 test('runOllamaAgentLoop pulls model, reports progress, and generates from inline diff', async () => {
   const pullRequests: any[] = [];
   const chatRequests: any[] = [];
-  const progressEvents: Array<{ message: string; increment?: number }> = [];
+  const progressEvents: { message: string; increment?: number }[] = [];
 
   class OllamaMock {
     private readonly host: string;

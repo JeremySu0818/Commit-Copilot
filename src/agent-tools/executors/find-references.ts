@@ -112,10 +112,10 @@ async function executeFindReferences(
       return `No references found for ${relPath}:${line}:${character}.`;
     }
 
-    type ReferenceEntry = {
+    interface ReferenceEntry {
       uri: vscode.Uri;
       range: vscode.Range;
-    };
+    }
 
     const entries: ReferenceEntry[] = [];
     const seen = new Set<string>();

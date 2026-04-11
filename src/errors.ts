@@ -81,7 +81,7 @@ export const ERROR_MESSAGES: Record<
 export class CommitCopilotError extends Error {
   constructor(
     message: string,
-    public readonly errorCode: string = 'UNKNOWN',
+    public readonly errorCode = 'UNKNOWN',
     public readonly exitCode: number = EXIT_CODES.UNKNOWN_ERROR,
   ) {
     super(message);

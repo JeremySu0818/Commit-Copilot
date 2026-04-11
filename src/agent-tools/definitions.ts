@@ -154,9 +154,7 @@ function getAvailableTools(isStaged: boolean): ToolDefinition[] {
   return AGENT_TOOLS;
 }
 
-export function toGeminiFunctionDeclarations(
-  isStaged: boolean = false,
-): object[] {
+export function toGeminiFunctionDeclarations(isStaged = false): object[] {
   return getAvailableTools(isStaged).map((tool) => ({
     name: tool.name,
     description: tool.description,
@@ -164,7 +162,7 @@ export function toGeminiFunctionDeclarations(
   }));
 }
 
-export function toOpenAITools(isStaged: boolean = false): object[] {
+export function toOpenAITools(isStaged = false): object[] {
   return getAvailableTools(isStaged).map((tool) => ({
     type: 'function',
     function: {
@@ -175,7 +173,7 @@ export function toOpenAITools(isStaged: boolean = false): object[] {
   }));
 }
 
-export function toAnthropicTools(isStaged: boolean = false): object[] {
+export function toAnthropicTools(isStaged = false): object[] {
   return getAvailableTools(isStaged).map((tool) => ({
     name: tool.name,
     description: tool.description,

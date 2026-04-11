@@ -34,11 +34,11 @@ import { DEFAULT_RETRY_OPTIONS, RetryInfo, withRetry } from '../retry';
 import { LOCALES } from '../i18n/locales';
 import type { EffectiveDisplayLanguage } from '../i18n/types';
 
-type GeminiFunctionCall = {
+interface GeminiFunctionCall {
   id?: string;
   name: string;
   args: Record<string, unknown>;
-};
+}
 
 const GEMINI_AUTH_STATUS_PATTERN =
   /\b(?:status(?:\s*code)?|http(?:\s*status)?|response(?:\s*status)?)\s*[:=]?\s*(401|403)\b/i;
@@ -180,7 +180,7 @@ async function runGeminiAgentLoop(
   diff: string,
   repoRoot: string,
   onProgress?: ProgressCallback,
-  isStaged: boolean = true,
+  isStaged = true,
   gitOps?: GitOperations,
   commitOutputOptions: CommitOutputOptions = DEFAULT_COMMIT_OUTPUT_OPTIONS,
   cancellationToken?: CancellationSignal,
@@ -240,7 +240,9 @@ async function runGeminiAgentLoop(
 
     const retryOptions = {
       ...DEFAULT_RETRY_OPTIONS,
-      checkAbort: () => throwIfCancellationRequested(cancellationToken),
+      checkAbort: () => {
+        throwIfCancellationRequested(cancellationToken);
+      },
       onRetry: ({ attempt, maxAttempts, delayMs }: RetryInfo) => {
         if (onProgress) {
           const nextAttempt = attempt + 1;
@@ -266,7 +268,7 @@ async function runGeminiAgentLoop(
           return client.models.generateContent({
             model: modelName,
             contents,
-            config: config as any,
+            config: config,
           });
         },
         {

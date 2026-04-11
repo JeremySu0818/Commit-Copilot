@@ -61,7 +61,7 @@ export function AddProviderView() {
         allNames.push(cp.name.toLowerCase());
       }
     });
-    if (allNames.indexOf(name.toLowerCase()) !== -1) {
+    if (allNames.includes(name.toLowerCase())) {
       dispatch({
         type: 'UPDATE_ADD_PROVIDER_DRAFT',
         partial: {
@@ -138,12 +138,12 @@ export function AddProviderView() {
             type="text"
             id="providerNameInput"
             value={draft.name}
-            onChange={(e) =>
+            onChange={(e) => {
               dispatch({
                 type: 'UPDATE_ADD_PROVIDER_DRAFT',
                 partial: { name: e.target.value },
-              })
-            }
+              });
+            }}
           />
         </div>
         <div className="input-group" style={{ marginTop: '10px' }}>
@@ -152,12 +152,12 @@ export function AddProviderView() {
             type="text"
             id="apiBaseUrlInput"
             value={draft.baseUrl}
-            onChange={(e) =>
+            onChange={(e) => {
               dispatch({
                 type: 'UPDATE_ADD_PROVIDER_DRAFT',
                 partial: { baseUrl: e.target.value },
-              })
-            }
+              });
+            }}
           />
         </div>
         <div
@@ -170,12 +170,12 @@ export function AddProviderView() {
             type="password"
             id="customApiKeyInput"
             value={draft.apiKey}
-            onChange={(e) =>
+            onChange={(e) => {
               dispatch({
                 type: 'UPDATE_ADD_PROVIDER_DRAFT',
                 partial: { apiKey: e.target.value },
-              })
-            }
+              });
+            }}
           />
         </div>
         <span

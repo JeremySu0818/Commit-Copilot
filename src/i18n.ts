@@ -245,9 +245,7 @@ export function getDisplayLanguageLabel(
     (item) => item.value === language,
   );
   if (!option) return language;
-  return (
-    option.label || (option.labels && option.labels[uiLanguage]) || language
-  );
+  return option.label || option.labels?.[uiLanguage] || language;
 }
 
 function replacePlaceholders(

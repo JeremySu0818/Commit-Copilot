@@ -1,6 +1,6 @@
 export class GenerationStateManager {
   private static _isGenerating = false;
-  private static _listeners: Set<() => void> = new Set();
+  private static _listeners = new Set<() => void>();
 
   static get isGenerating(): boolean {
     return this._isGenerating;
@@ -8,7 +8,9 @@ export class GenerationStateManager {
 
   static setGenerating(value: boolean): void {
     this._isGenerating = value;
-    this._listeners.forEach((listener) => listener());
+    this._listeners.forEach((listener) => {
+      listener();
+    });
   }
 
   static addListener(listener: () => void): void {
@@ -23,7 +25,7 @@ export class GenerationStateManager {
 export class ValidationStateManager {
   private static _isValidating = false;
   private static _validatingProvider: string | null = null;
-  private static _listeners: Set<() => void> = new Set();
+  private static _listeners = new Set<() => void>();
 
   static get isValidating(): boolean {
     return this._isValidating;
@@ -36,7 +38,9 @@ export class ValidationStateManager {
   static setValidating(value: boolean, provider: string | null = null): void {
     this._isValidating = value;
     this._validatingProvider = provider;
-    this._listeners.forEach((listener) => listener());
+    this._listeners.forEach((listener) => {
+      listener();
+    });
   }
 
   static addListener(listener: () => void): void {

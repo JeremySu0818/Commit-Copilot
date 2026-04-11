@@ -11,7 +11,7 @@ export async function executeToolCall(
   toolCall: ToolCallRequest,
   repoRoot: string,
   diffContent: string,
-  isStaged: boolean = true,
+  isStaged = true,
   gitOps?: GitOperations,
 ): Promise<ToolCallResult> {
   try {

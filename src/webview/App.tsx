@@ -10,10 +10,10 @@ import { MainView } from './views/MainView';
 import { SettingsView } from './views/SettingsView';
 import { AddProviderView } from './views/AddProviderView';
 
-type AppProps = {
+interface AppProps {
   bootstrap: WebviewBootstrapData;
   vscode: VSCodeWebviewApi;
-};
+}
 
 export function App({ bootstrap, vscode }: AppProps) {
   const [state, dispatch] = useReducer(

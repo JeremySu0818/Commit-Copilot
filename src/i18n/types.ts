@@ -42,15 +42,18 @@ export type EffectiveDisplayLanguage =
   | 'zh-CN'
   | 'zh-TW';
 
-export type LanguageOption = {
+export interface LanguageOption {
   value: DisplayLanguage;
   label?: string;
   labels?: Record<EffectiveDisplayLanguage, string>;
-};
+}
 
-export type ErrorInfo = { title: string; action?: string };
+export interface ErrorInfo {
+  title: string;
+  action?: string;
+}
 
-export type ExtensionText = {
+export interface ExtensionText {
   output: {
     generationIgnored: string;
     generationStart: (timestamp: string) => string;
@@ -96,9 +99,9 @@ export type ExtensionText = {
     generationCanceled: string;
     failedPrefix: string;
   };
-};
+}
 
-export type SidePanelText = {
+export interface SidePanelText {
   invalidApiKeyPrefix: string;
   quotaExceededPrefix: string;
   apiRequestFailedPrefix: string;
@@ -112,9 +115,9 @@ export type SidePanelText = {
   saveConfigSuccess: (providerName: string) => string;
   saveConfigFailed: string;
   languageSaved: (label: string) => string;
-};
+}
 
-export type WebviewLanguagePack = {
+export interface WebviewLanguagePack {
   sections: {
     apiProvider: string;
     configuration: string;
@@ -192,9 +195,9 @@ export type WebviewLanguagePack = {
     agentic: string;
     directDiff: string;
   };
-};
+}
 
-export type ProgressMessages = {
+export interface ProgressMessages {
   analyzingChanges: string;
   generatingMessage: string;
   transientApiError: (
@@ -223,12 +226,12 @@ export type ProgressMessages = {
   stepSearchingProjectForMultiple: (step: number, keywords: string) => string;
   stepSearchingProjectForCount: (step: number, count: number) => string;
   stepExecutingMultipleTools: (step: number, count: number) => string;
-};
+}
 
-export type LocaleTextBundle = {
+export interface LocaleTextBundle {
   errorMessages: Record<number, ErrorInfo>;
   extensionText: ExtensionText;
   sidePanelText: SidePanelText;
   webviewLanguagePack: WebviewLanguagePack;
   progressMessages: ProgressMessages;
-};
+}

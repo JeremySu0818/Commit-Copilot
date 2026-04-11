@@ -5,11 +5,11 @@ import { GitOperations } from '../commit-copilot';
 const STAGED_WORKSPACE_DIR_NAME = 'commit-copilot-temp';
 const STAGED_WORKSPACE_SUBDIR_NAME = 'staged-workspace';
 
-type StagedDiffEntry = {
+interface StagedDiffEntry {
   aPath: string;
   bPath: string;
   status: 'added' | 'modified' | 'deleted' | 'renamed';
-};
+}
 
 function parseStagedDiffEntries(diffContent: string): StagedDiffEntry[] {
   const entries: StagedDiffEntry[] = [];
@@ -17,7 +17,7 @@ function parseStagedDiffEntries(diffContent: string): StagedDiffEntry[] {
   let current: StagedDiffEntry | null = null;
 
   for (const line of lines) {
-    const match = line.match(/^diff --git a\/(.+?) b\/(.+)$/);
+    const match = /^diff --git a\/(.+?) b\/(.+)$/.exec(line);
     if (match) {
       if (current) {
         entries.push(current);
@@ -62,10 +62,10 @@ function parseStagedDiffEntries(diffContent: string): StagedDiffEntry[] {
   return entries;
 }
 
-type RemovePathOptions = {
+interface RemovePathOptions {
   throwOnFailure?: boolean;
   operation?: string;
-};
+}
 
 function removePath(
   targetPath: string,
@@ -103,7 +103,7 @@ async function copyWorkspaceSnapshot(
     return;
   }
 
-  const stack: Array<{ src: string; dest: string }> = [
+  const stack: { src: string; dest: string }[] = [
     { src: repoRoot, dest: destRoot },
   ];
 

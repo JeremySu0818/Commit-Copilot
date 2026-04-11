@@ -62,7 +62,7 @@ async function runOpenAIAgentLoop(
   diff: string,
   repoRoot: string,
   onProgress?: ProgressCallback,
-  isStaged: boolean = true,
+  isStaged = true,
   gitOps?: GitOperations,
   commitOutputOptions: CommitOutputOptions = DEFAULT_COMMIT_OUTPUT_OPTIONS,
   cancellationToken?: CancellationSignal,
@@ -113,7 +113,9 @@ async function runOpenAIAgentLoop(
 
     const retryOptions = {
       ...DEFAULT_RETRY_OPTIONS,
-      checkAbort: () => throwIfCancellationRequested(cancellationToken),
+      checkAbort: () => {
+        throwIfCancellationRequested(cancellationToken);
+      },
       onRetry: ({ attempt, maxAttempts, delayMs }: RetryInfo) => {
         if (onProgress) {
           const nextAttempt = attempt + 1;

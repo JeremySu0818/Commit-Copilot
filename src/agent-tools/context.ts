@@ -30,7 +30,7 @@ export function parseDiffSummary(
   let currentBPath = '';
 
   for (const line of lines) {
-    const diffMatch = line.match(/^diff --git a\/(.+?) b\/(.+)$/);
+    const diffMatch = /^diff --git a\/(.+?) b\/(.+)$/.exec(line);
     if (diffMatch) {
       if (currentFile) {
         files.push(currentFile);
@@ -96,10 +96,10 @@ export async function getProjectStructure(
 ): Promise<string> {
   const MAX_FILES = Infinity;
 
-  type TreeNode = {
+  interface TreeNode {
     dirs: Map<string, TreeNode>;
     files: Set<string>;
-  };
+  }
 
   const buildTreeFromPaths = (paths: string[]): string[] => {
     const root: TreeNode = { dirs: new Map(), files: new Set() };
@@ -144,7 +144,7 @@ export async function getProjectStructure(
     let fileCount = 0;
     let didTruncate = false;
 
-    const render = (node: TreeNode, prefix: string = ''): string[] => {
+    const render = (node: TreeNode, prefix = ''): string[] => {
       const lines: string[] = [];
       const dirNames = [...node.dirs.keys()].sort((a, b) => a.localeCompare(b));
       const fileNames = [...node.files].sort((a, b) => a.localeCompare(b));
@@ -193,7 +193,7 @@ export async function getProjectStructure(
   }
 
   let fileCount = 0;
-  function walk(dir: string, prefix: string = ''): string[] {
+  function walk(dir: string, prefix = ''): string[] {
     const lines: string[] = [];
 
     let entries: fs.Dirent[];
@@ -257,8 +257,8 @@ export async function buildInitialContext(
   diff: string,
   repoRoot: string,
   gitOps?: GitOperations,
-  isStaged: boolean = true,
-  enableTools: boolean = true,
+  isStaged = true,
+  enableTools = true,
   commitOutputOptions: CommitOutputOptions = DEFAULT_COMMIT_OUTPUT_OPTIONS,
 ): Promise<string> {
   const resolvedCommitOutputOptions =

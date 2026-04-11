@@ -63,7 +63,9 @@ test('inline script serialization escapes html terminators and unicode separator
     withModuleMock('./models', modelsMock, async () => {
       clearRequireCache(MODULE_PATH);
       const dynamicRequire = createRequire(__filename);
-      return dynamicRequire(MODULE_PATH) as typeof import('../side-panel-provider');
+      return dynamicRequire(
+        MODULE_PATH,
+      ) as typeof import('../side-panel-provider');
     }),
   );
 
