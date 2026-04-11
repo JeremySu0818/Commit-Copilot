@@ -25,7 +25,7 @@ export const DEFAULT_DISPLAY_LANGUAGE: DisplayLanguage = 'auto';
 export const DISPLAY_LANGUAGE_OPTIONS: LanguageOption[] = [
   {
     value: 'auto',
-    labels: { en: 'Auto (Follow VS Code)', 'zh-TW': '自動（跟隨 VS Code）', 'zh-CN': '自动（跟随 VS Code）', ja: '自動（VS Code に従う）', ko: '자동 (VS Code 설정 따름)', es: 'Automático (según VS Code)', ar: 'تلقائي (حسب VS Code)', cs: 'Automaticky (podle VS Code)', nl: 'Automatisch (volgens VS Code)', fr: 'Automatique (selon VS Code)', de: 'Automatisch (laut VS Code)', hi: 'स्वचालित (VS Code के अनुसार)' },
+    labels: { en: 'Auto (Follow VS Code)', 'zh-TW': '自動（跟隨 VS Code）', 'zh-CN': '自动（跟随 VS Code）', ja: '自動（VS Code に従う）', ko: '자동 (VS Code 설정 따름)', es: 'Automático (según VS Code)', ar: 'تلقائي (حسب VS Code)', cs: 'Automaticky (podle VS Code)', nl: 'Automatisch (volgens VS Code)', fr: 'Automatique (selon VS Code)', de: 'Automatisch (laut VS Code)', hi: 'स्वचालित (VS Code के अनुसार)', hu: 'Automatikus (a VS Code szerint)' },
   },
   { value: 'en', label: 'English' },
   { value: 'zh-TW', label: '繁體中文' },
@@ -39,6 +39,7 @@ export const DISPLAY_LANGUAGE_OPTIONS: LanguageOption[] = [
   { value: 'fr', label: 'Français' },
   { value: 'de', label: 'Deutsch' },
   { value: 'hi', label: 'हिन्दी' },
+  { value: 'hu', label: 'Magyar' },
 ];
 
 export const WEBVIEW_LANGUAGE_PACKS: Record<
@@ -57,10 +58,11 @@ export const WEBVIEW_LANGUAGE_PACKS: Record<
   fr: LOCALES.fr.webviewLanguagePack,
   de: LOCALES.de.webviewLanguagePack,
   hi: LOCALES.hi.webviewLanguagePack,
+  hu: LOCALES.hu.webviewLanguagePack,
 };
 
 export function normalizeDisplayLanguage(value: unknown): DisplayLanguage {
-  if (value === 'en' || value === 'zh-TW' || value === 'zh-CN' || value === 'ja' || value === 'ko' || value === 'es' || value === 'ar' || value === 'cs' || value === 'nl' || value === 'fr' || value === 'de' || value === 'hi' || value === 'auto') {
+  if (value === 'en' || value === 'zh-TW' || value === 'zh-CN' || value === 'ja' || value === 'ko' || value === 'es' || value === 'ar' || value === 'cs' || value === 'nl' || value === 'fr' || value === 'de' || value === 'hi' || value === 'hu' || value === 'auto') {
     return value;
   }
   return DEFAULT_DISPLAY_LANGUAGE;
@@ -70,7 +72,7 @@ export function resolveEffectiveDisplayLanguage(
   displayLanguage: DisplayLanguage,
   vscodeLanguage?: string,
 ): EffectiveDisplayLanguage {
-  if (displayLanguage === 'en' || displayLanguage === 'zh-TW' || displayLanguage === 'zh-CN' || displayLanguage === 'ja' || displayLanguage === 'ko' || displayLanguage === 'es' || displayLanguage === 'ar' || displayLanguage === 'cs' || displayLanguage === 'nl' || displayLanguage === 'fr' || displayLanguage === 'de' || displayLanguage === 'hi') {
+  if (displayLanguage === 'en' || displayLanguage === 'zh-TW' || displayLanguage === 'zh-CN' || displayLanguage === 'ja' || displayLanguage === 'ko' || displayLanguage === 'es' || displayLanguage === 'ar' || displayLanguage === 'cs' || displayLanguage === 'nl' || displayLanguage === 'fr' || displayLanguage === 'de' || displayLanguage === 'hi' || displayLanguage === 'hu') {
     return displayLanguage;
   }
   const normalized = String(vscodeLanguage || '')
@@ -109,6 +111,9 @@ export function resolveEffectiveDisplayLanguage(
   }
   if (normalized.startsWith('hi')) {
     return 'hi';
+  }
+  if (normalized.startsWith('hu')) {
+    return 'hu';
   }
   return 'en';
 }
