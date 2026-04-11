@@ -1,0 +1,9 @@
+{
+  "extension.displayName": "Commit Copilot",
+  "extension.description": "Generování konvenčních zpráv o potvrzení (commit) pomocí LLM.",
+  "command.generate.title": "Generovat zprávu o potvrzení",
+  "command.cancelGeneration.title": "Zrušit generování",
+  "command.openLanguageSettings.title": "Otevřít nastavení jazyka",
+  "viewsContainer.title": "Commit Copilot",
+  "view.name": "Commit Copilot"
+}
