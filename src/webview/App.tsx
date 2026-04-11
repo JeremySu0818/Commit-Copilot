@@ -4,8 +4,8 @@ import {
   SidePanelContext,
   createInitialState,
   sidePanelReducer,
-} from './SidePanelContext';
-import { useMessageHandler } from './useMessageHandler';
+} from './side-panel-context';
+import { useMessageHandler } from './use-message-handler';
 import { MainView } from './views/MainView';
 import { SettingsView } from './views/SettingsView';
 import { AddProviderView } from './views/AddProviderView';

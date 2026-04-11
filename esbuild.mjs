@@ -43,7 +43,7 @@ async function main() {
   });
 
   const webviewCtx = await context({
-    entryPoints: ['src/webview/side-panel.tsx'],
+    entryPoints: ['src/webview/SidePanel.tsx'],
     bundle: true,
     format: 'iife',
     minify: production,

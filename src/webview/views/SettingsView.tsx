@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useSidePanel } from '../SidePanelContext';
+import { useSidePanel } from '../side-panel-context';
 import { BackIcon } from '../components/BackIcon';
 import { normalizeMaxAgentStepsValue, renderStatusHtml } from '../utils';
 import type { EffectiveDisplayLanguage } from '../../i18n';
