@@ -19,6 +19,7 @@ echo.
 
 
 call npx vsce package
+call npm run clean
 if %ERRORLEVEL% neq 0 (
     echo [!] vsce package failed
     exit /b %ERRORLEVEL%
