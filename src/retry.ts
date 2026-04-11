@@ -157,7 +157,7 @@ function isRetryableError(error: any): boolean {
     message.includes('server error') ||
     message.includes('overloaded') ||
     message.includes('timeout') ||
-    message.includes('429')
+    /\b429\b/.test(message)
   ) {
     return true;
   }

@@ -2,6 +2,28 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { clearRequireCache, withModuleMock } from '../helpers/module-mock';
 
+const MODULE_PATH = '../../agent-loop/openai';
+
+async function withOpenAIModule<T>(
+  openaiMock: unknown,
+  agentToolsMock: unknown,
+  run: (mod: typeof import('../../agent-loop/openai')) => Promise<T>,
+): Promise<T> {
+  clearRequireCache(MODULE_PATH);
+  return withModuleMock(
+    'openai',
+    { __esModule: true, default: openaiMock },
+    async () => {
+      return withModuleMock('../agent-tools', agentToolsMock, async () => {
+        const mod = require(
+          MODULE_PATH,
+        ) as typeof import('../../agent-loop/openai');
+        return run(mod);
+      });
+    },
+  );
+}
+
 test('runOpenAIAgentLoop continues when one tool call has malformed JSON arguments', async () => {
   const completionRequests: any[] = [];
   const executedCalls: any[] = [];
@@ -65,28 +87,22 @@ test('runOpenAIAgentLoop continues when one tool call has malformed JSON argumen
     toOpenAITools: () => [],
   };
 
-  clearRequireCache('../../agent-loop/openai');
   try {
-    await withModuleMock(
-      'openai',
-      { __esModule: true, default: OpenAIMock },
-      async () => {
-        await withModuleMock('../agent-tools', agentToolsMock, async () => {
-          const { runOpenAIAgentLoop } =
-            await import('../../agent-loop/openai');
-          const result = await runOpenAIAgentLoop(
-            'openai-test-key',
-            'gpt-test',
-            'diff --git a/a.ts b/a.ts\n+line',
-            process.cwd(),
-          );
-
-          assert.equal(result, 'fix(agent): recover from malformed tool args');
-        });
-      },
+    const result = await withOpenAIModule(
+      OpenAIMock,
+      agentToolsMock,
+      async ({ runOpenAIAgentLoop }) =>
+        runOpenAIAgentLoop(
+          'openai-test-key',
+          'gpt-test',
+          'diff --git a/a.ts b/a.ts\n+line',
+          process.cwd(),
+        ),
     );
+
+    assert.equal(result, 'fix(agent): recover from malformed tool args');
   } finally {
-    clearRequireCache('../../agent-loop/openai');
+    clearRequireCache(MODULE_PATH);
   }
 
   assert.deepEqual(executedCalls, [
