@@ -5,6 +5,7 @@ import { zhCNLocale } from './zh-CN';
 import { jaLocale } from './ja';
 import { koLocale } from './ko';
 import { esLocale } from './es';
+import { arLocale } from './ar';
 
 export const LOCALES: Record<EffectiveDisplayLanguage, LocaleTextBundle> = {
   en: enLocale,
@@ -13,4 +14,5 @@ export const LOCALES: Record<EffectiveDisplayLanguage, LocaleTextBundle> = {
   ja: jaLocale,
   ko: koLocale,
   es: esLocale,
+  ar: arLocale,
 };
