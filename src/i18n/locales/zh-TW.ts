@@ -218,27 +218,47 @@ export const zhTWLocale: LocaleTextBundle = {
   progressMessages: {
     analyzingChanges: 'Agent 正在分析變更...',
     generatingMessage: '正在產生 commit message...',
-    transientApiError: (attempt, maxAttempts, seconds) => `發生暫時性 API 錯誤。將在 ${seconds} 秒後重試 (${attempt}/${maxAttempts})...`,
-    pulling: (model, status, percent) => percent !== undefined ? `正在下載 ${model}：${status} (${percent}%)` : `正在下載 ${model}：${status}`,
-    
+    transientApiError: (attempt, maxAttempts, seconds) =>
+      `發生暫時性 API 錯誤。將在 ${seconds} 秒後重試 (${attempt}/${maxAttempts})...`,
+    pulling: (model, status, percent) =>
+      percent !== undefined
+        ? `正在下載 ${model}：${status} (${percent}%)`
+        : `正在下載 ${model}：${status}`,
+
     stepAnalyzingDiff: (step, path) => `[步驟 ${step}] 分析 diff：${path}`,
     stepReadingFile: (step, path) => `[步驟 ${step}] 讀取檔案：${path}`,
     stepGettingOutline: (step, path) => `[步驟 ${step}] 取得結構：${path}`,
-    stepFindingReferences: (step, target) => `[步驟 ${step}] 查找參照：${target}`,
-    stepFetchingRecentCommits: (step, count) => count !== undefined ? `[步驟 ${step}] 取得近期 commits：${count} 筆` : `[步驟 ${step}] 取得近期 commits...`,
-    stepSearchingProject: (step, keyword) => `[步驟 ${step}] 在專案中搜尋：${keyword}`,
+    stepFindingReferences: (step, target) =>
+      `[步驟 ${step}] 查找參照：${target}`,
+    stepFetchingRecentCommits: (step, count) =>
+      count !== undefined
+        ? `[步驟 ${step}] 取得近期 commits：${count} 筆`
+        : `[步驟 ${step}] 取得近期 commits...`,
+    stepSearchingProject: (step, keyword) =>
+      `[步驟 ${step}] 在專案中搜尋：${keyword}`,
     stepCalling: (step, toolName) => `[步驟 ${step}] 呼叫 ${toolName}...`,
 
-    stepAnalyzingMultipleDiffs: (step, paths) => `[步驟 ${step}] 分析多個 diff：${paths}`,
-    stepAnalyzingDiffsForCount: (step, count) => `[步驟 ${step}] 分析 ${count} 個檔案的 diff...`,
-    stepReadingMultipleFiles: (step, paths) => `[步驟 ${step}] 讀取多個檔案：${paths}`,
-    stepReadingFilesForCount: (step, count) => `[步驟 ${step}] 讀取 ${count} 個檔案...`,
-    stepGettingMultipleOutlines: (step, paths) => `[步驟 ${step}] 取得多個檔案結構：${paths}`,
-    stepGettingOutlinesForCount: (step, count) => `[步驟 ${step}] 取得 ${count} 個檔案結構...`,
-    stepFindingReferencesForMultiple: (step, targets) => `[步驟 ${step}] 查找多個參照：${targets}`,
-    stepFindingReferencesForCount: (step, count) => `[步驟 ${step}] 查找 ${count} 個符號的參照...`,
-    stepSearchingProjectForMultiple: (step, keywords) => `[步驟 ${step}] 在專案中搜尋：${keywords}`,
-    stepSearchingProjectForCount: (step, count) => `[步驟 ${step}] 在專案中搜尋 ${count} 個關鍵字...`,
-    stepExecutingMultipleTools: (step, count) => `[步驟 ${step}] 執行 ${count} 個調查工具...`,
+    stepAnalyzingMultipleDiffs: (step, paths) =>
+      `[步驟 ${step}] 分析多個 diff：${paths}`,
+    stepAnalyzingDiffsForCount: (step, count) =>
+      `[步驟 ${step}] 分析 ${count} 個檔案的 diff...`,
+    stepReadingMultipleFiles: (step, paths) =>
+      `[步驟 ${step}] 讀取多個檔案：${paths}`,
+    stepReadingFilesForCount: (step, count) =>
+      `[步驟 ${step}] 讀取 ${count} 個檔案...`,
+    stepGettingMultipleOutlines: (step, paths) =>
+      `[步驟 ${step}] 取得多個檔案結構：${paths}`,
+    stepGettingOutlinesForCount: (step, count) =>
+      `[步驟 ${step}] 取得 ${count} 個檔案結構...`,
+    stepFindingReferencesForMultiple: (step, targets) =>
+      `[步驟 ${step}] 查找多個參照：${targets}`,
+    stepFindingReferencesForCount: (step, count) =>
+      `[步驟 ${step}] 查找 ${count} 個符號的參照...`,
+    stepSearchingProjectForMultiple: (step, keywords) =>
+      `[步驟 ${step}] 在專案中搜尋：${keywords}`,
+    stepSearchingProjectForCount: (step, count) =>
+      `[步驟 ${step}] 在專案中搜尋 ${count} 個關鍵字...`,
+    stepExecutingMultipleTools: (step, count) =>
+      `[步驟 ${step}] 執行 ${count} 個調查工具...`,
   },
 };

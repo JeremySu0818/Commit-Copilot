@@ -100,7 +100,9 @@ test('inline script serialization escapes html terminators and unicode separator
 
   const bootstrapLine = webview.html
     .split('\n')
-    .find((line) => line.includes('window.__COMMIT_COPILOT_WEBVIEW_BOOTSTRAP__'));
+    .find((line) =>
+      line.includes('window.__COMMIT_COPILOT_WEBVIEW_BOOTSTRAP__'),
+    );
   assert.ok(bootstrapLine);
   assert.doesNotMatch(bootstrapLine, /<(?!\/)/);
   assert.match(bootstrapLine, /\\u003C\/script\\u003E\\u0026/);

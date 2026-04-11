@@ -72,7 +72,8 @@ test('runOpenAIAgentLoop continues when one tool call has malformed JSON argumen
       { __esModule: true, default: OpenAIMock },
       async () => {
         await withModuleMock('../agent-tools', agentToolsMock, async () => {
-          const { runOpenAIAgentLoop } = await import('../../agent-loop/openai');
+          const { runOpenAIAgentLoop } =
+            await import('../../agent-loop/openai');
           const result = await runOpenAIAgentLoop(
             'openai-test-key',
             'gpt-test',

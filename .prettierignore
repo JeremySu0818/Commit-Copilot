@@ -1,0 +1,11 @@
+node_modules
+out
+dist
+.vscode
+.vscode-test
+assets
+package-lock.json
+*.vsix
+build.ps1
+build.sh
+build.bat

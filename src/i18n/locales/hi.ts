@@ -50,8 +50,7 @@ export const hiLocale: LocaleTextBundle = {
     },
     [EXIT_CODES.API_ERROR]: {
       title: 'एपीआई अनुरोध विफल रहा',
-      action:
-        'एपीआई के साथ संवाद करने में त्रुटि हुई। कृपया पुन: प्रयास करें।',
+      action: 'एपीआई के साथ संवाद करने में त्रुटि हुई। कृपया पुन: प्रयास करें।',
     },
     [EXIT_CODES.COMMIT_FAILED]: {
       title: 'परिवर्तनों को कमिट करने में विफल',
@@ -69,11 +68,11 @@ export const hiLocale: LocaleTextBundle = {
       generationStart: (timestamp) =>
         `[${timestamp}] Commit-copilot उत्पादन शुरू हो रहा है...`,
       gitExtensionMissing: 'त्रुटि: गिट एक्सटेंशन नहीं मिला।',
-      selectedRepoFromScm: (path) =>
-        `SCM संदर्भ से चयनित रिपॉजिटरी: ${path}`,
+      selectedRepoFromScm: (path) => `SCM संदर्भ से चयनित रिपॉजिटरी: ${path}`,
       selectedRepoFromEditor: (path) =>
         `सक्रिय संपादक से चयनित रिपॉजिटरी: ${path}`,
-      noRepoMatchedActiveEditor: 'सक्रिय संपादक से मेल खाने वाली कोई रिपॉजिटरी नहीं।',
+      noRepoMatchedActiveEditor:
+        'सक्रिय संपादक से मेल खाने वाली कोई रिपॉजिटरी नहीं।',
       noActiveEditorForRepoSelection:
         'रिपॉजिटरी चयन के लिए कोई सक्रिय संपादक नहीं मिला।',
       selectedOnlyRepo: (path) => `चयनित केवल रिपॉजिटरी: ${path}`,
@@ -86,7 +85,8 @@ export const hiLocale: LocaleTextBundle = {
         `कमिट आउटपुट विकल्प: ${optionsJson}`,
       missingApiKeyWarning: (provider) =>
         `चेतावनी: ${provider} के लिए कोई एपीआई कुंजी नहीं मिली।`,
-      cancelRequestedFromProgress: 'प्रगति यूआई से रद्दीकरण का अनुरोध किया गया।',
+      cancelRequestedFromProgress:
+        'प्रगति यूआई से रद्दीकरण का अनुरोध किया गया।',
       callingGenerateCommitMessage: 'generateCommitMessage को कॉल कर रहा है...',
       repositoryPath: (path) => `रिपॉजिटरी पथ: ${path}`,
       usingModel: (model) => `मॉडल का उपयोग: ${model}`,
@@ -120,7 +120,8 @@ export const hiLocale: LocaleTextBundle = {
       stageAndTrack: 'स्टेज और ट्रैक करें',
       commitGenerated: 'कमिट संदेश उत्पन्न किया गया!',
       viewProviderConsoleAction: 'प्रदाता कंसोल देखें',
-      noChanges: 'कमिट करने के लिए कोई परिवर्तन है नहीं। पहले कुछ परिवर्तन करें!',
+      noChanges:
+        'कमिट करने के लिए कोई परिवर्तन है नहीं। पहले कुछ परिवर्तन करें!',
       generationCanceled: 'कमिट संदेश उत्पादन रद्द कर दिया गया।',
       failedPrefix: 'Commit-Copilot विफल रहा',
     },
@@ -131,7 +132,8 @@ export const hiLocale: LocaleTextBundle = {
     apiRequestFailedPrefix: 'एपीआई अनुरोध विफल रहा',
     connectionErrorPrefix: 'कनेक्शन त्रुटि',
     unknownProvider: 'अज्ञात प्रदाता',
-    cannotConnectOllamaAt: (host) => `Ollama से ${host} पर कनेक्ट नहीं किया जा सकता`,
+    cannotConnectOllamaAt: (host) =>
+      `Ollama से ${host} पर कनेक्ट नहीं किया जा सकता`,
     cannotConnectOllama: (message) =>
       `Ollama से कनेक्ट नहीं किया जा सकता: ${message}। सुनिश्चित करें कि Ollama चल रहा है।`,
     apiKeyCannotBeEmpty: 'एपीआई कुंजी खाली नहीं हो सकती',
@@ -209,8 +211,7 @@ export const hiLocale: LocaleTextBundle = {
       ollamaFixedToDirectDiff: 'Ollama डायरेक्ट डिफ मोड पर निश्चित है',
       agenticModeDescription:
         'एजेंटिक मोड गहरे विश्लेषण के लिए रिपॉजिटरी टूल का उपयोग करता है',
-      directDiffDescription:
-        'डायरेक्ट डिफ रॉ डिफ को सीधे मॉडल में भेजता है',
+      directDiffDescription: 'डायरेक्ट डिफ रॉ डिफ को सीधे मॉडल में भेजता है',
       ollamaInfo:
         '<strong>Ollama</strong> आपकी मशीन पर स्थानीय रूप से चलता है।<br>डिफ़ॉल्ट होस्ट: <code>{host}</code><br>उत्पन्न करने से पहले सुनिश्चित करें कि Ollama चल रहा है।',
       googleInfo:
@@ -232,27 +233,50 @@ export const hiLocale: LocaleTextBundle = {
   progressMessages: {
     analyzingChanges: 'एजेंट परिवर्तनों का विश्लेषण कर रहा है...',
     generatingMessage: 'कमिट संदेश उत्पन्न कर रहा है...',
-    transientApiError: (attempt, maxAttempts, seconds) => `अस्थायी एपीआई त्रुटि। ${seconds}s में पुनः प्रयास कर रहा है (${attempt}/${maxAttempts})...`,
-    pulling: (model, status, percent) => percent !== undefined ? `${model} को खींच रहा है: ${status} (${percent}%)` : `${model} को खींच रहा है: ${status}`,
-    
-    stepAnalyzingDiff: (step, path) => `[कदम ${step}] अंतर का विश्लेषण कर रहा है: ${path}`,
-    stepReadingFile: (step, path) => `[कदम ${step}] फ़ाइल पढ़ रहा है: ${path}`,
-    stepGettingOutline: (step, path) => `[कदम ${step}] रूपरेखा प्राप्त कर रहा है: ${path}`,
-    stepFindingReferences: (step, target) => `[कदम ${step}] संदर्भ ढूंढ रहा है: ${target}`,
-    stepFetchingRecentCommits: (step, count) => count !== undefined ? `[कदम ${step}] हाल ही के कमिट प्राप्त कर रहा है: ${count} प्रविष्टियाँ` : `[कदम ${step}] हाल ही के कमिट प्राप्त कर रहा है...`,
-    stepSearchingProject: (step, keyword) => `[कदम ${step}] परियोजना में खोज रहा है: ${keyword}`,
-    stepCalling: (step, toolName) => `[कदम ${step}] ${toolName} को कॉल कर रहा है...`,
+    transientApiError: (attempt, maxAttempts, seconds) =>
+      `अस्थायी एपीआई त्रुटि। ${seconds}s में पुनः प्रयास कर रहा है (${attempt}/${maxAttempts})...`,
+    pulling: (model, status, percent) =>
+      percent !== undefined
+        ? `${model} को खींच रहा है: ${status} (${percent}%)`
+        : `${model} को खींच रहा है: ${status}`,
 
-    stepAnalyzingMultipleDiffs: (step, paths) => `[कदम ${step}] अंतर का विश्लेषण कर रहा है: ${paths}`,
-    stepAnalyzingDiffsForCount: (step, count) => `[कदम ${step}] ${count} फ़ाइलों के लिए अंतर का विश्लेषण कर रहा है...`,
-    stepReadingMultipleFiles: (step, paths) => `[कदम ${step}] फ़ाइलें पढ़ रहा है: ${paths}`,
-    stepReadingFilesForCount: (step, count) => `[कदम ${step}] ${count} फ़ाइलें पढ़ रहा है...`,
-    stepGettingMultipleOutlines: (step, paths) => `[कदम ${step}] रूपरेखाएँ प्राप्त कर रहा है: ${paths}`,
-    stepGettingOutlinesForCount: (step, count) => `[कदम ${step}] ${count} फ़ाइलों के लिए रूपरेखाएँ प्राप्त कर रहा है...`,
-    stepFindingReferencesForMultiple: (step, targets) => `[कदम ${step}] संदर्भ ढूंढ रहा है: ${targets}`,
-    stepFindingReferencesForCount: (step, count) => `[कदम ${step}] ${count} प्रतीकों के लिए संदर्भ ढूंढ रहा है...`,
-    stepSearchingProjectForMultiple: (step, keywords) => `[कदम ${step}] परियोजना में खोज रहा है: ${keywords}`,
-    stepSearchingProjectForCount: (step, count) => `[कदम ${step}] ${count} कीवर्ड के लिए परियोजना में खोज रहा है...`,
-    stepExecutingMultipleTools: (step, count) => `[कदम ${step}] ${count} जाँच उपकरणों को निष्पादित कर रहा है...`,
+    stepAnalyzingDiff: (step, path) =>
+      `[कदम ${step}] अंतर का विश्लेषण कर रहा है: ${path}`,
+    stepReadingFile: (step, path) => `[कदम ${step}] फ़ाइल पढ़ रहा है: ${path}`,
+    stepGettingOutline: (step, path) =>
+      `[कदम ${step}] रूपरेखा प्राप्त कर रहा है: ${path}`,
+    stepFindingReferences: (step, target) =>
+      `[कदम ${step}] संदर्भ ढूंढ रहा है: ${target}`,
+    stepFetchingRecentCommits: (step, count) =>
+      count !== undefined
+        ? `[कदम ${step}] हाल ही के कमिट प्राप्त कर रहा है: ${count} प्रविष्टियाँ`
+        : `[कदम ${step}] हाल ही के कमिट प्राप्त कर रहा है...`,
+    stepSearchingProject: (step, keyword) =>
+      `[कदम ${step}] परियोजना में खोज रहा है: ${keyword}`,
+    stepCalling: (step, toolName) =>
+      `[कदम ${step}] ${toolName} को कॉल कर रहा है...`,
+
+    stepAnalyzingMultipleDiffs: (step, paths) =>
+      `[कदम ${step}] अंतर का विश्लेषण कर रहा है: ${paths}`,
+    stepAnalyzingDiffsForCount: (step, count) =>
+      `[कदम ${step}] ${count} फ़ाइलों के लिए अंतर का विश्लेषण कर रहा है...`,
+    stepReadingMultipleFiles: (step, paths) =>
+      `[कदम ${step}] फ़ाइलें पढ़ रहा है: ${paths}`,
+    stepReadingFilesForCount: (step, count) =>
+      `[कदम ${step}] ${count} फ़ाइलें पढ़ रहा है...`,
+    stepGettingMultipleOutlines: (step, paths) =>
+      `[कदम ${step}] रूपरेखाएँ प्राप्त कर रहा है: ${paths}`,
+    stepGettingOutlinesForCount: (step, count) =>
+      `[कदम ${step}] ${count} फ़ाइलों के लिए रूपरेखाएँ प्राप्त कर रहा है...`,
+    stepFindingReferencesForMultiple: (step, targets) =>
+      `[कदम ${step}] संदर्भ ढूंढ रहा है: ${targets}`,
+    stepFindingReferencesForCount: (step, count) =>
+      `[कदम ${step}] ${count} प्रतीकों के लिए संदर्भ ढूंढ रहा है...`,
+    stepSearchingProjectForMultiple: (step, keywords) =>
+      `[कदम ${step}] परियोजना में खोज रहा है: ${keywords}`,
+    stepSearchingProjectForCount: (step, count) =>
+      `[कदम ${step}] ${count} कीवर्ड के लिए परियोजना में खोज रहा है...`,
+    stepExecutingMultipleTools: (step, count) =>
+      `[कदम ${step}] ${count} जाँच उपकरणों को निष्पादित कर रहा है...`,
   },
 };

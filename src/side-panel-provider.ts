@@ -1004,10 +1004,20 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
   private _getHtmlForWebview(webview: vscode.Webview): string {
     const nonce = getNonce();
     const styleUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, 'out', 'webview', 'side-panel.css'),
+      vscode.Uri.joinPath(
+        this._extensionUri,
+        'out',
+        'webview',
+        'side-panel.css',
+      ),
     );
     const scriptUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._extensionUri, 'out', 'webview', 'side-panel.js'),
+      vscode.Uri.joinPath(
+        this._extensionUri,
+        'out',
+        'webview',
+        'side-panel.js',
+      ),
     );
     const bootstrap = serializeForInlineScript(this.getWebviewBootstrapData());
 

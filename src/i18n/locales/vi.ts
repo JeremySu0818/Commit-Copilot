@@ -36,7 +36,8 @@ export const viLocale: LocaleTextBundle = {
     },
     [EXIT_CODES.API_KEY_MISSING]: {
       title: 'Chưa cấu hình API Key',
-      action: 'Vui lòng thiết lập API Key của bạn trong bảng điều khiển Commit-Copilot.',
+      action:
+        'Vui lòng thiết lập API Key của bạn trong bảng điều khiển Commit-Copilot.',
     },
     [EXIT_CODES.API_KEY_INVALID]: {
       title: 'API Key không hợp lệ',
@@ -50,8 +51,7 @@ export const viLocale: LocaleTextBundle = {
     },
     [EXIT_CODES.API_ERROR]: {
       title: 'Yêu cầu API thất bại',
-      action:
-        'Đã xảy ra lỗi khi giao tiếp với API. Vui lòng thử lại.',
+      action: 'Đã xảy ra lỗi khi giao tiếp với API. Vui lòng thử lại.',
     },
     [EXIT_CODES.COMMIT_FAILED]: {
       title: 'Không thể commit các thay đổi',
@@ -64,8 +64,7 @@ export const viLocale: LocaleTextBundle = {
   },
   extensionText: {
     output: {
-      generationIgnored:
-        'Đã bỏ qua yêu cầu tạo: quá trình tạo đang diễn ra.',
+      generationIgnored: 'Đã bỏ qua yêu cầu tạo: quá trình tạo đang diễn ra.',
       generationStart: (timestamp) =>
         `[${timestamp}] Bắt đầu tạo bằng commit-copilot...`,
       gitExtensionMissing: 'Lỗi: Không tìm thấy tiện ích mở rộng Git.',
@@ -73,7 +72,8 @@ export const viLocale: LocaleTextBundle = {
         `Đã chọn kho lưu trữ từ ngữ cảnh SCM: ${path}`,
       selectedRepoFromEditor: (path) =>
         `Đã chọn kho lưu trữ từ trình chỉnh sửa đang hoạt động: ${path}`,
-      noRepoMatchedActiveEditor: 'Không có kho lưu trữ nào khớp với trình chỉnh sửa đang hoạt động.',
+      noRepoMatchedActiveEditor:
+        'Không có kho lưu trữ nào khớp với trình chỉnh sửa đang hoạt động.',
       noActiveEditorForRepoSelection:
         'Không tìm thấy trình chỉnh sửa đang hoạt động để chọn kho lưu trữ.',
       selectedOnlyRepo: (path) => `Đã chọn kho lưu trữ duy nhất: ${path}`,
@@ -91,10 +91,10 @@ export const viLocale: LocaleTextBundle = {
       repositoryPath: (path) => `Đường dẫn kho lưu trữ: ${path}`,
       usingModel: (model) => `Sử dụng mô hình: ${model}`,
       generatedMessage: (message) => `Thông báo đã tạo: ${message}`,
-      generationError: (errorCode, message) =>
-        `Lỗi: ${errorCode} - ${message}`,
+      generationError: (errorCode, message) => `Lỗi: ${errorCode} - ${message}`,
       unexpectedError: (message) => `Lỗi không mong muốn: ${message}`,
-      openingLanguageSettings: 'Mở cài đặt ngôn ngữ trong chế độ xem hoạt động...',
+      openingLanguageSettings:
+        'Mở cài đặt ngôn ngữ trong chế độ xem hoạt động...',
     },
     notification: {
       gitExtensionMissing:
@@ -120,7 +120,8 @@ export const viLocale: LocaleTextBundle = {
       stageAndTrack: 'Stage & Theo dõi',
       commitGenerated: 'Đã tạo thông báo commit!',
       viewProviderConsoleAction: 'Xem Bảng điều khiển Nhà cung cấp',
-      noChanges: 'Không có thay đổi nào để commit. Hãy thực hiện một số thay đổi trước!',
+      noChanges:
+        'Không có thay đổi nào để commit. Hãy thực hiện một số thay đổi trước!',
       generationCanceled: 'Đã hủy tạo thông báo commit.',
       failedPrefix: 'Commit-Copilot thất bại',
     },
@@ -209,8 +210,7 @@ export const viLocale: LocaleTextBundle = {
       ollamaFixedToDirectDiff: 'Ollama được cố định ở chế độ Direct Diff',
       agenticModeDescription:
         'Chế độ Agentic sử dụng các công cụ kho lưu trữ để phân tích sâu hơn',
-      directDiffDescription:
-        'Direct Diff gửi raw diff trực tiếp đến mô hình',
+      directDiffDescription: 'Direct Diff gửi raw diff trực tiếp đến mô hình',
       ollamaInfo:
         '<strong>Ollama</strong> chạy cục bộ trên máy của bạn.<br>Máy chủ mặc định: <code>{host}</code><br>Đảm bảo Ollama đang chạy trước khi tạo.',
       googleInfo:
@@ -232,27 +232,47 @@ export const viLocale: LocaleTextBundle = {
   progressMessages: {
     analyzingChanges: 'Agent đang phân tích các thay đổi...',
     generatingMessage: 'Đang tạo thông báo commit...',
-    transientApiError: (attempt, maxAttempts, seconds) => `Lỗi API tạm thời. Thử lại lần (${attempt}/${maxAttempts}) sau ${seconds}s...`,
-    pulling: (model, status, percent) => percent !== undefined ? `Đang kéo ${model}: ${status} (${percent}%)` : `Đang kéo ${model}: ${status}`,
-    
+    transientApiError: (attempt, maxAttempts, seconds) =>
+      `Lỗi API tạm thời. Thử lại lần (${attempt}/${maxAttempts}) sau ${seconds}s...`,
+    pulling: (model, status, percent) =>
+      percent !== undefined
+        ? `Đang kéo ${model}: ${status} (${percent}%)`
+        : `Đang kéo ${model}: ${status}`,
+
     stepAnalyzingDiff: (step, path) => `[Bước ${step}] Phân tích diff: ${path}`,
     stepReadingFile: (step, path) => `[Bước ${step}] Đọc tệp: ${path}`,
     stepGettingOutline: (step, path) => `[Bước ${step}] Lấy phác thảo: ${path}`,
-    stepFindingReferences: (step, target) => `[Bước ${step}] Tìm tham chiếu: ${target}`,
-    stepFetchingRecentCommits: (step, count) => count !== undefined ? `[Bước ${step}] Đang lấy các commit gần đây: ${count} mục` : `[Bước ${step}] Đang lấy các commit gần đây...`,
-    stepSearchingProject: (step, keyword) => `[Bước ${step}] Đang tìm kiếm dự án cho: ${keyword}`,
+    stepFindingReferences: (step, target) =>
+      `[Bước ${step}] Tìm tham chiếu: ${target}`,
+    stepFetchingRecentCommits: (step, count) =>
+      count !== undefined
+        ? `[Bước ${step}] Đang lấy các commit gần đây: ${count} mục`
+        : `[Bước ${step}] Đang lấy các commit gần đây...`,
+    stepSearchingProject: (step, keyword) =>
+      `[Bước ${step}] Đang tìm kiếm dự án cho: ${keyword}`,
     stepCalling: (step, toolName) => `[Bước ${step}] Đang gọi ${toolName}...`,
 
-    stepAnalyzingMultipleDiffs: (step, paths) => `[Bước ${step}] Phân tích diffs: ${paths}`,
-    stepAnalyzingDiffsForCount: (step, count) => `[Bước ${step}] Phân tích diffs cho ${count} tệp...`,
-    stepReadingMultipleFiles: (step, paths) => `[Bước ${step}] Đọc tệp: ${paths}`,
-    stepReadingFilesForCount: (step, count) => `[Bước ${step}] Đọc ${count} tệp...`,
-    stepGettingMultipleOutlines: (step, paths) => `[Bước ${step}] Lấy phác thảo: ${paths}`,
-    stepGettingOutlinesForCount: (step, count) => `[Bước ${step}] Lấy phác thảo cho ${count} tệp...`,
-    stepFindingReferencesForMultiple: (step, targets) => `[Bước ${step}] Tìm tham chiếu: ${targets}`,
-    stepFindingReferencesForCount: (step, count) => `[Bước ${step}] Tìm tham chiếu cho ${count} biểu tượng...`,
-    stepSearchingProjectForMultiple: (step, keywords) => `[Bước ${step}] Đang tìm kiếm dự án cho: ${keywords}`,
-    stepSearchingProjectForCount: (step, count) => `[Bước ${step}] Đang tìm kiếm dự án cho ${count} từ khóa...`,
-    stepExecutingMultipleTools: (step, count) => `[Bước ${step}] Đang thực thi ${count} công cụ điều tra...`,
+    stepAnalyzingMultipleDiffs: (step, paths) =>
+      `[Bước ${step}] Phân tích diffs: ${paths}`,
+    stepAnalyzingDiffsForCount: (step, count) =>
+      `[Bước ${step}] Phân tích diffs cho ${count} tệp...`,
+    stepReadingMultipleFiles: (step, paths) =>
+      `[Bước ${step}] Đọc tệp: ${paths}`,
+    stepReadingFilesForCount: (step, count) =>
+      `[Bước ${step}] Đọc ${count} tệp...`,
+    stepGettingMultipleOutlines: (step, paths) =>
+      `[Bước ${step}] Lấy phác thảo: ${paths}`,
+    stepGettingOutlinesForCount: (step, count) =>
+      `[Bước ${step}] Lấy phác thảo cho ${count} tệp...`,
+    stepFindingReferencesForMultiple: (step, targets) =>
+      `[Bước ${step}] Tìm tham chiếu: ${targets}`,
+    stepFindingReferencesForCount: (step, count) =>
+      `[Bước ${step}] Tìm tham chiếu cho ${count} biểu tượng...`,
+    stepSearchingProjectForMultiple: (step, keywords) =>
+      `[Bước ${step}] Đang tìm kiếm dự án cho: ${keywords}`,
+    stepSearchingProjectForCount: (step, count) =>
+      `[Bước ${step}] Đang tìm kiếm dự án cho ${count} từ khóa...`,
+    stepExecutingMultipleTools: (step, count) =>
+      `[Bước ${step}] Đang thực thi ${count} công cụ điều tra...`,
   },
 };

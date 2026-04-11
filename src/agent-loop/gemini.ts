@@ -248,7 +248,7 @@ async function runGeminiAgentLoop(
             LOCALES[language].progressMessages.transientApiError(
               nextAttempt,
               maxAttempts,
-              Math.ceil(delayMs / 1000)
+              Math.ceil(delayMs / 1000),
             ),
           );
         }
@@ -284,7 +284,9 @@ async function runGeminiAgentLoop(
     let response = await requestGeminiResponse(history);
     let step = 0;
 
-    while (step < (maxAgentSteps && maxAgentSteps > 0 ? maxAgentSteps : Infinity)) {
+    while (
+      step < (maxAgentSteps && maxAgentSteps > 0 ? maxAgentSteps : Infinity)
+    ) {
       throwIfCancellationRequested(cancellationToken);
       const candidate = response.candidates?.[0];
       if (!candidate) {
@@ -352,7 +354,9 @@ async function runGeminiAgentLoop(
         ...history,
         {
           role: 'user',
-          parts: [{ text: buildFinalOutputReminder(resolvedCommitOutputOptions) }],
+          parts: [
+            { text: buildFinalOutputReminder(resolvedCommitOutputOptions) },
+          ],
         },
       ],
       finalGenerationConfig,

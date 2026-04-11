@@ -14,7 +14,10 @@ export function AddProviderView() {
     const hasName = !!name;
     const hasUrl = !!url;
     const hasKey = !!draft.apiKey.trim() || !!draft.editingId;
-    const hasChanges = !draft.editingId || name !== draft.originalName || url !== draft.originalBaseUrl;
+    const hasChanges =
+      !draft.editingId ||
+      name !== draft.originalName ||
+      url !== draft.originalBaseUrl;
     return !(hasName && hasUrl && hasKey && hasChanges);
   }, [draft]);
 
@@ -29,27 +32,59 @@ export function AddProviderView() {
     const apiKey = draft.apiKey.trim();
 
     if (!name) {
-      dispatch({ type: 'UPDATE_ADD_PROVIDER_DRAFT', partial: { statusHtml: renderStatusHtml('error', pack.statuses.providerNameRequired) } });
+      dispatch({
+        type: 'UPDATE_ADD_PROVIDER_DRAFT',
+        partial: {
+          statusHtml: renderStatusHtml(
+            'error',
+            pack.statuses.providerNameRequired,
+          ),
+        },
+      });
       return;
     }
     if (!baseUrl) {
-      dispatch({ type: 'UPDATE_ADD_PROVIDER_DRAFT', partial: { statusHtml: renderStatusHtml('error', pack.statuses.baseUrlRequired) } });
+      dispatch({
+        type: 'UPDATE_ADD_PROVIDER_DRAFT',
+        partial: {
+          statusHtml: renderStatusHtml('error', pack.statuses.baseUrlRequired),
+        },
+      });
       return;
     }
 
-    const allNames = Object.values(bootstrap.providers).map(n => n.toLowerCase());
-    (state.customProviders || []).forEach(cp => {
+    const allNames = Object.values(bootstrap.providers).map((n) =>
+      n.toLowerCase(),
+    );
+    (state.customProviders || []).forEach((cp) => {
       if (cp.id !== draft.editingId) {
         allNames.push(cp.name.toLowerCase());
       }
     });
     if (allNames.indexOf(name.toLowerCase()) !== -1) {
-      dispatch({ type: 'UPDATE_ADD_PROVIDER_DRAFT', partial: { statusHtml: renderStatusHtml('error', pack.statuses.providerNameConflict) } });
+      dispatch({
+        type: 'UPDATE_ADD_PROVIDER_DRAFT',
+        partial: {
+          statusHtml: renderStatusHtml(
+            'error',
+            pack.statuses.providerNameConflict,
+          ),
+        },
+      });
       return;
     }
 
-    dispatch({ type: 'SET_SAVE_BTN', disabled: true, text: pack.buttons.validating });
-    dispatch({ type: 'UPDATE_ADD_PROVIDER_DRAFT', partial: { statusHtml: renderStatusHtml('warning', pack.statuses.validating) } });
+    dispatch({
+      type: 'SET_SAVE_BTN',
+      disabled: true,
+      text: pack.buttons.validating,
+    });
+    dispatch({
+      type: 'UPDATE_ADD_PROVIDER_DRAFT',
+      partial: {
+        statusHtml: renderStatusHtml('warning', pack.statuses.validating),
+      },
+    });
     vscode.postMessage({
       type: 'saveCustomProvider',
       name,
@@ -57,7 +92,14 @@ export function AddProviderView() {
       apiKey: apiKey || '',
       editId: draft.editingId || null,
     });
-  }, [draft, pack, bootstrap.providers, state.customProviders, dispatch, vscode]);
+  }, [
+    draft,
+    pack,
+    bootstrap.providers,
+    state.customProviders,
+    dispatch,
+    vscode,
+  ]);
 
   const handleDelete = useCallback(() => {
     if (draft.editingId) {
@@ -66,22 +108,42 @@ export function AddProviderView() {
   }, [draft.editingId, vscode]);
 
   return (
-    <div id="addProviderView" className={`container${state.screen !== 'addProvider' ? ' hidden' : ''}`}>
+    <div
+      id="addProviderView"
+      className={`container${state.screen !== 'addProvider' ? ' hidden' : ''}`}
+    >
       <div className="settings-header">
-        <button id="addProviderBackBtn" className="icon-btn" title={pack.buttons.back} onClick={handleBack}>
+        <button
+          id="addProviderBackBtn"
+          className="icon-btn"
+          title={pack.buttons.back}
+          onClick={handleBack}
+        >
           <BackIcon />
         </button>
       </div>
       <div className="config-section">
-        <div className="section-title">{isEditing ? pack.sections.editProvider : pack.sections.addProvider}</div>
-        <div className="provider-info" dangerouslySetInnerHTML={{ __html: pack.descriptions.customProviderInfo }} />
+        <div className="section-title">
+          {isEditing ? pack.sections.editProvider : pack.sections.addProvider}
+        </div>
+        <div
+          className="provider-info"
+          dangerouslySetInnerHTML={{
+            __html: pack.descriptions.customProviderInfo,
+          }}
+        />
         <div className="input-group" style={{ marginTop: '10px' }}>
           <label>{pack.labels.providerName}</label>
           <input
             type="text"
             id="providerNameInput"
             value={draft.name}
-            onChange={e => dispatch({ type: 'UPDATE_ADD_PROVIDER_DRAFT', partial: { name: e.target.value } })}
+            onChange={(e) =>
+              dispatch({
+                type: 'UPDATE_ADD_PROVIDER_DRAFT',
+                partial: { name: e.target.value },
+              })
+            }
           />
         </div>
         <div className="input-group" style={{ marginTop: '10px' }}>
@@ -90,7 +152,12 @@ export function AddProviderView() {
             type="text"
             id="apiBaseUrlInput"
             value={draft.baseUrl}
-            onChange={e => dispatch({ type: 'UPDATE_ADD_PROVIDER_DRAFT', partial: { baseUrl: e.target.value } })}
+            onChange={(e) =>
+              dispatch({
+                type: 'UPDATE_ADD_PROVIDER_DRAFT',
+                partial: { baseUrl: e.target.value },
+              })
+            }
           />
         </div>
         <div
@@ -103,12 +170,27 @@ export function AddProviderView() {
             type="password"
             id="customApiKeyInput"
             value={draft.apiKey}
-            onChange={e => dispatch({ type: 'UPDATE_ADD_PROVIDER_DRAFT', partial: { apiKey: e.target.value } })}
+            onChange={(e) =>
+              dispatch({
+                type: 'UPDATE_ADD_PROVIDER_DRAFT',
+                partial: { apiKey: e.target.value },
+              })
+            }
           />
         </div>
-        <span id="addProviderStatus" className="status" dangerouslySetInnerHTML={{ __html: draft.statusHtml }} />
+        <span
+          id="addProviderStatus"
+          className="status"
+          dangerouslySetInnerHTML={{ __html: draft.statusHtml }}
+        />
         <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
-          <button id="saveProviderBtn" disabled={saveDisabled} onClick={handleSave}>{pack.buttons.save}</button>
+          <button
+            id="saveProviderBtn"
+            disabled={saveDisabled}
+            onClick={handleSave}
+          >
+            {pack.buttons.save}
+          </button>
           <button
             id="deleteProviderBtn"
             className={`secondary${!isEditing ? ' hidden' : ''}`}

@@ -25,12 +25,8 @@ export function useMessageHandler(
     vscode.postMessage({ type: 'checkGenerationStatus' });
     vscode.postMessage({ type: 'checkValidationStatus' });
     vscode.postMessage({ type: 'getDisplayLanguage' });
-    // Sync the actual screen shown by this webview instance back to the host.
-    // When the webview JS is destroyed (e.g. switching side panels) and later
-    // reloaded, the host's context key (_currentScreen) may still hold the
-    // previous screen ('settings' or 'addProvider'), causing the settings
-    // button to remain hidden even though the UI has reset to 'main'.
-    const effectiveScreen = bootstrap.initialScreen === 'settings' ? 'settings' : 'main';
+    const effectiveScreen =
+      bootstrap.initialScreen === 'settings' ? 'settings' : 'main';
     vscode.postMessage({ type: 'setCurrentScreen', value: effectiveScreen });
   }, [vscode, bootstrap]);
 

@@ -27,7 +27,7 @@ export const itLocale: LocaleTextBundle = {
     },
     [EXIT_CODES.CANCELLED]: {
       title: 'Generazione annullata',
-      action: 'La generazione è stata annullata dall\'utente.',
+      action: "La generazione è stata annullata dall'utente.",
     },
     [EXIT_CODES.MIXED_CHANGES]: {
       title: 'Modifiche miste rilevate',
@@ -46,12 +46,12 @@ export const itLocale: LocaleTextBundle = {
     [EXIT_CODES.QUOTA_EXCEEDED]: {
       title: 'Quota API superata',
       action:
-        'Hai superato la tua quota API. Controlla l\'account del provider.',
+        "Hai superato la tua quota API. Controlla l'account del provider.",
     },
     [EXIT_CODES.API_ERROR]: {
       title: 'Richiesta API non riuscita',
       action:
-        'Si è verificato un errore durante la comunicazione con l\'API. Riprova.',
+        "Si è verificato un errore durante la comunicazione con l'API. Riprova.",
     },
     [EXIT_CODES.COMMIT_FAILED]: {
       title: 'Commit delle modifiche non riuscito',
@@ -73,20 +73,22 @@ export const itLocale: LocaleTextBundle = {
         `Repository selezionato dal contesto SCM: ${path}`,
       selectedRepoFromEditor: (path) =>
         `Repository selezionato dall'editor attivo: ${path}`,
-      noRepoMatchedActiveEditor: 'Nessun repository corrisponde all\'editor attivo.',
+      noRepoMatchedActiveEditor:
+        "Nessun repository corrisponde all'editor attivo.",
       noActiveEditorForRepoSelection:
         'Nessun editor attivo trovato per la selezione del repository.',
       selectedOnlyRepo: (path) => `Selezionato l'unico repository: ${path}`,
       multiRepoNotDetermined: (count) =>
         `Trovati ${count} repository ma impossibile determinare quello attivo.`,
-      noRepoInApi: 'Nessun repository trovato nell\'API.',
+      noRepoInApi: "Nessun repository trovato nell'API.",
       usingProvider: (providerName) => `Utilizzo del provider: ${providerName}`,
       usingGenerateMode: (mode) => `Modalità di generazione: ${mode}`,
       usingCommitOutputOptions: (optionsJson) =>
         `Opzioni di output commit: ${optionsJson}`,
       missingApiKeyWarning: (provider) =>
         `Avviso: nessuna chiave API trovata per ${provider}.`,
-      cancelRequestedFromProgress: 'Annullamento richiesto dall\'interfaccia di avanzamento.',
+      cancelRequestedFromProgress:
+        "Annullamento richiesto dall'interfaccia di avanzamento.",
       callingGenerateCommitMessage: 'Chiamata a generateCommitMessage...',
       repositoryPath: (path) => `Percorso del repository: ${path}`,
       usingModel: (model) => `Utilizzo del modello: ${model}`,
@@ -94,11 +96,12 @@ export const itLocale: LocaleTextBundle = {
       generationError: (errorCode, message) =>
         `Errore: ${errorCode} - ${message}`,
       unexpectedError: (message) => `Errore imprevisto: ${message}`,
-      openingLanguageSettings: 'Apertura delle impostazioni della lingua nella vista attività...',
+      openingLanguageSettings:
+        'Apertura delle impostazioni della lingua nella vista attività...',
     },
     notification: {
       gitExtensionMissing:
-        'Estensione Git non trovata. Assicurati che Git sia installato e l\'estensione Git sia abilitata.',
+        "Estensione Git non trovata. Assicurati che Git sia installato e l'estensione Git sia abilitata.",
       multiRepoWarning:
         'Trovati repository Git multipli. Concentrati su un file nel repository di destinazione o esegui dalla vista SCM.',
       repoNotFound:
@@ -131,7 +134,8 @@ export const itLocale: LocaleTextBundle = {
     apiRequestFailedPrefix: 'Richiesta API non riuscita',
     connectionErrorPrefix: 'Errore di connessione',
     unknownProvider: 'Provider sconosciuto',
-    cannotConnectOllamaAt: (host) => `Impossibile connettersi a Ollama su ${host}`,
+    cannotConnectOllamaAt: (host) =>
+      `Impossibile connettersi a Ollama su ${host}`,
     cannotConnectOllama: (message) =>
       `Impossibile connettersi a Ollama: ${message}. Assicurati che Ollama sia in esecuzione.`,
     apiKeyCannotBeEmpty: 'La chiave API non può essere vuota',
@@ -173,9 +177,9 @@ export const itLocale: LocaleTextBundle = {
       selectModel: 'Seleziona un modello...',
       selectGenerateMode: 'Seleziona la modalità di generazione...',
       enterApiKey: 'Inserisci la tua chiave API',
-      enterGeminiApiKey: 'Inserisci l\'API Key di Gemini',
-      enterOpenAIApiKey: 'Inserisci l\'API Key di OpenAI',
-      enterAnthropicApiKey: 'Inserisci l\'API Key di Anthropic',
+      enterGeminiApiKey: "Inserisci l'API Key di Gemini",
+      enterOpenAIApiKey: "Inserisci l'API Key di OpenAI",
+      enterAnthropicApiKey: "Inserisci l'API Key di Anthropic",
       enterCustomApiKey: 'Inserisci la tua chiave API',
     },
     buttons: {
@@ -199,7 +203,7 @@ export const itLocale: LocaleTextBundle = {
       languageSaved: 'Lingua aggiornata.',
       providerNameConflict: 'Esiste già un provider con questo nome.',
       providerNameRequired: 'Il nome del provider è obbligatorio.',
-      baseUrlRequired: 'L\'URL Base API è obbligatorio.',
+      baseUrlRequired: "L'URL Base API è obbligatorio.",
       apiKeyRequired: 'La chiave API è obbligatoria.',
       providerSaved: 'Provider personalizzato salvato!',
       providerDeleted: 'Provider personalizzato eliminato.',
@@ -208,7 +212,7 @@ export const itLocale: LocaleTextBundle = {
     descriptions: {
       ollamaFixedToDirectDiff: 'Ollama è fissato sulla modalità Direct Diff',
       agenticModeDescription:
-        'La modalità agentica utilizza gli strumenti del repository per un\'analisi più approfondita',
+        "La modalità agentica utilizza gli strumenti del repository per un'analisi più approfondita",
       directDiffDescription:
         'Direct Diff invia il diff grezzo direttamente al modello',
       ollamaInfo:
@@ -220,9 +224,9 @@ export const itLocale: LocaleTextBundle = {
       anthropicInfo:
         'Ottieni la tua chiave API da <strong>Anthropic Console</strong>:<br><a href="https://platform.claude.com/settings/keys" style="color: var(--vscode-textLink-foreground);">platform.claude.com</a>',
       maxAgentStepsDescription:
-        'Limita le chiamate agli strumenti dell\'agente per generazione. Inserisci 0 o lascia vuoto per non avere limiti.',
+        "Limita le chiamate agli strumenti dell'agente per generazione. Inserisci 0 o lascia vuoto per non avere limiti.",
       customProviderInfo:
-        'I provider personalizzati devono essere <strong>compatibili con OpenAI</strong>.<br>L\'URL base dell\'API deve puntare a un servizio che implementi l\'API Chat Completions di OpenAI.',
+        "I provider personalizzati devono essere <strong>compatibili con OpenAI</strong>.<br>L'URL base dell'API deve puntare a un servizio che implementi l'API Chat Completions di OpenAI.",
     },
     options: {
       agentic: 'Generazione Agentica',
@@ -230,29 +234,53 @@ export const itLocale: LocaleTextBundle = {
     },
   },
   progressMessages: {
-    analyzingChanges: 'L\'agente sta analizzando le modifiche...',
+    analyzingChanges: "L'agente sta analizzando le modifiche...",
     generatingMessage: 'Generazione del messaggio di commit...',
-    transientApiError: (attempt, maxAttempts, seconds) => `Errore transitorio API. Riprovo (${attempt}/${maxAttempts}) tra ${seconds}s...`,
-    pulling: (model, status, percent) => percent !== undefined ? `Pulling ${model}: ${status} (${percent}%)` : `Pulling ${model}: ${status}`,
-    
-    stepAnalyzingDiff: (step, path) => `[Passo ${step}] Analisi delle differenze: ${path}`,
-    stepReadingFile: (step, path) => `[Passo ${step}] Lettura del file: ${path}`,
-    stepGettingOutline: (step, path) => `[Passo ${step}] Lettura struttura: ${path}`,
-    stepFindingReferences: (step, target) => `[Passo ${step}] Ricerca riferimenti: ${target}`,
-    stepFetchingRecentCommits: (step, count) => count !== undefined ? `[Passo ${step}] Recupero commit recenti: ${count} voci` : `[Passo ${step}] Recupero commit recenti...`,
-    stepSearchingProject: (step, keyword) => `[Passo ${step}] Ricerca nel progetto per: ${keyword}`,
-    stepCalling: (step, toolName) => `[Passo ${step}] Chiamata a ${toolName}...`,
+    transientApiError: (attempt, maxAttempts, seconds) =>
+      `Errore transitorio API. Riprovo (${attempt}/${maxAttempts}) tra ${seconds}s...`,
+    pulling: (model, status, percent) =>
+      percent !== undefined
+        ? `Pulling ${model}: ${status} (${percent}%)`
+        : `Pulling ${model}: ${status}`,
 
-    stepAnalyzingMultipleDiffs: (step, paths) => `[Passo ${step}] Analisi differenze: ${paths}`,
-    stepAnalyzingDiffsForCount: (step, count) => `[Passo ${step}] Analisi differenze per ${count} file...`,
-    stepReadingMultipleFiles: (step, paths) => `[Passo ${step}] Lettura file: ${paths}`,
-    stepReadingFilesForCount: (step, count) => `[Passo ${step}] Lettura di ${count} file...`,
-    stepGettingMultipleOutlines: (step, paths) => `[Passo ${step}] Lettura struttura: ${paths}`,
-    stepGettingOutlinesForCount: (step, count) => `[Passo ${step}] Lettura struttura per ${count} file...`,
-    stepFindingReferencesForMultiple: (step, targets) => `[Passo ${step}] Ricerca riferimenti: ${targets}`,
-    stepFindingReferencesForCount: (step, count) => `[Passo ${step}] Ricerca riferimenti per ${count} simboli...`,
-    stepSearchingProjectForMultiple: (step, keywords) => `[Passo ${step}] Ricerca nel progetto per: ${keywords}`,
-    stepSearchingProjectForCount: (step, count) => `[Passo ${step}] Ricerca nel progetto per ${count} parole chiave...`,
-    stepExecutingMultipleTools: (step, count) => `[Passo ${step}] Esecuzione di ${count} strumenti di investigazione...`,
+    stepAnalyzingDiff: (step, path) =>
+      `[Passo ${step}] Analisi delle differenze: ${path}`,
+    stepReadingFile: (step, path) =>
+      `[Passo ${step}] Lettura del file: ${path}`,
+    stepGettingOutline: (step, path) =>
+      `[Passo ${step}] Lettura struttura: ${path}`,
+    stepFindingReferences: (step, target) =>
+      `[Passo ${step}] Ricerca riferimenti: ${target}`,
+    stepFetchingRecentCommits: (step, count) =>
+      count !== undefined
+        ? `[Passo ${step}] Recupero commit recenti: ${count} voci`
+        : `[Passo ${step}] Recupero commit recenti...`,
+    stepSearchingProject: (step, keyword) =>
+      `[Passo ${step}] Ricerca nel progetto per: ${keyword}`,
+    stepCalling: (step, toolName) =>
+      `[Passo ${step}] Chiamata a ${toolName}...`,
+
+    stepAnalyzingMultipleDiffs: (step, paths) =>
+      `[Passo ${step}] Analisi differenze: ${paths}`,
+    stepAnalyzingDiffsForCount: (step, count) =>
+      `[Passo ${step}] Analisi differenze per ${count} file...`,
+    stepReadingMultipleFiles: (step, paths) =>
+      `[Passo ${step}] Lettura file: ${paths}`,
+    stepReadingFilesForCount: (step, count) =>
+      `[Passo ${step}] Lettura di ${count} file...`,
+    stepGettingMultipleOutlines: (step, paths) =>
+      `[Passo ${step}] Lettura struttura: ${paths}`,
+    stepGettingOutlinesForCount: (step, count) =>
+      `[Passo ${step}] Lettura struttura per ${count} file...`,
+    stepFindingReferencesForMultiple: (step, targets) =>
+      `[Passo ${step}] Ricerca riferimenti: ${targets}`,
+    stepFindingReferencesForCount: (step, count) =>
+      `[Passo ${step}] Ricerca riferimenti per ${count} simboli...`,
+    stepSearchingProjectForMultiple: (step, keywords) =>
+      `[Passo ${step}] Ricerca nel progetto per: ${keywords}`,
+    stepSearchingProjectForCount: (step, count) =>
+      `[Passo ${step}] Ricerca nel progetto per ${count} parole chiave...`,
+    stepExecutingMultipleTools: (step, count) =>
+      `[Passo ${step}] Esecuzione di ${count} strumenti di investigazione...`,
   },
 };

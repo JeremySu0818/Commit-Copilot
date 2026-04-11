@@ -232,27 +232,48 @@ export const enLocale: LocaleTextBundle = {
   progressMessages: {
     analyzingChanges: 'Agent analyzing changes...',
     generatingMessage: 'Generating commit message...',
-    transientApiError: (attempt, maxAttempts, seconds) => `Transient API error. Retrying (${attempt}/${maxAttempts}) in ${seconds}s...`,
-    pulling: (model, status, percent) => percent !== undefined ? `Pulling ${model}: ${status} (${percent}%)` : `Pulling ${model}: ${status}`,
-    
+    transientApiError: (attempt, maxAttempts, seconds) =>
+      `Transient API error. Retrying (${attempt}/${maxAttempts}) in ${seconds}s...`,
+    pulling: (model, status, percent) =>
+      percent !== undefined
+        ? `Pulling ${model}: ${status} (${percent}%)`
+        : `Pulling ${model}: ${status}`,
+
     stepAnalyzingDiff: (step, path) => `[Step ${step}] Analyzing diff: ${path}`,
     stepReadingFile: (step, path) => `[Step ${step}] Reading file: ${path}`,
-    stepGettingOutline: (step, path) => `[Step ${step}] Getting outline: ${path}`,
-    stepFindingReferences: (step, target) => `[Step ${step}] Finding references: ${target}`,
-    stepFetchingRecentCommits: (step, count) => count !== undefined ? `[Step ${step}] Fetching recent commits: ${count} entries` : `[Step ${step}] Fetching recent commits...`,
-    stepSearchingProject: (step, keyword) => `[Step ${step}] Searching project for: ${keyword}`,
+    stepGettingOutline: (step, path) =>
+      `[Step ${step}] Getting outline: ${path}`,
+    stepFindingReferences: (step, target) =>
+      `[Step ${step}] Finding references: ${target}`,
+    stepFetchingRecentCommits: (step, count) =>
+      count !== undefined
+        ? `[Step ${step}] Fetching recent commits: ${count} entries`
+        : `[Step ${step}] Fetching recent commits...`,
+    stepSearchingProject: (step, keyword) =>
+      `[Step ${step}] Searching project for: ${keyword}`,
     stepCalling: (step, toolName) => `[Step ${step}] Calling ${toolName}...`,
 
-    stepAnalyzingMultipleDiffs: (step, paths) => `[Step ${step}] Analyzing diffs: ${paths}`,
-    stepAnalyzingDiffsForCount: (step, count) => `[Step ${step}] Analyzing diffs for ${count} files...`,
-    stepReadingMultipleFiles: (step, paths) => `[Step ${step}] Reading files: ${paths}`,
-    stepReadingFilesForCount: (step, count) => `[Step ${step}] Reading ${count} files...`,
-    stepGettingMultipleOutlines: (step, paths) => `[Step ${step}] Getting outlines: ${paths}`,
-    stepGettingOutlinesForCount: (step, count) => `[Step ${step}] Getting outlines for ${count} files...`,
-    stepFindingReferencesForMultiple: (step, targets) => `[Step ${step}] Finding references: ${targets}`,
-    stepFindingReferencesForCount: (step, count) => `[Step ${step}] Finding references for ${count} symbols...`,
-    stepSearchingProjectForMultiple: (step, keywords) => `[Step ${step}] Searching project for: ${keywords}`,
-    stepSearchingProjectForCount: (step, count) => `[Step ${step}] Searching project for ${count} keywords...`,
-    stepExecutingMultipleTools: (step, count) => `[Step ${step}] Executing ${count} investigation tools...`,
+    stepAnalyzingMultipleDiffs: (step, paths) =>
+      `[Step ${step}] Analyzing diffs: ${paths}`,
+    stepAnalyzingDiffsForCount: (step, count) =>
+      `[Step ${step}] Analyzing diffs for ${count} files...`,
+    stepReadingMultipleFiles: (step, paths) =>
+      `[Step ${step}] Reading files: ${paths}`,
+    stepReadingFilesForCount: (step, count) =>
+      `[Step ${step}] Reading ${count} files...`,
+    stepGettingMultipleOutlines: (step, paths) =>
+      `[Step ${step}] Getting outlines: ${paths}`,
+    stepGettingOutlinesForCount: (step, count) =>
+      `[Step ${step}] Getting outlines for ${count} files...`,
+    stepFindingReferencesForMultiple: (step, targets) =>
+      `[Step ${step}] Finding references: ${targets}`,
+    stepFindingReferencesForCount: (step, count) =>
+      `[Step ${step}] Finding references for ${count} symbols...`,
+    stepSearchingProjectForMultiple: (step, keywords) =>
+      `[Step ${step}] Searching project for: ${keywords}`,
+    stepSearchingProjectForCount: (step, count) =>
+      `[Step ${step}] Searching project for ${count} keywords...`,
+    stepExecutingMultipleTools: (step, count) =>
+      `[Step ${step}] Executing ${count} investigation tools...`,
   },
 };

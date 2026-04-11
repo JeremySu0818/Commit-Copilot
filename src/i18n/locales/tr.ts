@@ -9,7 +9,7 @@ export const trLocale: LocaleTextBundle = {
     },
     [EXIT_CODES.STAGE_FAILED]: {
       title: 'Değişiklikler hazırlanamadı (stage failed)',
-      action: 'Git\'in doğru yapılandırılıp yapılandırılmadığını kontrol edin.',
+      action: "Git'in doğru yapılandırılıp yapılandırılmadığını kontrol edin.",
     },
     [EXIT_CODES.NO_CHANGES]: {
       title: 'Taahhüt edilecek değişiklik yok',
@@ -45,8 +45,7 @@ export const trLocale: LocaleTextBundle = {
     },
     [EXIT_CODES.QUOTA_EXCEEDED]: {
       title: 'API kotası aşıldı',
-      action:
-        'API kotanızı aştınız. Lütfen sağlayıcı hesabınızı kontrol edin.',
+      action: 'API kotanızı aştınız. Lütfen sağlayıcı hesabınızı kontrol edin.',
     },
     [EXIT_CODES.API_ERROR]: {
       title: 'API isteği başarısız',
@@ -55,7 +54,8 @@ export const trLocale: LocaleTextBundle = {
     },
     [EXIT_CODES.COMMIT_FAILED]: {
       title: 'Değişiklikler taahhüt edilemedi',
-      action: 'Herhangi bir Git çakışması veya sorunu olup olmadığını kontrol edin.',
+      action:
+        'Herhangi bir Git çakışması veya sorunu olup olmadığını kontrol edin.',
     },
     [EXIT_CODES.UNKNOWN_ERROR]: {
       title: 'Beklenmeyen bir hata oluştu',
@@ -69,24 +69,26 @@ export const trLocale: LocaleTextBundle = {
       generationStart: (timestamp) =>
         `[${timestamp}] Commit-Copilot oluşturması başlatılıyor...`,
       gitExtensionMissing: 'Hata: Git eklentisi bulunamadı.',
-      selectedRepoFromScm: (path) =>
-        `SCM bağlamından seçilen depo: ${path}`,
+      selectedRepoFromScm: (path) => `SCM bağlamından seçilen depo: ${path}`,
       selectedRepoFromEditor: (path) =>
         `Etkin düzenleyiciden seçilen depo: ${path}`,
-      noRepoMatchedActiveEditor: 'Etkin düzenleyiciyle eşleşen depo bulunamadı.',
+      noRepoMatchedActiveEditor:
+        'Etkin düzenleyiciyle eşleşen depo bulunamadı.',
       noActiveEditorForRepoSelection:
         'Depo seçimi için etkin düzenleyici bulunamadı.',
       selectedOnlyRepo: (path) => `Sadece depo seçildi: ${path}`,
       multiRepoNotDetermined: (count) =>
         `${count} depo bulundu ancak etkin olan belirlenemedi.`,
-      noRepoInApi: 'API\'de depo bulunamadı.',
-      usingProvider: (providerName) => `Sağlayıcı kullanılıyor: ${providerName}`,
+      noRepoInApi: "API'de depo bulunamadı.",
+      usingProvider: (providerName) =>
+        `Sağlayıcı kullanılıyor: ${providerName}`,
       usingGenerateMode: (mode) => `Oluşturma modu: ${mode}`,
       usingCommitOutputOptions: (optionsJson) =>
         `Commit çıktı seçenekleri: ${optionsJson}`,
       missingApiKeyWarning: (provider) =>
         `Uyarı: ${provider} için API Anahtarı bulunamadı.`,
-      cancelRequestedFromProgress: 'İlerleme (progress) arayüzünden iptal istendi.',
+      cancelRequestedFromProgress:
+        'İlerleme (progress) arayüzünden iptal istendi.',
       callingGenerateCommitMessage: 'generateCommitMessage çağrılıyor...',
       repositoryPath: (path) => `Depo yolu: ${path}`,
       usingModel: (model) => `Kullanılan model: ${model}`,
@@ -94,11 +96,12 @@ export const trLocale: LocaleTextBundle = {
       generationError: (errorCode, message) =>
         `Hata: ${errorCode} - ${message}`,
       unexpectedError: (message) => `Beklenmeyen hata: ${message}`,
-      openingLanguageSettings: 'Dil ayarları activity view üzerinde açılıyor...',
+      openingLanguageSettings:
+        'Dil ayarları activity view üzerinde açılıyor...',
     },
     notification: {
       gitExtensionMissing:
-        'Git eklentisi bulunamadı. Lütfen Git\'in kurulu olduğundan ve Git eklentisinin etkinleştirildiğinden emin olun.',
+        "Git eklentisi bulunamadı. Lütfen Git'in kurulu olduğundan ve Git eklentisinin etkinleştirildiğinden emin olun.",
       multiRepoWarning:
         'Birden fazla Git deposu bulundu. Lütfen hedef depoda bir odaklanın veya SCM görünümünden çalıştırın.',
       repoNotFound:
@@ -120,7 +123,8 @@ export const trLocale: LocaleTextBundle = {
       stageAndTrack: 'Hazırla ve İzle',
       commitGenerated: 'Commit mesajı oluşturuldu!',
       viewProviderConsoleAction: 'Sağlayıcı Konsolunu Görüntüle',
-      noChanges: 'Taahhüt edilecek değişiklik yok. Önce bazı değişiklikler yapın!',
+      noChanges:
+        'Taahhüt edilecek değişiklik yok. Önce bazı değişiklikler yapın!',
       generationCanceled: 'Commit mesajı oluşturma iptal edildi.',
       failedPrefix: 'Commit-Copilot başarısız oldu',
     },
@@ -131,7 +135,8 @@ export const trLocale: LocaleTextBundle = {
     apiRequestFailedPrefix: 'API isteği başarısız oldu',
     connectionErrorPrefix: 'Bağlantı hatası',
     unknownProvider: 'Bilinmeyen sağlayıcı',
-    cannotConnectOllamaAt: (host) => `${host} adresindeki Ollama'ya bağlanılamıyor`,
+    cannotConnectOllamaAt: (host) =>
+      `${host} adresindeki Ollama'ya bağlanılamıyor`,
     cannotConnectOllama: (message) =>
       `Ollama'ya bağlanılamıyor: ${message}. Ollama'nın çalıştığından emin olun.`,
     apiKeyCannotBeEmpty: 'API Anahtarı boş olamaz',
@@ -206,13 +211,14 @@ export const trLocale: LocaleTextBundle = {
       modelNameRequired: 'Lütfen oluşturmadan önce bir model adı girin.',
     },
     descriptions: {
-      ollamaFixedToDirectDiff: 'Ollama Doğrudan Diff (Direct Diff) moduna sabitlenmiştir',
+      ollamaFixedToDirectDiff:
+        'Ollama Doğrudan Diff (Direct Diff) moduna sabitlenmiştir',
       agenticModeDescription:
         'Ajan (Agentic) mod, derin analiz için depo araçlarını kullanır',
       directDiffDescription:
         'Doğrudan Diff (Direct Diff) raw diff datasını doğrudan modele gönderir',
       ollamaInfo:
-        '<strong>Ollama</strong> makinenizde yerel olarak çalışır.<br>Varsayılan sunucu: <code>{host}</code><br>Oluşturmadan önce Ollama\'nın çalıştığından emin olun.',
+        "<strong>Ollama</strong> makinenizde yerel olarak çalışır.<br>Varsayılan sunucu: <code>{host}</code><br>Oluşturmadan önce Ollama'nın çalıştığından emin olun.",
       googleInfo:
         'API anahtarınızı <strong>Google AI Studio</strong> üzerinden alın:<br><a href="https://aistudio.google.com/app/apikey" style="color: var(--vscode-textLink-foreground);">aistudio.google.com</a>',
       openaiInfo:
@@ -222,7 +228,7 @@ export const trLocale: LocaleTextBundle = {
       maxAgentStepsDescription:
         'Oluşturma başına ajan araç çağrılarını sınırlayın. Sınırsız için 0 girin veya boş bırakın.',
       customProviderInfo:
-        'Özel sağlayıcılar <strong>OpenAI uyumlu</strong> olmalıdır.<br>API Temel URL\'si, OpenAI Chat Completions API\'sini uygulayan bir hizmeti işaret etmelidir.',
+        "Özel sağlayıcılar <strong>OpenAI uyumlu</strong> olmalıdır.<br>API Temel URL'si, OpenAI Chat Completions API'sini uygulayan bir hizmeti işaret etmelidir.",
     },
     options: {
       agentic: 'Ajan (Agentic) Oluşturma',
@@ -232,27 +238,49 @@ export const trLocale: LocaleTextBundle = {
   progressMessages: {
     analyzingChanges: 'Ajan değişiklikleri analiz ediyor...',
     generatingMessage: 'Commit mesajı oluşturuluyor...',
-    transientApiError: (attempt, maxAttempts, seconds) => `Geçici API hatası. Yeniden deneniyor (${attempt}/${maxAttempts}) ${seconds}s içinde...`,
-    pulling: (model, status, percent) => percent !== undefined ? `${model} çekiliyor: ${status} (${percent}%)` : `${model} çekiliyor: ${status}`,
-    
-    stepAnalyzingDiff: (step, path) => `[Adım ${step}] Diff analiz ediliyor: ${path}`,
+    transientApiError: (attempt, maxAttempts, seconds) =>
+      `Geçici API hatası. Yeniden deneniyor (${attempt}/${maxAttempts}) ${seconds}s içinde...`,
+    pulling: (model, status, percent) =>
+      percent !== undefined
+        ? `${model} çekiliyor: ${status} (${percent}%)`
+        : `${model} çekiliyor: ${status}`,
+
+    stepAnalyzingDiff: (step, path) =>
+      `[Adım ${step}] Diff analiz ediliyor: ${path}`,
     stepReadingFile: (step, path) => `[Adım ${step}] Dosya okunuyor: ${path}`,
-    stepGettingOutline: (step, path) => `[Adım ${step}] Anahat (outline) alınıyor: ${path}`,
-    stepFindingReferences: (step, target) => `[Adım ${step}] Referanslar bulunuyor: ${target}`,
-    stepFetchingRecentCommits: (step, count) => count !== undefined ? `[Adım ${step}] Son commit'ler getiriliyor: ${count} kayıt` : `[Adım ${step}] Son commit'ler getiriliyor...`,
-    stepSearchingProject: (step, keyword) => `[Adım ${step}] Projede aranıyor: ${keyword}`,
+    stepGettingOutline: (step, path) =>
+      `[Adım ${step}] Anahat (outline) alınıyor: ${path}`,
+    stepFindingReferences: (step, target) =>
+      `[Adım ${step}] Referanslar bulunuyor: ${target}`,
+    stepFetchingRecentCommits: (step, count) =>
+      count !== undefined
+        ? `[Adım ${step}] Son commit'ler getiriliyor: ${count} kayıt`
+        : `[Adım ${step}] Son commit'ler getiriliyor...`,
+    stepSearchingProject: (step, keyword) =>
+      `[Adım ${step}] Projede aranıyor: ${keyword}`,
     stepCalling: (step, toolName) => `[Adım ${step}] ${toolName} çağrılıyor...`,
 
-    stepAnalyzingMultipleDiffs: (step, paths) => `[Adım ${step}] Diff'ler analiz ediliyor: ${paths}`,
-    stepAnalyzingDiffsForCount: (step, count) => `[Adım ${step}] ${count} dosya için diff analiz ediliyor...`,
-    stepReadingMultipleFiles: (step, paths) => `[Adım ${step}] Dosyalar okunuyor: ${paths}`,
-    stepReadingFilesForCount: (step, count) => `[Adım ${step}] ${count} dosya okunuyor...`,
-    stepGettingMultipleOutlines: (step, paths) => `[Adım ${step}] Anahatlar (outlines) alınıyor: ${paths}`,
-    stepGettingOutlinesForCount: (step, count) => `[Adım ${step}] ${count} dosya için anahat alınıyor...`,
-    stepFindingReferencesForMultiple: (step, targets) => `[Adım ${step}] Referanslar bulunuyor: ${targets}`,
-    stepFindingReferencesForCount: (step, count) => `[Adım ${step}] ${count} sembol için referans bulunuyor...`,
-    stepSearchingProjectForMultiple: (step, keywords) => `[Adım ${step}] Projede aranıyor: ${keywords}`,
-    stepSearchingProjectForCount: (step, count) => `[Adım ${step}] ${count} anahtar kelime için projede aranıyor...`,
-    stepExecutingMultipleTools: (step, count) => `[Adım ${step}] ${count} inceleme aracı çalıştırılıyor...`,
+    stepAnalyzingMultipleDiffs: (step, paths) =>
+      `[Adım ${step}] Diff'ler analiz ediliyor: ${paths}`,
+    stepAnalyzingDiffsForCount: (step, count) =>
+      `[Adım ${step}] ${count} dosya için diff analiz ediliyor...`,
+    stepReadingMultipleFiles: (step, paths) =>
+      `[Adım ${step}] Dosyalar okunuyor: ${paths}`,
+    stepReadingFilesForCount: (step, count) =>
+      `[Adım ${step}] ${count} dosya okunuyor...`,
+    stepGettingMultipleOutlines: (step, paths) =>
+      `[Adım ${step}] Anahatlar (outlines) alınıyor: ${paths}`,
+    stepGettingOutlinesForCount: (step, count) =>
+      `[Adım ${step}] ${count} dosya için anahat alınıyor...`,
+    stepFindingReferencesForMultiple: (step, targets) =>
+      `[Adım ${step}] Referanslar bulunuyor: ${targets}`,
+    stepFindingReferencesForCount: (step, count) =>
+      `[Adım ${step}] ${count} sembol için referans bulunuyor...`,
+    stepSearchingProjectForMultiple: (step, keywords) =>
+      `[Adım ${step}] Projede aranıyor: ${keywords}`,
+    stepSearchingProjectForCount: (step, count) =>
+      `[Adım ${step}] ${count} anahtar kelime için projede aranıyor...`,
+    stepExecutingMultipleTools: (step, count) =>
+      `[Adım ${step}] ${count} inceleme aracı çalıştırılıyor...`,
   },
 };

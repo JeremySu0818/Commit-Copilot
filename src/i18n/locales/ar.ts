@@ -31,8 +31,7 @@ export const arLocale: LocaleTextBundle = {
     },
     [EXIT_CODES.MIXED_CHANGES]: {
       title: 'تم اكتشاف تغييرات مختلطة',
-      action:
-        'لديك تغييرات مدرجة وغير مدرجة. يرجى اختيار كيفية المتابعة.',
+      action: 'لديك تغييرات مدرجة وغير مدرجة. يرجى اختيار كيفية المتابعة.',
     },
     [EXIT_CODES.API_KEY_MISSING]: {
       title: 'مفتاح API غير مكوّن',
@@ -40,13 +39,11 @@ export const arLocale: LocaleTextBundle = {
     },
     [EXIT_CODES.API_KEY_INVALID]: {
       title: 'مفتاح API غير صالح',
-      action:
-        'مفتاح API الخاص بك غير صالح أو تم إبطاله. يرجى التحقق وتحديثه.',
+      action: 'مفتاح API الخاص بك غير صالح أو تم إبطاله. يرجى التحقق وتحديثه.',
     },
     [EXIT_CODES.QUOTA_EXCEEDED]: {
       title: 'تم تجاوز حصة API',
-      action:
-        'لقد تجاوزت حصة API الخاصة بك. يرجى التحقق من حساب المزود.',
+      action: 'لقد تجاوزت حصة API الخاصة بك. يرجى التحقق من حساب المزود.',
     },
     [EXIT_CODES.API_ERROR]: {
       title: 'فشل طلب API',
@@ -64,13 +61,11 @@ export const arLocale: LocaleTextBundle = {
   },
   extensionText: {
     output: {
-      generationIgnored:
-        'تم تجاهل طلب التوليد: التوليد قيد التقدم بالفعل.',
+      generationIgnored: 'تم تجاهل طلب التوليد: التوليد قيد التقدم بالفعل.',
       generationStart: (timestamp) =>
         `[${timestamp}] بدء توليد commit-copilot...`,
       gitExtensionMissing: 'خطأ: لم يتم العثور على إضافة Git.',
-      selectedRepoFromScm: (path) =>
-        `تم تحديد المستودع من سياق SCM: ${path}`,
+      selectedRepoFromScm: (path) => `تم تحديد المستودع من سياق SCM: ${path}`,
       selectedRepoFromEditor: (path) =>
         `تم تحديد المستودع من المحرر النشط: ${path}`,
       noRepoMatchedActiveEditor: 'لا يوجد مستودع يطابق المحرر النشط.',
@@ -91,8 +86,7 @@ export const arLocale: LocaleTextBundle = {
       repositoryPath: (path) => `مسار المستودع: ${path}`,
       usingModel: (model) => `استخدام النموذج: ${model}`,
       generatedMessage: (message) => `الرسالة المولدة: ${message}`,
-      generationError: (errorCode, message) =>
-        `خطأ: ${errorCode} - ${message}`,
+      generationError: (errorCode, message) => `خطأ: ${errorCode} - ${message}`,
       unexpectedError: (message) => `خطأ غير متوقع: ${message}`,
       openingLanguageSettings: 'جاري فتح إعدادات اللغة في عرض النشاط...',
     },
@@ -106,8 +100,7 @@ export const arLocale: LocaleTextBundle = {
       apiKeyMissing: (providerName) =>
         `لم يتم تكوين مفتاح API لـ ${providerName}. يرجى إعداد مفتاح API الخاص بك في لوحة Commit-Copilot أولاً.`,
       configureApiKeyAction: 'تكوين مفتاح API',
-      mixedChangesQuestion:
-        'لديك تغييرات مدرجة وغير مدرجة. كيف تود المتابعة؟',
+      mixedChangesQuestion: 'لديك تغييرات مدرجة وغير مدرجة. كيف تود المتابعة؟',
       stageAllAndGenerate: 'إدراج الكل والتوليد',
       proceedStagedOnly: 'المتابعة للمدرجة فقط',
       cancel: 'إلغاء',
@@ -137,8 +130,7 @@ export const arLocale: LocaleTextBundle = {
     apiKeyCannotBeEmpty: 'لا يمكن أن يكون مفتاح API فارغاً',
     validationFailedPrefix: 'فشل التحقق',
     unableToConnectFallback: 'غير قادر على الاتصال',
-    saveConfigSuccess: (providerName) =>
-      `تم حفظ تكوين ${providerName} بنجاح!`,
+    saveConfigSuccess: (providerName) => `تم حفظ تكوين ${providerName} بنجاح!`,
     saveConfigFailed: 'فشل حفظ التكوين',
     languageSaved: (label) => `تم تحديث اللغة: ${label}`,
   },
@@ -207,10 +199,8 @@ export const arLocale: LocaleTextBundle = {
     },
     descriptions: {
       ollamaFixedToDirectDiff: 'Ollama مثبت على وضع Direct Diff',
-      agenticModeDescription:
-        'الوضع الوكيلي يستخدم أدوات المستودع لتحليل أعمق',
-      directDiffDescription:
-        'Direct Diff يرسل الفرق الخام مباشرة إلى النموذج',
+      agenticModeDescription: 'الوضع الوكيلي يستخدم أدوات المستودع لتحليل أعمق',
+      directDiffDescription: 'Direct Diff يرسل الفرق الخام مباشرة إلى النموذج',
       ollamaInfo:
         '<strong>Ollama</strong> يعمل محلياً على جهازك.<br>المضيف الافتراضي: <code>{host}</code><br>تأكد من تشغيل Ollama قبل التوليد.',
       googleInfo:
@@ -232,27 +222,48 @@ export const arLocale: LocaleTextBundle = {
   progressMessages: {
     analyzingChanges: 'يقوم الوكيل بتحليل التغييرات...',
     generatingMessage: 'جاري توليد رسالة الالتزام...',
-    transientApiError: (attempt, maxAttempts, seconds) => `خطأ عابر في API. إعادة المحاولة (${attempt}/${maxAttempts}) خلال ${seconds} ثانية...`,
-    pulling: (model, status, percent) => percent !== undefined ? `جاري سحب ${model}: ${status} (${percent}%)` : `جاري سحب ${model}: ${status}`,
-    
+    transientApiError: (attempt, maxAttempts, seconds) =>
+      `خطأ عابر في API. إعادة المحاولة (${attempt}/${maxAttempts}) خلال ${seconds} ثانية...`,
+    pulling: (model, status, percent) =>
+      percent !== undefined
+        ? `جاري سحب ${model}: ${status} (${percent}%)`
+        : `جاري سحب ${model}: ${status}`,
+
     stepAnalyzingDiff: (step, path) => `[الخطوة ${step}] تحليل الفرق: ${path}`,
     stepReadingFile: (step, path) => `[الخطوة ${step}] قراءة الملف: ${path}`,
-    stepGettingOutline: (step, path) => `[الخطوة ${step}] الحصول على المخطط: ${path}`,
-    stepFindingReferences: (step, target) => `[الخطوة ${step}] العثور على المراجع: ${target}`,
-    stepFetchingRecentCommits: (step, count) => count !== undefined ? `[الخطوة ${step}] جلب الالتزامات الأخيرة: ${count} إدخالات` : `[الخطوة ${step}] جلب الالتزامات الأخيرة...`,
-    stepSearchingProject: (step, keyword) => `[الخطوة ${step}] البحث في المشروع عن: ${keyword}`,
+    stepGettingOutline: (step, path) =>
+      `[الخطوة ${step}] الحصول على المخطط: ${path}`,
+    stepFindingReferences: (step, target) =>
+      `[الخطوة ${step}] العثور على المراجع: ${target}`,
+    stepFetchingRecentCommits: (step, count) =>
+      count !== undefined
+        ? `[الخطوة ${step}] جلب الالتزامات الأخيرة: ${count} إدخالات`
+        : `[الخطوة ${step}] جلب الالتزامات الأخيرة...`,
+    stepSearchingProject: (step, keyword) =>
+      `[الخطوة ${step}] البحث في المشروع عن: ${keyword}`,
     stepCalling: (step, toolName) => `[الخطوة ${step}] استدعاء ${toolName}...`,
 
-    stepAnalyzingMultipleDiffs: (step, paths) => `[الخطوة ${step}] تحليل الفروق: ${paths}`,
-    stepAnalyzingDiffsForCount: (step, count) => `[الخطوة ${step}] تحليل الفروق لـ ${count} ملفات...`,
-    stepReadingMultipleFiles: (step, paths) => `[الخطوة ${step}] قراءة الملفات: ${paths}`,
-    stepReadingFilesForCount: (step, count) => `[الخطوة ${step}] قراءة ${count} ملفات...`,
-    stepGettingMultipleOutlines: (step, paths) => `[الخطوة ${step}] الحصول على المخططات: ${paths}`,
-    stepGettingOutlinesForCount: (step, count) => `[الخطوة ${step}] الحصول على المخططات لـ ${count} ملفات...`,
-    stepFindingReferencesForMultiple: (step, targets) => `[الخطوة ${step}] العثور على المراجع: ${targets}`,
-    stepFindingReferencesForCount: (step, count) => `[الخطوة ${step}] العثور على المراجع لـ ${count} رموز...`,
-    stepSearchingProjectForMultiple: (step, keywords) => `[الخطوة ${step}] البحث في المشروع عن: ${keywords}`,
-    stepSearchingProjectForCount: (step, count) => `[الخطوة ${step}] البحث في المشروع عن ${count} كلمات رئيسية...`,
-    stepExecutingMultipleTools: (step, count) => `[الخطوة ${step}] تنفيذ ${count} أدوات تحقيق...`,
+    stepAnalyzingMultipleDiffs: (step, paths) =>
+      `[الخطوة ${step}] تحليل الفروق: ${paths}`,
+    stepAnalyzingDiffsForCount: (step, count) =>
+      `[الخطوة ${step}] تحليل الفروق لـ ${count} ملفات...`,
+    stepReadingMultipleFiles: (step, paths) =>
+      `[الخطوة ${step}] قراءة الملفات: ${paths}`,
+    stepReadingFilesForCount: (step, count) =>
+      `[الخطوة ${step}] قراءة ${count} ملفات...`,
+    stepGettingMultipleOutlines: (step, paths) =>
+      `[الخطوة ${step}] الحصول على المخططات: ${paths}`,
+    stepGettingOutlinesForCount: (step, count) =>
+      `[الخطوة ${step}] الحصول على المخططات لـ ${count} ملفات...`,
+    stepFindingReferencesForMultiple: (step, targets) =>
+      `[الخطوة ${step}] العثور على المراجع: ${targets}`,
+    stepFindingReferencesForCount: (step, count) =>
+      `[الخطوة ${step}] العثور على المراجع لـ ${count} رموز...`,
+    stepSearchingProjectForMultiple: (step, keywords) =>
+      `[الخطوة ${step}] البحث في المشروع عن: ${keywords}`,
+    stepSearchingProjectForCount: (step, count) =>
+      `[الخطوة ${step}] البحث في المشروع عن ${count} كلمات رئيسية...`,
+    stepExecutingMultipleTools: (step, count) =>
+      `[الخطوة ${step}] تنفيذ ${count} أدوات تحقيق...`,
   },
 };

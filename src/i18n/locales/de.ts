@@ -36,7 +36,8 @@ export const deLocale: LocaleTextBundle = {
     },
     [EXIT_CODES.API_KEY_MISSING]: {
       title: 'API-Schlüssel nicht konfiguriert',
-      action: 'Bitte legen Sie Ihren API-Schlüssel im Commit-Copilot Panel fest.',
+      action:
+        'Bitte legen Sie Ihren API-Schlüssel im Commit-Copilot Panel fest.',
     },
     [EXIT_CODES.API_KEY_INVALID]: {
       title: 'Ungültiger API-Schlüssel',
@@ -59,7 +60,8 @@ export const deLocale: LocaleTextBundle = {
     },
     [EXIT_CODES.UNKNOWN_ERROR]: {
       title: 'Ein unerwarteter Fehler ist aufgetreten',
-      action: 'Zusätzliche Details finden Sie in der "Commit-Copilot Debug"-Ausgabe.',
+      action:
+        'Zusätzliche Details finden Sie in der "Commit-Copilot Debug"-Ausgabe.',
     },
   },
   extensionText: {
@@ -86,7 +88,8 @@ export const deLocale: LocaleTextBundle = {
         `Commit-Ausgabeoptionen: ${optionsJson}`,
       missingApiKeyWarning: (provider) =>
         `Warnung: Kein API-Schlüssel gefunden für ${provider}.`,
-      cancelRequestedFromProgress: 'Abbruch von der Benutzeroberfläche angefordert.',
+      cancelRequestedFromProgress:
+        'Abbruch von der Benutzeroberfläche angefordert.',
       callingGenerateCommitMessage: 'Rufe generateCommitMessage auf...',
       repositoryPath: (path) => `Repository-Pfad: ${path}`,
       usingModel: (model) => `Verwende Modell: ${model}`,
@@ -120,7 +123,8 @@ export const deLocale: LocaleTextBundle = {
       stageAndTrack: 'Vormerken & nachverfolgen',
       commitGenerated: 'Commit-Nachricht generiert!',
       viewProviderConsoleAction: 'Anbieter-Konsole anzeigen',
-      noChanges: 'Keine Änderungen zum Committen. Nehmen Sie zuerst einige Änderungen vor!',
+      noChanges:
+        'Keine Änderungen zum Committen. Nehmen Sie zuerst einige Änderungen vor!',
       generationCanceled: 'Erstellung der Commit-Nachricht abgebrochen.',
       failedPrefix: 'Commit-Copilot fehlgeschlagen',
     },
@@ -131,7 +135,8 @@ export const deLocale: LocaleTextBundle = {
     apiRequestFailedPrefix: 'API-Anfrage fehlgeschlagen',
     connectionErrorPrefix: 'Verbindungsfehler',
     unknownProvider: 'Unbekannter Anbieter',
-    cannotConnectOllamaAt: (host) => `Kann keine Verbindung zu Ollama unter ${host} herstellen`,
+    cannotConnectOllamaAt: (host) =>
+      `Kann keine Verbindung zu Ollama unter ${host} herstellen`,
     cannotConnectOllama: (message) =>
       `Kann keine Verbindung zu Ollama herstellen: ${message}. Stellen Sie sicher, dass Ollama läuft.`,
     apiKeyCannotBeEmpty: 'API-Schlüssel darf nicht leer sein',
@@ -203,10 +208,12 @@ export const deLocale: LocaleTextBundle = {
       apiKeyRequired: 'API-Schlüssel ist erforderlich.',
       providerSaved: 'Benutzerdefinierter Anbieter gespeichert!',
       providerDeleted: 'Benutzerdefinierter Anbieter gelöscht.',
-      modelNameRequired: 'Bitte geben Sie vor der Generierung einen Modellnamen ein.',
+      modelNameRequired:
+        'Bitte geben Sie vor der Generierung einen Modellnamen ein.',
     },
     descriptions: {
-      ollamaFixedToDirectDiff: 'Ollama ist auf den Modus Direct Diff festgelegt',
+      ollamaFixedToDirectDiff:
+        'Ollama ist auf den Modus Direct Diff festgelegt',
       agenticModeDescription:
         'Der Agentic-Modus verwendet Repository-Tools für eine tiefere Analyse',
       directDiffDescription:
@@ -232,27 +239,50 @@ export const deLocale: LocaleTextBundle = {
   progressMessages: {
     analyzingChanges: 'Agent analysiert Änderungen...',
     generatingMessage: 'Generiere Commit-Nachricht...',
-    transientApiError: (attempt, maxAttempts, seconds) => `Vorübergehender API-Fehler. Erneuter Versuch (${attempt}/${maxAttempts}) in ${seconds}s...`,
-    pulling: (model, status, percent) => percent !== undefined ? `Ziehe ${model}: ${status} (${percent}%)` : `Ziehe ${model}: ${status}`,
-    
-    stepAnalyzingDiff: (step, path) => `[Schritt ${step}] Analysiere Diff: ${path}`,
-    stepReadingFile: (step, path) => `[Schritt ${step}] Lese Datei: ${path}`,
-    stepGettingOutline: (step, path) => `[Schritt ${step}] Hole Gliederung: ${path}`,
-    stepFindingReferences: (step, target) => `[Schritt ${step}] Finde Referenzen: ${target}`,
-    stepFetchingRecentCommits: (step, count) => count !== undefined ? `[Schritt ${step}] Hole letzte Commits: ${count} Einträge` : `[Schritt ${step}] Hole letzte Commits...`,
-    stepSearchingProject: (step, keyword) => `[Schritt ${step}] Durchsuche Projekt nach: ${keyword}`,
-    stepCalling: (step, toolName) => `[Schritt ${step}] Rufe ${toolName} auf...`,
+    transientApiError: (attempt, maxAttempts, seconds) =>
+      `Vorübergehender API-Fehler. Erneuter Versuch (${attempt}/${maxAttempts}) in ${seconds}s...`,
+    pulling: (model, status, percent) =>
+      percent !== undefined
+        ? `Ziehe ${model}: ${status} (${percent}%)`
+        : `Ziehe ${model}: ${status}`,
 
-    stepAnalyzingMultipleDiffs: (step, paths) => `[Schritt ${step}] Analysiere Diffs: ${paths}`,
-    stepAnalyzingDiffsForCount: (step, count) => `[Schritt ${step}] Analysiere Diffs für ${count} Dateien...`,
-    stepReadingMultipleFiles: (step, paths) => `[Schritt ${step}] Lese Dateien: ${paths}`,
-    stepReadingFilesForCount: (step, count) => `[Schritt ${step}] Lese ${count} Dateien...`,
-    stepGettingMultipleOutlines: (step, paths) => `[Schritt ${step}] Hole Gliederungen: ${paths}`,
-    stepGettingOutlinesForCount: (step, count) => `[Schritt ${step}] Hole Gliederungen für ${count} Dateien...`,
-    stepFindingReferencesForMultiple: (step, targets) => `[Schritt ${step}] Finde Referenzen: ${targets}`,
-    stepFindingReferencesForCount: (step, count) => `[Schritt ${step}] Finde Referenzen für ${count} Symbole...`,
-    stepSearchingProjectForMultiple: (step, keywords) => `[Schritt ${step}] Durchsuche Projekt nach: ${keywords}`,
-    stepSearchingProjectForCount: (step, count) => `[Schritt ${step}] Durchsuche Projekt nach ${count} Schlüsselwörtern...`,
-    stepExecutingMultipleTools: (step, count) => `[Schritt ${step}] Führe ${count} Untersuchungstools aus...`,
+    stepAnalyzingDiff: (step, path) =>
+      `[Schritt ${step}] Analysiere Diff: ${path}`,
+    stepReadingFile: (step, path) => `[Schritt ${step}] Lese Datei: ${path}`,
+    stepGettingOutline: (step, path) =>
+      `[Schritt ${step}] Hole Gliederung: ${path}`,
+    stepFindingReferences: (step, target) =>
+      `[Schritt ${step}] Finde Referenzen: ${target}`,
+    stepFetchingRecentCommits: (step, count) =>
+      count !== undefined
+        ? `[Schritt ${step}] Hole letzte Commits: ${count} Einträge`
+        : `[Schritt ${step}] Hole letzte Commits...`,
+    stepSearchingProject: (step, keyword) =>
+      `[Schritt ${step}] Durchsuche Projekt nach: ${keyword}`,
+    stepCalling: (step, toolName) =>
+      `[Schritt ${step}] Rufe ${toolName} auf...`,
+
+    stepAnalyzingMultipleDiffs: (step, paths) =>
+      `[Schritt ${step}] Analysiere Diffs: ${paths}`,
+    stepAnalyzingDiffsForCount: (step, count) =>
+      `[Schritt ${step}] Analysiere Diffs für ${count} Dateien...`,
+    stepReadingMultipleFiles: (step, paths) =>
+      `[Schritt ${step}] Lese Dateien: ${paths}`,
+    stepReadingFilesForCount: (step, count) =>
+      `[Schritt ${step}] Lese ${count} Dateien...`,
+    stepGettingMultipleOutlines: (step, paths) =>
+      `[Schritt ${step}] Hole Gliederungen: ${paths}`,
+    stepGettingOutlinesForCount: (step, count) =>
+      `[Schritt ${step}] Hole Gliederungen für ${count} Dateien...`,
+    stepFindingReferencesForMultiple: (step, targets) =>
+      `[Schritt ${step}] Finde Referenzen: ${targets}`,
+    stepFindingReferencesForCount: (step, count) =>
+      `[Schritt ${step}] Finde Referenzen für ${count} Symbole...`,
+    stepSearchingProjectForMultiple: (step, keywords) =>
+      `[Schritt ${step}] Durchsuche Projekt nach: ${keywords}`,
+    stepSearchingProjectForCount: (step, count) =>
+      `[Schritt ${step}] Durchsuche Projekt nach ${count} Schlüsselwörtern...`,
+    stepExecutingMultipleTools: (step, count) =>
+      `[Schritt ${step}] Führe ${count} Untersuchungstools aus...`,
   },
 };

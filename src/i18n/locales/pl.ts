@@ -50,8 +50,7 @@ export const plLocale: LocaleTextBundle = {
     },
     [EXIT_CODES.API_ERROR]: {
       title: 'Żądanie API nie powiodło się',
-      action:
-        'Wystąpił błąd podczas komunikacji z API. Spróbuj ponownie.',
+      action: 'Wystąpił błąd podczas komunikacji z API. Spróbuj ponownie.',
     },
     [EXIT_CODES.COMMIT_FAILED]: {
       title: 'Nie udało się zatwierdzić zmian',
@@ -73,7 +72,8 @@ export const plLocale: LocaleTextBundle = {
         `Wybrano repozytorium z kontekstu SCM: ${path}`,
       selectedRepoFromEditor: (path) =>
         `Wybrano repozytorium z aktywnego edytora: ${path}`,
-      noRepoMatchedActiveEditor: 'Żadne repozytorium nie pasuje do aktywnego edytora.',
+      noRepoMatchedActiveEditor:
+        'Żadne repozytorium nie pasuje do aktywnego edytora.',
       noActiveEditorForRepoSelection:
         'Nie znaleziono aktywnego edytora do wyboru repozytorium.',
       selectedOnlyRepo: (path) => `Wybrano jedyne repozytorium: ${path}`,
@@ -94,7 +94,8 @@ export const plLocale: LocaleTextBundle = {
       generationError: (errorCode, message) =>
         `Błąd: ${errorCode} - ${message}`,
       unexpectedError: (message) => `Nieoczekiwany błąd: ${message}`,
-      openingLanguageSettings: 'Otwieranie ustawień języka w widoku aktywności...',
+      openingLanguageSettings:
+        'Otwieranie ustawień języka w widoku aktywności...',
     },
     notification: {
       gitExtensionMissing:
@@ -120,7 +121,8 @@ export const plLocale: LocaleTextBundle = {
       stageAndTrack: 'Dodaj do poczekalni i śledź',
       commitGenerated: 'Komunikat commita wygenerowany!',
       viewProviderConsoleAction: 'Wyświetl konsolę dostawcy',
-      noChanges: 'Brak zmian do zatwierdzenia. Najpierw wprowadź jakieś zmiany!',
+      noChanges:
+        'Brak zmian do zatwierdzenia. Najpierw wprowadź jakieś zmiany!',
       generationCanceled: 'Generowanie komunikatu commita anulowane.',
       failedPrefix: 'Commit-Copilot napotkał błąd',
     },
@@ -131,7 +133,8 @@ export const plLocale: LocaleTextBundle = {
     apiRequestFailedPrefix: 'Żądanie API nie powiodło się',
     connectionErrorPrefix: 'Błąd połączenia',
     unknownProvider: 'Nieznany dostawca',
-    cannotConnectOllamaAt: (host) => `Nie można połączyć się z Ollama pod adresem ${host}`,
+    cannotConnectOllamaAt: (host) =>
+      `Nie można połączyć się z Ollama pod adresem ${host}`,
     cannotConnectOllama: (message) =>
       `Nie można połączyć się z Ollama: ${message}. Upewnij się, że Ollama jest uruchomiona.`,
     apiKeyCannotBeEmpty: 'Klucz API nie może być pusty',
@@ -206,7 +209,8 @@ export const plLocale: LocaleTextBundle = {
       modelNameRequired: 'Wprowadź nazwę modelu przed wygenerowaniem.',
     },
     descriptions: {
-      ollamaFixedToDirectDiff: 'Ollama jest na sztywno przypisana do trybu Direct Diff',
+      ollamaFixedToDirectDiff:
+        'Ollama jest na sztywno przypisana do trybu Direct Diff',
       agenticModeDescription:
         'Tryb agenta używa narzędzi repozytorium do głębszej analizy',
       directDiffDescription:
@@ -232,27 +236,50 @@ export const plLocale: LocaleTextBundle = {
   progressMessages: {
     analyzingChanges: 'Agent analizuje zmiany...',
     generatingMessage: 'Generowanie komunikatu commita...',
-    transientApiError: (attempt, maxAttempts, seconds) => `Przejściowy błąd API. Ponowna próba (${attempt}/${maxAttempts}) za ${seconds}s...`,
-    pulling: (model, status, percent) => percent !== undefined ? `Pobieranie ${model}: ${status} (${percent}%)` : `Pobieranie ${model}: ${status}`,
-    
-    stepAnalyzingDiff: (step, path) => `[Krok ${step}] Analizowanie różnic: ${path}`,
-    stepReadingFile: (step, path) => `[Krok ${step}] Czytanie pliku: ${path}`,
-    stepGettingOutline: (step, path) => `[Krok ${step}] Pobieranie struktury: ${path}`,
-    stepFindingReferences: (step, target) => `[Krok ${step}] Szukanie referencji: ${target}`,
-    stepFetchingRecentCommits: (step, count) => count !== undefined ? `[Krok ${step}] Pobieranie ostatnich commitów: ${count} wpisów` : `[Krok ${step}] Pobieranie ostatnich commitów...`,
-    stepSearchingProject: (step, keyword) => `[Krok ${step}] Przeszukiwanie projektu pod kątem: ${keyword}`,
-    stepCalling: (step, toolName) => `[Krok ${step}] Wywoływanie ${toolName}...`,
+    transientApiError: (attempt, maxAttempts, seconds) =>
+      `Przejściowy błąd API. Ponowna próba (${attempt}/${maxAttempts}) za ${seconds}s...`,
+    pulling: (model, status, percent) =>
+      percent !== undefined
+        ? `Pobieranie ${model}: ${status} (${percent}%)`
+        : `Pobieranie ${model}: ${status}`,
 
-    stepAnalyzingMultipleDiffs: (step, paths) => `[Krok ${step}] Analizowanie różnic: ${paths}`,
-    stepAnalyzingDiffsForCount: (step, count) => `[Krok ${step}] Analizowanie różnic dla ${count} plików...`,
-    stepReadingMultipleFiles: (step, paths) => `[Krok ${step}] Czytanie plików: ${paths}`,
-    stepReadingFilesForCount: (step, count) => `[Krok ${step}] Czytanie ${count} plików...`,
-    stepGettingMultipleOutlines: (step, paths) => `[Krok ${step}] Pobieranie struktury: ${paths}`,
-    stepGettingOutlinesForCount: (step, count) => `[Krok ${step}] Pobieranie struktury dla ${count} plików...`,
-    stepFindingReferencesForMultiple: (step, targets) => `[Krok ${step}] Szukanie referencji: ${targets}`,
-    stepFindingReferencesForCount: (step, count) => `[Krok ${step}] Szukanie referencji dla ${count} symboli...`,
-    stepSearchingProjectForMultiple: (step, keywords) => `[Krok ${step}] Przeszukiwanie projektu pod kątem: ${keywords}`,
-    stepSearchingProjectForCount: (step, count) => `[Krok ${step}] Przeszukiwanie projektu pod kątem ${count} słów kluczowych...`,
-    stepExecutingMultipleTools: (step, count) => `[Krok ${step}] Wykonywanie ${count} narzędzi analitycznych...`,
+    stepAnalyzingDiff: (step, path) =>
+      `[Krok ${step}] Analizowanie różnic: ${path}`,
+    stepReadingFile: (step, path) => `[Krok ${step}] Czytanie pliku: ${path}`,
+    stepGettingOutline: (step, path) =>
+      `[Krok ${step}] Pobieranie struktury: ${path}`,
+    stepFindingReferences: (step, target) =>
+      `[Krok ${step}] Szukanie referencji: ${target}`,
+    stepFetchingRecentCommits: (step, count) =>
+      count !== undefined
+        ? `[Krok ${step}] Pobieranie ostatnich commitów: ${count} wpisów`
+        : `[Krok ${step}] Pobieranie ostatnich commitów...`,
+    stepSearchingProject: (step, keyword) =>
+      `[Krok ${step}] Przeszukiwanie projektu pod kątem: ${keyword}`,
+    stepCalling: (step, toolName) =>
+      `[Krok ${step}] Wywoływanie ${toolName}...`,
+
+    stepAnalyzingMultipleDiffs: (step, paths) =>
+      `[Krok ${step}] Analizowanie różnic: ${paths}`,
+    stepAnalyzingDiffsForCount: (step, count) =>
+      `[Krok ${step}] Analizowanie różnic dla ${count} plików...`,
+    stepReadingMultipleFiles: (step, paths) =>
+      `[Krok ${step}] Czytanie plików: ${paths}`,
+    stepReadingFilesForCount: (step, count) =>
+      `[Krok ${step}] Czytanie ${count} plików...`,
+    stepGettingMultipleOutlines: (step, paths) =>
+      `[Krok ${step}] Pobieranie struktury: ${paths}`,
+    stepGettingOutlinesForCount: (step, count) =>
+      `[Krok ${step}] Pobieranie struktury dla ${count} plików...`,
+    stepFindingReferencesForMultiple: (step, targets) =>
+      `[Krok ${step}] Szukanie referencji: ${targets}`,
+    stepFindingReferencesForCount: (step, count) =>
+      `[Krok ${step}] Szukanie referencji dla ${count} symboli...`,
+    stepSearchingProjectForMultiple: (step, keywords) =>
+      `[Krok ${step}] Przeszukiwanie projektu pod kątem: ${keywords}`,
+    stepSearchingProjectForCount: (step, count) =>
+      `[Krok ${step}] Przeszukiwanie projektu pod kątem ${count} słów kluczowych...`,
+    stepExecutingMultipleTools: (step, count) =>
+      `[Krok ${step}] Wykonywanie ${count} narzędzi analitycznych...`,
   },
 };

@@ -36,7 +36,8 @@ export const esLocale: LocaleTextBundle = {
     },
     [EXIT_CODES.API_KEY_MISSING]: {
       title: 'Clave de API no configurada',
-      action: 'Por favor, configura tu Clave API en el panel de Commit-Copilot.',
+      action:
+        'Por favor, configura tu Clave API en el panel de Commit-Copilot.',
     },
     [EXIT_CODES.API_KEY_INVALID]: {
       title: 'Clave de API no válida',
@@ -73,7 +74,8 @@ export const esLocale: LocaleTextBundle = {
         `Repositorio seleccionado desde el contexto SCM: ${path}`,
       selectedRepoFromEditor: (path) =>
         `Repositorio seleccionado desde el editor activo: ${path}`,
-      noRepoMatchedActiveEditor: 'Ningún repositorio coincidió con el editor activo.',
+      noRepoMatchedActiveEditor:
+        'Ningún repositorio coincidió con el editor activo.',
       noActiveEditorForRepoSelection:
         'No se encontró editor activo para la selección de repositorio.',
       selectedOnlyRepo: (path) => `Seleccionado único repositorio: ${path}`,
@@ -86,7 +88,8 @@ export const esLocale: LocaleTextBundle = {
         `Opciones de salida del commit: ${optionsJson}`,
       missingApiKeyWarning: (provider) =>
         `Advertencia: No se encontró Clave API para ${provider}.`,
-      cancelRequestedFromProgress: 'Se solicitó cancelación desde la interfaz de progreso.',
+      cancelRequestedFromProgress:
+        'Se solicitó cancelación desde la interfaz de progreso.',
       callingGenerateCommitMessage: 'Llamando generateCommitMessage...',
       repositoryPath: (path) => `Ruta del repositorio: ${path}`,
       usingModel: (model) => `Usando modelo: ${model}`,
@@ -94,7 +97,8 @@ export const esLocale: LocaleTextBundle = {
       generationError: (errorCode, message) =>
         `Error: ${errorCode} - ${message}`,
       unexpectedError: (message) => `Error inesperado: ${message}`,
-      openingLanguageSettings: 'Abriendo configuración de idioma en la vista de actividad...',
+      openingLanguageSettings:
+        'Abriendo configuración de idioma en la vista de actividad...',
     },
     notification: {
       gitExtensionMissing:
@@ -203,7 +207,8 @@ export const esLocale: LocaleTextBundle = {
       apiKeyRequired: 'La clave API es obligatoria.',
       providerSaved: '¡Proveedor personalizado guardado!',
       providerDeleted: 'Proveedor personalizado borrado.',
-      modelNameRequired: 'Por favor, introduce un nombre de modelo antes de generar.',
+      modelNameRequired:
+        'Por favor, introduce un nombre de modelo antes de generar.',
     },
     descriptions: {
       ollamaFixedToDirectDiff: 'Ollama está fijado al modo Direct Diff',
@@ -232,27 +237,49 @@ export const esLocale: LocaleTextBundle = {
   progressMessages: {
     analyzingChanges: 'Agente analizando cambios...',
     generatingMessage: 'Generando mensaje de commit...',
-    transientApiError: (attempt, maxAttempts, seconds) => `Error transitorio de API. Reintentando (${attempt}/${maxAttempts}) en ${seconds}s...`,
-    pulling: (model, status, percent) => percent !== undefined ? `Descargando ${model}: ${status} (${percent}%)` : `Descargando ${model}: ${status}`,
-    
-    stepAnalyzingDiff: (step, path) => `[Paso ${step}] Analizando diff: ${path}`,
+    transientApiError: (attempt, maxAttempts, seconds) =>
+      `Error transitorio de API. Reintentando (${attempt}/${maxAttempts}) en ${seconds}s...`,
+    pulling: (model, status, percent) =>
+      percent !== undefined
+        ? `Descargando ${model}: ${status} (${percent}%)`
+        : `Descargando ${model}: ${status}`,
+
+    stepAnalyzingDiff: (step, path) =>
+      `[Paso ${step}] Analizando diff: ${path}`,
     stepReadingFile: (step, path) => `[Paso ${step}] Leyendo archivo: ${path}`,
-    stepGettingOutline: (step, path) => `[Paso ${step}] Obteniendo esquema: ${path}`,
-    stepFindingReferences: (step, target) => `[Paso ${step}] Encontrando referencias: ${target}`,
-    stepFetchingRecentCommits: (step, count) => count !== undefined ? `[Paso ${step}] Obteniendo commits recientes: ${count} entradas` : `[Paso ${step}] Obteniendo commits recientes...`,
-    stepSearchingProject: (step, keyword) => `[Paso ${step}] Buscando en el proyecto: ${keyword}`,
+    stepGettingOutline: (step, path) =>
+      `[Paso ${step}] Obteniendo esquema: ${path}`,
+    stepFindingReferences: (step, target) =>
+      `[Paso ${step}] Encontrando referencias: ${target}`,
+    stepFetchingRecentCommits: (step, count) =>
+      count !== undefined
+        ? `[Paso ${step}] Obteniendo commits recientes: ${count} entradas`
+        : `[Paso ${step}] Obteniendo commits recientes...`,
+    stepSearchingProject: (step, keyword) =>
+      `[Paso ${step}] Buscando en el proyecto: ${keyword}`,
     stepCalling: (step, toolName) => `[Paso ${step}] Llamando ${toolName}...`,
 
-    stepAnalyzingMultipleDiffs: (step, paths) => `[Paso ${step}] Analizando diffs: ${paths}`,
-    stepAnalyzingDiffsForCount: (step, count) => `[Paso ${step}] Analizando diffs para ${count} archivos...`,
-    stepReadingMultipleFiles: (step, paths) => `[Paso ${step}] Leyendo archivos: ${paths}`,
-    stepReadingFilesForCount: (step, count) => `[Paso ${step}] Leyendo ${count} archivos...`,
-    stepGettingMultipleOutlines: (step, paths) => `[Paso ${step}] Obteniendo esquemas: ${paths}`,
-    stepGettingOutlinesForCount: (step, count) => `[Paso ${step}] Obteniendo esquemas para ${count} archivos...`,
-    stepFindingReferencesForMultiple: (step, targets) => `[Paso ${step}] Encontrando referencias: ${targets}`,
-    stepFindingReferencesForCount: (step, count) => `[Paso ${step}] Encontrando referencias para ${count} símbolos...`,
-    stepSearchingProjectForMultiple: (step, keywords) => `[Paso ${step}] Buscando en el proyecto: ${keywords}`,
-    stepSearchingProjectForCount: (step, count) => `[Paso ${step}] Buscando en el proyecto ${count} palabras clave...`,
-    stepExecutingMultipleTools: (step, count) => `[Paso ${step}] Ejecutando ${count} herramientas de investigación...`,
+    stepAnalyzingMultipleDiffs: (step, paths) =>
+      `[Paso ${step}] Analizando diffs: ${paths}`,
+    stepAnalyzingDiffsForCount: (step, count) =>
+      `[Paso ${step}] Analizando diffs para ${count} archivos...`,
+    stepReadingMultipleFiles: (step, paths) =>
+      `[Paso ${step}] Leyendo archivos: ${paths}`,
+    stepReadingFilesForCount: (step, count) =>
+      `[Paso ${step}] Leyendo ${count} archivos...`,
+    stepGettingMultipleOutlines: (step, paths) =>
+      `[Paso ${step}] Obteniendo esquemas: ${paths}`,
+    stepGettingOutlinesForCount: (step, count) =>
+      `[Paso ${step}] Obteniendo esquemas para ${count} archivos...`,
+    stepFindingReferencesForMultiple: (step, targets) =>
+      `[Paso ${step}] Encontrando referencias: ${targets}`,
+    stepFindingReferencesForCount: (step, count) =>
+      `[Paso ${step}] Encontrando referencias para ${count} símbolos...`,
+    stepSearchingProjectForMultiple: (step, keywords) =>
+      `[Paso ${step}] Buscando en el proyecto: ${keywords}`,
+    stepSearchingProjectForCount: (step, count) =>
+      `[Paso ${step}] Buscando en el proyecto ${count} palabras clave...`,
+    stepExecutingMultipleTools: (step, count) =>
+      `[Paso ${step}] Ejecutando ${count} herramientas de investigación...`,
   },
 };

@@ -93,8 +93,8 @@ async function runAnthropicAgentLoop(
             LOCALES[language].progressMessages.transientApiError(
               nextAttempt,
               maxAttempts,
-              Math.ceil(delayMs / 1000)
-            )
+              Math.ceil(delayMs / 1000),
+            ),
           );
         }
       },
@@ -102,7 +102,9 @@ async function runAnthropicAgentLoop(
 
     let step = 0;
 
-    while (step < (maxAgentSteps && maxAgentSteps > 0 ? maxAgentSteps : Infinity)) {
+    while (
+      step < (maxAgentSteps && maxAgentSteps > 0 ? maxAgentSteps : Infinity)
+    ) {
       throwIfCancellationRequested(cancellationToken);
       const response = await withRetry(
         () =>
