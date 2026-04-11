@@ -54,6 +54,7 @@ export async function withRetry<T>(
       await sleep(delayMs, options.checkAbort);
     }
   }
+  throw new Error(`withRetry: exhausted ${options.maxAttempts} attempts`);
 }
 
 function getRetryDelayMs(
