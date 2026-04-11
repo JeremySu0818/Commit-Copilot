@@ -80,9 +80,12 @@ export function useMessageHandler(
           break;
         }
 
-        case 'currentGenerateMode':
-          dispatch({ type: 'SET_PREFERRED_GENERATE_MODE', mode: normalizeGenerateMode(message.generateMode) });
+        case 'currentGenerateMode': {
+          const mode = normalizeGenerateMode(message.generateMode);
+          dispatch({ type: 'SET_PREFERRED_GENERATE_MODE', mode });
+          dispatch({ type: 'SET_GENERATE_MODE', mode });
           break;
+        }
 
         case 'currentCommitOutputOptions':
           dispatch({
