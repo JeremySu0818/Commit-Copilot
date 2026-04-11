@@ -1,0 +1,9 @@
+{
+  "extension.displayName": "Commit Copilot",
+  "extension.description": "Genereer conventionele commitberichten met behulp van LLM's.",
+  "command.generate.title": "Genereer Commitbericht",
+  "command.cancelGeneration.title": "Annuleer Generatie",
+  "command.openLanguageSettings.title": "Open Taalinstellingen",
+  "viewsContainer.title": "Commit Copilot",
+  "view.name": "Commit Copilot"
+}
