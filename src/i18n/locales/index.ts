@@ -9,6 +9,7 @@ import { arLocale } from './ar';
 import { csLocale } from './cs';
 import { nlLocale } from './nl';
 import { frLocale } from './fr';
+import { deLocale } from './de';
 
 export const LOCALES: Record<EffectiveDisplayLanguage, LocaleTextBundle> = {
   en: enLocale,
@@ -21,4 +22,5 @@ export const LOCALES: Record<EffectiveDisplayLanguage, LocaleTextBundle> = {
   cs: csLocale,
   nl: nlLocale,
   fr: frLocale,
+  de: deLocale,
 };
