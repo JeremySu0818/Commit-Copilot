@@ -1,4 +1,4 @@
-import Module = require('module');
+import Module from 'node:module';
 
 type AsyncOrSync<T> = T | Promise<T>;
 

@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as path from 'path';
+import { createRequire } from 'node:module';
 import { clearRequireCache, withModuleMock } from './helpers/module-mock';
 
 const MODULE_PATH = path.resolve(__dirname, '..', 'side-panel-provider');
@@ -14,7 +15,7 @@ test('inline script serialization escapes html terminators and unicode separator
   const vscodeMock = {
     Uri: {
       joinPath: (base: { fsPath: string }, ...paths: string[]) => ({
-        fsPath: require('path').join(base.fsPath, ...paths),
+        fsPath: path.join(base.fsPath, ...paths),
       }),
     },
     extensions: {
@@ -61,7 +62,8 @@ test('inline script serialization escapes html terminators and unicode separator
   const mod = await withModuleMock('vscode', vscodeMock, async () =>
     withModuleMock('./models', modelsMock, async () => {
       clearRequireCache(MODULE_PATH);
-      return require(MODULE_PATH) as typeof import('../side-panel-provider');
+      const dynamicRequire = createRequire(__filename);
+      return dynamicRequire(MODULE_PATH) as typeof import('../side-panel-provider');
     }),
   );
 

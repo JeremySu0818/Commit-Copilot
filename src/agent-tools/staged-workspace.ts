@@ -97,10 +97,8 @@ async function copyWorkspaceSnapshot(
       const nativePath = relPath.replace(/\//g, path.sep);
       const srcPath = path.join(repoRoot, nativePath);
       const destPath = path.join(destRoot, nativePath);
-      try {
-        fs.mkdirSync(path.dirname(destPath), { recursive: true });
-        fs.copyFileSync(srcPath, destPath);
-      } catch {}
+      fs.mkdirSync(path.dirname(destPath), { recursive: true });
+      fs.copyFileSync(srcPath, destPath);
     }
     return;
   }
@@ -138,9 +136,7 @@ async function copyWorkspaceSnapshot(
       }
 
       if (entry.isFile()) {
-        try {
-          fs.copyFileSync(srcPath, destPath);
-        } catch {}
+        fs.copyFileSync(srcPath, destPath);
       }
     }
   }

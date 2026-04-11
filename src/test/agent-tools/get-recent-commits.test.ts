@@ -42,7 +42,7 @@ test('executeGetRecentCommits formats multiline commit messages', async () => {
   const output = await executeGetRecentCommits({ count: 2 }, gitOps);
   assert.match(output, /Recent commits \(last 2, newest first\):/);
   assert.match(output, /\[1\]/);
-  assert.match(output, /  feat\(core\): add x/);
-  assert.match(output, /  body/);
+  assert.match(output, / {2}feat\(core\): add x/);
+  assert.match(output, / {2}body/);
   assert.match(output, /\[2\]/);
 });

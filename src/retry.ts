@@ -29,7 +29,7 @@ export async function withRetry<T>(
   const shouldRetry = options.shouldRetry || isRetryableError;
   let attempt = 0;
 
-  while (true) {
+  while (attempt < options.maxAttempts) {
     options.checkAbort?.();
     try {
       attempt += 1;

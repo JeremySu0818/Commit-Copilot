@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
 import { clearRequireCache, withModuleMock } from '../helpers/module-mock';
 
 const MODULE_PATH = '../../agent-loop/gemini';
@@ -12,7 +13,8 @@ async function withGeminiModule<T>(
   clearRequireCache(MODULE_PATH);
   return withModuleMock('@google/genai', geminiMock, async () => {
     return withModuleMock('../agent-tools', agentToolsMock, async () => {
-      const mod = require(
+      const dynamicRequire = createRequire(__filename);
+      const mod = dynamicRequire(
         MODULE_PATH,
       ) as typeof import('../../agent-loop/gemini');
       return run(mod);
