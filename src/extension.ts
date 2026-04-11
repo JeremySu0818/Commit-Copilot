@@ -73,8 +73,6 @@ function getCurrentLanguage(context: vscode.ExtensionContext) {
 }
 
 export function activate(context: vscode.ExtensionContext) {
-  console.log('Commit-Copilot extension is now active!');
-
   const outputChannel = vscode.window.createOutputChannel(
     'Commit-Copilot Debug',
   );
