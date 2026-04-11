@@ -1,0 +1,9 @@
+{
+  "extension.displayName": "Commit Copilot",
+  "extension.description": "Tạo thông báo commit theo chuẩn bằng LLM.",
+  "command.generate.title": "Tạo thông báo commit",
+  "command.cancelGeneration.title": "Hủy tạo",
+  "command.openLanguageSettings.title": "Mở cài đặt ngôn ngữ",
+  "viewsContainer.title": "Commit Copilot",
+  "view.name": "Commit Copilot"
+}

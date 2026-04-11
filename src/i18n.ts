@@ -25,7 +25,7 @@ export const DEFAULT_DISPLAY_LANGUAGE: DisplayLanguage = 'auto';
 export const DISPLAY_LANGUAGE_OPTIONS: LanguageOption[] = [
   {
     value: 'auto',
-    labels: { en: 'Auto (Follow VS Code)', 'zh-TW': '自動（跟隨 VS Code）', 'zh-CN': '自动（跟随 VS Code）', ja: '自動（VS Code に従う）', ko: '자동 (VS Code 설정 따름)', es: 'Automático (según VS Code)', ar: 'تلقائي (حسب VS Code)', cs: 'Automaticky (podle VS Code)', nl: 'Automatisch (volgens VS Code)', fr: 'Automatique (selon VS Code)', de: 'Automatisch (laut VS Code)', hi: 'स्वचालित (VS Code के अनुसार)', hu: 'Automatikus (a VS Code szerint)', id: 'Otomatis (menurut VS Code)', it: 'Automatico (secondo VS Code)', pl: 'Automatycznie (według VS Code)', 'pt-br': 'Automático (de acordo com o VS Code)', ru: 'Автоматически (согласно VS Code)', tr: 'Otomatik (VS Code\'a göre)' },
+    labels: { en: 'Auto (Follow VS Code)', 'zh-TW': '自動（跟隨 VS Code）', 'zh-CN': '自动（跟随 VS Code）', ja: '自動（VS Code に従う）', ko: '자동 (VS Code 설정 따름)', es: 'Automático (según VS Code)', ar: 'تلقائي (حسب VS Code)', cs: 'Automaticky (podle VS Code)', nl: 'Automatisch (volgens VS Code)', fr: 'Automatique (selon VS Code)', de: 'Automatisch (laut VS Code)', hi: 'स्वचालित (VS Code के अनुसार)', hu: 'Automatikus (a VS Code szerint)', id: 'Otomatis (menurut VS Code)', it: 'Automatico (secondo VS Code)', pl: 'Automatycznie (według VS Code)', 'pt-br': 'Automático (de acordo com o VS Code)', ru: 'Автоматически (согласно VS Code)', tr: 'Otomatik (VS Code\'a göre)', vi: 'Tự động (theo VS Code)' },
   },
   { value: 'en', label: 'English' },
   { value: 'zh-TW', label: '繁體中文' },
@@ -46,6 +46,7 @@ export const DISPLAY_LANGUAGE_OPTIONS: LanguageOption[] = [
   { value: 'pt-br', label: 'Português (Brasil)' },
   { value: 'ru', label: 'Русский' },
   { value: 'tr', label: 'Türkçe' },
+  { value: 'vi', label: 'Tiếng Việt' },
 ];
 
 export const WEBVIEW_LANGUAGE_PACKS: Record<
@@ -71,10 +72,11 @@ export const WEBVIEW_LANGUAGE_PACKS: Record<
   'pt-br': LOCALES['pt-br'].webviewLanguagePack,
   ru: LOCALES.ru.webviewLanguagePack,
   tr: LOCALES.tr.webviewLanguagePack,
+  vi: LOCALES.vi.webviewLanguagePack,
 };
 
 export function normalizeDisplayLanguage(value: unknown): DisplayLanguage {
-  if (value === 'en' || value === 'zh-TW' || value === 'zh-CN' || value === 'ja' || value === 'ko' || value === 'es' || value === 'ar' || value === 'cs' || value === 'nl' || value === 'fr' || value === 'de' || value === 'hi' || value === 'hu' || value === 'id' || value === 'it' || value === 'pl' || value === 'pt-br' || value === 'ru' || value === 'tr' || value === 'auto') {
+  if (value === 'en' || value === 'zh-TW' || value === 'zh-CN' || value === 'ja' || value === 'ko' || value === 'es' || value === 'ar' || value === 'cs' || value === 'nl' || value === 'fr' || value === 'de' || value === 'hi' || value === 'hu' || value === 'id' || value === 'it' || value === 'pl' || value === 'pt-br' || value === 'ru' || value === 'tr' || value === 'vi' || value === 'auto') {
     return value;
   }
   return DEFAULT_DISPLAY_LANGUAGE;
@@ -84,7 +86,7 @@ export function resolveEffectiveDisplayLanguage(
   displayLanguage: DisplayLanguage,
   vscodeLanguage?: string,
 ): EffectiveDisplayLanguage {
-  if (displayLanguage === 'en' || displayLanguage === 'zh-TW' || displayLanguage === 'zh-CN' || displayLanguage === 'ja' || displayLanguage === 'ko' || displayLanguage === 'es' || displayLanguage === 'ar' || displayLanguage === 'cs' || displayLanguage === 'nl' || displayLanguage === 'fr' || displayLanguage === 'de' || displayLanguage === 'hi' || displayLanguage === 'hu' || displayLanguage === 'id' || displayLanguage === 'it' || displayLanguage === 'pl' || displayLanguage === 'pt-br' || displayLanguage === 'ru' || displayLanguage === 'tr') {
+  if (displayLanguage === 'en' || displayLanguage === 'zh-TW' || displayLanguage === 'zh-CN' || displayLanguage === 'ja' || displayLanguage === 'ko' || displayLanguage === 'es' || displayLanguage === 'ar' || displayLanguage === 'cs' || displayLanguage === 'nl' || displayLanguage === 'fr' || displayLanguage === 'de' || displayLanguage === 'hi' || displayLanguage === 'hu' || displayLanguage === 'id' || displayLanguage === 'it' || displayLanguage === 'pl' || displayLanguage === 'pt-br' || displayLanguage === 'ru' || displayLanguage === 'tr' || displayLanguage === 'vi') {
     return displayLanguage;
   }
   const normalized = String(vscodeLanguage || '')
@@ -144,6 +146,9 @@ export function resolveEffectiveDisplayLanguage(
   }
   if (normalized.startsWith('tr')) {
     return 'tr';
+  }
+  if (normalized.startsWith('vi')) {
+    return 'vi';
   }
   return 'en';
 }
