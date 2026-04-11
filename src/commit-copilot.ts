@@ -97,12 +97,10 @@ export class GitOperations {
     }
 
     const gitPath = path.join(rootPath, '.git');
-    try {
-      const stat = await fs.promises.stat(gitPath);
-      if (stat.isDirectory() || stat.isFile()) {
-        return true;
-      }
-    } catch {}
+    const stat = await fs.promises.stat(gitPath);
+    if (stat.isDirectory() || stat.isFile()) {
+      return true;
+    }
 
     try {
       await this.repository.status();

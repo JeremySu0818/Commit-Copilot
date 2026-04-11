@@ -80,19 +80,19 @@ function formatOutlineLine(
 
 async function resolveLanguageId(absPath: string): Promise<string | undefined> {
   if (fs.existsSync(absPath)) {
-    try {
-      const diskDoc = await vscode.workspace.openTextDocument(
-        vscode.Uri.file(absPath),
-      );
-      return diskDoc.languageId;
-    } catch {}
+    const diskDoc = await vscode.workspace.openTextDocument(
+      vscode.Uri.file(absPath),
+    );
+    return diskDoc.languageId;
   }
 
   try {
     const untitledUri = vscode.Uri.file(absPath).with({ scheme: 'untitled' });
     const untitledDoc = await vscode.workspace.openTextDocument(untitledUri);
     return untitledDoc.languageId;
-  } catch {}
+  } catch (err) {
+    void err;
+  }
 
   const baseName = path.basename(absPath).toLowerCase();
   const byName = LANGUAGE_ID_BY_FILENAME[baseName];

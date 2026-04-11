@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
 import { OLLAMA_DEFAULT_HOST } from '../../models';
 import { clearRequireCache, withModuleMock } from '../helpers/module-mock';
 
@@ -13,7 +14,8 @@ async function withOllamaModule<T>(
   clearRequireCache(MODULE_PATH);
   return withModuleMock('ollama', ollamaMock, async () => {
     return withModuleMock('../agent-tools', agentToolsMock, async () => {
-      const mod = require(
+      const dynamicRequire = createRequire(__filename);
+      const mod = dynamicRequire(
         MODULE_PATH,
       ) as typeof import('../../agent-loop/ollama');
       return run(mod);

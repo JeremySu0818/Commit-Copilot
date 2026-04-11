@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as path from 'path';
+import { createRequire } from 'node:module';
 import { clearRequireCache, withModuleMock } from './helpers/module-mock';
 
 const MODULE_PATH = path.resolve(__dirname, '..', 'side-panel-provider');
@@ -19,7 +20,7 @@ type Harness = {
 const baseVscodeMock = {
   Uri: {
     joinPath: (base: { fsPath: string }, ...paths: string[]) => ({
-      fsPath: require('path').join(base.fsPath, ...paths),
+      fsPath: path.join(base.fsPath, ...paths),
     }),
   },
   extensions: {
@@ -93,9 +94,10 @@ async function createHarness(): Promise<Harness> {
     },
   };
 
-  const mod = await withModuleMock('vscode', vscodeMock, async () =>
-    require(MODULE_PATH),
-  );
+  const mod = await withModuleMock('vscode', vscodeMock, async () => {
+    const dynamicRequire = createRequire(__filename);
+    return dynamicRequire(MODULE_PATH);
+  });
 
   const context = {
     globalState: {
@@ -159,7 +161,8 @@ test('validateGoogleApiKey uses Google SDK models.list API', async () => {
       { GoogleGenAI: GoogleGenAIMock },
       async () => {
         clearRequireCache(MODULE_PATH);
-        const mod = require(
+        const dynamicRequire = createRequire(__filename);
+        const mod = dynamicRequire(
           MODULE_PATH,
         ) as typeof import('../side-panel-provider');
         const provider = createProvider(mod);
@@ -198,7 +201,8 @@ test('validateOpenAIApiKey uses OpenAI SDK models.list', async () => {
       { __esModule: true, default: OpenAIMock },
       async () => {
         clearRequireCache(MODULE_PATH);
-        const mod = require(
+        const dynamicRequire = createRequire(__filename);
+        const mod = dynamicRequire(
           MODULE_PATH,
         ) as typeof import('../side-panel-provider');
         const provider = createProvider(mod);
@@ -269,7 +273,8 @@ test('validation errors use unified API request failed format for Google/OpenAI/
               { __esModule: true, default: AnthropicMock },
               async () => {
                 clearRequireCache(MODULE_PATH);
-                const mod = require(
+                const dynamicRequire = createRequire(__filename);
+                const mod = dynamicRequire(
                   MODULE_PATH,
                 ) as typeof import('../side-panel-provider');
                 const provider = createProvider(mod);

@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as fs from 'fs';
 import * as path from 'path';
+import { createRequire } from 'node:module';
 import { clearRequireCache, withModuleMock } from './helpers/module-mock';
 import { cleanupTempDir, createTempDir } from './helpers/temp-dir';
 import {
@@ -68,7 +69,8 @@ async function loadGenerateCommitMessage(options: {
     llmClientsMock,
     async () =>
       withModuleMock('./agent-loop', agentLoopMock, async () => {
-        return require(MODULE_PATH) as typeof import('../commit-copilot');
+        const dynamicRequire = createRequire(__filename);
+        return dynamicRequire(MODULE_PATH) as typeof import('../commit-copilot');
       }),
   );
 

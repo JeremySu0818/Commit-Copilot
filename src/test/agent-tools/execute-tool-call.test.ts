@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
 import { clearRequireCache, withModuleMock } from '../helpers/module-mock';
 import { createVscodeMock } from '../helpers/vscode-mock';
 
@@ -10,7 +11,8 @@ async function loadExecuteToolCall(): Promise<
 > {
   clearRequireCache(MODULE_PATH);
   return withModuleMock('vscode', createVscodeMock(), async () => {
-    return require(
+    const dynamicRequire = createRequire(__filename);
+    return dynamicRequire(
       MODULE_PATH,
     ) as typeof import('../../agent-tools/executors/execute-tool-call');
   });

@@ -6,7 +6,5 @@ const root = process.cwd();
 fs.readdirSync(root)
   .filter((f) => f.startsWith('package.nls') && f.endsWith('.json'))
   .forEach((f) => {
-    try {
-      fs.unlinkSync(path.join(root, f));
-    } catch (e) {}
+    fs.unlinkSync(path.join(root, f));
   });
