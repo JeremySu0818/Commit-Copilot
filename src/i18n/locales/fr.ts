@@ -1,0 +1,258 @@
+import { EXIT_CODES } from '../../errors';
+import type { LocaleTextBundle } from '../types';
+
+export const frLocale: LocaleTextBundle = {
+  errorMessages: {
+    [EXIT_CODES.NOT_GIT_REPO]: {
+      title: 'Pas un dépôt Git',
+      action: 'Veuillez ouvrir un dossier contenant un dépôt Git.',
+    },
+    [EXIT_CODES.STAGE_FAILED]: {
+      title: 'Échec de la mise en zone d\'attente (stage) des modifications',
+      action: 'Vérifiez si Git est correctement configuré.',
+    },
+    [EXIT_CODES.NO_CHANGES]: {
+      title: 'Aucune modification à commiter',
+      action: 'Modifiez d\'abord quelques fichiers.',
+    },
+    [EXIT_CODES.NO_CHANGES_BUT_UNTRACKED]: {
+      title: 'Aucune modification indexée détectée',
+      action:
+        'Fichiers non suivis trouvés. Veuillez les indexer (stage) pour générer un message de commit.',
+    },
+    [EXIT_CODES.NO_TRACKED_CHANGES_BUT_UNTRACKED]: {
+      title: 'Seuls des fichiers non suivis ont été trouvés',
+      action:
+        'Vous avez créé de nouveaux fichiers mais aucune modification suivie. Veuillez les indexer pour générer un commit.',
+    },
+    [EXIT_CODES.CANCELLED]: {
+      title: 'Génération annulée',
+      action: 'La génération a été annulée par l\'utilisateur.',
+    },
+    [EXIT_CODES.MIXED_CHANGES]: {
+      title: 'Modifications mixtes détectées',
+      action:
+        'Vous avez des modifications indexées et non indexées. Veuillez choisir comment procéder.',
+    },
+    [EXIT_CODES.API_KEY_MISSING]: {
+      title: 'Clé API non configurée',
+      action: 'Veuillez définir votre clé API dans le panneau Commit-Copilot.',
+    },
+    [EXIT_CODES.API_KEY_INVALID]: {
+      title: 'Clé API invalide',
+      action:
+        'Votre clé API est invalide ou a été révoquée. Veuillez vérifier et mettre à jour.',
+    },
+    [EXIT_CODES.QUOTA_EXCEEDED]: {
+      title: 'Quota API dépassé',
+      action:
+        'Vous avez dépassé votre quota API. Veuillez vérifier votre compte fournisseur.',
+    },
+    [EXIT_CODES.API_ERROR]: {
+      title: 'Échec de la requête API',
+      action:
+        'Une erreur s\'est produite lors de la communication avec l\'API. Veuillez réessayer.',
+    },
+    [EXIT_CODES.COMMIT_FAILED]: {
+      title: 'Échec du commit des modifications',
+      action: 'Vérifiez s\'il y a des conflits ou problèmes Git.',
+    },
+    [EXIT_CODES.UNKNOWN_ERROR]: {
+      title: 'Une erreur inattendue s\'est produite',
+      action: 'Vérifiez la sortie "Commit-Copilot Debug" pour plus de détails.',
+    },
+  },
+  extensionText: {
+    output: {
+      generationIgnored:
+        'Requête de génération ignorée : génération déjà en cours.',
+      generationStart: (timestamp) =>
+        `[${timestamp}] Démarrage de la génération commit-copilot...`,
+      gitExtensionMissing: 'Erreur : Extension Git introuvable.',
+      selectedRepoFromScm: (path) =>
+        `Dépôt sélectionné depuis le contexte SCM : ${path}`,
+      selectedRepoFromEditor: (path) =>
+        `Dépôt sélectionné depuis l'éditeur actif : ${path}`,
+      noRepoMatchedActiveEditor: 'Aucun dépôt ne correspond à l\'éditeur actif.',
+      noActiveEditorForRepoSelection:
+        'Aucun éditeur actif trouvé pour la sélection du dépôt.',
+      selectedOnlyRepo: (path) => `Dépôt unique sélectionné : ${path}`,
+      multiRepoNotDetermined: (count) =>
+        `Trouvé ${count} dépôts mais impossible de déterminer l'actif.`,
+      noRepoInApi: 'Aucun dépôt trouvé dans l\'API.',
+      usingProvider: (providerName) => `Utilisation du fournisseur : ${providerName}`,
+      usingGenerateMode: (mode) => `Mode de génération : ${mode}`,
+      usingCommitOutputOptions: (optionsJson) =>
+        `Options de sortie du commit : ${optionsJson}`,
+      missingApiKeyWarning: (provider) =>
+        `Avertissement : Aucune clé API trouvée pour ${provider}.`,
+      cancelRequestedFromProgress: 'Annulation demandée depuis l\'interface de progression.',
+      callingGenerateCommitMessage: 'Appel de generateCommitMessage...',
+      repositoryPath: (path) => `Chemin du dépôt : ${path}`,
+      usingModel: (model) => `Utilisation du modèle : ${model}`,
+      generatedMessage: (message) => `Message généré : ${message}`,
+      generationError: (errorCode, message) =>
+        `Erreur : ${errorCode} - ${message}`,
+      unexpectedError: (message) => `Erreur inattendue : ${message}`,
+      openingLanguageSettings: 'Ouverture des paramètres de langue dans la vue d\'activité...',
+    },
+    notification: {
+      gitExtensionMissing:
+        'Extension Git introuvable. Veuillez vous assurer que Git est installé et que l\'extension Git est activée.',
+      multiRepoWarning:
+        'Plusieurs dépôts Git trouvés. Veuillez vous concentrer sur un fichier du dépôt cible ou lancer depuis la vue SCM.',
+      repoNotFound:
+        'Aucun dépôt Git trouvé. Veuillez ouvrir un dossier contenant un dépôt Git.',
+      apiKeyMissing: (providerName) =>
+        `La clé API ${providerName} n'est pas configurée. Veuillez d'abord définir votre clé API dans le panneau Commit-Copilot.`,
+      configureApiKeyAction: 'Configurer la clé API',
+      mixedChangesQuestion:
+        'Vous avez des modifications indexées et non indexées. Comment souhaitez-vous procéder ?',
+      stageAllAndGenerate: 'Tout indexer et générer',
+      proceedStagedOnly: 'Procéder uniquement avec les fichiers indexés',
+      cancel: 'Annuler',
+      noStagedButUntrackedQuestion:
+        'Aucune modification indexée détectée. Fichiers non suivis trouvés. Souhaitez-vous indexer tous les fichiers (y compris non suivis) ou générer uniquement pour les fichiers modifiés suivis ?',
+      stageAndGenerateAll: 'Tout indexer et générer',
+      generateTrackedOnly: 'Générer pour les suivis uniquement',
+      onlyUntrackedQuestion:
+        'Seuls des fichiers non suivis sont présents sans aucune modification suivie. Voulez-vous indexer et suivre ces nouveaux fichiers pour générer un commit ?',
+      stageAndTrack: 'Indexer et suivre',
+      commitGenerated: 'Message de commit généré !',
+      viewProviderConsoleAction: 'Voir la console du fournisseur',
+      noChanges: 'Aucune modification à commiter. Modifiez d\'abord quelques fichiers !',
+      generationCanceled: 'Génération du message de commit annulée.',
+      failedPrefix: 'Échec de Commit-Copilot',
+    },
+  },
+  sidePanelText: {
+    invalidApiKeyPrefix: 'Clé API invalide',
+    quotaExceededPrefix: 'Quota API dépassé',
+    apiRequestFailedPrefix: 'Échec de la requête API',
+    connectionErrorPrefix: 'Erreur de connexion',
+    unknownProvider: 'Fournisseur inconnu',
+    cannotConnectOllamaAt: (host) => `Impossible de se connecter à Ollama à ${host}`,
+    cannotConnectOllama: (message) =>
+      `Impossible de se connecter à Ollama : ${message}. Assurez-vous qu'Ollama est en cours d'exécution.`,
+    apiKeyCannotBeEmpty: 'La clé API ne peut pas être vide',
+    validationFailedPrefix: 'Échec de la validation',
+    unableToConnectFallback: 'Impossible de se connecter',
+    saveConfigSuccess: (providerName) =>
+      `Configuration de ${providerName} enregistrée avec succès !`,
+    saveConfigFailed: 'Échec de l\'enregistrement de la configuration',
+    languageSaved: (label) => `Langue mise à jour : ${label}`,
+  },
+  webviewLanguagePack: {
+    sections: {
+      apiProvider: 'Fournisseur d\'API',
+      configuration: 'Configuration API',
+      ollamaConfiguration: 'Configuration Ollama',
+      model: 'Modèle',
+      generateConfiguration: 'Configuration de génération',
+      settings: 'Paramètres',
+      addProvider: 'Ajouter un fournisseur personnalisé',
+      editProvider: 'Modifier un fournisseur personnalisé',
+    },
+    labels: {
+      provider: 'Fournisseur',
+      apiKey: 'Clé API',
+      ollamaHostUrl: 'URL de l\'hôte Ollama',
+      model: 'Modèle',
+      mode: 'Mode',
+      conventionalCommitSections: 'Sections de commit conventionnel',
+      includeScope: 'Inclure la portée (scope)',
+      includeBody: 'Inclure le corps (body)',
+      includeFooter: 'Inclure le pied de page (footer)',
+      language: 'Langue de l\'extension',
+      maxAgentSteps: 'Nombre maximal d\'étapes de l\'agent',
+      providerName: 'Nom du fournisseur',
+      apiBaseUrl: 'URL de base de l\'API',
+    },
+    placeholders: {
+      selectProvider: 'Sélectionnez un fournisseur...',
+      selectModel: 'Sélectionnez un modèle...',
+      selectGenerateMode: 'Sélectionnez un mode de génération...',
+      enterApiKey: 'Entrez votre clé API',
+      enterGeminiApiKey: 'Entrez votre clé API Gemini',
+      enterOpenAIApiKey: 'Entrez votre clé API OpenAI',
+      enterAnthropicApiKey: 'Entrez votre clé API Anthropic',
+      enterCustomApiKey: 'Entrez votre clé API',
+    },
+    buttons: {
+      save: 'Enregistrer',
+      validating: 'Validation en cours...',
+      generateCommitMessage: 'Générer le message de commit',
+      cancelGenerating: 'Annuler la génération',
+      back: 'Retour',
+      editProvider: 'Modifier le fournisseur',
+      addProvider: '+ Ajouter un fournisseur...',
+      deleteProvider: 'Supprimer le fournisseur',
+    },
+    statuses: {
+      checkingStatus: 'Vérification de l\'état...',
+      configured: 'Configuré',
+      notConfigured: 'Non configuré',
+      validating: 'Validation en cours...',
+      loadingConfiguration: 'Chargement de la configuration...',
+      noChangesDetected: 'Aucune modification détectée',
+      cancelCurrentGeneration: 'Annuler la génération actuelle',
+      languageSaved: 'Langue mise à jour.',
+      providerNameConflict: 'Un fournisseur avec ce nom existe déjà.',
+      providerNameRequired: 'Le nom du fournisseur est requis.',
+      baseUrlRequired: 'L\'URL de base de l\'API est requise.',
+      apiKeyRequired: 'La clé API est requise.',
+      providerSaved: 'Fournisseur personnalisé enregistré !',
+      providerDeleted: 'Fournisseur personnalisé supprimé.',
+      modelNameRequired: 'Veuillez entrer un nom de modèle avant de générer.',
+    },
+    descriptions: {
+      ollamaFixedToDirectDiff: 'Ollama est fixé en mode Direct Diff',
+      agenticModeDescription:
+        'Le mode Agentic utilise des outils de dépôt pour une analyse plus approfondie',
+      directDiffDescription:
+        'Direct Diff envoie directement la différence (diff) brute au modèle',
+      ollamaInfo:
+        '<strong>Ollama</strong> s\'exécute localement sur votre machine.<br>Hôte par défaut : <code>{host}</code><br>Assurez-vous qu\'Ollama est en cours d\'exécution avant de générer.',
+      googleInfo:
+        'Obtenez votre clé API sur <strong>Google AI Studio</strong> :<br><a href="https://aistudio.google.com/app/apikey" style="color: var(--vscode-textLink-foreground);">aistudio.google.com</a>',
+      openaiInfo:
+        'Obtenez votre clé API sur <strong>OpenAI Platform</strong> :<br><a href="https://platform.openai.com/api-keys" style="color: var(--vscode-textLink-foreground);">platform.openai.com</a>',
+      anthropicInfo:
+        'Obtenez votre clé API sur la <strong>Console Anthropic</strong> :<br><a href="https://platform.claude.com/settings/keys" style="color: var(--vscode-textLink-foreground);">platform.claude.com</a>',
+      maxAgentStepsDescription:
+        'Limiter les appels de l\'outil de l\'agent par génération. Entrez 0 ou laissez vide pour illimité.',
+      customProviderInfo:
+        'Les fournisseurs personnalisés doivent être <strong>compatibles avec OpenAI</strong>.<br>L\'URL de base de l\'API doit pointer vers un service qui implémente l\'API Chat Completions d\'OpenAI.',
+    },
+    options: {
+      agentic: 'Génération Agentic',
+      directDiff: 'Direct Diff',
+    },
+  },
+  progressMessages: {
+    analyzingChanges: 'L\'agent analyse les modifications...',
+    generatingMessage: 'Génération du message de commit...',
+    transientApiError: (attempt, maxAttempts, seconds) => `Erreur d'API transitoire. Nouvelle tentative (${attempt}/${maxAttempts}) dans ${seconds}s...`,
+    pulling: (model, status, percent) => percent !== undefined ? `Téléchargement de ${model} : ${status} (${percent}%)` : `Téléchargement de ${model} : ${status}`,
+    
+    stepAnalyzingDiff: (step, path) => `[Étape ${step}] Analyse de la différence : ${path}`,
+    stepReadingFile: (step, path) => `[Étape ${step}] Lecture du fichier : ${path}`,
+    stepGettingOutline: (step, path) => `[Étape ${step}] Obtention de l'aperçu : ${path}`,
+    stepFindingReferences: (step, target) => `[Étape ${step}] Recherche de références : ${target}`,
+    stepFetchingRecentCommits: (step, count) => count !== undefined ? `[Étape ${step}] Récupération des commits récents : ${count} entrées` : `[Étape ${step}] Récupération des commits récents...`,
+    stepSearchingProject: (step, keyword) => `[Étape ${step}] Recherche dans le projet pour : ${keyword}`,
+    stepCalling: (step, toolName) => `[Étape ${step}] Appel de ${toolName}...`,
+
+    stepAnalyzingMultipleDiffs: (step, paths) => `[Étape ${step}] Analyse des différences : ${paths}`,
+    stepAnalyzingDiffsForCount: (step, count) => `[Étape ${step}] Analyse des différences pour ${count} fichiers...`,
+    stepReadingMultipleFiles: (step, paths) => `[Étape ${step}] Lecture des fichiers : ${paths}`,
+    stepReadingFilesForCount: (step, count) => `[Étape ${step}] Lecture de ${count} fichiers...`,
+    stepGettingMultipleOutlines: (step, paths) => `[Étape ${step}] Obtention des aperçus : ${paths}`,
+    stepGettingOutlinesForCount: (step, count) => `[Étape ${step}] Obtention d'aperçus pour ${count} fichiers...`,
+    stepFindingReferencesForMultiple: (step, targets) => `[Étape ${step}] Recherche de références : ${targets}`,
+    stepFindingReferencesForCount: (step, count) => `[Étape ${step}] Recherche de références pour ${count} symboles...`,
+    stepSearchingProjectForMultiple: (step, keywords) => `[Étape ${step}] Recherche dans le projet pour : ${keywords}`,
+    stepSearchingProjectForCount: (step, count) => `[Étape ${step}] Recherche dans le projet pour ${count} mots-clés...`,
+    stepExecutingMultipleTools: (step, count) => `[Étape ${step}] Exécution de ${count} outils d'investigation...`,
+  },
+};

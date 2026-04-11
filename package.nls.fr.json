@@ -1,0 +1,9 @@
+{
+  "extension.displayName": "Commit Copilot",
+  "extension.description": "Générez des messages de commit conventionnels à l'aide des LLM.",
+  "command.generate.title": "Générer un message de commit",
+  "command.cancelGeneration.title": "Annuler la génération",
+  "command.openLanguageSettings.title": "Ouvrir les paramètres de langue",
+  "viewsContainer.title": "Commit Copilot",
+  "view.name": "Commit Copilot"
+}
