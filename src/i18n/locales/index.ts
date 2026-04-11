@@ -16,6 +16,7 @@ import { idLocale } from './id';
 import { itLocale } from './it';
 import { plLocale } from './pl';
 import { ptBRLocale } from './pt-BR';
+import { ruLocale } from './ru';
 
 export const LOCALES: Record<EffectiveDisplayLanguage, LocaleTextBundle> = {
   en: enLocale,
@@ -35,4 +36,5 @@ export const LOCALES: Record<EffectiveDisplayLanguage, LocaleTextBundle> = {
   it: itLocale,
   pl: plLocale,
   'pt-br': ptBRLocale,
+  ru: ruLocale,
 };
