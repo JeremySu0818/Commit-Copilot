@@ -13,6 +13,7 @@ import { deLocale } from './de';
 import { hiLocale } from './hi';
 import { huLocale } from './hu';
 import { idLocale } from './id';
+import { itLocale } from './it';
 
 export const LOCALES: Record<EffectiveDisplayLanguage, LocaleTextBundle> = {
   en: enLocale,
@@ -29,4 +30,5 @@ export const LOCALES: Record<EffectiveDisplayLanguage, LocaleTextBundle> = {
   hi: hiLocale,
   hu: huLocale,
   id: idLocale,
+  it: itLocale,
 };
