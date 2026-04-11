@@ -46,12 +46,12 @@
       "scm/title": [
         {
           "command": "commit-copilot.generate",
-          "group": "navigation@9",
+          "group": "navigation@10",
           "when": "scmProvider == git && !commit-copilot.isGenerating"
         },
         {
           "command": "commit-copilot.cancelGeneration",
-          "group": "navigation@9",
+          "group": "navigation@10",
           "when": "scmProvider == git && commit-copilot.isGenerating"
         }
       ],
