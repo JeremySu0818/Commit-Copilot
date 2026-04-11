@@ -19,7 +19,5 @@ if ($LASTEXITCODE -ne 0) {
     exit 1
 }
 
-Write-Host ""
-Write-Host ""
 Write-Host "[*] Build completed successfully!"
 Write-Host ""

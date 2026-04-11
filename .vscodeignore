@@ -14,10 +14,9 @@ out/**
 !out/extension.js
 !out/webview/side-panel.js
 !out/webview/side-panel.css
-esbuild.js
-build.bat
-build.sh
-build.ps1
+esbuild.mjs
+tsconfig*.json
+build.*
 *.md
 !README.md
 !package.nls*.json

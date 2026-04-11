@@ -25,7 +25,5 @@ if %ERRORLEVEL% neq 0 (
     exit /b %ERRORLEVEL%
 )
 
-echo.
-echo.
 echo [*] Build completed successfully!
 echo.
