@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import type { WebviewBootstrapData } from '../side-panel-webview-bootstrap';
-import type { SidePanelAction, SidePanelState } from './SidePanelContext';
+import type { SidePanelAction, SidePanelState } from './side-panel-context';
 import {
   renderStatusHtml,
   normalizeGenerateMode,
