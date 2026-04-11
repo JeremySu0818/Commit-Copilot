@@ -1,5 +1,5 @@
-export type DisplayLanguage = 'auto' | 'en' | 'zh-TW' | 'zh-CN' | 'ja' | 'ko' | 'es' | 'ar' | 'cs' | 'nl' | 'fr' | 'de' | 'hi' | 'hu' | 'id';
-export type EffectiveDisplayLanguage = 'en' | 'zh-TW' | 'zh-CN' | 'ja' | 'ko' | 'es' | 'ar' | 'cs' | 'nl' | 'fr' | 'de' | 'hi' | 'hu' | 'id';
+export type DisplayLanguage = 'auto' | 'en' | 'zh-TW' | 'zh-CN' | 'ja' | 'ko' | 'es' | 'ar' | 'cs' | 'nl' | 'fr' | 'de' | 'hi' | 'hu' | 'id' | 'it';
+export type EffectiveDisplayLanguage = 'en' | 'zh-TW' | 'zh-CN' | 'ja' | 'ko' | 'es' | 'ar' | 'cs' | 'nl' | 'fr' | 'de' | 'hi' | 'hu' | 'id' | 'it';
 
 export type LanguageOption = {
   value: DisplayLanguage;
