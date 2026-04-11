@@ -25,13 +25,14 @@ export const DEFAULT_DISPLAY_LANGUAGE: DisplayLanguage = 'auto';
 export const DISPLAY_LANGUAGE_OPTIONS: LanguageOption[] = [
   {
     value: 'auto',
-    labels: { en: 'Auto (Follow VS Code)', 'zh-TW': '自動（跟隨 VS Code）', 'zh-CN': '自动（跟随 VS Code）', ja: '自動（VS Code に従う）', ko: '자동 (VS Code 설정 따름)' },
+    labels: { en: 'Auto (Follow VS Code)', 'zh-TW': '自動（跟隨 VS Code）', 'zh-CN': '自动（跟随 VS Code）', ja: '自動（VS Code に従う）', ko: '자동 (VS Code 설정 따름)', es: 'Automático (según VS Code)' },
   },
   { value: 'en', label: 'English' },
   { value: 'zh-TW', label: '繁體中文' },
   { value: 'zh-CN', label: '简体中文' },
   { value: 'ja', label: '日本語' },
   { value: 'ko', label: '한국어' },
+  { value: 'es', label: 'Español' },
 ];
 
 export const WEBVIEW_LANGUAGE_PACKS: Record<
@@ -43,10 +44,11 @@ export const WEBVIEW_LANGUAGE_PACKS: Record<
   'zh-CN': LOCALES['zh-CN'].webviewLanguagePack,
   ja: LOCALES.ja.webviewLanguagePack,
   ko: LOCALES.ko.webviewLanguagePack,
+  es: LOCALES.es.webviewLanguagePack,
 };
 
 export function normalizeDisplayLanguage(value: unknown): DisplayLanguage {
-  if (value === 'en' || value === 'zh-TW' || value === 'zh-CN' || value === 'ja' || value === 'ko' || value === 'auto') {
+  if (value === 'en' || value === 'zh-TW' || value === 'zh-CN' || value === 'ja' || value === 'ko' || value === 'es' || value === 'auto') {
     return value;
   }
   return DEFAULT_DISPLAY_LANGUAGE;
@@ -56,7 +58,7 @@ export function resolveEffectiveDisplayLanguage(
   displayLanguage: DisplayLanguage,
   vscodeLanguage?: string,
 ): EffectiveDisplayLanguage {
-  if (displayLanguage === 'en' || displayLanguage === 'zh-TW' || displayLanguage === 'zh-CN' || displayLanguage === 'ja' || displayLanguage === 'ko') {
+  if (displayLanguage === 'en' || displayLanguage === 'zh-TW' || displayLanguage === 'zh-CN' || displayLanguage === 'ja' || displayLanguage === 'ko' || displayLanguage === 'es') {
     return displayLanguage;
   }
   const normalized = String(vscodeLanguage || '')
@@ -74,6 +76,9 @@ export function resolveEffectiveDisplayLanguage(
   }
   if (normalized.startsWith('ko')) {
     return 'ko';
+  }
+  if (normalized.startsWith('es')) {
+    return 'es';
   }
   return 'en';
 }
