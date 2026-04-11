@@ -70,7 +70,9 @@ async function loadGenerateCommitMessage(options: {
     async () =>
       withModuleMock('./agent-loop', agentLoopMock, async () => {
         const dynamicRequire = createRequire(__filename);
-        return dynamicRequire(MODULE_PATH) as typeof import('../commit-copilot');
+        return dynamicRequire(
+          MODULE_PATH,
+        ) as typeof import('../commit-copilot');
       }),
   );
 

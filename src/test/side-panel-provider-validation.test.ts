@@ -8,14 +8,14 @@ const MODULE_PATH = path.resolve(__dirname, '..', 'side-panel-provider');
 
 type MessageHandler = (data: any) => Promise<void> | void;
 
-type Harness = {
+interface Harness {
   sendMessage: (message: unknown) => Promise<void>;
   postedMessages: any[];
   warningMessages: string[];
   infoMessages: string[];
-  storedSecrets: Array<{ key: string; value: string }>;
+  storedSecrets: { key: string; value: string }[];
   dispose: () => void;
-};
+}
 
 const baseVscodeMock = {
   Uri: {
@@ -37,10 +37,7 @@ const baseVscodeMock = {
 };
 
 function createProvider(mod: any) {
-  return new mod.SidePanelProvider(
-    { fsPath: process.cwd() } as any,
-    {} as any,
-  ) as any;
+  return new mod.SidePanelProvider({ fsPath: process.cwd() } as any, {} as any);
 }
 
 async function createHarness(): Promise<Harness> {
@@ -49,7 +46,7 @@ async function createHarness(): Promise<Harness> {
   const postedMessages: any[] = [];
   const warningMessages: string[] = [];
   const infoMessages: string[] = [];
-  const storedSecrets: Array<{ key: string; value: string }> = [];
+  const storedSecrets: { key: string; value: string }[] = [];
 
   let messageHandler: MessageHandler | null = null;
   let disposeHandler: (() => void) | null = null;
@@ -139,7 +136,7 @@ async function createHarness(): Promise<Harness> {
 test('validateGoogleApiKey uses Google SDK models.list API', async () => {
   const calls = {
     apiKeys: [] as string[],
-    listArgs: [] as Array<Record<string, unknown> | undefined>,
+    listArgs: [] as (Record<string, unknown> | undefined)[],
   };
 
   class GoogleGenAIMock {
@@ -310,7 +307,7 @@ test('validation errors use unified API request failed format for Google/OpenAI/
 
 test('Anthropic API key validation uses SDK models.list and avoids fetch token calls', async () => {
   const originalFetch = global.fetch;
-  const fetchCalls: Array<{ input: unknown; init: unknown }> = [];
+  const fetchCalls: { input: unknown; init: unknown }[] = [];
   global.fetch = (async (input: unknown, init?: unknown) => {
     fetchCalls.push({ input, init });
     return new Response(

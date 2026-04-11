@@ -459,7 +459,9 @@ export function MainView() {
                 type="checkbox"
                 id="includeScopeCheckbox"
                 checked={commitOutputOptions.includeScope}
-                onChange={() => handleCheckboxChange('includeScope')}
+                onChange={() => {
+                  handleCheckboxChange('includeScope');
+                }}
               />
               <span>{pack.labels.includeScope}</span>
             </label>
@@ -468,7 +470,9 @@ export function MainView() {
                 type="checkbox"
                 id="includeBodyCheckbox"
                 checked={commitOutputOptions.includeBody}
-                onChange={() => handleCheckboxChange('includeBody')}
+                onChange={() => {
+                  handleCheckboxChange('includeBody');
+                }}
               />
               <span>{pack.labels.includeBody}</span>
             </label>
@@ -477,7 +481,9 @@ export function MainView() {
                 type="checkbox"
                 id="includeFooterCheckbox"
                 checked={commitOutputOptions.includeFooter}
-                onChange={() => handleCheckboxChange('includeFooter')}
+                onChange={() => {
+                  handleCheckboxChange('includeFooter');
+                }}
               />
               <span>{pack.labels.includeFooter}</span>
             </label>

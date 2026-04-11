@@ -56,10 +56,10 @@ async function executeSearchCode(
 
   const searchQuery = caseSensitive ? query : query.toLowerCase();
 
-  type FileMatch = {
+  interface FileMatch {
     relPath: string;
     matches: { line: number; text: string }[];
-  };
+  }
 
   const fileMatches: FileMatch[] = [];
 

@@ -33,7 +33,9 @@ test('webview html shell includes nonce/csp/assets and bootstrap payload', async
   const mod = await withModuleMock('vscode', vscodeMock, async () => {
     clearRequireCache(MODULE_PATH);
     const dynamicRequire = createRequire(__filename);
-    return dynamicRequire(MODULE_PATH) as typeof import('../side-panel-provider');
+    return dynamicRequire(
+      MODULE_PATH,
+    ) as typeof import('../side-panel-provider');
   });
 
   const state = new Map<string, unknown>([
@@ -86,9 +88,10 @@ test('webview html shell includes nonce/csp/assets and bootstrap payload', async
     /<link rel="stylesheet" href="mock-webview:\/\/.*\/out\/webview\/side-panel\.css"/,
   );
 
-  const inlineNonceMatch = webview.html.match(
-    /<script nonce="([0-9a-f]+)">\s*window\.__COMMIT_COPILOT_WEBVIEW_BOOTSTRAP__/,
-  );
+  const inlineNonceMatch =
+    /<script nonce="([0-9a-f]+)">\s*window\.__COMMIT_COPILOT_WEBVIEW_BOOTSTRAP__/.exec(
+      webview.html,
+    );
   assert.ok(inlineNonceMatch);
   const nonce = inlineNonceMatch[1];
 
@@ -101,9 +104,10 @@ test('webview html shell includes nonce/csp/assets and bootstrap payload', async
   assert.match(webview.html, new RegExp(`script-src 'nonce-${nonce}'`));
   assert.match(webview.html, /style-src mock-csp-source 'unsafe-inline';/);
 
-  const bootstrapMatch = webview.html.match(
-    /window\.__COMMIT_COPILOT_WEBVIEW_BOOTSTRAP__\s*=\s*(.+);/,
-  );
+  const bootstrapMatch =
+    /window\.__COMMIT_COPILOT_WEBVIEW_BOOTSTRAP__\s*=\s*(.+);/.exec(
+      webview.html,
+    );
   assert.ok(bootstrapMatch);
   const bootstrap = JSON.parse(bootstrapMatch[1]);
   assert.equal(bootstrap.initialDisplayLanguage, 'ja');

@@ -13,13 +13,13 @@ const MODULE_PATH = path.resolve(__dirname, '..', 'side-panel-provider');
 
 type MessageHandler = (data: any) => Promise<void> | void;
 
-type Harness = {
+interface Harness {
   sendMessage: (message: unknown) => Promise<void>;
   postedMessages: any[];
   commandCalls: any[][];
   state: Map<string, unknown>;
   dispose: () => void;
-};
+}
 
 async function createHarness(
   initialState?: Record<string, unknown>,
@@ -84,7 +84,9 @@ async function createHarness(
 
   const mod = await withModuleMock('vscode', vscodeMock, async () => {
     const dynamicRequire = createRequire(__filename);
-    return dynamicRequire(MODULE_PATH) as typeof import('../side-panel-provider');
+    return dynamicRequire(
+      MODULE_PATH,
+    ) as typeof import('../side-panel-provider');
   });
 
   const context = {

@@ -40,7 +40,7 @@ function executeGetDiff(
   let capturing = false;
 
   for (const line of lines) {
-    const match = line.match(/^diff --git a\/(.+?) b\/(.+)$/);
+    const match = /^diff --git a\/(.+?) b\/(.+)$/.exec(line);
     if (match) {
       const aPath = normalizePath(match[1]);
       const bPath = normalizePath(match[2]);

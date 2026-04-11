@@ -3,7 +3,7 @@ import * as path from 'path';
 class MockUri {
   constructor(
     public readonly fsPath: string,
-    public readonly scheme: string = 'file',
+    public readonly scheme = 'file',
   ) {}
 
   static file(filePath: string): MockUri {
@@ -68,7 +68,7 @@ class MockTextDocument {
   constructor(
     public readonly uri: MockUri,
     text: string,
-    public languageId: string = 'plaintext',
+    public languageId = 'plaintext',
   ) {
     this.lines = text.split(/\r?\n/);
   }
@@ -82,7 +82,7 @@ class MockTextDocument {
   }
 }
 
-type VscodeMockFactoryOptions = {
+interface VscodeMockFactoryOptions {
   openTextDocument?: (input: unknown) => Promise<MockTextDocument>;
   executeCommand?: (command: string, ...args: unknown[]) => Promise<unknown>;
   setTextDocumentLanguage?: (
@@ -97,7 +97,7 @@ type VscodeMockFactoryOptions = {
     mtime: number;
     size: number;
   }>;
-};
+}
 
 function createVscodeMock(options: VscodeMockFactoryOptions = {}): any {
   const SymbolKind = {

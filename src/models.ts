@@ -40,7 +40,11 @@ export const PROVIDER_DISPLAY_NAMES: Record<APIProvider, string> = {
   anthropic: 'Anthropic (Claude)',
   ollama: 'Ollama (Local)',
 };
-export type ModelConfig = { id: string; alias: string; max_tokens?: number };
+export interface ModelConfig {
+  id: string;
+  alias: string;
+  max_tokens?: number;
+}
 
 export const GEMINI_MODELS: ModelConfig[] = [
   { id: 'gemini-2.5-flash-lite', alias: 'Gemini 2.5 Flash-Lite' },

@@ -80,10 +80,7 @@ export function SettingsView() {
             {bootstrap.displayLanguageOptions.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label ||
-                  (option.labels &&
-                    option.labels[
-                      state.effectiveLanguage as EffectiveDisplayLanguage
-                    ]) ||
+                  option.labels?.[state.effectiveLanguage] ||
                   option.value}
               </option>
             ))}

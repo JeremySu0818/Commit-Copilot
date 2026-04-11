@@ -445,7 +445,9 @@ export function useMessageHandler(
     };
 
     window.addEventListener('message', handler);
-    return () => window.removeEventListener('message', handler);
+    return () => {
+      window.removeEventListener('message', handler);
+    };
   }, [
     vscode,
     bootstrap,

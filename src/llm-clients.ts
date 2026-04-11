@@ -166,7 +166,9 @@ export class GeminiClient implements ILLMClient {
       const client = new GoogleGenAI({ apiKey: this.apiKey });
       const retryOptions = {
         ...DEFAULT_RETRY_OPTIONS,
-        checkAbort: () => throwIfCancellationRequested(cancellationToken),
+        checkAbort: () => {
+          throwIfCancellationRequested(cancellationToken);
+        },
       };
 
       const result = await withRetry(
@@ -265,7 +267,9 @@ export class OpenAIClient implements ILLMClient {
       });
       const retryOptions = {
         ...DEFAULT_RETRY_OPTIONS,
-        checkAbort: () => throwIfCancellationRequested(cancellationToken),
+        checkAbort: () => {
+          throwIfCancellationRequested(cancellationToken);
+        },
       };
       const completion = await withRetry(
         () =>
@@ -356,7 +360,9 @@ export class AnthropicClient implements ILLMClient {
       const client = new Anthropic({ apiKey: this.apiKey });
       const retryOptions = {
         ...DEFAULT_RETRY_OPTIONS,
-        checkAbort: () => throwIfCancellationRequested(cancellationToken),
+        checkAbort: () => {
+          throwIfCancellationRequested(cancellationToken);
+        },
       };
       const message = await withRetry(
         () =>
@@ -376,8 +382,7 @@ export class AnthropicClient implements ILLMClient {
       const textBlock = message.content.find(
         (block: { type: string }) => block.type === 'text',
       );
-      const text =
-        textBlock && textBlock.type === 'text' ? (textBlock as any).text : null;
+      const text = textBlock?.type === 'text' ? (textBlock as any).text : null;
       throwIfCancellationRequested(cancellationToken);
 
       if (!text) {

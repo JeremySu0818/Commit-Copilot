@@ -73,9 +73,9 @@ interface GitCommit {
 export interface GitRepository {
   readonly rootUri: { fsPath: string; toString(): string };
   readonly state: {
-    readonly workingTreeChanges: ReadonlyArray<GitChange>;
-    readonly indexChanges: ReadonlyArray<GitChange>;
-    readonly untrackedChanges: ReadonlyArray<GitChange>;
+    readonly workingTreeChanges: readonly GitChange[];
+    readonly indexChanges: readonly GitChange[];
+    readonly untrackedChanges: readonly GitChange[];
   };
   readonly inputBox: { value: string };
   diff(cached?: boolean): Promise<string>;
@@ -110,7 +110,7 @@ export class GitOperations {
     }
   }
 
-  async getDiff(staged: boolean = true): Promise<string> {
+  async getDiff(staged = true): Promise<string> {
     try {
       const diff = await this.repository.diff(staged);
       return diff;
