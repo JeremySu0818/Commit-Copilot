@@ -7,7 +7,6 @@ const MAX_SEARCH_MATCHES_PER_FILE = Infinity;
 const MAX_SEARCH_FILES = Infinity;
 const MAX_SEARCH_LINE_LENGTH = Infinity;
 
-
 function parseIntegerArg(value: unknown): number | null {
   if (typeof value === 'number' && Number.isFinite(value)) {
     return Math.floor(value);
