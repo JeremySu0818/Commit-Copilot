@@ -85,7 +85,7 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
         commitOutputOptions,
         cancellationToken,
         maxAgentSteps,
-        undefined, // baseUrl
+        undefined,
         language,
       );
     case 'anthropic':
