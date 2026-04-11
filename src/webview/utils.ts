@@ -20,13 +20,19 @@ export function renderStatusHtml(type: string, text: string): string {
   return `<span class="status-dot ${type}"></span>${escapeHtml(text)}`;
 }
 
-export function normalizeGenerateMode(mode: unknown): 'agentic' | 'direct-diff' {
+export function normalizeGenerateMode(
+  mode: unknown,
+): 'agentic' | 'direct-diff' {
   return mode === 'direct-diff' ? 'direct-diff' : 'agentic';
 }
 
 export function normalizeCommitOutputOptions(
   options: unknown,
-  defaults: { includeScope: boolean; includeBody: boolean; includeFooter: boolean },
+  defaults: {
+    includeScope: boolean;
+    includeBody: boolean;
+    includeFooter: boolean;
+  },
 ): { includeScope: boolean; includeBody: boolean; includeFooter: boolean } {
   const candidate =
     options && typeof options === 'object'
