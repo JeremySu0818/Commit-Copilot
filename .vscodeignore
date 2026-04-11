@@ -1,5 +1,7 @@
 .git/**
 .vscode/**
+i18n-manifest/**
+scripts/**
 src/**
 node_modules/**
 *.ts
@@ -18,3 +20,4 @@ build.sh
 build.ps1
 *.md
 !README.md
+!package.nls*.json

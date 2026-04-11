@@ -13,6 +13,7 @@
 
 # Package files
 *.vsix
+/package.nls*.json
 
 # docs
 *.txt

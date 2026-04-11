@@ -13,6 +13,7 @@ Write-Host ""
 Write-Host "[*] Step 2: Packaging VS Code Extension (.vsix)..."
 Write-Host ""
 npx vsce package
+npm run clean
 if ($LASTEXITCODE -ne 0) {
     Write-Host "[!] vsce package failed"
     exit 1
