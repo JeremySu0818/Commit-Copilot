@@ -21,7 +21,5 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-echo
-echo
 echo "[*] Build completed successfully!"
 echo
