@@ -1,6 +1,10 @@
 import React, { useReducer, useMemo } from 'react';
 import type { WebviewBootstrapData } from '../side-panel-webview-bootstrap';
-import { SidePanelContext, createInitialState, sidePanelReducer } from './SidePanelContext';
+import {
+  SidePanelContext,
+  createInitialState,
+  sidePanelReducer,
+} from './SidePanelContext';
 import { useMessageHandler } from './useMessageHandler';
 import { MainView } from './views/MainView';
 import { SettingsView } from './views/SettingsView';
@@ -12,16 +16,23 @@ type AppProps = {
 };
 
 export function App({ bootstrap, vscode }: AppProps) {
-  const [state, dispatch] = useReducer(sidePanelReducer, bootstrap, createInitialState);
+  const [state, dispatch] = useReducer(
+    sidePanelReducer,
+    bootstrap,
+    createInitialState,
+  );
 
   useMessageHandler(vscode, bootstrap, state, dispatch);
 
-  const contextValue = useMemo(() => ({
-    state,
-    dispatch,
-    vscode,
-    bootstrap,
-  }), [state, dispatch, vscode, bootstrap]);
+  const contextValue = useMemo(
+    () => ({
+      state,
+      dispatch,
+      vscode,
+      bootstrap,
+    }),
+    [state, dispatch, vscode, bootstrap],
+  );
 
   return (
     <SidePanelContext.Provider value={contextValue}>

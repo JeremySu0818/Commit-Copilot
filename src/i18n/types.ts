@@ -1,5 +1,46 @@
-export type DisplayLanguage = 'auto' | 'en' | 'zh-TW' | 'zh-CN' | 'ja' | 'ko' | 'es' | 'ar' | 'cs' | 'nl' | 'fr' | 'de' | 'hi' | 'hu' | 'id' | 'it' | 'pl' | 'pt-br' | 'ru' | 'tr' | 'vi';
-export type EffectiveDisplayLanguage = 'en' | 'zh-TW' | 'zh-CN' | 'ja' | 'ko' | 'es' | 'ar' | 'cs' | 'nl' | 'fr' | 'de' | 'hi' | 'hu' | 'id' | 'it' | 'pl' | 'pt-br' | 'ru' | 'tr' | 'vi';
+export type DisplayLanguage =
+  | 'auto'
+  | 'en'
+  | 'zh-TW'
+  | 'zh-CN'
+  | 'ja'
+  | 'ko'
+  | 'es'
+  | 'ar'
+  | 'cs'
+  | 'nl'
+  | 'fr'
+  | 'de'
+  | 'hi'
+  | 'hu'
+  | 'id'
+  | 'it'
+  | 'pl'
+  | 'pt-br'
+  | 'ru'
+  | 'tr'
+  | 'vi';
+export type EffectiveDisplayLanguage =
+  | 'en'
+  | 'zh-TW'
+  | 'zh-CN'
+  | 'ja'
+  | 'ko'
+  | 'es'
+  | 'ar'
+  | 'cs'
+  | 'nl'
+  | 'fr'
+  | 'de'
+  | 'hi'
+  | 'hu'
+  | 'id'
+  | 'it'
+  | 'pl'
+  | 'pt-br'
+  | 'ru'
+  | 'tr'
+  | 'vi';
 
 export type LanguageOption = {
   value: DisplayLanguage;
@@ -156,9 +197,13 @@ export type WebviewLanguagePack = {
 export type ProgressMessages = {
   analyzingChanges: string;
   generatingMessage: string;
-  transientApiError: (attempt: number, maxAttempts: number, seconds: number) => string;
+  transientApiError: (
+    attempt: number,
+    maxAttempts: number,
+    seconds: number,
+  ) => string;
   pulling: (model: string, status: string, percent?: number) => string;
-  
+
   stepAnalyzingDiff: (step: number, path: string) => string;
   stepReadingFile: (step: number, path: string) => string;
   stepGettingOutline: (step: number, path: string) => string;
@@ -166,7 +211,7 @@ export type ProgressMessages = {
   stepFetchingRecentCommits: (step: number, count?: number) => string;
   stepSearchingProject: (step: number, keyword: string) => string;
   stepCalling: (step: number, toolName: string) => string;
-  
+
   stepAnalyzingMultipleDiffs: (step: number, paths: string) => string;
   stepAnalyzingDiffsForCount: (step: number, count: number) => string;
   stepReadingMultipleFiles: (step: number, paths: string) => string;

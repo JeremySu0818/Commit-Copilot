@@ -218,27 +218,47 @@ export const zhCNLocale: LocaleTextBundle = {
   progressMessages: {
     analyzingChanges: 'Agent 正在分析更改...',
     generatingMessage: '正在生成 commit message...',
-    transientApiError: (attempt, maxAttempts, seconds) => `发生暂时性 API 错误。将在 ${seconds} 秒后重试 (${attempt}/${maxAttempts})...`,
-    pulling: (model, status, percent) => percent !== undefined ? `正在下载 ${model}：${status} (${percent}%)` : `正在下载 ${model}：${status}`,
-    
+    transientApiError: (attempt, maxAttempts, seconds) =>
+      `发生暂时性 API 错误。将在 ${seconds} 秒后重试 (${attempt}/${maxAttempts})...`,
+    pulling: (model, status, percent) =>
+      percent !== undefined
+        ? `正在下载 ${model}：${status} (${percent}%)`
+        : `正在下载 ${model}：${status}`,
+
     stepAnalyzingDiff: (step, path) => `[步骤 ${step}] 分析 diff：${path}`,
     stepReadingFile: (step, path) => `[步骤 ${step}] 读取文件：${path}`,
     stepGettingOutline: (step, path) => `[步骤 ${step}] 获取结构：${path}`,
-    stepFindingReferences: (step, target) => `[步骤 ${step}] 查找引用：${target}`,
-    stepFetchingRecentCommits: (step, count) => count !== undefined ? `[步骤 ${step}] 获取近期 commits：${count} 笔` : `[步骤 ${step}] 获取近期 commits...`,
-    stepSearchingProject: (step, keyword) => `[步骤 ${step}] 在项目中搜索：${keyword}`,
+    stepFindingReferences: (step, target) =>
+      `[步骤 ${step}] 查找引用：${target}`,
+    stepFetchingRecentCommits: (step, count) =>
+      count !== undefined
+        ? `[步骤 ${step}] 获取近期 commits：${count} 笔`
+        : `[步骤 ${step}] 获取近期 commits...`,
+    stepSearchingProject: (step, keyword) =>
+      `[步骤 ${step}] 在项目中搜索：${keyword}`,
     stepCalling: (step, toolName) => `[步骤 ${step}] 调用 ${toolName}...`,
 
-    stepAnalyzingMultipleDiffs: (step, paths) => `[步骤 ${step}] 分析多个 diff：${paths}`,
-    stepAnalyzingDiffsForCount: (step, count) => `[步骤 ${step}] 分析 ${count} 个文件的 diff...`,
-    stepReadingMultipleFiles: (step, paths) => `[步骤 ${step}] 读取多个文件：${paths}`,
-    stepReadingFilesForCount: (step, count) => `[步骤 ${step}] 读取 ${count} 个文件...`,
-    stepGettingMultipleOutlines: (step, paths) => `[步骤 ${step}] 获取多个文件结构：${paths}`,
-    stepGettingOutlinesForCount: (step, count) => `[步骤 ${step}] 获取 ${count} 个文件结构...`,
-    stepFindingReferencesForMultiple: (step, targets) => `[步骤 ${step}] 查找多个引用：${targets}`,
-    stepFindingReferencesForCount: (step, count) => `[步骤 ${step}] 查找 ${count} 个符号的引用...`,
-    stepSearchingProjectForMultiple: (step, keywords) => `[步骤 ${step}] 在项目中搜索：${keywords}`,
-    stepSearchingProjectForCount: (step, count) => `[步骤 ${step}] 在项目中搜索 ${count} 个关键字...`,
-    stepExecutingMultipleTools: (step, count) => `[步骤 ${step}] 执行 ${count} 个调查工具...`,
+    stepAnalyzingMultipleDiffs: (step, paths) =>
+      `[步骤 ${step}] 分析多个 diff：${paths}`,
+    stepAnalyzingDiffsForCount: (step, count) =>
+      `[步骤 ${step}] 分析 ${count} 个文件的 diff...`,
+    stepReadingMultipleFiles: (step, paths) =>
+      `[步骤 ${step}] 读取多个文件：${paths}`,
+    stepReadingFilesForCount: (step, count) =>
+      `[步骤 ${step}] 读取 ${count} 个文件...`,
+    stepGettingMultipleOutlines: (step, paths) =>
+      `[步骤 ${step}] 获取多个文件结构：${paths}`,
+    stepGettingOutlinesForCount: (step, count) =>
+      `[步骤 ${step}] 获取 ${count} 个文件结构...`,
+    stepFindingReferencesForMultiple: (step, targets) =>
+      `[步骤 ${step}] 查找多个引用：${targets}`,
+    stepFindingReferencesForCount: (step, count) =>
+      `[步骤 ${step}] 查找 ${count} 个符号的引用...`,
+    stepSearchingProjectForMultiple: (step, keywords) =>
+      `[步骤 ${step}] 在项目中搜索：${keywords}`,
+    stepSearchingProjectForCount: (step, count) =>
+      `[步骤 ${step}] 在项目中搜索 ${count} 个关键字...`,
+    stepExecutingMultipleTools: (step, count) =>
+      `[步骤 ${step}] 执行 ${count} 个调查工具...`,
   },
 };

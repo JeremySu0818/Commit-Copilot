@@ -17,11 +17,13 @@ export const jaLocale: LocaleTextBundle = {
     },
     [EXIT_CODES.NO_CHANGES_BUT_UNTRACKED]: {
       title: 'ステージされた変更がありません',
-      action: '追跡されていないファイルが見つかりました。コミットメッセージを生成する前にステージしてください。',
+      action:
+        '追跡されていないファイルが見つかりました。コミットメッセージを生成する前にステージしてください。',
     },
     [EXIT_CODES.NO_TRACKED_CHANGES_BUT_UNTRACKED]: {
       title: '追跡されていないファイルのみが見つかりました',
-      action: '新規作成されたファイルはありますが、追跡されている変更はありません。コミットを生成するにはステージしてください。',
+      action:
+        '新規作成されたファイルはありますが、追跡されている変更はありません。コミットを生成するにはステージしてください。',
     },
     [EXIT_CODES.CANCELLED]: {
       title: '生成がキャンセルされました',
@@ -29,7 +31,8 @@ export const jaLocale: LocaleTextBundle = {
     },
     [EXIT_CODES.MIXED_CHANGES]: {
       title: '混在した変更が見つかりました',
-      action: 'ステージされた変更とされていない変更の両方があります。続行方法を選択してください。',
+      action:
+        'ステージされた変更とされていない変更の両方があります。続行方法を選択してください。',
     },
     [EXIT_CODES.API_KEY_MISSING]: {
       title: 'API キーが設定されていません',
@@ -37,11 +40,13 @@ export const jaLocale: LocaleTextBundle = {
     },
     [EXIT_CODES.API_KEY_INVALID]: {
       title: '無効な API キー',
-      action: 'API キーが無効または取り消されています。確認して更新してください。',
+      action:
+        'API キーが無効または取り消されています。確認して更新してください。',
     },
     [EXIT_CODES.QUOTA_EXCEEDED]: {
       title: 'API クォータを超過しました',
-      action: 'API の利用枠を超えました。プロバイダのアカウントを確認してください。',
+      action:
+        'API の利用枠を超えました。プロバイダのアカウントを確認してください。',
     },
     [EXIT_CODES.API_ERROR]: {
       title: 'API リクエストに失敗しました',
@@ -59,42 +64,60 @@ export const jaLocale: LocaleTextBundle = {
   extensionText: {
     output: {
       generationIgnored: '生成リクエストを無視しました：既に生成が進行中です。',
-      generationStart: (timestamp) => `[${timestamp}] Commit-Copilot の生成を開始します...`,
+      generationStart: (timestamp) =>
+        `[${timestamp}] Commit-Copilot の生成を開始します...`,
       gitExtensionMissing: 'エラー: Git 拡張機能が見つかりません。',
-      selectedRepoFromScm: (path) => `SCM コンテキストからリポジトリを選択しました: ${path}`,
-      selectedRepoFromEditor: (path) => `アクティブなエディターからリポジトリを選択しました: ${path}`,
-      noRepoMatchedActiveEditor: 'アクティブなエディターに一致するリポジトリがありません。',
-      noActiveEditorForRepoSelection: 'リポジトリ選択用のアクティブエディタが見つかりません。',
+      selectedRepoFromScm: (path) =>
+        `SCM コンテキストからリポジトリを選択しました: ${path}`,
+      selectedRepoFromEditor: (path) =>
+        `アクティブなエディターからリポジトリを選択しました: ${path}`,
+      noRepoMatchedActiveEditor:
+        'アクティブなエディターに一致するリポジトリがありません。',
+      noActiveEditorForRepoSelection:
+        'リポジトリ選択用のアクティブエディタが見つかりません。',
       selectedOnlyRepo: (path) => `唯一のリポジトリを選択しました: ${path}`,
-      multiRepoNotDetermined: (count) => `${count} 個のリポジトリが見つかりましたが、アクティブなものを決定できませんでした。`,
+      multiRepoNotDetermined: (count) =>
+        `${count} 個のリポジトリが見つかりましたが、アクティブなものを決定できませんでした。`,
       noRepoInApi: 'API にリポジトリが見つかりません。',
       usingProvider: (providerName) => `使用するプロバイダー: ${providerName}`,
       usingGenerateMode: (mode) => `生成モード: ${mode}`,
-      usingCommitOutputOptions: (optionsJson) => `コミット出力オプション: ${optionsJson}`,
-      missingApiKeyWarning: (provider) => `警告: ${provider} の API キーが見つかりません。`,
+      usingCommitOutputOptions: (optionsJson) =>
+        `コミット出力オプション: ${optionsJson}`,
+      missingApiKeyWarning: (provider) =>
+        `警告: ${provider} の API キーが見つかりません。`,
       cancelRequestedFromProgress: '進行状況UIからキャンセルが要求されました。',
-      callingGenerateCommitMessage: 'generateCommitMessage を呼び出しています...',
+      callingGenerateCommitMessage:
+        'generateCommitMessage を呼び出しています...',
       repositoryPath: (path) => `リポジトリパス: ${path}`,
       usingModel: (model) => `使用するモデル: ${model}`,
       generatedMessage: (message) => `生成されたメッセージ: ${message}`,
-      generationError: (errorCode, message) => `エラー: ${errorCode} - ${message}`,
+      generationError: (errorCode, message) =>
+        `エラー: ${errorCode} - ${message}`,
       unexpectedError: (message) => `予期せぬエラー: ${message}`,
-      openingLanguageSettings: 'アクティビティビューで言語設定を開いています...',
+      openingLanguageSettings:
+        'アクティビティビューで言語設定を開いています...',
     },
     notification: {
-      gitExtensionMissing: 'Git 拡張機能が見つかりません。Git がインストールされており、Git 拡張機能が有効になっていることを確認してください。',
-      multiRepoWarning: '複数の Git リポジトリが見つかりました。対象リポジトリのファイルにフォーカスするか、SCM ビューから実行してください。',
-      repoNotFound: 'Git リポジトリが見つかりません。Git リポジトリが含まれるフォルダを開いてください。',
-      apiKeyMissing: (providerName) => `${providerName} API キーが設定されていません。まず Commit-Copilot パネルから API キーを設定してください。`,
+      gitExtensionMissing:
+        'Git 拡張機能が見つかりません。Git がインストールされており、Git 拡張機能が有効になっていることを確認してください。',
+      multiRepoWarning:
+        '複数の Git リポジトリが見つかりました。対象リポジトリのファイルにフォーカスするか、SCM ビューから実行してください。',
+      repoNotFound:
+        'Git リポジトリが見つかりません。Git リポジトリが含まれるフォルダを開いてください。',
+      apiKeyMissing: (providerName) =>
+        `${providerName} API キーが設定されていません。まず Commit-Copilot パネルから API キーを設定してください。`,
       configureApiKeyAction: 'API キーを設定',
-      mixedChangesQuestion: 'ステージされた変更とされていない変更の両方があります。どのように処理しますか？',
+      mixedChangesQuestion:
+        'ステージされた変更とされていない変更の両方があります。どのように処理しますか？',
       stageAllAndGenerate: 'すべてステージして生成',
       proceedStagedOnly: 'ステージされたもののみで続行',
       cancel: 'キャンセル',
-      noStagedButUntrackedQuestion: 'ステージされた変更がありません。追跡されていないファイルが見つかりました。すべてのファイル (未追跡を含む) をステージしますか、それとも追跡されている変更済みファイルのみで生成しますか？',
+      noStagedButUntrackedQuestion:
+        'ステージされた変更がありません。追跡されていないファイルが見つかりました。すべてのファイル (未追跡を含む) をステージしますか、それとも追跡されている変更済みファイルのみで生成しますか？',
       stageAndGenerateAll: 'すべてステージして生成',
       generateTrackedOnly: '追跡済みのみ生成',
-      onlyUntrackedQuestion: '追跡されていないファイルのみが存在し、追跡されている変更はありません。これらの新規ファイルをステージして追跡し、コミットを生成しますか？',
+      onlyUntrackedQuestion:
+        '追跡されていないファイルのみが存在し、追跡されている変更はありません。これらの新規ファイルをステージして追跡し、コミットを生成しますか？',
       stageAndTrack: 'ステージ＆追跡',
       commitGenerated: 'コミットメッセージを生成しました！',
       viewProviderConsoleAction: 'プロバイダコンソールを表示',
@@ -110,11 +133,13 @@ export const jaLocale: LocaleTextBundle = {
     connectionErrorPrefix: '接続エラー',
     unknownProvider: '不明なプロバイダー',
     cannotConnectOllamaAt: (host) => `Ollama に接続できません (${host})`,
-    cannotConnectOllama: (message) => `Ollama に接続できません: ${message}。Ollama が実行中か確認してください。`,
+    cannotConnectOllama: (message) =>
+      `Ollama に接続できません: ${message}。Ollama が実行中か確認してください。`,
     apiKeyCannotBeEmpty: 'API キーは空にできません',
     validationFailedPrefix: '検証に失敗しました',
     unableToConnectFallback: '接続できません',
-    saveConfigSuccess: (providerName) => `${providerName} 構成が正常に保存されました！`,
+    saveConfigSuccess: (providerName) =>
+      `${providerName} 構成が正常に保存されました！`,
     saveConfigFailed: '設定の保存に失敗しました',
     languageSaved: (label) => `言語を更新しました: ${label}`,
   },
@@ -182,15 +207,23 @@ export const jaLocale: LocaleTextBundle = {
       modelNameRequired: '生成する前にモデル名を入力してください。',
     },
     descriptions: {
-      ollamaFixedToDirectDiff: 'Ollamaは「Direct Diff」モードに固定されています',
-      agenticModeDescription: 'Agentic モードでは、リポジトリツールを使用して詳細な分析を行います',
+      ollamaFixedToDirectDiff:
+        'Ollamaは「Direct Diff」モードに固定されています',
+      agenticModeDescription:
+        'Agentic モードでは、リポジトリツールを使用して詳細な分析を行います',
       directDiffDescription: 'Direct Diff は差分を直接モデルに送信します',
-      ollamaInfo: '<strong>Ollama</strong> はローカルマシンで動作します。<br>デフォルトホスト: <code>{host}</code><br>生成前に Ollama が起動していることを確認してください。',
-      googleInfo: '<strong>Google AI Studio</strong> から API キーを取得してください:<br><a href="https://aistudio.google.com/app/apikey" style="color: var(--vscode-textLink-foreground);">aistudio.google.com</a>',
-      openaiInfo: '<strong>OpenAI Platform</strong> から API キーを取得してください:<br><a href="https://platform.openai.com/api-keys" style="color: var(--vscode-textLink-foreground);">platform.openai.com</a>',
-      anthropicInfo: '<strong>Anthropic Console</strong> から API キーを取得してください:<br><a href="https://platform.claude.com/settings/keys" style="color: var(--vscode-textLink-foreground);">platform.claude.com</a>',
-      maxAgentStepsDescription: '各生成のエージェントツール呼び出し回数を制限します。無制限にするには0を入力するか空白にしてください。',
-      customProviderInfo: 'カスタムプロバイダーは <strong>OpenAI 互換</strong> である必要があります。<br>API ベース URL は OpenAI Chat Completions API に準拠したサービスを指す必要があります。',
+      ollamaInfo:
+        '<strong>Ollama</strong> はローカルマシンで動作します。<br>デフォルトホスト: <code>{host}</code><br>生成前に Ollama が起動していることを確認してください。',
+      googleInfo:
+        '<strong>Google AI Studio</strong> から API キーを取得してください:<br><a href="https://aistudio.google.com/app/apikey" style="color: var(--vscode-textLink-foreground);">aistudio.google.com</a>',
+      openaiInfo:
+        '<strong>OpenAI Platform</strong> から API キーを取得してください:<br><a href="https://platform.openai.com/api-keys" style="color: var(--vscode-textLink-foreground);">platform.openai.com</a>',
+      anthropicInfo:
+        '<strong>Anthropic Console</strong> から API キーを取得してください:<br><a href="https://platform.claude.com/settings/keys" style="color: var(--vscode-textLink-foreground);">platform.claude.com</a>',
+      maxAgentStepsDescription:
+        '各生成のエージェントツール呼び出し回数を制限します。無制限にするには0を入力するか空白にしてください。',
+      customProviderInfo:
+        'カスタムプロバイダーは <strong>OpenAI 互換</strong> である必要があります。<br>API ベース URL は OpenAI Chat Completions API に準拠したサービスを指す必要があります。',
     },
     options: {
       agentic: 'Agentic 生成',
@@ -200,27 +233,51 @@ export const jaLocale: LocaleTextBundle = {
   progressMessages: {
     analyzingChanges: 'エージェントが変更を分析中...',
     generatingMessage: 'コミットメッセージを生成中...',
-    transientApiError: (attempt, maxAttempts, seconds) => `一時的な API エラー。再試行中 (${attempt}/${maxAttempts}) ${seconds}秒後...`,
-    pulling: (model, status, percent) => percent !== undefined ? `${model} を取得中：${status} (${percent}%)` : `${model} を取得中：${status}`,
-    
-    stepAnalyzingDiff: (step, path) => `[ステップ ${step}] 差分を分析中：${path}`,
-    stepReadingFile: (step, path) => `[ステップ ${step}] ファイルを読み込み中：${path}`,
-    stepGettingOutline: (step, path) => `[ステップ ${step}] アウトラインを取得中：${path}`,
-    stepFindingReferences: (step, target) => `[ステップ ${step}] 参照を検索中：${target}`,
-    stepFetchingRecentCommits: (step, count) => count !== undefined ? `[ステップ ${step}] 最近のコミットを取得中：${count} 件` : `[ステップ ${step}] 最近のコミットを取得中...`,
-    stepSearchingProject: (step, keyword) => `[ステップ ${step}] プロジェクトを検索中：${keyword}`,
-    stepCalling: (step, toolName) => `[ステップ ${step}] ${toolName} を呼び出し中...`,
+    transientApiError: (attempt, maxAttempts, seconds) =>
+      `一時的な API エラー。再試行中 (${attempt}/${maxAttempts}) ${seconds}秒後...`,
+    pulling: (model, status, percent) =>
+      percent !== undefined
+        ? `${model} を取得中：${status} (${percent}%)`
+        : `${model} を取得中：${status}`,
 
-    stepAnalyzingMultipleDiffs: (step, paths) => `[ステップ ${step}] 差分を分析中：${paths}`,
-    stepAnalyzingDiffsForCount: (step, count) => `[ステップ ${step}] ${count} ファイルの差分を分析中...`,
-    stepReadingMultipleFiles: (step, paths) => `[ステップ ${step}] ファイルを読み込み中：${paths}`,
-    stepReadingFilesForCount: (step, count) => `[ステップ ${step}] ${count} ファイルを読み込み中...`,
-    stepGettingMultipleOutlines: (step, paths) => `[ステップ ${step}] アウトラインを取得中：${paths}`,
-    stepGettingOutlinesForCount: (step, count) => `[ステップ ${step}] ${count} ファイルのアウトラインを取得中...`,
-    stepFindingReferencesForMultiple: (step, targets) => `[ステップ ${step}] 参照を検索中：${targets}`,
-    stepFindingReferencesForCount: (step, count) => `[ステップ ${step}] ${count} 個のシンボルの参照を検索中...`,
-    stepSearchingProjectForMultiple: (step, keywords) => `[ステップ ${step}] プロジェクトを検索中：${keywords}`,
-    stepSearchingProjectForCount: (step, count) => `[ステップ ${step}] ${count} 個のキーワードでプロジェクトを検索中...`,
-    stepExecutingMultipleTools: (step, count) => `[ステップ ${step}] ${count} 個の調査ツールを実行中...`,
+    stepAnalyzingDiff: (step, path) =>
+      `[ステップ ${step}] 差分を分析中：${path}`,
+    stepReadingFile: (step, path) =>
+      `[ステップ ${step}] ファイルを読み込み中：${path}`,
+    stepGettingOutline: (step, path) =>
+      `[ステップ ${step}] アウトラインを取得中：${path}`,
+    stepFindingReferences: (step, target) =>
+      `[ステップ ${step}] 参照を検索中：${target}`,
+    stepFetchingRecentCommits: (step, count) =>
+      count !== undefined
+        ? `[ステップ ${step}] 最近のコミットを取得中：${count} 件`
+        : `[ステップ ${step}] 最近のコミットを取得中...`,
+    stepSearchingProject: (step, keyword) =>
+      `[ステップ ${step}] プロジェクトを検索中：${keyword}`,
+    stepCalling: (step, toolName) =>
+      `[ステップ ${step}] ${toolName} を呼び出し中...`,
+
+    stepAnalyzingMultipleDiffs: (step, paths) =>
+      `[ステップ ${step}] 差分を分析中：${paths}`,
+    stepAnalyzingDiffsForCount: (step, count) =>
+      `[ステップ ${step}] ${count} ファイルの差分を分析中...`,
+    stepReadingMultipleFiles: (step, paths) =>
+      `[ステップ ${step}] ファイルを読み込み中：${paths}`,
+    stepReadingFilesForCount: (step, count) =>
+      `[ステップ ${step}] ${count} ファイルを読み込み中...`,
+    stepGettingMultipleOutlines: (step, paths) =>
+      `[ステップ ${step}] アウトラインを取得中：${paths}`,
+    stepGettingOutlinesForCount: (step, count) =>
+      `[ステップ ${step}] ${count} ファイルのアウトラインを取得中...`,
+    stepFindingReferencesForMultiple: (step, targets) =>
+      `[ステップ ${step}] 参照を検索中：${targets}`,
+    stepFindingReferencesForCount: (step, count) =>
+      `[ステップ ${step}] ${count} 個のシンボルの参照を検索中...`,
+    stepSearchingProjectForMultiple: (step, keywords) =>
+      `[ステップ ${step}] プロジェクトを検索中：${keywords}`,
+    stepSearchingProjectForCount: (step, count) =>
+      `[ステップ ${step}] ${count} 個のキーワードでプロジェクトを検索中...`,
+    stepExecutingMultipleTools: (step, count) =>
+      `[ステップ ${step}] ${count} 個の調査ツールを実行中...`,
   },
 };

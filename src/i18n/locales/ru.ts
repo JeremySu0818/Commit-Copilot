@@ -50,8 +50,7 @@ export const ruLocale: LocaleTextBundle = {
     },
     [EXIT_CODES.API_ERROR]: {
       title: 'Ошибка запроса к API',
-      action:
-        'Произошла ошибка при связи с API. Пожалуйста, попробуйте снова.',
+      action: 'Произошла ошибка при связи с API. Пожалуйста, попробуйте снова.',
     },
     [EXIT_CODES.COMMIT_FAILED]: {
       title: 'Не удалось зафиксировать изменения',
@@ -73,14 +72,16 @@ export const ruLocale: LocaleTextBundle = {
         `Выбран репозиторий из контекста SCM: ${path}`,
       selectedRepoFromEditor: (path) =>
         `Выбран репозиторий из активного редактора: ${path}`,
-      noRepoMatchedActiveEditor: 'Нет репозитория, соответствующего активному редактору.',
+      noRepoMatchedActiveEditor:
+        'Нет репозитория, соответствующего активному редактору.',
       noActiveEditorForRepoSelection:
         'Не найден активный редактор для выбора репозитория.',
       selectedOnlyRepo: (path) => `Выбран единственный репозиторий: ${path}`,
       multiRepoNotDetermined: (count) =>
         `Найдено ${count} репозиториев, но не удалось определить активный.`,
       noRepoInApi: 'Репозитории в API не найдены.',
-      usingProvider: (providerName) => `Используется провайдер: ${providerName}`,
+      usingProvider: (providerName) =>
+        `Используется провайдер: ${providerName}`,
       usingGenerateMode: (mode) => `Режим генерации: ${mode}`,
       usingCommitOutputOptions: (optionsJson) =>
         `Параметры вывода коммита: ${optionsJson}`,
@@ -94,7 +95,8 @@ export const ruLocale: LocaleTextBundle = {
       generationError: (errorCode, message) =>
         `Ошибка: ${errorCode} - ${message}`,
       unexpectedError: (message) => `Непредвиденная ошибка: ${message}`,
-      openingLanguageSettings: 'Открытие языковых настроек на панели активности...',
+      openingLanguageSettings:
+        'Открытие языковых настроек на панели активности...',
     },
     notification: {
       gitExtensionMissing:
@@ -131,7 +133,8 @@ export const ruLocale: LocaleTextBundle = {
     apiRequestFailedPrefix: 'Ошибка запроса к API',
     connectionErrorPrefix: 'Ошибка соединения',
     unknownProvider: 'Неизвестный провайдер',
-    cannotConnectOllamaAt: (host) => `Невозможно подключиться к Ollama по адресу ${host}`,
+    cannotConnectOllamaAt: (host) =>
+      `Невозможно подключиться к Ollama по адресу ${host}`,
     cannotConnectOllama: (message) =>
       `Невозможно подключиться к Ollama: ${message}. Убедитесь, что Ollama запущена.`,
     apiKeyCannotBeEmpty: 'API-ключ не может быть пустым',
@@ -232,27 +235,48 @@ export const ruLocale: LocaleTextBundle = {
   progressMessages: {
     analyzingChanges: 'Агент анализирует изменения...',
     generatingMessage: 'Генерация сообщения коммита...',
-    transientApiError: (attempt, maxAttempts, seconds) => `Временная ошибка API. Повторная попытка (${attempt}/${maxAttempts}) через ${seconds} сек...`,
-    pulling: (model, status, percent) => percent !== undefined ? `Скачивание ${model}: ${status} (${percent}%)` : `Скачивание ${model}: ${status}`,
-    
+    transientApiError: (attempt, maxAttempts, seconds) =>
+      `Временная ошибка API. Повторная попытка (${attempt}/${maxAttempts}) через ${seconds} сек...`,
+    pulling: (model, status, percent) =>
+      percent !== undefined
+        ? `Скачивание ${model}: ${status} (${percent}%)`
+        : `Скачивание ${model}: ${status}`,
+
     stepAnalyzingDiff: (step, path) => `[Шаг ${step}] Анализ diff: ${path}`,
     stepReadingFile: (step, path) => `[Шаг ${step}] Чтение файла: ${path}`,
-    stepGettingOutline: (step, path) => `[Шаг ${step}] Получение структуры: ${path}`,
-    stepFindingReferences: (step, target) => `[Шаг ${step}] Поиск ссылок: ${target}`,
-    stepFetchingRecentCommits: (step, count) => count !== undefined ? `[Шаг ${step}] Получение недавних коммитов: ${count} записей` : `[Шаг ${step}] Получение недавних коммитов...`,
-    stepSearchingProject: (step, keyword) => `[Шаг ${step}] Поиск по проекту: ${keyword}`,
+    stepGettingOutline: (step, path) =>
+      `[Шаг ${step}] Получение структуры: ${path}`,
+    stepFindingReferences: (step, target) =>
+      `[Шаг ${step}] Поиск ссылок: ${target}`,
+    stepFetchingRecentCommits: (step, count) =>
+      count !== undefined
+        ? `[Шаг ${step}] Получение недавних коммитов: ${count} записей`
+        : `[Шаг ${step}] Получение недавних коммитов...`,
+    stepSearchingProject: (step, keyword) =>
+      `[Шаг ${step}] Поиск по проекту: ${keyword}`,
     stepCalling: (step, toolName) => `[Шаг ${step}] Вызов ${toolName}...`,
 
-    stepAnalyzingMultipleDiffs: (step, paths) => `[Шаг ${step}] Анализ diff для: ${paths}`,
-    stepAnalyzingDiffsForCount: (step, count) => `[Шаг ${step}] Анализ diff для ${count} файлов...`,
-    stepReadingMultipleFiles: (step, paths) => `[Шаг ${step}] Чтение файлов: ${paths}`,
-    stepReadingFilesForCount: (step, count) => `[Шаг ${step}] Чтение ${count} файлов...`,
-    stepGettingMultipleOutlines: (step, paths) => `[Шаг ${step}] Получение структур: ${paths}`,
-    stepGettingOutlinesForCount: (step, count) => `[Шаг ${step}] Получение структур для ${count} файлов...`,
-    stepFindingReferencesForMultiple: (step, targets) => `[Шаг ${step}] Поиск ссылок: ${targets}`,
-    stepFindingReferencesForCount: (step, count) => `[Шаг ${step}] Поиск ссылок для ${count} символов...`,
-    stepSearchingProjectForMultiple: (step, keywords) => `[Шаг ${step}] Поиск по проекту: ${keywords}`,
-    stepSearchingProjectForCount: (step, count) => `[Шаг ${step}] Поиск по проекту ${count} ключевых слов...`,
-    stepExecutingMultipleTools: (step, count) => `[Шаг ${step}] Выполнение ${count} исследовательских инструментов...`,
+    stepAnalyzingMultipleDiffs: (step, paths) =>
+      `[Шаг ${step}] Анализ diff для: ${paths}`,
+    stepAnalyzingDiffsForCount: (step, count) =>
+      `[Шаг ${step}] Анализ diff для ${count} файлов...`,
+    stepReadingMultipleFiles: (step, paths) =>
+      `[Шаг ${step}] Чтение файлов: ${paths}`,
+    stepReadingFilesForCount: (step, count) =>
+      `[Шаг ${step}] Чтение ${count} файлов...`,
+    stepGettingMultipleOutlines: (step, paths) =>
+      `[Шаг ${step}] Получение структур: ${paths}`,
+    stepGettingOutlinesForCount: (step, count) =>
+      `[Шаг ${step}] Получение структур для ${count} файлов...`,
+    stepFindingReferencesForMultiple: (step, targets) =>
+      `[Шаг ${step}] Поиск ссылок: ${targets}`,
+    stepFindingReferencesForCount: (step, count) =>
+      `[Шаг ${step}] Поиск ссылок для ${count} символов...`,
+    stepSearchingProjectForMultiple: (step, keywords) =>
+      `[Шаг ${step}] Поиск по проекту: ${keywords}`,
+    stepSearchingProjectForCount: (step, count) =>
+      `[Шаг ${step}] Поиск по проекту ${count} ключевых слов...`,
+    stepExecutingMultipleTools: (step, count) =>
+      `[Шаг ${step}] Выполнение ${count} исследовательских инструментов...`,
   },
 };

@@ -61,14 +61,16 @@ async function runOllamaAgentLoop(
               LOCALES[language].progressMessages.pulling(
                 modelName,
                 part.status || 'unknown',
-                percent
+                percent,
               ),
               increment,
             );
           }
         }
       } else if (part.status && onProgress) {
-        onProgress(LOCALES[language].progressMessages.pulling(modelName, part.status));
+        onProgress(
+          LOCALES[language].progressMessages.pulling(modelName, part.status),
+        );
       }
     }
 

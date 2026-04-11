@@ -297,7 +297,8 @@ test('checkKey returns stored Ollama host value', async () => {
   try {
     await harness.sendMessage({ type: 'checkKey', provider: 'ollama' });
     const statusMessage = harness.postedMessages.find(
-      (message) => message.type === 'keyStatus' && message.provider === 'ollama',
+      (message) =>
+        message.type === 'keyStatus' && message.provider === 'ollama',
     );
 
     assert.ok(statusMessage);
@@ -314,7 +315,8 @@ test('checkKey returns default Ollama host value when secret is missing', async 
   try {
     await harness.sendMessage({ type: 'checkKey', provider: 'ollama' });
     const statusMessage = harness.postedMessages.find(
-      (message) => message.type === 'keyStatus' && message.provider === 'ollama',
+      (message) =>
+        message.type === 'keyStatus' && message.provider === 'ollama',
     );
 
     assert.ok(statusMessage);

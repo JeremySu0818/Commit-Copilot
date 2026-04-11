@@ -59,7 +59,8 @@ export const ptBRLocale: LocaleTextBundle = {
     },
     [EXIT_CODES.UNKNOWN_ERROR]: {
       title: 'Ocorreu um erro inesperado',
-      action: 'Verifique a aba "Output" do "Commit-Copilot Debug" para mais detalhes.',
+      action:
+        'Verifique a aba "Output" do "Commit-Copilot Debug" para mais detalhes.',
     },
   },
   extensionText: {
@@ -73,7 +74,8 @@ export const ptBRLocale: LocaleTextBundle = {
         `Repositório selecionado pelo contexto do SCM: ${path}`,
       selectedRepoFromEditor: (path) =>
         `Repositório selecionado pelo editor ativo: ${path}`,
-      noRepoMatchedActiveEditor: 'Nenhum repositório correspondeu ao editor ativo.',
+      noRepoMatchedActiveEditor:
+        'Nenhum repositório correspondeu ao editor ativo.',
       noActiveEditorForRepoSelection:
         'Nenhum editor ativo encontrado para a seleção de repositório.',
       selectedOnlyRepo: (path) => `Selecionado o único repositório: ${path}`,
@@ -86,7 +88,8 @@ export const ptBRLocale: LocaleTextBundle = {
         `Opções de saída do commit: ${optionsJson}`,
       missingApiKeyWarning: (provider) =>
         `Aviso: Nenhuma Chave da API encontrada para ${provider}.`,
-      cancelRequestedFromProgress: 'Cancelamento solicitado pela interface de progresso.',
+      cancelRequestedFromProgress:
+        'Cancelamento solicitado pela interface de progresso.',
       callingGenerateCommitMessage: 'Chamando generateCommitMessage...',
       repositoryPath: (path) => `Caminho do repositório: ${path}`,
       usingModel: (model) => `Usando modelo: ${model}`,
@@ -94,7 +97,8 @@ export const ptBRLocale: LocaleTextBundle = {
       generationError: (errorCode, message) =>
         `Erro: ${errorCode} - ${message}`,
       unexpectedError: (message) => `Erro inesperado: ${message}`,
-      openingLanguageSettings: 'Abrindo configurações de idioma na Activity View...',
+      openingLanguageSettings:
+        'Abrindo configurações de idioma na Activity View...',
     },
     notification: {
       gitExtensionMissing:
@@ -120,7 +124,8 @@ export const ptBRLocale: LocaleTextBundle = {
       stageAndTrack: 'Fazer Stage e Rastrear',
       commitGenerated: 'Mensagem de commit gerada!',
       viewProviderConsoleAction: 'Ver Console do Provedor',
-      noChanges: 'Nenhuma alteração para commitar. Faça algumas alterações primeiro!',
+      noChanges:
+        'Nenhuma alteração para commitar. Faça algumas alterações primeiro!',
       generationCanceled: 'A geração de mensagem de commit foi cancelada.',
       failedPrefix: 'Commit-Copilot falhou',
     },
@@ -131,7 +136,8 @@ export const ptBRLocale: LocaleTextBundle = {
     apiRequestFailedPrefix: 'Falha na requisição da API',
     connectionErrorPrefix: 'Erro de conexão',
     unknownProvider: 'Provedor desconhecido',
-    cannotConnectOllamaAt: (host) => `Não é possível conectar ao Ollama em ${host}`,
+    cannotConnectOllamaAt: (host) =>
+      `Não é possível conectar ao Ollama em ${host}`,
     cannotConnectOllama: (message) =>
       `Não é possível conectar ao Ollama: ${message}. Verifique se o Ollama está rodando.`,
     apiKeyCannotBeEmpty: 'A Chave da API não pode estar vazia',
@@ -203,7 +209,8 @@ export const ptBRLocale: LocaleTextBundle = {
       apiKeyRequired: 'Sua chave de API é requerida.',
       providerSaved: 'Provedor customizado salvo!',
       providerDeleted: 'Provedor customizado removido.',
-      modelNameRequired: 'Por favor, insira o nome de um modelo antes da geração.',
+      modelNameRequired:
+        'Por favor, insira o nome de um modelo antes da geração.',
     },
     descriptions: {
       ollamaFixedToDirectDiff: 'O Ollama está fixado no modo de Diff Direto',
@@ -232,27 +239,49 @@ export const ptBRLocale: LocaleTextBundle = {
   progressMessages: {
     analyzingChanges: 'Agente analisando mudanças...',
     generatingMessage: 'Gerando mensagem de commit...',
-    transientApiError: (attempt, maxAttempts, seconds) => `Erro transitório na API. Tentando novamente (${attempt}/${maxAttempts}) em ${seconds}s...`,
-    pulling: (model, status, percent) => percent !== undefined ? `Puxando ${model}: ${status} (${percent}%)` : `Puxando ${model}: ${status}`,
-    
-    stepAnalyzingDiff: (step, path) => `[Passo ${step}] Analisando diff: ${path}`,
+    transientApiError: (attempt, maxAttempts, seconds) =>
+      `Erro transitório na API. Tentando novamente (${attempt}/${maxAttempts}) em ${seconds}s...`,
+    pulling: (model, status, percent) =>
+      percent !== undefined
+        ? `Puxando ${model}: ${status} (${percent}%)`
+        : `Puxando ${model}: ${status}`,
+
+    stepAnalyzingDiff: (step, path) =>
+      `[Passo ${step}] Analisando diff: ${path}`,
     stepReadingFile: (step, path) => `[Passo ${step}] Lendo arquivo: ${path}`,
-    stepGettingOutline: (step, path) => `[Passo ${step}] Obtendo outline: ${path}`,
-    stepFindingReferences: (step, target) => `[Passo ${step}] Encontrando referências: ${target}`,
-    stepFetchingRecentCommits: (step, count) => count !== undefined ? `[Passo ${step}] Buscando ${count} commits mais recentes` : `[Passo ${step}] Buscando commits mais recentes...`,
-    stepSearchingProject: (step, keyword) => `[Passo ${step}] Pesquisando o projeto por: ${keyword}`,
+    stepGettingOutline: (step, path) =>
+      `[Passo ${step}] Obtendo outline: ${path}`,
+    stepFindingReferences: (step, target) =>
+      `[Passo ${step}] Encontrando referências: ${target}`,
+    stepFetchingRecentCommits: (step, count) =>
+      count !== undefined
+        ? `[Passo ${step}] Buscando ${count} commits mais recentes`
+        : `[Passo ${step}] Buscando commits mais recentes...`,
+    stepSearchingProject: (step, keyword) =>
+      `[Passo ${step}] Pesquisando o projeto por: ${keyword}`,
     stepCalling: (step, toolName) => `[Passo ${step}] Chamando ${toolName}...`,
 
-    stepAnalyzingMultipleDiffs: (step, paths) => `[Passo ${step}] Analisando diffs: ${paths}`,
-    stepAnalyzingDiffsForCount: (step, count) => `[Passo ${step}] Analisando os diffs em ${count} arquivos...`,
-    stepReadingMultipleFiles: (step, paths) => `[Passo ${step}] Lendo arquivos: ${paths}`,
-    stepReadingFilesForCount: (step, count) => `[Passo ${step}] Lendo ${count} arquivos...`,
-    stepGettingMultipleOutlines: (step, paths) => `[Passo ${step}] Obtendo outlines: ${paths}`,
-    stepGettingOutlinesForCount: (step, count) => `[Passo ${step}] Obtendo os outlines em ${count} arquivos...`,
-    stepFindingReferencesForMultiple: (step, targets) => `[Passo ${step}] Encontrando referências: ${targets}`,
-    stepFindingReferencesForCount: (step, count) => `[Passo ${step}] Encontrando referências para ${count} símbolos...`,
-    stepSearchingProjectForMultiple: (step, keywords) => `[Passo ${step}] Pesquisando o projeto por: ${keywords}`,
-    stepSearchingProjectForCount: (step, count) => `[Passo ${step}] Pesquisando o projeto com ${count} palavras-chave...`,
-    stepExecutingMultipleTools: (step, count) => `[Passo ${step}] Executando ${count} ferramentas de investigação...`,
+    stepAnalyzingMultipleDiffs: (step, paths) =>
+      `[Passo ${step}] Analisando diffs: ${paths}`,
+    stepAnalyzingDiffsForCount: (step, count) =>
+      `[Passo ${step}] Analisando os diffs em ${count} arquivos...`,
+    stepReadingMultipleFiles: (step, paths) =>
+      `[Passo ${step}] Lendo arquivos: ${paths}`,
+    stepReadingFilesForCount: (step, count) =>
+      `[Passo ${step}] Lendo ${count} arquivos...`,
+    stepGettingMultipleOutlines: (step, paths) =>
+      `[Passo ${step}] Obtendo outlines: ${paths}`,
+    stepGettingOutlinesForCount: (step, count) =>
+      `[Passo ${step}] Obtendo os outlines em ${count} arquivos...`,
+    stepFindingReferencesForMultiple: (step, targets) =>
+      `[Passo ${step}] Encontrando referências: ${targets}`,
+    stepFindingReferencesForCount: (step, count) =>
+      `[Passo ${step}] Encontrando referências para ${count} símbolos...`,
+    stepSearchingProjectForMultiple: (step, keywords) =>
+      `[Passo ${step}] Pesquisando o projeto por: ${keywords}`,
+    stepSearchingProjectForCount: (step, count) =>
+      `[Passo ${step}] Pesquisando o projeto com ${count} palavras-chave...`,
+    stepExecutingMultipleTools: (step, count) =>
+      `[Passo ${step}] Executando ${count} ferramentas de investigação...`,
   },
 };

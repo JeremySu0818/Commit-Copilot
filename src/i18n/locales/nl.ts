@@ -64,8 +64,7 @@ export const nlLocale: LocaleTextBundle = {
   },
   extensionText: {
     output: {
-      generationIgnored:
-        'Generatie verzoek genegeerd: generatie is al bezig.',
+      generationIgnored: 'Generatie verzoek genegeerd: generatie is al bezig.',
       generationStart: (timestamp) =>
         `[${timestamp}] Starten met commit-copilot generatie...`,
       gitExtensionMissing: 'Fout: Git extensie niet gevonden.',
@@ -73,7 +72,8 @@ export const nlLocale: LocaleTextBundle = {
         `Geselecteerde repository via SCM context: ${path}`,
       selectedRepoFromEditor: (path) =>
         `Geselecteerde repository via actieve editor: ${path}`,
-      noRepoMatchedActiveEditor: 'Geen repository komt overeen met de actieve editor.',
+      noRepoMatchedActiveEditor:
+        'Geen repository komt overeen met de actieve editor.',
       noActiveEditorForRepoSelection:
         'Geen actieve editor gevonden voor repository selectie.',
       selectedOnlyRepo: (path) => `Enige repository geselecteerd: ${path}`,
@@ -94,7 +94,8 @@ export const nlLocale: LocaleTextBundle = {
       generationError: (errorCode, message) =>
         `Fout: ${errorCode} - ${message}`,
       unexpectedError: (message) => `Onverwachte fout: ${message}`,
-      openingLanguageSettings: 'Taalinstellingen openen in activiteitsweergave...',
+      openingLanguageSettings:
+        'Taalinstellingen openen in activiteitsweergave...',
     },
     notification: {
       gitExtensionMissing:
@@ -120,7 +121,8 @@ export const nlLocale: LocaleTextBundle = {
       stageAndTrack: 'Stage & Traceer',
       commitGenerated: 'Commitbericht gegenereerd!',
       viewProviderConsoleAction: 'Bekijk Provider Console',
-      noChanges: 'Geen wijzigingen om te committen. Breng eerst wijzigingen aan!',
+      noChanges:
+        'Geen wijzigingen om te committen. Breng eerst wijzigingen aan!',
       generationCanceled: 'Commitbericht generatie geannuleerd.',
       failedPrefix: 'Commit-Copilot mislukt',
     },
@@ -131,7 +133,8 @@ export const nlLocale: LocaleTextBundle = {
     apiRequestFailedPrefix: 'API verzoek mislukt',
     connectionErrorPrefix: 'Verbindingsfout',
     unknownProvider: 'Onbekende provider',
-    cannotConnectOllamaAt: (host) => `Kan geen verbinding maken met Ollama op ${host}`,
+    cannotConnectOllamaAt: (host) =>
+      `Kan geen verbinding maken met Ollama op ${host}`,
     cannotConnectOllama: (message) =>
       `Kan geen verbinding maken met Ollama: ${message}. Zorg ervoor dat Ollama draait.`,
     apiKeyCannotBeEmpty: 'API sleutel mag niet leeg zijn',
@@ -232,27 +235,49 @@ export const nlLocale: LocaleTextBundle = {
   progressMessages: {
     analyzingChanges: 'Agent analyseert wijzigingen...',
     generatingMessage: 'Commitbericht genereren...',
-    transientApiError: (attempt, maxAttempts, seconds) => `Tijdelijke API-fout. Opnieuw proberen (${attempt}/${maxAttempts}) in ${seconds}s...`,
-    pulling: (model, status, percent) => percent !== undefined ? `Pulling ${model}: ${status} (${percent}%)` : `Pulling ${model}: ${status}`,
-    
-    stepAnalyzingDiff: (step, path) => `[Stap ${step}] Diff analyseren: ${path}`,
+    transientApiError: (attempt, maxAttempts, seconds) =>
+      `Tijdelijke API-fout. Opnieuw proberen (${attempt}/${maxAttempts}) in ${seconds}s...`,
+    pulling: (model, status, percent) =>
+      percent !== undefined
+        ? `Pulling ${model}: ${status} (${percent}%)`
+        : `Pulling ${model}: ${status}`,
+
+    stepAnalyzingDiff: (step, path) =>
+      `[Stap ${step}] Diff analyseren: ${path}`,
     stepReadingFile: (step, path) => `[Stap ${step}] Bestand lezen: ${path}`,
-    stepGettingOutline: (step, path) => `[Stap ${step}] Outline ophalen: ${path}`,
-    stepFindingReferences: (step, target) => `[Stap ${step}] Referenties zoeken: ${target}`,
-    stepFetchingRecentCommits: (step, count) => count !== undefined ? `[Stap ${step}] Recente commits ophalen: ${count} vermeldingen` : `[Stap ${step}] Recente commits ophalen...`,
-    stepSearchingProject: (step, keyword) => `[Stap ${step}] Project doorzoeken op: ${keyword}`,
+    stepGettingOutline: (step, path) =>
+      `[Stap ${step}] Outline ophalen: ${path}`,
+    stepFindingReferences: (step, target) =>
+      `[Stap ${step}] Referenties zoeken: ${target}`,
+    stepFetchingRecentCommits: (step, count) =>
+      count !== undefined
+        ? `[Stap ${step}] Recente commits ophalen: ${count} vermeldingen`
+        : `[Stap ${step}] Recente commits ophalen...`,
+    stepSearchingProject: (step, keyword) =>
+      `[Stap ${step}] Project doorzoeken op: ${keyword}`,
     stepCalling: (step, toolName) => `[Stap ${step}] Aanroepen ${toolName}...`,
 
-    stepAnalyzingMultipleDiffs: (step, paths) => `[Stap ${step}] Diffs analyseren: ${paths}`,
-    stepAnalyzingDiffsForCount: (step, count) => `[Stap ${step}] Diffs analyseren voor ${count} bestanden...`,
-    stepReadingMultipleFiles: (step, paths) => `[Stap ${step}] Bestanden lezen: ${paths}`,
-    stepReadingFilesForCount: (step, count) => `[Stap ${step}] Lezen van ${count} bestanden...`,
-    stepGettingMultipleOutlines: (step, paths) => `[Stap ${step}] Outlines ophalen: ${paths}`,
-    stepGettingOutlinesForCount: (step, count) => `[Stap ${step}] Outlines ophalen voor ${count} bestanden...`,
-    stepFindingReferencesForMultiple: (step, targets) => `[Stap ${step}] Referenties zoeken: ${targets}`,
-    stepFindingReferencesForCount: (step, count) => `[Stap ${step}] Referenties zoeken voor ${count} symbolen...`,
-    stepSearchingProjectForMultiple: (step, keywords) => `[Stap ${step}] Project doorzoeken op: ${keywords}`,
-    stepSearchingProjectForCount: (step, count) => `[Stap ${step}] Project doorzoeken op ${count} trefwoorden...`,
-    stepExecutingMultipleTools: (step, count) => `[Stap ${step}] Uitvoeren van ${count} onderzoekstools...`,
+    stepAnalyzingMultipleDiffs: (step, paths) =>
+      `[Stap ${step}] Diffs analyseren: ${paths}`,
+    stepAnalyzingDiffsForCount: (step, count) =>
+      `[Stap ${step}] Diffs analyseren voor ${count} bestanden...`,
+    stepReadingMultipleFiles: (step, paths) =>
+      `[Stap ${step}] Bestanden lezen: ${paths}`,
+    stepReadingFilesForCount: (step, count) =>
+      `[Stap ${step}] Lezen van ${count} bestanden...`,
+    stepGettingMultipleOutlines: (step, paths) =>
+      `[Stap ${step}] Outlines ophalen: ${paths}`,
+    stepGettingOutlinesForCount: (step, count) =>
+      `[Stap ${step}] Outlines ophalen voor ${count} bestanden...`,
+    stepFindingReferencesForMultiple: (step, targets) =>
+      `[Stap ${step}] Referenties zoeken: ${targets}`,
+    stepFindingReferencesForCount: (step, count) =>
+      `[Stap ${step}] Referenties zoeken voor ${count} symbolen...`,
+    stepSearchingProjectForMultiple: (step, keywords) =>
+      `[Stap ${step}] Project doorzoeken op: ${keywords}`,
+    stepSearchingProjectForCount: (step, count) =>
+      `[Stap ${step}] Project doorzoeken op ${count} trefwoorden...`,
+    stepExecutingMultipleTools: (step, count) =>
+      `[Stap ${step}] Uitvoeren van ${count} onderzoekstools...`,
   },
 };

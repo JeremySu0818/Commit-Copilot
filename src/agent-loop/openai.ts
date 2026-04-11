@@ -33,9 +33,10 @@ import { DEFAULT_RETRY_OPTIONS, RetryInfo, withRetry } from '../retry';
 import { LOCALES } from '../i18n/locales';
 import type { EffectiveDisplayLanguage } from '../i18n/types';
 
-function parseToolArguments(
-  rawArguments: unknown,
-): { args: Record<string, unknown>; error?: string } {
+function parseToolArguments(rawArguments: unknown): {
+  args: Record<string, unknown>;
+  error?: string;
+} {
   if (typeof rawArguments !== 'string' || rawArguments.trim() === '') {
     return { args: {} };
   }
@@ -79,7 +80,10 @@ async function runOpenAIAgentLoop(
 
   try {
     const OpenAI = (await import('openai')).default;
-    const client = new OpenAI({ apiKey, ...(baseUrl ? { baseURL: baseUrl } : {}) });
+    const client = new OpenAI({
+      apiKey,
+      ...(baseUrl ? { baseURL: baseUrl } : {}),
+    });
     const modelName = model || DEFAULT_MODELS.openai;
     const resolvedCommitOutputOptions =
       normalizeCommitOutputOptions(commitOutputOptions);
@@ -117,8 +121,8 @@ async function runOpenAIAgentLoop(
             LOCALES[language].progressMessages.transientApiError(
               nextAttempt,
               maxAttempts,
-              Math.ceil(delayMs / 1000)
-            )
+              Math.ceil(delayMs / 1000),
+            ),
           );
         }
       },
@@ -126,7 +130,9 @@ async function runOpenAIAgentLoop(
 
     let step = 0;
 
-    while (step < (maxAgentSteps && maxAgentSteps > 0 ? maxAgentSteps : Infinity)) {
+    while (
+      step < (maxAgentSteps && maxAgentSteps > 0 ? maxAgentSteps : Infinity)
+    ) {
       throwIfCancellationRequested(cancellationToken);
       const completion = await withRetry(
         () =>

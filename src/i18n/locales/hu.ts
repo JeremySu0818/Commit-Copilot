@@ -59,7 +59,8 @@ export const huLocale: LocaleTextBundle = {
     },
     [EXIT_CODES.UNKNOWN_ERROR]: {
       title: 'Váratlan hiba történt',
-      action: 'További részletekért ellenőrizze a "Commit-Copilot Debug" kimenetet.',
+      action:
+        'További részletekért ellenőrizze a "Commit-Copilot Debug" kimenetet.',
     },
   },
   extensionText: {
@@ -73,7 +74,8 @@ export const huLocale: LocaleTextBundle = {
         `Kiválasztott adattár az SCM kontextusból: ${path}`,
       selectedRepoFromEditor: (path) =>
         `Kiválasztott adattár az aktív szerkesztőből: ${path}`,
-      noRepoMatchedActiveEditor: 'Nincs az aktív szerkesztőhöz illeszkedő adattár.',
+      noRepoMatchedActiveEditor:
+        'Nincs az aktív szerkesztőhöz illeszkedő adattár.',
       noActiveEditorForRepoSelection:
         'Nincs aktív szerkesztő az adattár kiválasztásához.',
       selectedOnlyRepo: (path) => `Az egyetlen kiválasztott adattár: ${path}`,
@@ -94,7 +96,8 @@ export const huLocale: LocaleTextBundle = {
       generationError: (errorCode, message) =>
         `Hiba: ${errorCode} - ${message}`,
       unexpectedError: (message) => `Váratlan hiba: ${message}`,
-      openingLanguageSettings: 'Nyelvi beállítások megnyitása a tevékenység nézetben...',
+      openingLanguageSettings:
+        'Nyelvi beállítások megnyitása a tevékenység nézetben...',
     },
     notification: {
       gitExtensionMissing:
@@ -120,7 +123,8 @@ export const huLocale: LocaleTextBundle = {
       stageAndTrack: 'Előkészítés és követés',
       commitGenerated: 'Commit üzenet generálva!',
       viewProviderConsoleAction: 'Szolgáltatói konzol megtekintése',
-      noChanges: 'Nincsenek változtatások. Kérjük, először módosítson fájlokat!',
+      noChanges:
+        'Nincsenek változtatások. Kérjük, először módosítson fájlokat!',
       generationCanceled: 'Commit üzenet generálása megszakítva.',
       failedPrefix: 'Commit-Copilot hiba',
     },
@@ -131,7 +135,8 @@ export const huLocale: LocaleTextBundle = {
     apiRequestFailedPrefix: 'API kérés sikertelen',
     connectionErrorPrefix: 'Kapcsolati hiba',
     unknownProvider: 'Ismeretlen szolgáltató',
-    cannotConnectOllamaAt: (host) => `Nem lehet csatlakozni az Ollamahoz itt: ${host}`,
+    cannotConnectOllamaAt: (host) =>
+      `Nem lehet csatlakozni az Ollamahoz itt: ${host}`,
     cannotConnectOllama: (message) =>
       `Nem lehet csatlakozni az Ollamahoz: ${message}. Győződjön meg arról, hogy az Ollama fut.`,
     apiKeyCannotBeEmpty: 'Az API kulcs nem lehet üres',
@@ -232,27 +237,49 @@ export const huLocale: LocaleTextBundle = {
   progressMessages: {
     analyzingChanges: 'Ügynök elemzi a változtatásokat...',
     generatingMessage: 'Commit üzenet generálása...',
-    transientApiError: (attempt, maxAttempts, seconds) => `Átmeneti API hiba. Újrapróbálkozás (${attempt}/${maxAttempts}) ${seconds} mp múlva...`,
-    pulling: (model, status, percent) => percent !== undefined ? `${model} letöltése: ${status} (${percent}%)` : `${model} letöltése: ${status}`,
-    
-    stepAnalyzingDiff: (step, path) => `[${step}. lépés] Diff elemzése: ${path}`,
+    transientApiError: (attempt, maxAttempts, seconds) =>
+      `Átmeneti API hiba. Újrapróbálkozás (${attempt}/${maxAttempts}) ${seconds} mp múlva...`,
+    pulling: (model, status, percent) =>
+      percent !== undefined
+        ? `${model} letöltése: ${status} (${percent}%)`
+        : `${model} letöltése: ${status}`,
+
+    stepAnalyzingDiff: (step, path) =>
+      `[${step}. lépés] Diff elemzése: ${path}`,
     stepReadingFile: (step, path) => `[${step}. lépés] Fájl olvasása: ${path}`,
-    stepGettingOutline: (step, path) => `[${step}. lépés] Vázlat lekérése: ${path}`,
-    stepFindingReferences: (step, target) => `[${step}. lépés] Hivatkozások keresése: ${target}`,
-    stepFetchingRecentCommits: (step, count) => count !== undefined ? `[${step}. lépés] Legutóbbi commitok lekérése: ${count} bejegyzés` : `[${step}. lépés] Legutóbbi commitok lekérése...`,
-    stepSearchingProject: (step, keyword) => `[${step}. lépés] Keresés a projektben: ${keyword}`,
+    stepGettingOutline: (step, path) =>
+      `[${step}. lépés] Vázlat lekérése: ${path}`,
+    stepFindingReferences: (step, target) =>
+      `[${step}. lépés] Hivatkozások keresése: ${target}`,
+    stepFetchingRecentCommits: (step, count) =>
+      count !== undefined
+        ? `[${step}. lépés] Legutóbbi commitok lekérése: ${count} bejegyzés`
+        : `[${step}. lépés] Legutóbbi commitok lekérése...`,
+    stepSearchingProject: (step, keyword) =>
+      `[${step}. lépés] Keresés a projektben: ${keyword}`,
     stepCalling: (step, toolName) => `[${step}. lépés] ${toolName} hívása...`,
 
-    stepAnalyzingMultipleDiffs: (step, paths) => `[${step}. lépés] Diffek elemzése: ${paths}`,
-    stepAnalyzingDiffsForCount: (step, count) => `[${step}. lépés] Diffek elemzése ${count} fájlhoz...`,
-    stepReadingMultipleFiles: (step, paths) => `[${step}. lépés] Fájlok olvasása: ${paths}`,
-    stepReadingFilesForCount: (step, count) => `[${step}. lépés] ${count} fájl olvasása...`,
-    stepGettingMultipleOutlines: (step, paths) => `[${step}. lépés] Vázlatok lekérése: ${paths}`,
-    stepGettingOutlinesForCount: (step, count) => `[${step}. lépés] Vázlatok lekérése ${count} fájlhoz...`,
-    stepFindingReferencesForMultiple: (step, targets) => `[${step}. lépés] Hivatkozások keresése: ${targets}`,
-    stepFindingReferencesForCount: (step, count) => `[${step}. lépés] Hivatkozások keresése ${count} szimbólumhoz...`,
-    stepSearchingProjectForMultiple: (step, keywords) => `[${step}. lépés] Keresés a projektben: ${keywords}`,
-    stepSearchingProjectForCount: (step, count) => `[${step}. lépés] Keresés a projektben ${count} kulcsszóra...`,
-    stepExecutingMultipleTools: (step, count) => `[${step}. lépés] ${count} vizsgáló eszköz futtatása...`,
+    stepAnalyzingMultipleDiffs: (step, paths) =>
+      `[${step}. lépés] Diffek elemzése: ${paths}`,
+    stepAnalyzingDiffsForCount: (step, count) =>
+      `[${step}. lépés] Diffek elemzése ${count} fájlhoz...`,
+    stepReadingMultipleFiles: (step, paths) =>
+      `[${step}. lépés] Fájlok olvasása: ${paths}`,
+    stepReadingFilesForCount: (step, count) =>
+      `[${step}. lépés] ${count} fájl olvasása...`,
+    stepGettingMultipleOutlines: (step, paths) =>
+      `[${step}. lépés] Vázlatok lekérése: ${paths}`,
+    stepGettingOutlinesForCount: (step, count) =>
+      `[${step}. lépés] Vázlatok lekérése ${count} fájlhoz...`,
+    stepFindingReferencesForMultiple: (step, targets) =>
+      `[${step}. lépés] Hivatkozások keresése: ${targets}`,
+    stepFindingReferencesForCount: (step, count) =>
+      `[${step}. lépés] Hivatkozások keresése ${count} szimbólumhoz...`,
+    stepSearchingProjectForMultiple: (step, keywords) =>
+      `[${step}. lépés] Keresés a projektben: ${keywords}`,
+    stepSearchingProjectForCount: (step, count) =>
+      `[${step}. lépés] Keresés a projektben ${count} kulcsszóra...`,
+    stepExecutingMultipleTools: (step, count) =>
+      `[${step}. lépés] ${count} vizsgáló eszköz futtatása...`,
   },
 };

@@ -310,7 +310,7 @@ function formatProgressMessage(
   step: number,
   toolName: string,
   args: any,
-  language: EffectiveDisplayLanguage = 'en'
+  language: EffectiveDisplayLanguage = 'en',
 ): string {
   const msgs = LOCALES[language].progressMessages;
   switch (toolName) {
@@ -323,7 +323,10 @@ function formatProgressMessage(
     case 'find_references': {
       const line = args.line ?? 'unknown line';
       const character = args.character ?? 'unknown char';
-      return msgs.stepFindingReferences(step, `${args.path || 'unknown file'}:${line}:${character}`);
+      return msgs.stepFindingReferences(
+        step,
+        `${args.path || 'unknown file'}:${line}:${character}`,
+      );
     }
     case 'get_recent_commits':
       return msgs.stepFetchingRecentCommits(step, args.count);
@@ -337,13 +340,18 @@ function formatProgressMessage(
 function formatBatchProgressMessage(
   step: number,
   toolCalls: { name: string; args: any }[],
-  language: EffectiveDisplayLanguage = 'en'
+  language: EffectiveDisplayLanguage = 'en',
 ): string {
   if (toolCalls.length === 0) return '';
   const msgs = LOCALES[language].progressMessages;
 
   if (toolCalls.length === 1) {
-    return formatProgressMessage(step, toolCalls[0].name, toolCalls[0].args, language);
+    return formatProgressMessage(
+      step,
+      toolCalls[0].name,
+      toolCalls[0].args,
+      language,
+    );
   }
 
   const toolNames = Array.from(new Set(toolCalls.map((tc) => tc.name)));
