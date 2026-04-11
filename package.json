@@ -85,10 +85,10 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run package",
-    "package": "npm run check-types && node esbuild.js --production",
-    "compile": "npm run check-types && node esbuild.js",
+    "package": "npm run check-types && node esbuild.mjs --production",
+    "compile": "npm run check-types && node esbuild.mjs",
     "watch": "npm-run-all -p watch:*",
-    "watch:esbuild": "node esbuild.js --watch",
+    "watch:esbuild": "node esbuild.mjs --watch",
     "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
     "watch:tsc:webview": "tsc --noEmit --watch --project tsconfig.webview.json",
     "check-types": "tsc --noEmit --project tsconfig.json && tsc --noEmit --project tsconfig.webview.json",

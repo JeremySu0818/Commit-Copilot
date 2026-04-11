@@ -1,4 +1,4 @@
-const esbuild = require('esbuild');
+import { context } from 'esbuild';
 
 const production = process.argv.includes('--production');
 const watch = process.argv.includes('--watch');
@@ -28,7 +28,7 @@ const createProblemMatcherPlugin = (label) => {
 };
 
 async function main() {
-  const extensionCtx = await esbuild.context({
+  const extensionCtx = await context({
     entryPoints: ['src/extension.ts'],
     bundle: true,
     format: 'cjs',
@@ -42,7 +42,7 @@ async function main() {
     plugins: [createProblemMatcherPlugin('Extension')],
   });
 
-  const webviewCtx = await esbuild.context({
+  const webviewCtx = await context({
     entryPoints: ['src/webview/side-panel.tsx'],
     bundle: true,
     format: 'iife',
