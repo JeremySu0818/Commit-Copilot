@@ -1,7 +1,17 @@
 import { createContext, useContext } from 'react';
+import './globals.d.ts';
 import type { WebviewBootstrapData } from '../side-panel-webview-bootstrap';
-import type { CommitOutputOptions, CustomProviderConfig, GenerateMode, ModelConfig } from '../models';
-import type { DisplayLanguage, EffectiveDisplayLanguage, WebviewLanguagePack } from '../i18n';
+import type {
+  CommitOutputOptions,
+  CustomProviderConfig,
+  GenerateMode,
+  ModelConfig,
+} from '../models';
+import type {
+  DisplayLanguage,
+  EffectiveDisplayLanguage,
+  WebviewLanguagePack,
+} from '../i18n';
 
 export type Screen = 'main' | 'settings' | 'addProvider';
 
@@ -58,7 +68,12 @@ export type SidePanelAction =
   | { type: 'SET_PENDING_STATUS_CHECK'; value: boolean }
   | { type: 'SET_HAS_CHANGES'; value: boolean }
   | { type: 'SET_COMMIT_OUTPUT_OPTIONS'; options: CommitOutputOptions }
-  | { type: 'SET_LANGUAGE'; displayLanguage: DisplayLanguage; effectiveLanguage: EffectiveDisplayLanguage; pack: WebviewLanguagePack }
+  | {
+      type: 'SET_LANGUAGE';
+      displayLanguage: DisplayLanguage;
+      effectiveLanguage: EffectiveDisplayLanguage;
+      pack: WebviewLanguagePack;
+    }
   | { type: 'SET_KEY_STATUS'; provider: string; hasKey: boolean }
   | { type: 'SET_ALL_KEY_STATUSES'; statuses: Record<string, boolean> }
   | { type: 'SET_OLLAMA_HOST'; host: string }
@@ -73,9 +88,12 @@ export type SidePanelAction =
   | { type: 'SET_API_KEY_VALUE'; value: string }
   | { type: 'SET_API_KEY_TYPE'; inputType: string };
 
-export function createInitialState(bootstrap: WebviewBootstrapData): SidePanelState {
+export function createInitialState(
+  bootstrap: WebviewBootstrapData,
+): SidePanelState {
   const effectiveLang = bootstrap.initialEffectiveLanguage;
-  const pack = bootstrap.languagePacks[effectiveLang] || bootstrap.languagePacks.en;
+  const pack =
+    bootstrap.languagePacks[effectiveLang] || bootstrap.languagePacks.en;
   return {
     screen: bootstrap.initialScreen === 'settings' ? 'settings' : 'main',
     currentProvider: bootstrap.defaultProvider,
@@ -117,7 +135,10 @@ export function createInitialState(bootstrap: WebviewBootstrapData): SidePanelSt
   };
 }
 
-export function sidePanelReducer(state: SidePanelState, action: SidePanelAction): SidePanelState {
+export function sidePanelReducer(
+  state: SidePanelState,
+  action: SidePanelAction,
+): SidePanelState {
   switch (action.type) {
     case 'SET_SCREEN':
       return { ...state, screen: action.screen };
@@ -136,9 +157,20 @@ export function sidePanelReducer(state: SidePanelState, action: SidePanelAction)
     case 'SET_COMMIT_OUTPUT_OPTIONS':
       return { ...state, commitOutputOptions: action.options };
     case 'SET_LANGUAGE':
-      return { ...state, displayLanguage: action.displayLanguage, effectiveLanguage: action.effectiveLanguage, currentPack: action.pack };
+      return {
+        ...state,
+        displayLanguage: action.displayLanguage,
+        effectiveLanguage: action.effectiveLanguage,
+        currentPack: action.pack,
+      };
     case 'SET_KEY_STATUS':
-      return { ...state, providerKeyStatuses: { ...state.providerKeyStatuses, [action.provider]: action.hasKey } };
+      return {
+        ...state,
+        providerKeyStatuses: {
+          ...state.providerKeyStatuses,
+          [action.provider]: action.hasKey,
+        },
+      };
     case 'SET_ALL_KEY_STATUSES':
       return { ...state, providerKeyStatuses: action.statuses };
     case 'SET_OLLAMA_HOST':
@@ -152,13 +184,20 @@ export function sidePanelReducer(state: SidePanelState, action: SidePanelAction)
     case 'SET_ADD_PROVIDER_DRAFT':
       return { ...state, addProviderDraft: action.draft };
     case 'UPDATE_ADD_PROVIDER_DRAFT':
-      return { ...state, addProviderDraft: { ...state.addProviderDraft, ...action.partial } };
+      return {
+        ...state,
+        addProviderDraft: { ...state.addProviderDraft, ...action.partial },
+      };
     case 'SET_KEY_STATUS_HTML':
       return { ...state, keyStatusHtml: action.html };
     case 'SET_LANGUAGE_STATUS_HTML':
       return { ...state, languageStatusHtml: action.html };
     case 'SET_SAVE_BTN':
-      return { ...state, saveBtnDisabled: action.disabled, saveBtnText: action.text };
+      return {
+        ...state,
+        saveBtnDisabled: action.disabled,
+        saveBtnText: action.text,
+      };
     case 'SET_API_KEY_VALUE':
       return { ...state, apiKeyValue: action.value };
     case 'SET_API_KEY_TYPE':

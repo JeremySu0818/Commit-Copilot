@@ -148,10 +148,11 @@ export function activate(context: vscode.ExtensionContext) {
 
         const api = gitExtension.getAPI(1);
 
-        let repository = null;
+        let repository: any = null;
         if (scm) {
+          const scmRef = scm;
           repository = api.repositories.find(
-            (r: any) => r.rootUri.toString() === scm.rootUri?.toString(),
+            (r: any) => r.rootUri.toString() === scmRef.rootUri?.toString(),
           );
           if (repository) {
             outputChannel.appendLine(
