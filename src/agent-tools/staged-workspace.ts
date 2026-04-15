@@ -97,6 +97,9 @@ async function copyWorkspaceSnapshot(
       const nativePath = relPath.replace(/\//g, path.sep);
       const srcPath = path.join(repoRoot, nativePath);
       const destPath = path.join(destRoot, nativePath);
+      if (!fs.existsSync(srcPath)) {
+        continue;
+      }
       fs.mkdirSync(path.dirname(destPath), { recursive: true });
       fs.copyFileSync(srcPath, destPath);
     }
