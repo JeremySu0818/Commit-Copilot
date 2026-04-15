@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import ignore from 'ignore';
 import { GitOperations } from '../commit-copilot';
 
 const STAGED_WORKSPACE_DIR_NAME = 'commit-copilot-temp';
@@ -106,35 +107,50 @@ async function copyWorkspaceSnapshot(
     return;
   }
 
-  const stack: { src: string; dest: string }[] = [
-    { src: repoRoot, dest: destRoot },
+  const ig = ignore().add('.git');
+  const gitignorePath = path.join(repoRoot, '.gitignore');
+  try {
+    const gitignoreContent = fs.readFileSync(gitignorePath, 'utf-8');
+    ig.add(gitignoreContent);
+  } catch {
+    // No .gitignore found; only .git is excluded
+  }
+
+  const stack: { src: string; dest: string; relDir: string }[] = [
+    { src: repoRoot, dest: destRoot, relDir: '' },
   ];
 
   while (stack.length > 0) {
     const current = stack.pop();
     if (!current) break;
-    const { src, dest } = current;
+    const { src, dest, relDir } = current;
     fs.mkdirSync(dest, { recursive: true });
 
-    let entries: fs.Dirent[];
+    let allEntries: fs.Dirent[];
     try {
-      entries = fs.readdirSync(src, { withFileTypes: true });
+      allEntries = fs.readdirSync(src, { withFileTypes: true });
     } catch {
       continue;
     }
+
+    const entries = allEntries.filter((entry) => {
+      const relPath = relDir ? `${relDir}/${entry.name}` : entry.name;
+      return !ig.ignores(relPath);
+    });
 
     for (const entry of entries) {
       if (entry.isSymbolicLink()) {
         continue;
       }
+      const relPath = relDir ? `${relDir}/${entry.name}` : entry.name;
       const srcPath = path.join(src, entry.name);
       const destPath = path.join(dest, entry.name);
 
       if (entry.isDirectory()) {
-        if (entry.name === STAGED_WORKSPACE_DIR_NAME || entry.name === '.git') {
+        if (entry.name === STAGED_WORKSPACE_DIR_NAME) {
           continue;
         }
-        stack.push({ src: srcPath, dest: destPath });
+        stack.push({ src: srcPath, dest: destPath, relDir: relPath });
         continue;
       }
 
