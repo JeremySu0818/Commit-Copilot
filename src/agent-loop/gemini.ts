@@ -283,13 +283,13 @@ async function runGeminiAgentLoop(
       return result;
     };
 
-    let response = await requestGeminiResponse(history);
     let step = 0;
 
     while (
       step < (maxAgentSteps && maxAgentSteps > 0 ? maxAgentSteps : Infinity)
     ) {
       throwIfCancellationRequested(cancellationToken);
+      const response = await requestGeminiResponse(history);
       const candidate = response.candidates?.[0];
       if (!candidate) {
         throw new APIRequestError('Empty response from Gemini API');
@@ -347,7 +347,6 @@ async function runGeminiAgentLoop(
 
       history.push({ role: 'user', parts: toolResults });
 
-      response = await requestGeminiResponse(history);
       step++;
     }
 
