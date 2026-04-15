@@ -36,6 +36,7 @@ async function resolveSearchFiles(
 async function executeSearchCode(
   repoRoot: string,
   args: Record<string, unknown>,
+  isStaged = false,
   gitOps?: GitOperations,
 ): Promise<string> {
   const query = args.query as string | undefined;
@@ -69,12 +70,19 @@ async function executeSearchCode(
     const relPath = path.relative(repoRoot, fileUri.fsPath);
     if (!relPath || relPath.startsWith('..') || path.isAbsolute(relPath))
       continue;
-    let raw: Uint8Array;
     let content: string;
     try {
-      raw = await vscode.workspace.fs.readFile(fileUri);
-      if (await isBinaryContent(raw)) continue;
-      content = Buffer.from(raw).toString('utf-8');
+      if (isStaged && gitOps) {
+        const { content: indexContent, found } =
+          await gitOps.showIndexFile(relPath);
+        if (!found) continue;
+        content = indexContent;
+        if (await isBinaryContent(Buffer.from(content))) continue;
+      } else {
+        const raw = await vscode.workspace.fs.readFile(fileUri);
+        if (await isBinaryContent(raw)) continue;
+        content = Buffer.from(raw).toString('utf-8');
+      }
     } catch {
       continue;
     }
