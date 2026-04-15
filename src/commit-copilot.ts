@@ -113,13 +113,8 @@ export class GitOperations {
   }
 
   async getDiff(staged = true): Promise<string> {
-    try {
-      const diff = await this.repository.diff(staged);
-      return diff;
-    } catch (error: any) {
-      console.error('Error running git diff:', error);
-      return '';
-    }
+    const diff = await this.repository.diff(staged);
+    return diff;
   }
 
   async show(filePath: string): Promise<string | null> {
