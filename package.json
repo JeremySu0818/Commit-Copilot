@@ -103,6 +103,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.82.0",
     "@google/genai": "^1.48.0",
+    "ignore": "^7.0.5",
     "isbinaryfile": "^4.0.10",
     "ollama": "^0.6.3",
     "openai": "^6.33.0",

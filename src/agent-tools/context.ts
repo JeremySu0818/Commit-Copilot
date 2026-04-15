@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import ignore from 'ignore';
 import { GitOperations } from '../commit-copilot';
 import {
   CommitOutputOptions,
@@ -192,16 +193,30 @@ export async function getProjectStructure(
     return buildTreeFromPaths(filesFromGitApi).join('\n');
   }
 
+  const ig = ignore().add('.git');
+  const gitignorePath = path.join(repoRoot, '.gitignore');
+  try {
+    const gitignoreContent = fs.readFileSync(gitignorePath, 'utf-8');
+    ig.add(gitignoreContent);
+  } catch {
+    // No .gitignore found; only .git is excluded
+  }
+
   let fileCount = 0;
-  function walk(dir: string, prefix = ''): string[] {
+  function walk(dir: string, prefix = '', relDir = ''): string[] {
     const lines: string[] = [];
 
-    let entries: fs.Dirent[];
+    let allEntries: fs.Dirent[];
     try {
-      entries = fs.readdirSync(dir, { withFileTypes: true });
+      allEntries = fs.readdirSync(dir, { withFileTypes: true });
     } catch {
       return lines;
     }
+
+    const entries = allEntries.filter((entry) => {
+      const relPath = relDir ? `${relDir}/${entry.name}` : entry.name;
+      return !ig.ignores(relPath);
+    });
 
     entries.sort((a, b) => {
       if (a.isDirectory() && !b.isDirectory()) return -1;
@@ -216,6 +231,7 @@ export async function getProjectStructure(
       }
 
       const entry = entries[i];
+      const relPath = relDir ? `${relDir}/${entry.name}` : entry.name;
       const isLast = i === entries.length - 1;
       const connector = isLast ? '└── ' : '├── ';
       const childPrefix = isLast ? '    ' : '│   ';
@@ -225,6 +241,7 @@ export async function getProjectStructure(
         const childLines = walk(
           path.join(dir, entry.name),
           prefix + childPrefix,
+          relPath,
         );
         lines.push(...childLines);
       } else {
