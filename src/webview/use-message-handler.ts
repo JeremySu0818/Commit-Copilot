@@ -385,7 +385,10 @@ export function useMessageHandler(
           });
           dispatch({
             type: 'SET_KEY_STATUS_HTML',
-            html: renderStatusHtml('warning', state.currentPack.statuses.checkingStatus),
+            html: renderStatusHtml(
+              'warning',
+              state.currentPack.statuses.checkingStatus,
+            ),
           });
           dispatch({
             type: 'SET_MODEL_STATE',
@@ -416,10 +419,16 @@ export function useMessageHandler(
           dispatch({
             type: 'SET_API_KEY_VALUE',
             value: deletedIsOllama
-              ? normalizeOllamaHostValue(state.ollamaStoredHost, bootstrap.ollamaDefaultHost)
+              ? normalizeOllamaHostValue(
+                  state.ollamaStoredHost,
+                  bootstrap.ollamaDefaultHost,
+                )
               : '',
           });
-          dispatch({ type: 'SET_API_KEY_TYPE', inputType: deletedIsOllama ? 'text' : 'password' });
+          dispatch({
+            type: 'SET_API_KEY_TYPE',
+            inputType: deletedIsOllama ? 'text' : 'password',
+          });
           dispatch({
             type: 'SET_SAVE_BTN',
             disabled: !deletedIsOllama,
@@ -427,7 +436,10 @@ export function useMessageHandler(
           });
           dispatch({
             type: 'SET_KEY_STATUS_HTML',
-            html: renderStatusHtml('warning', state.currentPack.statuses.checkingStatus),
+            html: renderStatusHtml(
+              'warning',
+              state.currentPack.statuses.checkingStatus,
+            ),
           });
           dispatch({
             type: 'SET_MODEL_STATE',
