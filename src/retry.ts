@@ -70,19 +70,12 @@ function getRetryDelayMs(
   const jitter = Math.floor(Math.random() * (options.jitterMs + 1));
 
   if (retryAfterMs !== null && retryAfterMs !== undefined) {
-    const clampedRetryAfterDelay = Math.min(
-      options.maxDelayMs,
-      Math.max(options.baseDelayMs, retryAfterMs),
-    );
-    return clampedRetryAfterDelay + jitter;
+    const retryAfterDelay = Math.max(options.baseDelayMs, retryAfterMs);
+    return Math.min(options.maxDelayMs, retryAfterDelay + jitter);
   }
 
-  const clampedDelay = Math.min(
-    options.maxDelayMs,
-    Math.max(options.baseDelayMs, baseDelay),
-  );
-
-  return clampedDelay + jitter;
+  const delay = Math.max(options.baseDelayMs, baseDelay);
+  return Math.min(options.maxDelayMs, delay + jitter);
 }
 
 function extractRetryAfterMs(error: unknown): number | null {
