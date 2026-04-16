@@ -183,9 +183,10 @@ function extractCommitMessage(raw: string): string {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
     if (commitRegex.test(line)) {
+      const indent = lines[i].length - lines[i].trimStart().length;
       return lines
         .slice(i)
-        .map((l) => l.trimStart())
+        .map((l) => l.slice(Math.min(indent, l.length - l.trimStart().length)))
         .join('\n')
         .trim();
     }
