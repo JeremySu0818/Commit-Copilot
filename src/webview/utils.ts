@@ -17,7 +17,7 @@ export function fillTemplate(
 }
 
 export function renderStatusHtml(type: string, text: string): string {
-  return `<span class="status-dot ${type}"></span>${escapeHtml(text)}`;
+  return `<span class="status-dot ${escapeHtml(type)}"></span>${escapeHtml(text)}`;
 }
 
 export function normalizeGenerateMode(
