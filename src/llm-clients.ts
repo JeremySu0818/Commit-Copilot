@@ -1,14 +1,4 @@
-import {
-  APIProvider,
-  CommitOutputOptions,
-  DEFAULT_COMMIT_OUTPUT_OPTIONS,
-  DEFAULT_MODELS,
-  OLLAMA_DEFAULT_HOST,
-  getAnthropicModelMaxTokens,
-  normalizeCommitOutputOptions,
-} from './models';
 import { buildAgentSystemPrompt } from './agent-loop/shared';
-import { DEFAULT_RETRY_OPTIONS, withRetry } from './retry';
 import {
   CancellationSignal,
   throwIfCancellationRequested,
@@ -21,6 +11,16 @@ import {
   GenerationCancelledError,
   NoChangesError,
 } from './errors';
+import {
+  APIProvider,
+  CommitOutputOptions,
+  DEFAULT_COMMIT_OUTPUT_OPTIONS,
+  DEFAULT_MODELS,
+  OLLAMA_DEFAULT_HOST,
+  getAnthropicModelMaxTokens,
+  normalizeCommitOutputOptions,
+} from './models';
+import { DEFAULT_RETRY_OPTIONS, withRetry } from './retry';
 
 export interface LLMClientOptions {
   provider: APIProvider;

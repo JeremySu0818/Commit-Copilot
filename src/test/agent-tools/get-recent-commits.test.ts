@@ -1,7 +1,8 @@
-import test from 'node:test';
 import assert from 'node:assert/strict';
-import type { GitOperations } from '../../commit-copilot';
+import test from 'node:test';
+
 import { executeGetRecentCommits } from '../../agent-tools/executors/get-recent-commits';
+import type { GitOperations } from '../../commit-copilot';
 
 void test('executeGetRecentCommits requires gitOps', async () => {
   const output = await executeGetRecentCommits({ count: 3 });

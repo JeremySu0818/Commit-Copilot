@@ -4,11 +4,10 @@ import {
   toGeminiFunctionDeclarations,
 } from '../agent-tools';
 import {
-  CommitOutputOptions,
-  DEFAULT_COMMIT_OUTPUT_OPTIONS,
-  DEFAULT_MODELS,
-  normalizeCommitOutputOptions,
-} from '../models';
+  CancellationSignal,
+  throwIfCancellationRequested,
+} from '../cancellation';
+import { GitOperations } from '../commit-copilot';
 import {
   APIKeyMissingError,
   APIKeyInvalidError,
@@ -17,21 +16,23 @@ import {
   GenerationCancelledError,
   NoChangesError,
 } from '../errors';
+import { LOCALES } from '../i18n/locales';
+import type { EffectiveDisplayLanguage } from '../i18n/types';
 import { ProgressCallback } from '../llm-clients';
-import { GitOperations } from '../commit-copilot';
 import {
-  CancellationSignal,
-  throwIfCancellationRequested,
-} from '../cancellation';
+  CommitOutputOptions,
+  DEFAULT_COMMIT_OUTPUT_OPTIONS,
+  DEFAULT_MODELS,
+  normalizeCommitOutputOptions,
+} from '../models';
+import { DEFAULT_RETRY_OPTIONS, RetryInfo, withRetry } from '../retry';
+
 import {
   buildAgentSystemPrompt,
   buildFinalOutputReminder,
   extractCommitMessage,
   formatBatchProgressMessage,
 } from './shared';
-import { DEFAULT_RETRY_OPTIONS, RetryInfo, withRetry } from '../retry';
-import { LOCALES } from '../i18n/locales';
-import type { EffectiveDisplayLanguage } from '../i18n/types';
 
 interface GeminiFunctionCall {
   id?: string;

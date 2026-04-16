@@ -1,11 +1,19 @@
 import * as vscode from 'vscode';
-import { SidePanelProvider } from './side-panel-provider';
+
 import {
   generateCommitMessage,
   EXIT_CODES,
   CommitCopilotError,
   GitRepository,
 } from './commit-copilot';
+import {
+  DISPLAY_LANGUAGE_STATE_KEY,
+  getExtensionText,
+  getLocalizedErrorInfo,
+  getModelNameRequiredText,
+  normalizeDisplayLanguage,
+  resolveEffectiveDisplayLanguage,
+} from './i18n';
 import {
   APIProvider,
   API_KEY_STORAGE_KEYS,
@@ -24,15 +32,8 @@ import {
   normalizeCommitOutputOptions,
   normalizeMaxAgentStepsValue,
 } from './models';
+import { SidePanelProvider } from './side-panel-provider';
 import { GenerationStateManager } from './state';
-import {
-  DISPLAY_LANGUAGE_STATE_KEY,
-  getExtensionText,
-  getLocalizedErrorInfo,
-  getModelNameRequiredText,
-  normalizeDisplayLanguage,
-  resolveEffectiveDisplayLanguage,
-} from './i18n';
 
 type GenerateCommandArg =
   | vscode.SourceControl

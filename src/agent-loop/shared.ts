@@ -1,10 +1,10 @@
+import { LOCALES } from '../i18n/locales';
+import type { EffectiveDisplayLanguage } from '../i18n/types';
 import {
   CommitOutputOptions,
   DEFAULT_COMMIT_OUTPUT_OPTIONS,
   normalizeCommitOutputOptions,
 } from '../models';
-import { LOCALES } from '../i18n/locales';
-import type { EffectiveDisplayLanguage } from '../i18n/types';
 
 const MAX_AGENT_STEPS = Infinity;
 

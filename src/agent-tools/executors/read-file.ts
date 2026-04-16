@@ -1,7 +1,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
+
 import { GitOperations } from '../../commit-copilot';
 import { isPathWithinRoot } from '../staged-workspace';
+
 import { MAX_FILE_LINES, parseIntegerArg } from './shared';
 
 function asString(value: unknown): string | undefined {

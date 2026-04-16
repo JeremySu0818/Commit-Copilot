@@ -1,6 +1,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
+
 import ignore from 'ignore';
+
 import { GitOperations } from '../commit-copilot';
 
 const STAGED_WORKSPACE_DIR_NAME = 'commit-copilot-temp';

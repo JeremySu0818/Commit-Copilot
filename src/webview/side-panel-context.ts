@@ -1,17 +1,18 @@
 import { createContext, useContext } from 'react';
+
 import './globals.d.ts';
-import type { WebviewBootstrapData } from '../side-panel-webview-bootstrap';
+import type {
+  DisplayLanguage,
+  EffectiveDisplayLanguage,
+  WebviewLanguagePack,
+} from '../i18n';
 import type {
   CommitOutputOptions,
   CustomProviderConfig,
   GenerateMode,
   ModelConfig,
 } from '../models';
-import type {
-  DisplayLanguage,
-  EffectiveDisplayLanguage,
-  WebviewLanguagePack,
-} from '../i18n';
+import type { WebviewBootstrapData } from '../side-panel-webview-bootstrap';
 
 export type Screen = 'main' | 'settings' | 'addProvider';
 

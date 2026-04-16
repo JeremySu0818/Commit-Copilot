@@ -1,5 +1,6 @@
-import test from 'node:test';
 import assert from 'node:assert/strict';
+import test from 'node:test';
+
 import { GenerationStateManager, ValidationStateManager } from '../state';
 
 void test('GenerationStateManager notifies listeners on state change', () => {

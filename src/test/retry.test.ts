@@ -1,7 +1,8 @@
-import test from 'node:test';
 import assert from 'node:assert/strict';
-import { withRetry } from '../retry';
+import test from 'node:test';
+
 import { GenerationCancelledError } from '../errors';
+import { withRetry } from '../retry';
 
 function createImmediateSetTimeout(
   scheduledDelays: number[],

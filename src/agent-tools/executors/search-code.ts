@@ -1,7 +1,10 @@
 import * as path from 'path';
+
 import * as vscode from 'vscode';
+
 import { GitOperations } from '../../commit-copilot';
 import { toPosixPath } from '../staged-workspace';
+
 import {
   MAX_SEARCH_FILES,
   MAX_SEARCH_LINE_LENGTH,

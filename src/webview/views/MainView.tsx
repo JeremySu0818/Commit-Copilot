@@ -1,4 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
+
 import { useSidePanel } from '../side-panel-context';
 import {
   fillTemplate,

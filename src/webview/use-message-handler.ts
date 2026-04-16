@@ -1,11 +1,13 @@
 import { useEffect } from 'react';
+
+import type { DisplayLanguage, EffectiveDisplayLanguage } from '../i18n';
 import type {
   CommitOutputOptions,
   CustomProviderConfig,
   ModelConfig,
 } from '../models';
-import type { DisplayLanguage, EffectiveDisplayLanguage } from '../i18n';
 import type { WebviewBootstrapData } from '../side-panel-webview-bootstrap';
+
 import type { SidePanelAction, SidePanelState } from './side-panel-context';
 import {
   renderStatusHtml,

@@ -1,8 +1,10 @@
-import test from 'node:test';
 import assert from 'node:assert/strict';
+import test from 'node:test';
+
+import { APIRequestError, EXIT_CODES } from '../errors';
 import { createLLMClient } from '../llm-clients';
 import { OLLAMA_DEFAULT_HOST } from '../models';
-import { APIRequestError, EXIT_CODES } from '../errors';
+
 import { withModuleMock } from './helpers/module-mock';
 
 function getOllamaHost(client: unknown): string {

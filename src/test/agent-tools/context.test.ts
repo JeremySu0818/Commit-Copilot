@@ -1,13 +1,14 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
 import * as fs from 'fs';
+import assert from 'node:assert/strict';
+import test from 'node:test';
 import * as path from 'path';
-import type { GitOperations } from '../../commit-copilot';
+
 import {
   buildInitialContext,
   getProjectStructure,
   parseDiffSummary,
 } from '../../agent-tools/context';
+import type { GitOperations } from '../../commit-copilot';
 import { cleanupTempDir, createTempDir } from '../helpers/temp-dir';
 
 void test('parseDiffSummary parses modified, added, deleted, and renamed files', () => {

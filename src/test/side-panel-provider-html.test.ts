@@ -1,10 +1,13 @@
-import test from 'node:test';
 import assert from 'node:assert/strict';
-import * as path from 'path';
 import { createRequire } from 'node:module';
+import test from 'node:test';
+import * as path from 'path';
+
 import type * as vscode from 'vscode';
-import { CUSTOM_PROVIDERS_STATE_KEY } from '../models';
+
 import { DISPLAY_LANGUAGE_STATE_KEY } from '../i18n';
+import { CUSTOM_PROVIDERS_STATE_KEY } from '../models';
+
 import { clearRequireCache, withModuleMock } from './helpers/module-mock';
 
 const MODULE_PATH = path.resolve(__dirname, '..', 'side-panel-provider');

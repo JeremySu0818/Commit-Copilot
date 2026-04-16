@@ -1,25 +1,26 @@
 import { buildInitialContext } from '../agent-tools';
 import {
+  CancellationSignal,
+  throwIfCancellationRequested,
+} from '../cancellation';
+import { GitOperations } from '../commit-copilot';
+import {
+  APIRequestError,
+  GenerationCancelledError,
+  NoChangesError,
+} from '../errors';
+import { LOCALES } from '../i18n/locales';
+import type { EffectiveDisplayLanguage } from '../i18n/types';
+import { ProgressCallback } from '../llm-clients';
+import {
   CommitOutputOptions,
   DEFAULT_COMMIT_OUTPUT_OPTIONS,
   DEFAULT_MODELS,
   OLLAMA_DEFAULT_HOST,
   normalizeCommitOutputOptions,
 } from '../models';
-import {
-  APIRequestError,
-  GenerationCancelledError,
-  NoChangesError,
-} from '../errors';
-import { ProgressCallback } from '../llm-clients';
-import { GitOperations } from '../commit-copilot';
+
 import { buildAgentSystemPrompt, extractCommitMessage } from './shared';
-import {
-  CancellationSignal,
-  throwIfCancellationRequested,
-} from '../cancellation';
-import { LOCALES } from '../i18n/locales';
-import type { EffectiveDisplayLanguage } from '../i18n/types';
 
 function pickNonEmpty(primary: string | undefined, fallback: string): string {
   return primary && primary.length > 0 ? primary : fallback;

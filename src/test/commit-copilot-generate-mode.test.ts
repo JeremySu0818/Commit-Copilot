@@ -1,11 +1,11 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
 import * as fs from 'fs';
-import * as path from 'path';
+import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
-import { clearRequireCache, withModuleMock } from './helpers/module-mock';
-import { cleanupTempDir, createTempDir } from './helpers/temp-dir';
+import test from 'node:test';
+import * as path from 'path';
+
 import type { GitRepository } from '../commit-copilot';
+import { EXIT_CODES } from '../errors';
 import {
   APIProvider,
   CommitOutputOptions,
@@ -13,7 +13,9 @@ import {
   DEFAULT_MODELS,
   GenerateMode,
 } from '../models';
-import { EXIT_CODES } from '../errors';
+
+import { clearRequireCache, withModuleMock } from './helpers/module-mock';
+import { cleanupTempDir, createTempDir } from './helpers/temp-dir';
 
 const MODULE_PATH = path.resolve(__dirname, '..', 'commit-copilot');
 

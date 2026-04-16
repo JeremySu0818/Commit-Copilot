@@ -1,4 +1,5 @@
 import type { EffectiveDisplayLanguage, LocaleTextBundle } from '../types';
+
 import { arLocale } from './ar';
 import { csLocale } from './cs';
 import { deLocale } from './de';

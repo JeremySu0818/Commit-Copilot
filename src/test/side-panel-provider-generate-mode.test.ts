@@ -1,14 +1,17 @@
-import test from 'node:test';
 import assert from 'node:assert/strict';
-import * as path from 'path';
 import { createRequire } from 'node:module';
+import test from 'node:test';
+import * as path from 'path';
+
 import type * as vscode from 'vscode';
-import { clearRequireCache, withModuleMock } from './helpers/module-mock';
+
 import {
   API_KEY_STORAGE_KEYS,
   DEFAULT_COMMIT_OUTPUT_OPTIONS,
   OLLAMA_DEFAULT_HOST,
 } from '../models';
+
+import { clearRequireCache, withModuleMock } from './helpers/module-mock';
 
 const MODULE_PATH = path.resolve(__dirname, '..', 'side-panel-provider');
 

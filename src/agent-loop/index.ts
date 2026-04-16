@@ -1,12 +1,13 @@
-import { APIProvider, CommitOutputOptions } from '../models';
-import { ProgressCallback } from '../llm-clients';
-import { GitOperations } from '../commit-copilot';
 import { CancellationSignal } from '../cancellation';
-import { runGeminiAgentLoop } from './gemini';
-import { runOpenAIAgentLoop } from './openai';
-import { runAnthropicAgentLoop } from './anthropic';
-import { runOllamaAgentLoop } from './ollama';
+import { GitOperations } from '../commit-copilot';
 import type { EffectiveDisplayLanguage } from '../i18n/types';
+import { ProgressCallback } from '../llm-clients';
+import { APIProvider, CommitOutputOptions } from '../models';
+
+import { runAnthropicAgentLoop } from './anthropic';
+import { runGeminiAgentLoop } from './gemini';
+import { runOllamaAgentLoop } from './ollama';
+import { runOpenAIAgentLoop } from './openai';
 
 interface AgentLoopOptions {
   provider: APIProvider;

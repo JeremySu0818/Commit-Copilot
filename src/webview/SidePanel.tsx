@@ -1,6 +1,8 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
+
 import type { WebviewBootstrapData } from '../side-panel-webview-bootstrap';
+
 import { App } from './App';
 import './side-panel.css';
 

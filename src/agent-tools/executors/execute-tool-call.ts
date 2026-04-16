@@ -1,10 +1,11 @@
 import { GitOperations } from '../../commit-copilot';
 import { ToolCallRequest, ToolCallResult } from '../definitions';
-import { executeGetDiff } from './get-diff';
-import { executeReadFile } from './read-file';
-import { executeGetFileOutline } from './get-file-outline';
+
 import { executeFindReferences } from './find-references';
+import { executeGetDiff } from './get-diff';
+import { executeGetFileOutline } from './get-file-outline';
 import { executeGetRecentCommits } from './get-recent-commits';
+import { executeReadFile } from './read-file';
 import { executeSearchCode } from './search-code';
 
 function getErrorMessage(error: unknown): string {

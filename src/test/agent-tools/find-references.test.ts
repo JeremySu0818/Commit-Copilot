@@ -1,15 +1,16 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
 import * as fs from 'fs';
-import * as path from 'path';
+import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
+import test from 'node:test';
+import * as path from 'path';
+
 import { clearRequireCache, withModuleMock } from '../helpers/module-mock';
+import { cleanupTempDir, createTempDir } from '../helpers/temp-dir';
 import {
   MockTextDocument,
   MockUri,
   createVscodeMock,
 } from '../helpers/vscode-mock';
-import { cleanupTempDir, createTempDir } from '../helpers/temp-dir';
 
 const MODULE_PATH = '../../agent-tools/executors/find-references';
 

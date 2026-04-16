@@ -1,16 +1,16 @@
 import type {
+  DisplayLanguage,
+  EffectiveDisplayLanguage,
+  LanguageOption,
+  WebviewLanguagePack,
+} from './i18n';
+import type {
   APIProvider,
   CommitOutputOptions,
   CustomProviderConfig,
   GenerateMode,
   ModelConfig,
 } from './models';
-import type {
-  DisplayLanguage,
-  EffectiveDisplayLanguage,
-  LanguageOption,
-  WebviewLanguagePack,
-} from './i18n';
 
 export type SidePanelScreen = 'main' | 'settings' | 'addProvider';
 

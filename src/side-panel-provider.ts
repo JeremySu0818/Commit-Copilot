@@ -1,5 +1,18 @@
-import * as vscode from 'vscode';
 import { randomBytes } from 'crypto';
+
+import * as vscode from 'vscode';
+
+import {
+  DISPLAY_LANGUAGE_OPTIONS,
+  DISPLAY_LANGUAGE_STATE_KEY,
+  DisplayLanguage,
+  EffectiveDisplayLanguage,
+  WEBVIEW_LANGUAGE_PACKS,
+  getDisplayLanguageLabel,
+  getSidePanelText,
+  normalizeDisplayLanguage,
+  resolveEffectiveDisplayLanguage,
+} from './i18n';
 import {
   APIProvider,
   CommitOutputOptions,
@@ -24,21 +37,10 @@ import {
   normalizeMaxAgentStepsValue,
 } from './models';
 import {
-  DISPLAY_LANGUAGE_OPTIONS,
-  DISPLAY_LANGUAGE_STATE_KEY,
-  DisplayLanguage,
-  EffectiveDisplayLanguage,
-  WEBVIEW_LANGUAGE_PACKS,
-  getDisplayLanguageLabel,
-  getSidePanelText,
-  normalizeDisplayLanguage,
-  resolveEffectiveDisplayLanguage,
-} from './i18n';
-import { GenerationStateManager, ValidationStateManager } from './state';
-import {
   SidePanelScreen,
   WebviewBootstrapData,
 } from './side-panel-webview-bootstrap';
+import { GenerationStateManager, ValidationStateManager } from './state';
 
 type UnknownRecord = Record<string, unknown>;
 
