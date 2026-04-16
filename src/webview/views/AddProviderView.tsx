@@ -75,11 +75,6 @@ export function AddProviderView() {
     }
 
     dispatch({
-      type: 'SET_SAVE_BTN',
-      disabled: true,
-      text: pack.buttons.validating,
-    });
-    dispatch({
       type: 'UPDATE_ADD_PROVIDER_DRAFT',
       partial: {
         statusHtml: renderStatusHtml('warning', pack.statuses.validating),
