@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as fs from 'fs';
 import * as path from 'path';
+import type { GitOperations } from '../../commit-copilot';
 import {
   buildInitialContext,
   getProjectStructure,
@@ -9,7 +10,7 @@ import {
 } from '../../agent-tools/context';
 import { cleanupTempDir, createTempDir } from '../helpers/temp-dir';
 
-test('parseDiffSummary parses modified, added, deleted, and renamed files', () => {
+void test('parseDiffSummary parses modified, added, deleted, and renamed files', () => {
   const diff = [
     'diff --git a/src/a.ts b/src/a.ts',
     '--- a/src/a.ts',
@@ -39,7 +40,7 @@ test('parseDiffSummary parses modified, added, deleted, and renamed files', () =
   );
 });
 
-test('parseDiffSummary marks binary diffs as non-zero changes', () => {
+void test('parseDiffSummary marks binary diffs as non-zero changes', () => {
   const diff = [
     'diff --git a/resources/icon.png b/resources/icon.png',
     'index 1111111..2222222 100644',
@@ -54,14 +55,11 @@ test('parseDiffSummary marks binary diffs as non-zero changes', () => {
   assert.equal(summary[0].removed, 1);
 });
 
-test('getProjectStructure uses git API file list when available', async () => {
+void test('getProjectStructure uses git API file list when available', async () => {
   const gitOps = {
-    listFilesFromGitApi: async () => [
-      'src/a.ts',
-      'src/b.ts',
-      'node_modules/x.js',
-    ],
-  } as any;
+    listFilesFromGitApi: () =>
+      Promise.resolve(['src/a.ts', 'src/b.ts', 'node_modules/x.js']),
+  } as unknown as GitOperations;
 
   const structure = await getProjectStructure('unused', gitOps);
   assert.match(structure, /src\//);
@@ -69,15 +67,15 @@ test('getProjectStructure uses git API file list when available', async () => {
   assert.match(structure, /node_modules/);
 });
 
-test('buildInitialContext includes tool guidance when tools are enabled', async () => {
+void test('buildInitialContext includes tool guidance when tools are enabled', async () => {
   const repoRoot = createTempDir();
   try {
     fs.mkdirSync(path.join(repoRoot, 'src'), { recursive: true });
     fs.writeFileSync(path.join(repoRoot, 'src', 'index.ts'), 'const x = 1;\n');
     const gitOps = {
-      listFilesFromGitApi: async () => ['src/index.ts'],
-      getCommitCount: async () => 3,
-    } as any;
+      listFilesFromGitApi: () => Promise.resolve(['src/index.ts']),
+      getCommitCount: () => Promise.resolve(3),
+    } as unknown as GitOperations;
     const context = await buildInitialContext(
       'diff --git a/src/index.ts b/src/index.ts',
       repoRoot,
@@ -97,7 +95,7 @@ test('buildInitialContext includes tool guidance when tools are enabled', async 
   }
 });
 
-test('buildInitialContext omits tool guidance when disabled', async () => {
+void test('buildInitialContext omits tool guidance when disabled', async () => {
   const repoRoot = createTempDir();
   try {
     fs.writeFileSync(path.join(repoRoot, 'a.txt'), 'x');

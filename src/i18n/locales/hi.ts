@@ -77,7 +77,7 @@ export const hiLocale: LocaleTextBundle = {
         'रिपॉजिटरी चयन के लिए कोई सक्रिय संपादक नहीं मिला।',
       selectedOnlyRepo: (path) => `चयनित केवल रिपॉजिटरी: ${path}`,
       multiRepoNotDetermined: (count) =>
-        `${count} रिपॉजिटरी मिलीं लेकिन सक्रिय रिपॉजिटरी का निर्धारण नहीं कर सका।`,
+        `${String(count)} रिपॉजिटरी मिलीं लेकिन सक्रिय रिपॉजिटरी का निर्धारण नहीं कर सका।`,
       noRepoInApi: 'एपीआई में कोई रिपॉजिटरी नहीं मिली।',
       usingProvider: (providerName) => `प्रदाता का उपयोग: ${providerName}`,
       usingGenerateMode: (mode) => `उत्पादन मोड: ${mode}`,
@@ -234,49 +234,49 @@ export const hiLocale: LocaleTextBundle = {
     analyzingChanges: 'एजेंट परिवर्तनों का विश्लेषण कर रहा है...',
     generatingMessage: 'कमिट संदेश उत्पन्न कर रहा है...',
     transientApiError: (attempt, maxAttempts, seconds) =>
-      `अस्थायी एपीआई त्रुटि। ${seconds}s में पुनः प्रयास कर रहा है (${attempt}/${maxAttempts})...`,
+      `अस्थायी एपीआई त्रुटि। ${String(seconds)}s में पुनः प्रयास कर रहा है (${String(attempt)}/${String(maxAttempts)})...`,
     pulling: (model, status, percent) =>
       percent !== undefined
-        ? `${model} को खींच रहा है: ${status} (${percent}%)`
+        ? `${model} को खींच रहा है: ${status} (${String(percent)}%)`
         : `${model} को खींच रहा है: ${status}`,
 
     stepAnalyzingDiff: (step, path) =>
-      `[कदम ${step}] अंतर का विश्लेषण कर रहा है: ${path}`,
-    stepReadingFile: (step, path) => `[कदम ${step}] फ़ाइल पढ़ रहा है: ${path}`,
+      `[कदम ${String(step)}] अंतर का विश्लेषण कर रहा है: ${path}`,
+    stepReadingFile: (step, path) => `[कदम ${String(step)}] फ़ाइल पढ़ रहा है: ${path}`,
     stepGettingOutline: (step, path) =>
-      `[कदम ${step}] रूपरेखा प्राप्त कर रहा है: ${path}`,
+      `[कदम ${String(step)}] रूपरेखा प्राप्त कर रहा है: ${path}`,
     stepFindingReferences: (step, target) =>
-      `[कदम ${step}] संदर्भ ढूंढ रहा है: ${target}`,
+      `[कदम ${String(step)}] संदर्भ ढूंढ रहा है: ${target}`,
     stepFetchingRecentCommits: (step, count) =>
       count !== undefined
-        ? `[कदम ${step}] हाल ही के कमिट प्राप्त कर रहा है: ${count} प्रविष्टियाँ`
-        : `[कदम ${step}] हाल ही के कमिट प्राप्त कर रहा है...`,
+        ? `[कदम ${String(step)}] हाल ही के कमिट प्राप्त कर रहा है: ${String(count)} प्रविष्टियाँ`
+        : `[कदम ${String(step)}] हाल ही के कमिट प्राप्त कर रहा है...`,
     stepSearchingProject: (step, keyword) =>
-      `[कदम ${step}] परियोजना में खोज रहा है: ${keyword}`,
+      `[कदम ${String(step)}] परियोजना में खोज रहा है: ${keyword}`,
     stepCalling: (step, toolName) =>
-      `[कदम ${step}] ${toolName} को कॉल कर रहा है...`,
+      `[कदम ${String(step)}] ${toolName} को कॉल कर रहा है...`,
 
     stepAnalyzingMultipleDiffs: (step, paths) =>
-      `[कदम ${step}] अंतर का विश्लेषण कर रहा है: ${paths}`,
+      `[कदम ${String(step)}] अंतर का विश्लेषण कर रहा है: ${paths}`,
     stepAnalyzingDiffsForCount: (step, count) =>
-      `[कदम ${step}] ${count} फ़ाइलों के लिए अंतर का विश्लेषण कर रहा है...`,
+      `[कदम ${String(step)}] ${String(count)} फ़ाइलों के लिए अंतर का विश्लेषण कर रहा है...`,
     stepReadingMultipleFiles: (step, paths) =>
-      `[कदम ${step}] फ़ाइलें पढ़ रहा है: ${paths}`,
+      `[कदम ${String(step)}] फ़ाइलें पढ़ रहा है: ${paths}`,
     stepReadingFilesForCount: (step, count) =>
-      `[कदम ${step}] ${count} फ़ाइलें पढ़ रहा है...`,
+      `[कदम ${String(step)}] ${String(count)} फ़ाइलें पढ़ रहा है...`,
     stepGettingMultipleOutlines: (step, paths) =>
-      `[कदम ${step}] रूपरेखाएँ प्राप्त कर रहा है: ${paths}`,
+      `[कदम ${String(step)}] रूपरेखाएँ प्राप्त कर रहा है: ${paths}`,
     stepGettingOutlinesForCount: (step, count) =>
-      `[कदम ${step}] ${count} फ़ाइलों के लिए रूपरेखाएँ प्राप्त कर रहा है...`,
+      `[कदम ${String(step)}] ${String(count)} फ़ाइलों के लिए रूपरेखाएँ प्राप्त कर रहा है...`,
     stepFindingReferencesForMultiple: (step, targets) =>
-      `[कदम ${step}] संदर्भ ढूंढ रहा है: ${targets}`,
+      `[कदम ${String(step)}] संदर्भ ढूंढ रहा है: ${targets}`,
     stepFindingReferencesForCount: (step, count) =>
-      `[कदम ${step}] ${count} प्रतीकों के लिए संदर्भ ढूंढ रहा है...`,
+      `[कदम ${String(step)}] ${String(count)} प्रतीकों के लिए संदर्भ ढूंढ रहा है...`,
     stepSearchingProjectForMultiple: (step, keywords) =>
-      `[कदम ${step}] परियोजना में खोज रहा है: ${keywords}`,
+      `[कदम ${String(step)}] परियोजना में खोज रहा है: ${keywords}`,
     stepSearchingProjectForCount: (step, count) =>
-      `[कदम ${step}] ${count} कीवर्ड के लिए परियोजना में खोज रहा है...`,
+      `[कदम ${String(step)}] ${String(count)} कीवर्ड के लिए परियोजना में खोज रहा है...`,
     stepExecutingMultipleTools: (step, count) =>
-      `[कदम ${step}] ${count} जाँच उपकरणों को निष्पादित कर रहा है...`,
+      `[कदम ${String(step)}] ${String(count)} जाँच उपकरणों को निष्पादित कर रहा है...`,
   },
 };

@@ -99,7 +99,53 @@ interface VscodeMockFactoryOptions {
   }>;
 }
 
-function createVscodeMock(options: VscodeMockFactoryOptions = {}): any {
+interface VscodeMock {
+  Uri: typeof MockUri;
+  Position: typeof MockPosition;
+  Range: typeof MockRange;
+  DocumentSymbol: typeof MockDocumentSymbol;
+  SymbolInformation: typeof MockSymbolInformation;
+  RelativePattern: typeof MockRelativePattern;
+  SymbolKind: Record<string, number>;
+  workspace: {
+    openTextDocument: (input: unknown) => Promise<MockTextDocument>;
+    findFiles: (...args: unknown[]) => Promise<MockUri[]>;
+    fs: {
+      readFile: (uri: MockUri) => Promise<Uint8Array>;
+      stat: (uri: MockUri) => Promise<{
+        type: number;
+        ctime: number;
+        mtime: number;
+        size: number;
+      }>;
+    };
+  };
+  commands: {
+    executeCommand: (command: string, ...args: unknown[]) => Promise<unknown>;
+  };
+  languages: {
+    setTextDocumentLanguage: (
+      document: MockTextDocument,
+      languageId: string,
+    ) => Promise<MockTextDocument>;
+  };
+}
+
+function toText(value: unknown): string {
+  if (typeof value === 'string') {
+    return value;
+  }
+  if (
+    typeof value === 'number' ||
+    typeof value === 'boolean' ||
+    typeof value === 'bigint'
+  ) {
+    return String(value);
+  }
+  return '';
+}
+
+function createVscodeMock(options: VscodeMockFactoryOptions = {}): VscodeMock {
   const SymbolKind = {
     File: 0,
     Module: 1,
@@ -148,9 +194,7 @@ function createVscodeMock(options: VscodeMockFactoryOptions = {}): any {
           typeof input === 'object' &&
           'content' in (input as Record<string, unknown>)
         ) {
-          const content = String(
-            (input as Record<string, unknown>).content ?? '',
-          );
+          const content = toText((input as Record<string, unknown>).content);
           return new MockTextDocument(
             new MockUri('untitled://document', 'untitled'),
             content,
@@ -225,3 +269,4 @@ export {
   MockSymbolInformation,
   createVscodeMock,
 };
+export type { VscodeMock };

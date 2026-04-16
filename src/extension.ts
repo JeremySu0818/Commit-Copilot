@@ -4,6 +4,7 @@ import {
   generateCommitMessage,
   EXIT_CODES,
   CommitCopilotError,
+  GitRepository,
 } from './commit-copilot';
 import {
   APIProvider,
@@ -28,7 +29,6 @@ import {
   DISPLAY_LANGUAGE_STATE_KEY,
   getExtensionText,
   getLocalizedErrorInfo,
-  getDisplayLanguageLabel,
   getModelNameRequiredText,
   normalizeDisplayLanguage,
   resolveEffectiveDisplayLanguage,
@@ -41,6 +41,23 @@ type GenerateCommandArg =
       generateMode?: GenerateMode;
       commitOutputOptions?: CommitOutputOptions;
     };
+
+interface GitApi {
+  repositories: GitRepository[];
+  getRepository?(uri: vscode.Uri): GitRepository | null;
+}
+
+interface GitExtensionExports {
+  getAPI(version: 1): GitApi;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+function isGitExtensionExports(value: unknown): value is GitExtensionExports {
+  return isRecord(value) && typeof value.getAPI === 'function';
+}
 
 function isSourceControl(value: unknown): value is vscode.SourceControl {
   return (
@@ -70,7 +87,7 @@ function getCurrentLanguage(context: vscode.ExtensionContext) {
   const displayLanguage = normalizeDisplayLanguage(
     context.globalState.get(DISPLAY_LANGUAGE_STATE_KEY),
   );
-  return resolveEffectiveDisplayLanguage(displayLanguage, vscode.env?.language);
+  return resolveEffectiveDisplayLanguage(displayLanguage, vscode.env.language);
 }
 
 export function activate(context: vscode.ExtensionContext) {
@@ -107,7 +124,6 @@ export function activate(context: vscode.ExtensionContext) {
       }
 
       const cancellationSource = new vscode.CancellationTokenSource();
-      let wasCancelled = false;
       currentGenerationCancellationSource = cancellationSource;
       GenerationStateManager.setGenerating(true);
       await vscode.commands.executeCommand(
@@ -137,22 +153,24 @@ export function activate(context: vscode.ExtensionContext) {
           );
         }
 
-        const gitExtension =
-          vscode.extensions.getExtension('vscode.git')?.exports;
-        if (!gitExtension) {
+        const gitExtensionExports = vscode.extensions.getExtension<unknown>(
+          'vscode.git',
+        )?.exports;
+        if (!isGitExtensionExports(gitExtensionExports)) {
           outputChannel.appendLine(text.output.gitExtensionMissing);
           vscode.window.showErrorMessage(text.notification.gitExtensionMissing);
           return;
         }
 
-        const api = gitExtension.getAPI(1);
+        const api = gitExtensionExports.getAPI(1);
 
-        let repository: any = null;
+        let repository: GitRepository | null = null;
         if (scm) {
           const scmRef = scm;
-          repository = api.repositories.find(
-            (r: any) => r.rootUri.toString() === scmRef.rootUri?.toString(),
-          );
+          repository =
+            api.repositories.find(
+              (r) => r.rootUri.toString() === scmRef.rootUri?.toString(),
+            ) ?? null;
           if (repository) {
             outputChannel.appendLine(
               text.output.selectedRepoFromScm(repository.rootUri.fsPath),
@@ -162,16 +180,17 @@ export function activate(context: vscode.ExtensionContext) {
 
         if (!repository) {
           const activeEditor = vscode.window.activeTextEditor;
-          const activeUri = activeEditor?.document?.uri;
+          const activeUri = activeEditor?.document.uri;
           if (activeUri) {
             if (typeof api.getRepository === 'function') {
               repository = api.getRepository(activeUri);
             }
             if (!repository) {
               const activeUriString = activeUri.toString();
-              repository = api.repositories.find((r: any) =>
-                activeUriString.startsWith(r.rootUri.toString()),
-              );
+              repository =
+                api.repositories.find((r) =>
+                  activeUriString.startsWith(r.rootUri.toString()),
+                ) ?? null;
             }
             if (repository) {
               outputChannel.appendLine(
@@ -212,7 +231,7 @@ export function activate(context: vscode.ExtensionContext) {
         }
 
         const currentProviderRaw =
-          context.globalState.get<string>('CURRENT_PROVIDER') ||
+          context.globalState.get<string>('CURRENT_PROVIDER') ??
           DEFAULT_PROVIDER;
         const isCustom = isCustomProvider(currentProviderRaw);
         let customProviderConfig: CustomProviderConfig | undefined;
@@ -222,7 +241,7 @@ export function activate(context: vscode.ExtensionContext) {
           const customProviders =
             context.globalState.get<CustomProviderConfig[]>(
               CUSTOM_PROVIDERS_STATE_KEY,
-            ) || [];
+            ) ?? [];
           customProviderConfig = customProviders.find(
             (cp) => cp.id === customId,
           );
@@ -231,12 +250,12 @@ export function activate(context: vscode.ExtensionContext) {
           currentProvider = currentProviderRaw as APIProvider;
         }
         const savedGenerateMode =
-          context.globalState.get<GenerateMode>('GENERATE_MODE') ||
+          context.globalState.get<GenerateMode>('GENERATE_MODE') ??
           DEFAULT_GENERATE_MODE;
         const savedCommitOutputOptions = normalizeCommitOutputOptions(
           context.globalState.get<CommitOutputOptions>(
             'COMMIT_OUTPUT_OPTIONS',
-          ) || DEFAULT_COMMIT_OUTPUT_OPTIONS,
+          ) ?? DEFAULT_COMMIT_OUTPUT_OPTIONS,
         );
         const currentGenerateMode: GenerateMode =
           currentProvider === 'ollama'
@@ -326,7 +345,6 @@ export function activate(context: vscode.ExtensionContext) {
           async (progress, progressToken) => {
             const cancelSubscription = progressToken.onCancellationRequested(
               () => {
-                wasCancelled = true;
                 outputChannel.appendLine(
                   text.output.cancelRequestedFromProgress,
                 );
@@ -348,7 +366,7 @@ export function activate(context: vscode.ExtensionContext) {
             const baseGenerateOptions = {
               repository,
               provider: currentProvider,
-              apiKey: apiKey || '',
+              apiKey: apiKey ?? '',
               baseUrl: customProviderConfig?.baseUrl,
               generateMode: currentGenerateMode,
               commitOutputOptions: currentCommitOutputOptions,
@@ -433,7 +451,6 @@ export function activate(context: vscode.ExtensionContext) {
               }
 
               if (result.error?.exitCode === EXIT_CODES.CANCELLED) {
-                wasCancelled = true;
                 return;
               }
 
@@ -466,7 +483,9 @@ export function activate(context: vscode.ExtensionContext) {
                     text.notification.configureApiKeyAction,
                   );
                   if (action === text.notification.configureApiKeyAction) {
-                    vscode.commands.executeCommand('commit-copilot.view.focus');
+                    void vscode.commands.executeCommand(
+                      'commit-copilot.view.focus',
+                    );
                   }
                 } else if (error.exitCode === EXIT_CODES.QUOTA_EXCEEDED) {
                   const action = await vscode.window.showErrorMessage(
@@ -495,7 +514,7 @@ export function activate(context: vscode.ExtensionContext) {
                   error.exitCode !== EXIT_CODES.NO_TRACKED_CHANGES_BUT_UNTRACKED
                 ) {
                   vscode.window.showErrorMessage(
-                    `${errorInfo.title}: ${error.message}. ${errorInfo.action || ''}`,
+                    `${errorInfo.title}: ${error.message}. ${errorInfo.action ?? ''}`,
                   );
                 }
               }
@@ -504,7 +523,7 @@ export function activate(context: vscode.ExtensionContext) {
             }
           },
         );
-        if (wasCancelled || cancellationSource.token.isCancellationRequested) {
+        if (cancellationSource.token.isCancellationRequested) {
           vscode.window.showInformationMessage(
             text.notification.generationCanceled,
           );
@@ -560,4 +579,6 @@ export function activate(context: vscode.ExtensionContext) {
 let currentGenerationCancellationSource: vscode.CancellationTokenSource | null =
   null;
 
-export function deactivate() {}
+export function deactivate(): void {
+  currentGenerationCancellationSource = null;
+}

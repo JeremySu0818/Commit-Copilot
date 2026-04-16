@@ -16,6 +16,17 @@ import {
   truncateSnippet,
 } from './shared';
 
+function asString(value: unknown): string | undefined {
+  return typeof value === 'string' ? value : undefined;
+}
+
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return String(error);
+}
+
 async function executeFindReferences(
   repoRoot: string,
   args: Record<string, unknown>,
@@ -23,7 +34,7 @@ async function executeFindReferences(
   diffContent: string,
   gitOps?: GitOperations,
 ): Promise<string> {
-  const relPath = args.path as string | undefined;
+  const relPath = asString(args.path);
   if (!relPath) {
     return "Error: 'path' is required.";
   }
@@ -50,8 +61,8 @@ async function executeFindReferences(
         gitOps,
       );
       workspaceRoot = stagedWorkspaceRoot;
-    } catch (err: any) {
-      const message = err?.message || String(err);
+    } catch (err: unknown) {
+      const message = getErrorMessage(err);
       if (plannedStagedRoot) {
         cleanupStagedWorkspaceSnapshot(plannedStagedRoot);
       }
@@ -76,12 +87,12 @@ async function executeFindReferences(
     );
 
     if (line > document.lineCount) {
-      return `Error: line ${line} is outside the valid range (1-${document.lineCount}).`;
+      return `Error: line ${String(line)} is outside the valid range (1-${String(document.lineCount)}).`;
     }
 
     const lineText = document.lineAt(line - 1).text;
     if (character > lineText.length + 1) {
-      return `Error: character ${character} is outside the line length (${lineText.length + 1}).`;
+      return `Error: character ${String(character)} is outside the line length (${String(lineText.length + 1)}).`;
     }
 
     const position = new vscode.Position(line - 1, character - 1);
@@ -106,10 +117,10 @@ async function executeFindReferences(
     }
 
     if (!locations) {
-      return `No reference provider available for language "${document.languageId}" or no references found for ${relPath}:${line}:${character}.`;
+      return `No reference provider available for language "${document.languageId}" or no references found for ${relPath}:${String(line)}:${String(character)}.`;
     }
     if (locations.length === 0) {
-      return `No references found for ${relPath}:${line}:${character}.`;
+      return `No references found for ${relPath}:${String(line)}:${String(character)}.`;
     }
 
     interface ReferenceEntry {
@@ -120,14 +131,14 @@ async function executeFindReferences(
     const entries: ReferenceEntry[] = [];
     const seen = new Set<string>();
 
-    const isLocation = (loc: any): loc is vscode.Location =>
+    const isLocation = (loc: unknown): loc is vscode.Location =>
       !!loc && typeof loc === 'object' && 'uri' in loc && 'range' in loc;
 
     for (const loc of locations) {
       const uri = isLocation(loc) ? loc.uri : loc.targetUri;
       const range = isLocation(loc) ? loc.range : loc.targetRange;
 
-      const key = `${uri.toString()}#${range.start.line}:${range.start.character}`;
+      const key = `${uri.toString()}#${String(range.start.line)}:${String(range.start.character)}`;
       if (seen.has(key)) continue;
       seen.add(key);
       entries.push({ uri, range });
@@ -153,10 +164,10 @@ async function executeFindReferences(
 
     const outputLines: string[] = [];
     outputLines.push(
-      `References for ${relPath}:${line}:${character} (includeDeclaration: ${includeDeclaration})`,
+      `References for ${relPath}:${String(line)}:${String(character)} (includeDeclaration: ${String(includeDeclaration)})`,
     );
     outputLines.push(
-      `Found ${totalRefs} reference${totalRefs === 1 ? '' : 's'} in ${totalFiles} file${totalFiles === 1 ? '' : 's'}.`,
+      `Found ${String(totalRefs)} reference${totalRefs === 1 ? '' : 's'} in ${String(totalFiles)} file${totalFiles === 1 ? '' : 's'}.`,
     );
     outputLines.push('');
 
@@ -226,15 +237,17 @@ async function executeFindReferences(
           snippet = truncateSnippet(text, MAX_REFERENCE_SNIPPET_LENGTH);
         }
         const snippetSuffix = snippet ? `  ${snippet}` : '';
-        outputLines.push(`  L${refLine}:C${refChar}${snippetSuffix}`);
+        outputLines.push(
+          `  L${String(refLine)}:C${String(refChar)}${snippetSuffix}`,
+        );
       }
 
       outputLines.push('');
     }
 
     return outputLines.join('\n').trimEnd();
-  } catch (err: any) {
-    const message = err?.message || String(err);
+  } catch (err: unknown) {
+    const message = getErrorMessage(err);
     return `Error finding references: ${message}`;
   } finally {
     if (stagedWorkspaceRoot) {

@@ -21,6 +21,23 @@ import {
 import { LOCALES } from '../i18n/locales';
 import type { EffectiveDisplayLanguage } from '../i18n/types';
 
+function pickNonEmpty(primary: string | undefined, fallback: string): string {
+  return primary && primary.length > 0 ? primary : fallback;
+}
+
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  if (typeof error === 'object' && error !== null && 'message' in error) {
+    const message = (error as { message?: unknown }).message;
+    if (typeof message === 'string') {
+      return message;
+    }
+  }
+  return String(error);
+}
+
 async function runOllamaAgentLoop(
   host: string | undefined,
   model: string | undefined,
@@ -38,12 +55,12 @@ async function runOllamaAgentLoop(
     throw new NoChangesError();
   }
 
-  const resolvedHost = host || OLLAMA_DEFAULT_HOST;
+  const resolvedHost = pickNonEmpty(host, OLLAMA_DEFAULT_HOST);
 
   try {
     const { Ollama } = await import('ollama');
     const client = new Ollama({ host: resolvedHost });
-    const modelName = model || DEFAULT_MODELS.ollama;
+    const modelName = pickNonEmpty(model, DEFAULT_MODELS.ollama);
     const resolvedCommitOutputOptions =
       normalizeCommitOutputOptions(commitOutputOptions);
 
@@ -60,7 +77,7 @@ async function runOllamaAgentLoop(
             onProgress(
               LOCALES[language].progressMessages.pulling(
                 modelName,
-                part.status || 'unknown',
+                part.status,
                 percent,
               ),
               increment,
@@ -105,27 +122,27 @@ async function runOllamaAgentLoop(
       },
     });
 
-    const text = response.message?.content;
+    const text = response.message.content;
     throwIfCancellationRequested(cancellationToken);
     if (!text) {
       throw new APIRequestError('Empty response from Ollama');
     }
     return extractCommitMessage(text);
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (
       error instanceof NoChangesError ||
       error instanceof GenerationCancelledError
     ) {
       throw error;
     }
-    const message = error?.message || String(error);
+    const message = getErrorMessage(error);
     if (message.includes('ECONNREFUSED') || message.includes('connect')) {
       throw new APIRequestError(
         `Cannot connect to Ollama. Make sure Ollama is running at ${resolvedHost}`,
       );
     } else if (message.includes('model') && message.includes('not found')) {
       throw new APIRequestError(
-        `Model "${model || DEFAULT_MODELS.ollama}" not found. Please pull it first.`,
+        `Model "${pickNonEmpty(model, DEFAULT_MODELS.ollama)}" not found. Please pull it first.`,
       );
     }
     throw new APIRequestError(message);

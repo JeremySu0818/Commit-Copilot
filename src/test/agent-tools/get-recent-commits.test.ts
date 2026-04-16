@@ -1,8 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import type { GitOperations } from '../../commit-copilot';
 import { executeGetRecentCommits } from '../../agent-tools/executors/get-recent-commits';
 
-test('executeGetRecentCommits requires gitOps', async () => {
+void test('executeGetRecentCommits requires gitOps', async () => {
   const output = await executeGetRecentCommits({ count: 3 });
   assert.equal(
     output,
@@ -10,10 +11,10 @@ test('executeGetRecentCommits requires gitOps', async () => {
   );
 });
 
-test('executeGetRecentCommits validates positive count', async () => {
+void test('executeGetRecentCommits validates positive count', async () => {
   const gitOps = {
-    getRecentCommitMessages: async () => [],
-  } as any;
+    getRecentCommitMessages: () => Promise.resolve([]),
+  } as unknown as GitOperations;
 
   const output = await executeGetRecentCommits({ count: 0 }, gitOps);
   assert.equal(
@@ -22,22 +23,20 @@ test('executeGetRecentCommits validates positive count', async () => {
   );
 });
 
-test('executeGetRecentCommits handles empty commit history', async () => {
+void test('executeGetRecentCommits handles empty commit history', async () => {
   const gitOps = {
-    getRecentCommitMessages: async () => [],
-  } as any;
+    getRecentCommitMessages: () => Promise.resolve([]),
+  } as unknown as GitOperations;
 
   const output = await executeGetRecentCommits({ count: 5 }, gitOps);
   assert.equal(output, 'No recent commits found.');
 });
 
-test('executeGetRecentCommits formats multiline commit messages', async () => {
+void test('executeGetRecentCommits formats multiline commit messages', async () => {
   const gitOps = {
-    getRecentCommitMessages: async () => [
-      'feat(core): add x\n\nbody',
-      'fix(ui): y',
-    ],
-  } as any;
+    getRecentCommitMessages: () =>
+      Promise.resolve(['feat(core): add x\n\nbody', 'fix(ui): y']),
+  } as unknown as GitOperations;
 
   const output = await executeGetRecentCommits({ count: 2 }, gitOps);
   assert.match(output, /Recent commits \(last 2, newest first\):/);

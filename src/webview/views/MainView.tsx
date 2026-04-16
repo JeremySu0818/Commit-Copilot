@@ -26,7 +26,7 @@ export function MainView() {
         (cp) =>
           cp.id ===
           currentProvider.slice(bootstrap.customProviderPrefix.length),
-      ) || null
+      ) ?? null
     : null;
 
   const isOllama = currentProvider === 'ollama';
@@ -179,7 +179,11 @@ export function MainView() {
 
   const handleSave = useCallback(() => {
     const key =
-      state.apiKeyValue || (isOllama ? bootstrap.ollamaDefaultHost : '');
+      state.apiKeyValue.length > 0
+        ? state.apiKeyValue
+        : isOllama
+          ? bootstrap.ollamaDefaultHost
+          : '';
     if (isOllama) {
       dispatch({
         type: 'SET_OLLAMA_HOST',

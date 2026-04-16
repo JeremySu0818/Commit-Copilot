@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import * as fs from 'fs';
 import * as path from 'path';
 import { createRequire } from 'node:module';
+import type { GitOperations } from '../../commit-copilot';
 import { clearRequireCache, withModuleMock } from '../helpers/module-mock';
 import {
   MockTextDocument,
@@ -13,11 +14,25 @@ import { cleanupTempDir, createTempDir } from '../helpers/temp-dir';
 
 const MODULE_PATH = '../../agent-tools/executors/get-file-outline';
 
+function toText(value: unknown): string {
+  if (typeof value === 'string') {
+    return value;
+  }
+  if (
+    typeof value === 'number' ||
+    typeof value === 'boolean' ||
+    typeof value === 'bigint'
+  ) {
+    return String(value);
+  }
+  return '';
+}
+
 async function loadModule(
   vscodeMock: unknown,
 ): Promise<typeof import('../../agent-tools/executors/get-file-outline')> {
   clearRequireCache(MODULE_PATH);
-  return withModuleMock('vscode', vscodeMock, async () => {
+  return withModuleMock('vscode', vscodeMock, () => {
     const dynamicRequire = createRequire(__filename);
     return dynamicRequire(
       MODULE_PATH,
@@ -25,13 +40,13 @@ async function loadModule(
   });
 }
 
-test('executeGetFileOutline validates required path', async () => {
+void test('executeGetFileOutline validates required path', async () => {
   const { executeGetFileOutline } = await loadModule(createVscodeMock());
   const output = await executeGetFileOutline('repo', {}, false);
   assert.equal(output, "Error: 'path' is required.");
 });
 
-test('executeGetFileOutline prevents path traversal', async () => {
+void test('executeGetFileOutline prevents path traversal', async () => {
   const { executeGetFileOutline } = await loadModule(createVscodeMock());
   const output = await executeGetFileOutline(
     'repo',
@@ -41,7 +56,7 @@ test('executeGetFileOutline prevents path traversal', async () => {
   assert.equal(output, 'Error: path traversal is not allowed.');
 });
 
-test('executeGetFileOutline renders outline from document symbols', async () => {
+void test('executeGetFileOutline renders outline from document symbols', async () => {
   const repoRoot = createTempDir();
   try {
     const relPath = 'src/sample.ts';
@@ -50,28 +65,32 @@ test('executeGetFileOutline renders outline from document symbols', async () => 
     fs.writeFileSync(absPath, 'class A {\n  run() {}\n}\n', 'utf-8');
 
     const vscodeMock = createVscodeMock({
-      openTextDocument: async (input) => {
+      openTextDocument: (input) => {
         if (input instanceof MockUri) {
-          return new MockTextDocument(
-            input,
-            fs.readFileSync(input.fsPath, 'utf-8'),
-            'typescript',
+          return Promise.resolve(
+            new MockTextDocument(
+              input,
+              fs.readFileSync(input.fsPath, 'utf-8'),
+              'typescript',
+            ),
           );
         }
         if (input && typeof input === 'object' && 'content' in input) {
-          return new MockTextDocument(
-            new MockUri('untitled://staged', 'untitled'),
-            String((input as { content?: unknown }).content ?? ''),
-            'plaintext',
+          return Promise.resolve(
+            new MockTextDocument(
+              new MockUri('untitled://staged', 'untitled'),
+              toText((input as { content?: unknown }).content),
+              'plaintext',
+            ),
           );
         }
-        throw new Error('Unsupported openTextDocument input');
+        return Promise.reject(new Error('Unsupported openTextDocument input'));
       },
-      executeCommand: async (command: string, ..._args: unknown[]) => {
+      executeCommand: (command: string, ..._args: unknown[]) => {
         if (command !== 'vscode.executeDocumentSymbolProvider') {
-          return [];
+          return Promise.resolve([]);
         }
-        return [
+        return Promise.resolve([
           new vscodeMock.DocumentSymbol(
             'A',
             '',
@@ -101,17 +120,18 @@ test('executeGetFileOutline renders outline from document symbols', async () => 
               ),
             ],
           ),
-        ];
+        ]);
       },
     });
 
     const { executeGetFileOutline } = await loadModule(vscodeMock);
     const gitOps = {
-      showIndexFile: async () => ({
-        content: 'class A {\n run() {}\n}\n',
-        found: true,
-      }),
-    } as any;
+      showIndexFile: () =>
+        Promise.resolve({
+          content: 'class A {\n run() {}\n}\n',
+          found: true,
+        }),
+    } as unknown as GitOperations;
 
     const output = await executeGetFileOutline(
       repoRoot,
@@ -128,7 +148,7 @@ test('executeGetFileOutline renders outline from document symbols', async () => 
   }
 });
 
-test('executeGetFileOutline handles empty symbol results', async () => {
+void test('executeGetFileOutline handles empty symbol results', async () => {
   const repoRoot = createTempDir();
   try {
     const relPath = 'a.ts';
@@ -136,17 +156,21 @@ test('executeGetFileOutline handles empty symbol results', async () => {
     fs.writeFileSync(absPath, 'const x = 1;\n', 'utf-8');
 
     const vscodeMock = createVscodeMock({
-      openTextDocument: async (input) => {
+      openTextDocument: (input) => {
         if (input instanceof MockUri) {
-          return new MockTextDocument(input, 'const x = 1;\n', 'typescript');
+          return Promise.resolve(
+            new MockTextDocument(input, 'const x = 1;\n', 'typescript'),
+          );
         }
-        return new MockTextDocument(
-          new MockUri('untitled://x', 'untitled'),
-          'const x = 1;\n',
-          'plaintext',
+        return Promise.resolve(
+          new MockTextDocument(
+            new MockUri('untitled://x', 'untitled'),
+            'const x = 1;\n',
+            'plaintext',
+          ),
         );
       },
-      executeCommand: async () => [],
+      executeCommand: () => Promise.resolve([]),
     });
 
     const { executeGetFileOutline } = await loadModule(vscodeMock);
@@ -161,18 +185,18 @@ test('executeGetFileOutline handles empty symbol results', async () => {
   }
 });
 
-test('executeGetFileOutline infers language for staged new files', async () => {
+void test('executeGetFileOutline infers language for staged new files', async () => {
   const repoRoot = createTempDir();
   try {
     const relPath = 'src/new-file.ts';
     const openInputs: unknown[] = [];
 
     const vscodeMock = createVscodeMock({
-      openTextDocument: async (input) => {
+      openTextDocument: (input) => {
         openInputs.push(input);
 
         if (input instanceof MockUri) {
-          throw new Error('Document is not available on disk.');
+          return Promise.reject(new Error('Document is not available on disk.'));
         }
 
         if (input && typeof input === 'object' && 'content' in input) {
@@ -181,30 +205,33 @@ test('executeGetFileOutline infers language for staged new files', async () => {
             typeof options.language === 'string'
               ? options.language
               : 'plaintext';
-          return new MockTextDocument(
-            new MockUri('untitled://staged', 'untitled'),
-            String(options.content ?? ''),
-            languageId,
+          return Promise.resolve(
+            new MockTextDocument(
+              new MockUri('untitled://staged', 'untitled'),
+              toText(options.content),
+              languageId,
+            ),
           );
         }
 
-        throw new Error('Unsupported openTextDocument input');
+        return Promise.reject(new Error('Unsupported openTextDocument input'));
       },
-      executeCommand: async (command: string, ..._args: unknown[]) => {
+      executeCommand: (command: string, ..._args: unknown[]) => {
         if (command !== 'vscode.executeDocumentSymbolProvider') {
-          return [];
+          return Promise.resolve([]);
         }
-        return [];
+        return Promise.resolve([]);
       },
     });
 
     const { executeGetFileOutline } = await loadModule(vscodeMock);
     const gitOps = {
-      showIndexFile: async () => ({
-        content: 'export const x = 1;\n',
-        found: true,
-      }),
-    } as any;
+      showIndexFile: () =>
+        Promise.resolve({
+          content: 'export const x = 1;\n',
+          found: true,
+        }),
+    } as unknown as GitOperations;
 
     const output = await executeGetFileOutline(
       repoRoot,

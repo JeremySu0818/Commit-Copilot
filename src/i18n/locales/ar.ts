@@ -73,7 +73,7 @@ export const arLocale: LocaleTextBundle = {
         'لم يتم العثور على محرر نشط لاختيار المستودع.',
       selectedOnlyRepo: (path) => `تم تحديد المستودع الوحيد: ${path}`,
       multiRepoNotDetermined: (count) =>
-        `تم العثور على ${count} مستودعات ولكن لم نتمكن من تحديد المستودع النشط.`,
+        `تم العثور على ${String(count)} مستودعات ولكن لم نتمكن من تحديد المستودع النشط.`,
       noRepoInApi: 'لم يتم العثور على أي مستودعات في واجهة برمجة التطبيقات.',
       usingProvider: (providerName) => `استخدام المزود: ${providerName}`,
       usingGenerateMode: (mode) => `وضع التوليد: ${mode}`,
@@ -223,47 +223,47 @@ export const arLocale: LocaleTextBundle = {
     analyzingChanges: 'يقوم الوكيل بتحليل التغييرات...',
     generatingMessage: 'جاري توليد رسالة الالتزام...',
     transientApiError: (attempt, maxAttempts, seconds) =>
-      `خطأ عابر في API. إعادة المحاولة (${attempt}/${maxAttempts}) خلال ${seconds} ثانية...`,
+      `خطأ عابر في API. إعادة المحاولة (${String(attempt)}/${String(maxAttempts)}) خلال ${String(seconds)} ثانية...`,
     pulling: (model, status, percent) =>
       percent !== undefined
-        ? `جاري سحب ${model}: ${status} (${percent}%)`
+        ? `جاري سحب ${model}: ${status} (${String(percent)}%)`
         : `جاري سحب ${model}: ${status}`,
 
-    stepAnalyzingDiff: (step, path) => `[الخطوة ${step}] تحليل الفرق: ${path}`,
-    stepReadingFile: (step, path) => `[الخطوة ${step}] قراءة الملف: ${path}`,
+    stepAnalyzingDiff: (step, path) => `[الخطوة ${String(step)}] تحليل الفرق: ${path}`,
+    stepReadingFile: (step, path) => `[الخطوة ${String(step)}] قراءة الملف: ${path}`,
     stepGettingOutline: (step, path) =>
-      `[الخطوة ${step}] الحصول على المخطط: ${path}`,
+      `[الخطوة ${String(step)}] الحصول على المخطط: ${path}`,
     stepFindingReferences: (step, target) =>
-      `[الخطوة ${step}] العثور على المراجع: ${target}`,
+      `[الخطوة ${String(step)}] العثور على المراجع: ${target}`,
     stepFetchingRecentCommits: (step, count) =>
       count !== undefined
-        ? `[الخطوة ${step}] جلب الالتزامات الأخيرة: ${count} إدخالات`
-        : `[الخطوة ${step}] جلب الالتزامات الأخيرة...`,
+        ? `[الخطوة ${String(step)}] جلب الالتزامات الأخيرة: ${String(count)} إدخالات`
+        : `[الخطوة ${String(step)}] جلب الالتزامات الأخيرة...`,
     stepSearchingProject: (step, keyword) =>
-      `[الخطوة ${step}] البحث في المشروع عن: ${keyword}`,
-    stepCalling: (step, toolName) => `[الخطوة ${step}] استدعاء ${toolName}...`,
+      `[الخطوة ${String(step)}] البحث في المشروع عن: ${keyword}`,
+    stepCalling: (step, toolName) => `[الخطوة ${String(step)}] استدعاء ${toolName}...`,
 
     stepAnalyzingMultipleDiffs: (step, paths) =>
-      `[الخطوة ${step}] تحليل الفروق: ${paths}`,
+      `[الخطوة ${String(step)}] تحليل الفروق: ${paths}`,
     stepAnalyzingDiffsForCount: (step, count) =>
-      `[الخطوة ${step}] تحليل الفروق لـ ${count} ملفات...`,
+      `[الخطوة ${String(step)}] تحليل الفروق لـ ${String(count)} ملفات...`,
     stepReadingMultipleFiles: (step, paths) =>
-      `[الخطوة ${step}] قراءة الملفات: ${paths}`,
+      `[الخطوة ${String(step)}] قراءة الملفات: ${paths}`,
     stepReadingFilesForCount: (step, count) =>
-      `[الخطوة ${step}] قراءة ${count} ملفات...`,
+      `[الخطوة ${String(step)}] قراءة ${String(count)} ملفات...`,
     stepGettingMultipleOutlines: (step, paths) =>
-      `[الخطوة ${step}] الحصول على المخططات: ${paths}`,
+      `[الخطوة ${String(step)}] الحصول على المخططات: ${paths}`,
     stepGettingOutlinesForCount: (step, count) =>
-      `[الخطوة ${step}] الحصول على المخططات لـ ${count} ملفات...`,
+      `[الخطوة ${String(step)}] الحصول على المخططات لـ ${String(count)} ملفات...`,
     stepFindingReferencesForMultiple: (step, targets) =>
-      `[الخطوة ${step}] العثور على المراجع: ${targets}`,
+      `[الخطوة ${String(step)}] العثور على المراجع: ${targets}`,
     stepFindingReferencesForCount: (step, count) =>
-      `[الخطوة ${step}] العثور على المراجع لـ ${count} رموز...`,
+      `[الخطوة ${String(step)}] العثور على المراجع لـ ${String(count)} رموز...`,
     stepSearchingProjectForMultiple: (step, keywords) =>
-      `[الخطوة ${step}] البحث في المشروع عن: ${keywords}`,
+      `[الخطوة ${String(step)}] البحث في المشروع عن: ${keywords}`,
     stepSearchingProjectForCount: (step, count) =>
-      `[الخطوة ${step}] البحث في المشروع عن ${count} كلمات رئيسية...`,
+      `[الخطوة ${String(step)}] البحث في المشروع عن ${String(count)} كلمات رئيسية...`,
     stepExecutingMultipleTools: (step, count) =>
-      `[الخطوة ${step}] تنفيذ ${count} أدوات تحقيق...`,
+      `[الخطوة ${String(step)}] تنفيذ ${String(count)} أدوات تحقيق...`,
   },
 };

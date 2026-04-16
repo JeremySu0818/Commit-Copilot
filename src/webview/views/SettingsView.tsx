@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useSidePanel } from '../side-panel-context';
 import { BackIcon } from '../components/BackIcon';
 import { normalizeMaxAgentStepsValue, renderStatusHtml } from '../utils';
-import type { EffectiveDisplayLanguage } from '../../i18n';
 
 export function SettingsView() {
   const { state, dispatch, vscode, bootstrap } = useSidePanel();
@@ -79,8 +78,8 @@ export function SettingsView() {
           >
             {bootstrap.displayLanguageOptions.map((option) => (
               <option key={option.value} value={option.value}>
-                {option.label ||
-                  option.labels?.[state.effectiveLanguage] ||
+                {option.label ??
+                  option.labels?.[state.effectiveLanguage] ??
                   option.value}
               </option>
             ))}

@@ -68,6 +68,15 @@ interface RemovePathOptions {
   operation?: string;
 }
 
+interface ErrorLike {
+  message?: unknown;
+  code?: unknown;
+}
+
+function toText(value: unknown): string {
+  return typeof value === 'string' ? value : String(value);
+}
+
 function removePath(
   targetPath: string,
   options?: RemovePathOptions,
@@ -75,10 +84,14 @@ function removePath(
   try {
     fs.rmSync(targetPath, { recursive: true, force: true });
     return null;
-  } catch (err: any) {
+  } catch (err: unknown) {
     if (options?.throwOnFailure) {
-      const message = err?.message || String(err);
-      const code = err?.code ? ` (${err.code})` : '';
+      const error = err as ErrorLike;
+      const message = toText(error.message ?? err);
+      const code =
+        typeof error.code === 'string' || typeof error.code === 'number'
+          ? ` (${String(error.code)})`
+          : '';
       throw new Error(
         `Failed to ${options.operation ?? 'remove path'} '${targetPath}'${code}: ${message}`,
       );

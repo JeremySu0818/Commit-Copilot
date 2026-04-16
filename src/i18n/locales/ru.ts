@@ -78,7 +78,7 @@ export const ruLocale: LocaleTextBundle = {
         'Не найден активный редактор для выбора репозитория.',
       selectedOnlyRepo: (path) => `Выбран единственный репозиторий: ${path}`,
       multiRepoNotDetermined: (count) =>
-        `Найдено ${count} репозиториев, но не удалось определить активный.`,
+        `Найдено ${String(count)} репозиториев, но не удалось определить активный.`,
       noRepoInApi: 'Репозитории в API не найдены.',
       usingProvider: (providerName) =>
         `Используется провайдер: ${providerName}`,
@@ -236,47 +236,47 @@ export const ruLocale: LocaleTextBundle = {
     analyzingChanges: 'Агент анализирует изменения...',
     generatingMessage: 'Генерация сообщения коммита...',
     transientApiError: (attempt, maxAttempts, seconds) =>
-      `Временная ошибка API. Повторная попытка (${attempt}/${maxAttempts}) через ${seconds} сек...`,
+      `Временная ошибка API. Повторная попытка (${String(attempt)}/${String(maxAttempts)}) через ${String(seconds)} сек...`,
     pulling: (model, status, percent) =>
       percent !== undefined
-        ? `Скачивание ${model}: ${status} (${percent}%)`
+        ? `Скачивание ${model}: ${status} (${String(percent)}%)`
         : `Скачивание ${model}: ${status}`,
 
-    stepAnalyzingDiff: (step, path) => `[Шаг ${step}] Анализ diff: ${path}`,
-    stepReadingFile: (step, path) => `[Шаг ${step}] Чтение файла: ${path}`,
+    stepAnalyzingDiff: (step, path) => `[Шаг ${String(step)}] Анализ diff: ${path}`,
+    stepReadingFile: (step, path) => `[Шаг ${String(step)}] Чтение файла: ${path}`,
     stepGettingOutline: (step, path) =>
-      `[Шаг ${step}] Получение структуры: ${path}`,
+      `[Шаг ${String(step)}] Получение структуры: ${path}`,
     stepFindingReferences: (step, target) =>
-      `[Шаг ${step}] Поиск ссылок: ${target}`,
+      `[Шаг ${String(step)}] Поиск ссылок: ${target}`,
     stepFetchingRecentCommits: (step, count) =>
       count !== undefined
-        ? `[Шаг ${step}] Получение недавних коммитов: ${count} записей`
-        : `[Шаг ${step}] Получение недавних коммитов...`,
+        ? `[Шаг ${String(step)}] Получение недавних коммитов: ${String(count)} записей`
+        : `[Шаг ${String(step)}] Получение недавних коммитов...`,
     stepSearchingProject: (step, keyword) =>
-      `[Шаг ${step}] Поиск по проекту: ${keyword}`,
-    stepCalling: (step, toolName) => `[Шаг ${step}] Вызов ${toolName}...`,
+      `[Шаг ${String(step)}] Поиск по проекту: ${keyword}`,
+    stepCalling: (step, toolName) => `[Шаг ${String(step)}] Вызов ${toolName}...`,
 
     stepAnalyzingMultipleDiffs: (step, paths) =>
-      `[Шаг ${step}] Анализ diff для: ${paths}`,
+      `[Шаг ${String(step)}] Анализ diff для: ${paths}`,
     stepAnalyzingDiffsForCount: (step, count) =>
-      `[Шаг ${step}] Анализ diff для ${count} файлов...`,
+      `[Шаг ${String(step)}] Анализ diff для ${String(count)} файлов...`,
     stepReadingMultipleFiles: (step, paths) =>
-      `[Шаг ${step}] Чтение файлов: ${paths}`,
+      `[Шаг ${String(step)}] Чтение файлов: ${paths}`,
     stepReadingFilesForCount: (step, count) =>
-      `[Шаг ${step}] Чтение ${count} файлов...`,
+      `[Шаг ${String(step)}] Чтение ${String(count)} файлов...`,
     stepGettingMultipleOutlines: (step, paths) =>
-      `[Шаг ${step}] Получение структур: ${paths}`,
+      `[Шаг ${String(step)}] Получение структур: ${paths}`,
     stepGettingOutlinesForCount: (step, count) =>
-      `[Шаг ${step}] Получение структур для ${count} файлов...`,
+      `[Шаг ${String(step)}] Получение структур для ${String(count)} файлов...`,
     stepFindingReferencesForMultiple: (step, targets) =>
-      `[Шаг ${step}] Поиск ссылок: ${targets}`,
+      `[Шаг ${String(step)}] Поиск ссылок: ${targets}`,
     stepFindingReferencesForCount: (step, count) =>
-      `[Шаг ${step}] Поиск ссылок для ${count} символов...`,
+      `[Шаг ${String(step)}] Поиск ссылок для ${String(count)} символов...`,
     stepSearchingProjectForMultiple: (step, keywords) =>
-      `[Шаг ${step}] Поиск по проекту: ${keywords}`,
+      `[Шаг ${String(step)}] Поиск по проекту: ${keywords}`,
     stepSearchingProjectForCount: (step, count) =>
-      `[Шаг ${step}] Поиск по проекту ${count} ключевых слов...`,
+      `[Шаг ${String(step)}] Поиск по проекту ${String(count)} ключевых слов...`,
     stepExecutingMultipleTools: (step, count) =>
-      `[Шаг ${step}] Выполнение ${count} исследовательских инструментов...`,
+      `[Шаг ${String(step)}] Выполнение ${String(count)} исследовательских инструментов...`,
   },
 };

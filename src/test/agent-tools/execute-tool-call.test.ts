@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
+import type { GitOperations } from '../../commit-copilot';
 import { clearRequireCache, withModuleMock } from '../helpers/module-mock';
 import { createVscodeMock } from '../helpers/vscode-mock';
 
@@ -10,7 +11,7 @@ async function loadExecuteToolCall(): Promise<
   typeof import('../../agent-tools/executors/execute-tool-call')
 > {
   clearRequireCache(MODULE_PATH);
-  return withModuleMock('vscode', createVscodeMock(), async () => {
+  return withModuleMock('vscode', createVscodeMock(), () => {
     const dynamicRequire = createRequire(__filename);
     return dynamicRequire(
       MODULE_PATH,
@@ -18,7 +19,7 @@ async function loadExecuteToolCall(): Promise<
   });
 }
 
-test('executeToolCall returns error for unknown tool', async () => {
+void test('executeToolCall returns error for unknown tool', async () => {
   const { executeToolCall } = await loadExecuteToolCall();
   const result = await executeToolCall(
     { name: 'unknown_tool', arguments: {} },
@@ -29,7 +30,7 @@ test('executeToolCall returns error for unknown tool', async () => {
   assert.equal(result.content, 'Unknown tool: unknown_tool');
 });
 
-test('executeToolCall dispatches get_diff successfully', async () => {
+void test('executeToolCall dispatches get_diff successfully', async () => {
   const { executeToolCall } = await loadExecuteToolCall();
   const diff = [
     'diff --git a/src/a.ts b/src/a.ts',
@@ -49,13 +50,11 @@ test('executeToolCall dispatches get_diff successfully', async () => {
   assert.match(result.content, /diff --git a\/src\/a\.ts b\/src\/a\.ts/);
 });
 
-test('executeToolCall converts thrown errors to tool error response', async () => {
+void test('executeToolCall converts thrown errors to tool error response', async () => {
   const { executeToolCall } = await loadExecuteToolCall();
   const gitOps = {
-    getRecentCommitMessages: async () => {
-      throw new Error('boom');
-    },
-  } as any;
+    getRecentCommitMessages: () => Promise.reject(new Error('boom')),
+  } as unknown as GitOperations;
 
   const result = await executeToolCall(
     { name: 'get_recent_commits', arguments: { count: 1 } },

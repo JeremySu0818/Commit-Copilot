@@ -116,6 +116,6 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
         language,
       );
     default:
-      throw new Error(`Unsupported provider for agent loop: ${provider}`);
+      throw new Error(`Unsupported provider for agent loop: ${String(provider)}`);
   }
 }

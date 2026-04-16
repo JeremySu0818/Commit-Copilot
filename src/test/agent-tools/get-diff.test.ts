@@ -22,18 +22,18 @@ const sampleDiff = [
   '+newName',
 ].join('\n');
 
-test('executeGetDiff requires path', () => {
+void test('executeGetDiff requires path', () => {
   const result = executeGetDiff('repo', {}, sampleDiff);
   assert.match(result, /'path' is required/);
 });
 
-test('executeGetDiff returns selected file block', () => {
+void test('executeGetDiff returns selected file block', () => {
   const result = executeGetDiff('repo', { path: 'src/a.ts' }, sampleDiff);
   assert.match(result, /diff --git a\/src\/a\.ts b\/src\/a\.ts/);
   assert.doesNotMatch(result, /src\/old\.ts/);
 });
 
-test('executeGetDiff supports renamed path syntax', () => {
+void test('executeGetDiff supports renamed path syntax', () => {
   const result = executeGetDiff(
     'repo',
     { path: 'src/old.ts -> src/new.ts' },
@@ -42,7 +42,7 @@ test('executeGetDiff supports renamed path syntax', () => {
   assert.match(result, /diff --git a\/src\/old\.ts b\/src\/new\.ts/);
 });
 
-test('executeGetDiff returns not found message for unknown file', () => {
+void test('executeGetDiff returns not found message for unknown file', () => {
   const result = executeGetDiff('repo', { path: 'missing.ts' }, sampleDiff);
   assert.equal(result, 'No diff found for file: missing.ts');
 });

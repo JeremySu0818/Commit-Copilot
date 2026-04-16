@@ -34,12 +34,12 @@ async function executeGetRecentCommits(
   }
 
   const lines: string[] = [
-    `Recent commits (last ${messages.length}, newest first):`,
+    `Recent commits (last ${String(messages.length)}, newest first):`,
   ];
 
   messages.forEach((message, index) => {
     lines.push('');
-    lines.push(`[${index + 1}]`);
+    lines.push(`[${String(index + 1)}]`);
     const msgLines = message.split(/\r?\n/);
     for (const line of msgLines) {
       lines.push(`  ${line}`);

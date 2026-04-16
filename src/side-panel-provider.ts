@@ -40,6 +40,67 @@ import {
   WebviewBootstrapData,
 } from './side-panel-webview-bootstrap';
 
+type UnknownRecord = Record<string, unknown>;
+
+interface IncomingMessage extends UnknownRecord {
+  type: string;
+}
+
+interface GitRepositoryState {
+  workingTreeChanges: unknown[];
+  indexChanges: unknown[];
+  untrackedChanges: unknown[];
+  onDidChange(listener: () => void): vscode.Disposable;
+}
+
+interface GitRepository {
+  rootUri: vscode.Uri;
+  state: GitRepositoryState;
+}
+
+interface GitApi {
+  repositories: GitRepository[];
+  getRepository?(uri: vscode.Uri): GitRepository | null;
+  state?: string;
+  onDidChangeState?(listener: (state: string) => void): vscode.Disposable;
+  onDidOpenRepository?(listener: (repo: GitRepository) => void): vscode.Disposable;
+}
+
+interface GitExtensionExports {
+  getAPI(version: 1): GitApi;
+}
+
+function isRecord(value: unknown): value is UnknownRecord {
+  return typeof value === 'object' && value !== null;
+}
+
+function asString(value: unknown): string | undefined {
+  return typeof value === 'string' ? value : undefined;
+}
+
+function asMessage(data: unknown): IncomingMessage | null {
+  if (!isRecord(data) || typeof data.type !== 'string') {
+    return null;
+  }
+  return data as IncomingMessage;
+}
+
+function isGitExtensionExports(value: unknown): value is GitExtensionExports {
+  return isRecord(value) && typeof value.getAPI === 'function';
+}
+
+function isAPIProvider(value: string): value is APIProvider {
+  return value in API_KEY_STORAGE_KEYS;
+}
+
+function toProvider(value: unknown): string {
+  return asString(value) ?? DEFAULT_PROVIDER;
+}
+
+function toStoredModel(value: unknown): string {
+  return asString(value) ?? '';
+}
+
 export class SidePanelProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = 'commit-copilot.view';
   private _view?: vscode.WebviewView;
@@ -66,17 +127,15 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
   public openLanguageSettingsView() {
     this.updateCurrentScreen('settings');
     if (this._view) {
-      this._view.show?.(true);
+      this._view.show(true);
       this._view.webview.postMessage({ type: 'openSettingsView' });
     }
   }
 
   private getCustomProviders(): CustomProviderConfig[] {
-    return (
-      this._context.globalState.get<CustomProviderConfig[]>(
-        CUSTOM_PROVIDERS_STATE_KEY,
-      ) || []
-    );
+    return this._context.globalState.get<CustomProviderConfig[]>(
+      CUSTOM_PROVIDERS_STATE_KEY,
+    ) ?? [];
   }
 
   private async saveCustomProviders(
@@ -89,13 +148,24 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
   }
 
   private getVSCodeLanguage(): string | undefined {
-    return vscode.env?.language;
+    const host = vscode as unknown as {
+      env?: {
+        language?: unknown;
+      };
+    };
+    return asString(host.env?.language);
   }
 
   private getDisplayLanguage(): DisplayLanguage {
-    const storedLanguage = this._context?.globalState?.get?.(
-      DISPLAY_LANGUAGE_STATE_KEY,
-    );
+    const context = this._context as unknown as {
+      globalState?: {
+        get?(key: string): unknown;
+      };
+    };
+    const storedLanguage =
+      typeof context.globalState?.get === 'function'
+        ? context.globalState.get(DISPLAY_LANGUAGE_STATE_KEY)
+        : undefined;
     return normalizeDisplayLanguage(storedLanguage);
   }
 
@@ -127,7 +197,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
         : undefined;
     const message =
       typeof error === 'object' && error !== null && 'message' in error
-        ? String((error as { message?: string }).message || '')
+        ? (asString((error as { message?: unknown }).message) ?? '')
         : String(error);
     return { status, message };
   }
@@ -165,7 +235,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
       return { valid: false, error: text.invalidApiKeyPrefix };
     }
 
-    const quotaStatusCodes = rules.quotaStatusCodes || [429];
+    const quotaStatusCodes = rules.quotaStatusCodes ?? [429];
     const isQuotaExceeded =
       (typeof status === 'number' && quotaStatusCodes.includes(status)) ||
       this.includesMessage(message, rules.quotaMessagePatterns);
@@ -174,10 +244,10 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
     }
 
     if (typeof status === 'number') {
-      return {
-        valid: false,
-        error: `${text.apiRequestFailedPrefix} (${status})`,
-      };
+        return {
+          valid: false,
+          error: `${text.apiRequestFailedPrefix} (${String(status)})`,
+        };
     }
 
     return { valid: false, error: text.connectionErrorPrefix };
@@ -315,7 +385,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
     webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
     let isViewDisposed = false;
     const gitDisposables: vscode.Disposable[] = [];
-    const observedRepos = new WeakSet();
+    const observedRepos = new WeakSet<GitRepository>();
 
     const addGitDisposable = (disposable: vscode.Disposable | undefined) => {
       if (disposable) {
@@ -363,42 +433,50 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
       }
     });
 
+    const getActiveGitApi = (): GitApi | null => {
+      const gitExtension = vscode.extensions.getExtension<unknown>('vscode.git');
+      if (!gitExtension?.isActive) {
+        return null;
+      }
+      if (!isGitExtensionExports(gitExtension.exports)) {
+        return null;
+      }
+      return gitExtension.exports.getAPI(1);
+    };
+
     const checkGitStatus = () => {
       if (isViewDisposed) {
         return;
       }
       try {
-        const gitExtension = vscode.extensions.getExtension('vscode.git');
-        if (!gitExtension?.isActive) {
-          return;
-        }
-        const git = gitExtension.exports?.getAPI?.(1);
+        const git = getActiveGitApi();
         if (!git) {
           return;
         }
         const repos = git.repositories;
         if (repos.length > 0) {
-          let targetRepo: any = null;
+          let targetRepo: GitRepository | null = null;
           if (repos.length === 1) {
             targetRepo = repos[0];
           } else {
-            const activeUri = vscode.window.activeTextEditor?.document?.uri;
+            const activeUri = vscode.window.activeTextEditor?.document.uri;
             if (activeUri) {
               if (typeof git.getRepository === 'function') {
                 targetRepo = git.getRepository(activeUri);
               }
               if (!targetRepo) {
                 const activeUriString = activeUri.toString();
-                targetRepo = repos.find((r: any) =>
-                  activeUriString.startsWith(r.rootUri?.toString() ?? ''),
-                );
+                targetRepo =
+                  repos.find((repo) =>
+                    activeUriString.startsWith(repo.rootUri.toString()),
+                  ) ?? null;
               }
             }
           }
           const hasChanges = targetRepo
-            ? (targetRepo.state?.workingTreeChanges?.length ?? 0) > 0 ||
-              (targetRepo.state?.indexChanges?.length ?? 0) > 0 ||
-              (targetRepo.state?.untrackedChanges?.length ?? 0) > 0
+            ? targetRepo.state.workingTreeChanges.length > 0 ||
+              targetRepo.state.indexChanges.length > 0 ||
+              targetRepo.state.untrackedChanges.length > 0
             : false;
           webviewView.webview.postMessage({ type: 'repoUpdate', hasChanges });
         } else {
@@ -412,8 +490,8 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
       }
     };
 
-    const attachRepoStateListener = (repo: any) => {
-      if (!repo?.state || observedRepos.has(repo)) {
+    const attachRepoStateListener = (repo: GitRepository) => {
+      if (observedRepos.has(repo)) {
         return;
       }
       observedRepos.add(repo);
@@ -424,9 +502,9 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
       );
     };
 
-    const setupGitListeners = (git: any) => {
+    const setupGitListeners = (git: GitApi) => {
       const setupRepoListeners = () => {
-        git.repositories.forEach((repo: any) => {
+        git.repositories.forEach((repo) => {
           attachRepoStateListener(repo);
         });
         checkGitStatus();
@@ -436,7 +514,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
 
       if (git.state !== 'initialized') {
         addGitDisposable(
-          git.onDidChangeState?.((state: any) => {
+          git.onDidChangeState?.((state) => {
             if (state === 'initialized') {
               setupRepoListeners();
             }
@@ -445,7 +523,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
       }
 
       addGitDisposable(
-        git.onDidOpenRepository?.((repo: any) => {
+        git.onDidOpenRepository?.((repo) => {
           attachRepoStateListener(repo);
           checkGitStatus();
         }),
@@ -453,23 +531,26 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
     };
 
     try {
-      const gitExtension = vscode.extensions.getExtension('vscode.git');
-      if (gitExtension?.isActive && gitExtension.exports) {
-        const git = gitExtension.exports.getAPI?.(1);
-        if (git) {
-          setupGitListeners(git);
-        }
+      const gitExtension = vscode.extensions.getExtension<unknown>('vscode.git');
+      if (
+        gitExtension &&
+        gitExtension.isActive &&
+        isGitExtensionExports(gitExtension.exports)
+      ) {
+        const git = gitExtension.exports.getAPI(1);
+        setupGitListeners(git);
       } else if (gitExtension && !gitExtension.isActive) {
-        (async () => {
+        void (async () => {
           try {
             await gitExtension.activate();
-            if (isViewDisposed) {
+            if (this._view !== webviewView) {
               return;
             }
-            const git = gitExtension.exports?.getAPI?.(1);
-            if (git) {
-              setupGitListeners(git);
+            if (!isGitExtensionExports(gitExtension.exports)) {
+              return;
             }
+            const git = gitExtension.exports.getAPI(1);
+            setupGitListeners(git);
           } catch (err) {
             console.error(
               '[Commit-Copilot] Failed to activate git extension:',
@@ -482,12 +563,17 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
       console.error('[Commit-Copilot] Error setting up git listeners:', error);
     }
 
-    webviewView.webview.onDidReceiveMessage(async (data) => {
-      switch (data.type) {
+    webviewView.webview.onDidReceiveMessage(async (data: unknown) => {
+      const message = asMessage(data);
+      if (!message) {
+        return;
+      }
+
+      switch (message.type) {
         case 'saveKey': {
           const text = getSidePanelText(this.getEffectiveDisplayLanguage());
-          const provider = String(data.provider);
-          const apiKey = data.value;
+          const provider = toProvider(message.provider);
+          const apiKey = asString(message.value) ?? '';
           if (!apiKey && provider !== 'ollama') {
             vscode.window.showErrorMessage(text.apiKeyCannotBeEmpty);
             this._view?.webview.postMessage({
@@ -520,7 +606,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
                 );
                 if (!validationResult.valid) {
                   vscode.window.showWarningMessage(
-                    `${text.validationFailedPrefix}: ${validationResult.error || text.unableToConnectFallback}`,
+                    `${text.validationFailedPrefix}: ${validationResult.error ?? text.unableToConnectFallback}`,
                   );
                   this._view?.webview.postMessage({
                     type: 'validationResult',
@@ -542,7 +628,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
                   type: 'validationResult',
                   success: true,
                   models: [],
-                  currentModel: savedModel || '',
+                  currentModel: savedModel ?? '',
                   allowCustomModel: true,
                   provider,
                 });
@@ -551,7 +637,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
                   hasKey: true,
                   provider,
                 });
-              } catch (e) {
+              } catch {
                 vscode.window.showErrorMessage(text.saveConfigFailed);
                 this._view?.webview.postMessage({
                   type: 'validationResult',
@@ -560,14 +646,18 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
                 });
               }
             } else {
-              const builtIn = provider as APIProvider;
+              const builtIn = isAPIProvider(provider)
+                ? provider
+                : DEFAULT_PROVIDER;
+              const resolvedApiValue =
+                apiKey.length > 0 ? apiKey : OLLAMA_DEFAULT_HOST;
               const validationResult = await this.validateApiKey(
                 builtIn,
-                apiKey || OLLAMA_DEFAULT_HOST,
+                resolvedApiValue,
               );
               if (!validationResult.valid) {
                 vscode.window.showWarningMessage(
-                  `${text.validationFailedPrefix}: ${validationResult.error || text.unableToConnectFallback}`,
+                  `${text.validationFailedPrefix}: ${validationResult.error ?? text.unableToConnectFallback}`,
                 );
                 this._view?.webview.postMessage({
                   type: 'validationResult',
@@ -581,7 +671,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
                 const storageKey = API_KEY_STORAGE_KEYS[builtIn];
                 await this._context.secrets.store(
                   storageKey,
-                  apiKey || OLLAMA_DEFAULT_HOST,
+                  resolvedApiValue,
                 );
                 vscode.window.showInformationMessage(
                   text.saveConfigSuccess(PROVIDER_DISPLAY_NAMES[builtIn]),
@@ -597,10 +687,10 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
                   hasKey: true,
                   provider,
                   ...(builtIn === 'ollama'
-                    ? { value: apiKey || OLLAMA_DEFAULT_HOST }
+                    ? { value: resolvedApiValue }
                     : {}),
                 });
-              } catch (e) {
+              } catch {
                 vscode.window.showErrorMessage(text.saveConfigFailed);
                 this._view?.webview.postMessage({
                   type: 'validationResult',
@@ -617,9 +707,11 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
         case 'generate': {
           try {
             const requestedMode =
-              data.generateMode === 'direct-diff' ? 'direct-diff' : 'agentic';
+              message.generateMode === 'direct-diff'
+                ? 'direct-diff'
+                : 'agentic';
             const commitOutputOptions = normalizeCommitOutputOptions(
-              data.commitOutputOptions,
+              message.commitOutputOptions,
             );
             await vscode.commands.executeCommand('commit-copilot.generate', {
               generateMode: requestedMode,
@@ -637,7 +729,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
           break;
         }
         case 'checkKey': {
-          const provider = String(data.provider || DEFAULT_PROVIDER);
+          const provider = toProvider(message.provider);
           let key: string | undefined;
           if (isCustomProvider(provider)) {
             const customId = getCustomProviderId(provider);
@@ -645,15 +737,17 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
               getCustomProviderStorageKey(customId),
             );
           } else {
-            const storageKey = API_KEY_STORAGE_KEYS[provider as APIProvider];
+            const builtIn = isAPIProvider(provider) ? provider : DEFAULT_PROVIDER;
+            const storageKey = API_KEY_STORAGE_KEYS[builtIn];
             key = await this._context.secrets.get(storageKey);
           }
+          const resolvedKey = key && key.length > 0 ? key : OLLAMA_DEFAULT_HOST;
           this._view?.webview.postMessage({
             type: 'keyStatus',
-            hasKey: !!key,
+            hasKey: Boolean(key),
             provider,
             ...(provider === 'ollama'
-              ? { value: key || OLLAMA_DEFAULT_HOST }
+              ? { value: resolvedKey }
               : {}),
           });
           break;
@@ -663,7 +757,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
           break;
         }
         case 'getModels': {
-          const provider = String(data.provider || DEFAULT_PROVIDER);
+          const provider = toProvider(message.provider);
           if (isCustomProvider(provider)) {
             const customId = getCustomProviderId(provider);
             const key = await this._context.secrets.get(
@@ -676,13 +770,13 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
               this._view?.webview.postMessage({
                 type: 'modelsList',
                 models: [],
-                currentModel: savedModel || '',
+                currentModel: savedModel ?? '',
                 provider,
                 allowCustomModel: true,
               });
             }
           } else {
-            const builtIn = provider as APIProvider;
+            const builtIn = isAPIProvider(provider) ? provider : DEFAULT_PROVIDER;
             const storageKey = API_KEY_STORAGE_KEYS[builtIn];
             const key = await this._context.secrets.get(storageKey);
             if (key || builtIn === 'ollama') {
@@ -692,7 +786,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
               this._view?.webview.postMessage({
                 type: 'modelsList',
                 models: MODELS_BY_PROVIDER[builtIn],
-                currentModel: savedModel || DEFAULT_MODELS[builtIn],
+                currentModel: savedModel ?? DEFAULT_MODELS[builtIn],
                 provider,
               });
             }
@@ -700,25 +794,27 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
           break;
         }
         case 'saveModel': {
-          const provider = String(data.provider || DEFAULT_PROVIDER);
+          const provider = toProvider(message.provider);
+          const modelValue = toStoredModel(message.value);
           if (isCustomProvider(provider)) {
             const customId = getCustomProviderId(provider);
             await this._context.globalState.update(
               `CUSTOM_${customId}_MODEL`,
-              data.value,
+              modelValue,
             );
           } else {
             await this._context.globalState.update(
               `${provider.toUpperCase()}_MODEL`,
-              data.value,
+              modelValue,
             );
           }
           break;
         }
         case 'saveProvider': {
+          const provider = toStoredModel(message.value);
           await this._context.globalState.update(
             'CURRENT_PROVIDER',
-            data.value,
+            provider,
           );
           break;
         }
@@ -727,19 +823,19 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
             this._context.globalState.get<APIProvider>('CURRENT_PROVIDER');
           this._view?.webview.postMessage({
             type: 'currentProvider',
-            provider: savedProvider || DEFAULT_PROVIDER,
+            provider: savedProvider ?? DEFAULT_PROVIDER,
           });
           break;
         }
         case 'saveGenerateMode': {
           const mode: GenerateMode =
-            data.value === 'direct-diff' ? 'direct-diff' : 'agentic';
+            message.value === 'direct-diff' ? 'direct-diff' : 'agentic';
           await this._context.globalState.update('GENERATE_MODE', mode);
           break;
         }
         case 'getGenerateMode': {
           const savedMode =
-            this._context.globalState.get<GenerateMode>('GENERATE_MODE') ||
+            this._context.globalState.get<GenerateMode>('GENERATE_MODE') ??
             DEFAULT_GENERATE_MODE;
           this._view?.webview.postMessage({
             type: 'currentGenerateMode',
@@ -748,7 +844,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
           break;
         }
         case 'saveCommitOutputOptions': {
-          const commitOutputOptions = normalizeCommitOutputOptions(data.value);
+          const commitOutputOptions = normalizeCommitOutputOptions(message.value);
           await this._context.globalState.update(
             'COMMIT_OUTPUT_OPTIONS',
             commitOutputOptions,
@@ -759,7 +855,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
           const savedOptions = normalizeCommitOutputOptions(
             this._context.globalState.get<CommitOutputOptions>(
               'COMMIT_OUTPUT_OPTIONS',
-            ) || DEFAULT_COMMIT_OUTPUT_OPTIONS,
+            ) ?? DEFAULT_COMMIT_OUTPUT_OPTIONS,
           );
           this._view?.webview.postMessage({
             type: 'currentCommitOutputOptions',
@@ -808,7 +904,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
           break;
         }
         case 'saveDisplayLanguage': {
-          const nextLanguage = normalizeDisplayLanguage(data.value);
+          const nextLanguage = normalizeDisplayLanguage(message.value);
           await this._context.globalState.update(
             DISPLAY_LANGUAGE_STATE_KEY,
             nextLanguage,
@@ -837,7 +933,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
           break;
         }
         case 'saveMaxAgentSteps': {
-          const steps = normalizeMaxAgentStepsValue(data.value);
+          const steps = normalizeMaxAgentStepsValue(message.value);
           await this._context.globalState.update(
             MAX_AGENT_STEPS_STATE_KEY,
             steps > 0 ? steps : null,
@@ -859,10 +955,11 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
         case 'saveCustomProvider': {
           const text = getSidePanelText(this.getEffectiveDisplayLanguage());
           const customProviders = this.getCustomProviders();
-          const name = String(data.name || '').trim();
-          const baseUrl = String(data.baseUrl || '').trim();
-          const apiKey = String(data.apiKey || '').trim();
-          const editId = data.editId as string | null;
+          const name = (asString(message.name) ?? '').trim();
+          const baseUrl = (asString(message.baseUrl) ?? '').trim();
+          const apiKey = (asString(message.apiKey) ?? '').trim();
+          const editIdRaw = asString(message.editId);
+          const editId = editIdRaw && editIdRaw.length > 0 ? editIdRaw : null;
 
           if (!editId && !apiKey) {
             this._view?.webview.postMessage({
@@ -881,7 +978,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
             if (!validationResult.valid) {
               this._view?.webview.postMessage({
                 type: 'customProviderSaveFailed',
-                error: validationResult.error || text.unableToConnectFallback,
+                error: validationResult.error ?? text.unableToConnectFallback,
               });
               break;
             }
@@ -908,7 +1005,8 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
             let uniqueId = id;
             let counter = 1;
             while (existingIds.has(uniqueId)) {
-              uniqueId = `${id}_${counter++}`;
+              uniqueId = `${id}_${String(counter)}`;
+              counter += 1;
             }
             id = uniqueId;
             customProviders.push({ id, name, baseUrl });
@@ -929,7 +1027,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
           break;
         }
         case 'deleteCustomProvider': {
-          const deleteId = String(data.id || '');
+          const deleteId = asString(message.id) ?? '';
           let customProviders = this.getCustomProviders();
           customProviders = customProviders.filter((cp) => cp.id !== deleteId);
           await this.saveCustomProviders(customProviders);
@@ -965,14 +1063,14 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
           break;
         }
         case 'showWarning': {
-          const message = String(data.message || '');
-          if (message) {
-            vscode.window.showWarningMessage(message);
+          const warningMessage = asString(message.message) ?? '';
+          if (warningMessage) {
+            vscode.window.showWarningMessage(warningMessage);
           }
           break;
         }
         case 'setCurrentScreen': {
-          this.updateCurrentScreen(data.value);
+          this.updateCurrentScreen(message.value);
           break;
         }
       }

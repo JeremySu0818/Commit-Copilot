@@ -56,7 +56,7 @@ export function AddProviderView() {
     const allNames = Object.values(bootstrap.providers).map((n) =>
       n.toLowerCase(),
     );
-    (state.customProviders || []).forEach((cp) => {
+    state.customProviders.forEach((cp) => {
       if (cp.id !== draft.editingId) {
         allNames.push(cp.name.toLowerCase());
       }
@@ -84,8 +84,8 @@ export function AddProviderView() {
       type: 'saveCustomProvider',
       name,
       baseUrl,
-      apiKey: apiKey || '',
-      editId: draft.editingId || null,
+      apiKey,
+      editId: draft.editingId ?? null,
     });
   }, [
     draft,

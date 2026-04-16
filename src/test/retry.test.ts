@@ -3,21 +3,41 @@ import assert from 'node:assert/strict';
 import { withRetry } from '../retry';
 import { GenerationCancelledError } from '../errors';
 
-test('withRetry retries retryable errors and then succeeds', async () => {
+function createImmediateSetTimeout(
+  scheduledDelays: number[],
+): typeof setTimeout {
+  type TimeoutHandler = Parameters<typeof setTimeout>[0];
+  return ((handler: TimeoutHandler, ms?: number) => {
+    scheduledDelays.push(ms ?? 0);
+    if (typeof handler === 'function') {
+      handler();
+    }
+    const timeoutLike = {
+      hasRef: () => false,
+      ref: () => timeoutLike,
+      unref: () => timeoutLike,
+      refresh: () => timeoutLike,
+      [Symbol.toPrimitive]: () => 0,
+    };
+    return timeoutLike as unknown as ReturnType<typeof setTimeout>;
+  }) as typeof setTimeout;
+}
+
+void test('withRetry retries retryable errors and then succeeds', async () => {
   let attempts = 0;
   const retryAttempts: number[] = [];
 
   const result = await withRetry(
-    async () => {
+    () => {
       attempts++;
       if (attempts < 3) {
         const err = new Error('rate limit exceeded') as Error & {
           status?: number;
         };
         err.status = 429;
-        throw err;
+        return Promise.reject(err);
       }
-      return 'ok';
+      return Promise.resolve('ok');
     },
     {
       maxAttempts: 4,
@@ -33,16 +53,16 @@ test('withRetry retries retryable errors and then succeeds', async () => {
   assert.deepEqual(retryAttempts, [1, 2]);
 });
 
-test('withRetry does not retry auth errors', async () => {
+void test('withRetry does not retry auth errors', async () => {
   let attempts = 0;
 
   await assert.rejects(
     withRetry(
-      async () => {
+      () => {
         attempts++;
         const err = new Error('invalid api key') as Error & { status?: number };
         err.status = 401;
-        throw err;
+        return Promise.reject(err);
       },
       {
         maxAttempts: 4,
@@ -56,31 +76,23 @@ test('withRetry does not retry auth errors', async () => {
   assert.equal(attempts, 1);
 });
 
-test('withRetry clamps retry-after delay by maxDelayMs', async () => {
+void test('withRetry clamps retry-after delay by maxDelayMs', async () => {
   const originalSetTimeout = globalThis.setTimeout;
   const scheduledDelays: number[] = [];
 
-  globalThis.setTimeout = ((handler: (...args: any[]) => void, ms?: number) => {
-    scheduledDelays.push(ms ?? 0);
-    handler();
-    return {
-      hasRef: () => false,
-      ref: () => undefined,
-      unref: () => undefined,
-    } as any;
-  }) as typeof setTimeout;
+  globalThis.setTimeout = createImmediateSetTimeout(scheduledDelays);
 
   try {
     await assert.rejects(
       withRetry(
-        async () => {
+        () => {
           const err = new Error('rate limited') as Error & {
             status?: number;
             headers?: Record<string, string>;
           };
           err.status = 429;
           err.headers = { 'retry-after': '3600' };
-          throw err;
+          return Promise.reject(err);
         },
         {
           maxAttempts: 2,
@@ -97,14 +109,14 @@ test('withRetry clamps retry-after delay by maxDelayMs', async () => {
   }
 });
 
-test('withRetry does not retry generation cancellation errors', async () => {
+void test('withRetry does not retry generation cancellation errors', async () => {
   let attempts = 0;
 
   await assert.rejects(
     withRetry(
-      async () => {
+      () => {
         attempts++;
-        throw new GenerationCancelledError();
+        return Promise.reject(new GenerationCancelledError());
       },
       {
         maxAttempts: 4,
@@ -119,50 +131,45 @@ test('withRetry does not retry generation cancellation errors', async () => {
   assert.equal(attempts, 1);
 });
 
-test('withRetry aborts before scheduling retry delay when cancellation is requested', async () => {
-  const originalSetTimeout = globalThis.setTimeout;
-  const scheduledDelays: number[] = [];
-  let attempts = 0;
+void test(
+  'withRetry aborts before scheduling retry delay when cancellation is requested',
+  async () => {
+    const originalSetTimeout = globalThis.setTimeout;
+    const scheduledDelays: number[] = [];
+    let attempts = 0;
 
-  globalThis.setTimeout = ((handler: (...args: any[]) => void, ms?: number) => {
-    scheduledDelays.push(ms ?? 0);
-    handler();
-    return {
-      hasRef: () => false,
-      ref: () => undefined,
-      unref: () => undefined,
-    } as any;
-  }) as typeof setTimeout;
+    globalThis.setTimeout = createImmediateSetTimeout(scheduledDelays);
 
-  try {
-    await assert.rejects(
-      withRetry(
-        async () => {
-          attempts++;
-          const err = new Error('rate limit exceeded') as Error & {
-            status?: number;
-          };
-          err.status = 429;
-          throw err;
-        },
-        {
-          maxAttempts: 4,
-          baseDelayMs: 10,
-          maxDelayMs: 10,
-          jitterMs: 0,
-          checkAbort: () => {
-            if (attempts >= 1) {
-              throw new GenerationCancelledError();
-            }
+    try {
+      await assert.rejects(
+        withRetry(
+          () => {
+            attempts++;
+            const err = new Error('rate limit exceeded') as Error & {
+              status?: number;
+            };
+            err.status = 429;
+            return Promise.reject(err);
           },
-        },
-      ),
-      (error) => error instanceof GenerationCancelledError,
-    );
+          {
+            maxAttempts: 4,
+            baseDelayMs: 10,
+            maxDelayMs: 10,
+            jitterMs: 0,
+            checkAbort: () => {
+              if (attempts >= 1) {
+                throw new GenerationCancelledError();
+              }
+            },
+          },
+        ),
+        (error) => error instanceof GenerationCancelledError,
+      );
 
-    assert.equal(attempts, 1);
-    assert.deepEqual(scheduledDelays, []);
-  } finally {
-    globalThis.setTimeout = originalSetTimeout;
-  }
-});
+      assert.equal(attempts, 1);
+      assert.deepEqual(scheduledDelays, []);
+    } finally {
+      globalThis.setTimeout = originalSetTimeout;
+    }
+  },
+);

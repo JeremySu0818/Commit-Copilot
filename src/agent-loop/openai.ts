@@ -32,6 +32,68 @@ import {
 import { DEFAULT_RETRY_OPTIONS, RetryInfo, withRetry } from '../retry';
 import { LOCALES } from '../i18n/locales';
 import type { EffectiveDisplayLanguage } from '../i18n/types';
+import type {
+  ChatCompletionMessageParam,
+  ChatCompletionTool,
+  ChatCompletionToolMessageParam,
+} from 'openai/resources/chat/completions';
+
+type UnknownRecord = Record<string, unknown>;
+
+interface ErrorLike {
+  message?: unknown;
+  status?: unknown;
+}
+
+function toErrorLike(error: unknown): ErrorLike {
+  return typeof error === 'object' && error !== null ? (error as ErrorLike) : {};
+}
+
+function pickNonEmpty(primary: string | undefined, fallback: string): string {
+  return primary && primary.length > 0 ? primary : fallback;
+}
+
+function isRecord(value: unknown): value is UnknownRecord {
+  return typeof value === 'object' && value !== null;
+}
+
+function isUnknownArray(value: unknown): value is unknown[] {
+  return Array.isArray(value);
+}
+
+interface OpenAIFunctionToolCall {
+  id: string;
+  function: {
+    name: string;
+    arguments: string;
+  };
+}
+
+function isFunctionToolCall(value: unknown): value is OpenAIFunctionToolCall {
+  return (
+    isRecord(value) &&
+    value.type === 'function' &&
+    typeof value.id === 'string' &&
+    isRecord(value.function) &&
+    typeof value.function.name === 'string' &&
+    typeof value.function.arguments === 'string'
+  );
+}
+
+function getAssistantMessage(completion: unknown): UnknownRecord | null {
+  if (!isRecord(completion) || !isUnknownArray(completion.choices)) {
+    return null;
+  }
+  const firstChoice = completion.choices[0];
+  if (!isRecord(firstChoice) || !isRecord(firstChoice.message)) {
+    return null;
+  }
+  return firstChoice.message;
+}
+
+function getOpenAIMessageText(content: unknown): string | null {
+  return typeof content === 'string' && content.length > 0 ? content : null;
+}
 
 function parseToolArguments(rawArguments: unknown): {
   args: Record<string, unknown>;
@@ -42,7 +104,7 @@ function parseToolArguments(rawArguments: unknown): {
   }
 
   try {
-    const parsed = JSON.parse(rawArguments);
+    const parsed: unknown = JSON.parse(rawArguments);
     if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
       return { args: parsed as Record<string, unknown> };
     }
@@ -79,12 +141,13 @@ async function runOpenAIAgentLoop(
   }
 
   try {
-    const OpenAI = (await import('openai')).default;
-    const client = new OpenAI({
+    const openaiModule: typeof import('openai') = await import('openai');
+    const OpenAIClient = openaiModule.default;
+    const client = new OpenAIClient({
       apiKey,
       ...(baseUrl ? { baseURL: baseUrl } : {}),
     });
-    const modelName = model || DEFAULT_MODELS.openai;
+    const modelName = pickNonEmpty(model, DEFAULT_MODELS.openai);
     const resolvedCommitOutputOptions =
       normalizeCommitOutputOptions(commitOutputOptions);
 
@@ -102,7 +165,7 @@ async function runOpenAIAgentLoop(
       maxAgentSteps,
     });
 
-    const messages: any[] = [
+    const messages: ChatCompletionMessageParam[] = [
       { role: 'system', content: systemPrompt },
       { role: 'user', content: initialContext },
     ];
@@ -131,37 +194,37 @@ async function runOpenAIAgentLoop(
     };
 
     let step = 0;
+    const stepLimit =
+      maxAgentSteps && maxAgentSteps > 0 ? maxAgentSteps : Number.POSITIVE_INFINITY;
 
-    while (
-      step < (maxAgentSteps && maxAgentSteps > 0 ? maxAgentSteps : Infinity)
-    ) {
+    while (step < stepLimit) {
       throwIfCancellationRequested(cancellationToken);
       const completion = await withRetry(
         () =>
           client.chat.completions.create({
             model: modelName,
             messages,
-            tools: toOpenAITools(isStaged) as any,
+            tools: toOpenAITools(isStaged) as unknown as ChatCompletionTool[],
             tool_choice: 'auto',
           }),
         retryOptions,
       );
 
-      const choice = completion.choices[0];
-      if (!choice) {
+      const assistantMessage = getAssistantMessage(completion);
+      if (!assistantMessage) {
         throw new APIRequestError('Empty response from OpenAI API');
       }
 
-      const assistantMessage = choice.message;
-      messages.push(assistantMessage);
-      const functionToolCalls = (assistantMessage.tool_calls || []).filter(
-        (toolCall): toolCall is any =>
-          toolCall.type === 'function' &&
-          typeof (toolCall as any).function?.name === 'string',
+      messages.push(assistantMessage as unknown as ChatCompletionMessageParam);
+      const toolCalls = Array.isArray(assistantMessage.tool_calls)
+        ? assistantMessage.tool_calls
+        : [];
+      const functionToolCalls = toolCalls.filter((toolCall) =>
+        isFunctionToolCall(toolCall),
       );
 
       if (functionToolCalls.length > 0) {
-        const parsedToolCalls = functionToolCalls.map((toolCall: any) => {
+        const parsedToolCalls = functionToolCalls.map((toolCall) => {
           const parsed = parseToolArguments(toolCall.function.arguments);
           return {
             toolCall,
@@ -197,15 +260,16 @@ async function runOpenAIAgentLoop(
             content = result.content;
           }
 
-          messages.push({
+          const toolMessage: ChatCompletionToolMessageParam = {
             role: 'tool',
             tool_call_id: toolCall.id,
             content,
-          });
+          };
+          messages.push(toolMessage);
         }
         step++;
       } else {
-        const text = assistantMessage.content;
+        const text = getOpenAIMessageText(assistantMessage.content);
         if (!text) {
           throw new APIRequestError('Empty text response from OpenAI API');
         }
@@ -226,9 +290,10 @@ async function runOpenAIAgentLoop(
         }),
       retryOptions,
     );
-    const text = finalCompletion.choices[0]?.message?.content;
+    const finalMessage = getAssistantMessage(finalCompletion);
+    const text = getOpenAIMessageText(finalMessage?.content);
     return text ? extractCommitMessage(text) : 'chore(project): update files';
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (
       error instanceof NoChangesError ||
       error instanceof APIKeyMissingError ||
@@ -236,8 +301,11 @@ async function runOpenAIAgentLoop(
     ) {
       throw error;
     }
-    const message = error?.message || String(error);
-    const status = error?.status;
+    const message =
+      typeof toErrorLike(error).message === 'string'
+        ? (toErrorLike(error).message as string)
+        : String(error);
+    const status = toErrorLike(error).status;
     if (
       status === 401 ||
       status === 403 ||

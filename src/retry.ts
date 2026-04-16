@@ -22,11 +22,47 @@ export const DEFAULT_RETRY_OPTIONS: RetryOptions = {
   jitterMs: 250,
 };
 
+type UnknownRecord = Record<string, unknown>;
+
+interface ErrorLike {
+  status?: unknown;
+  statusCode?: unknown;
+  response?: unknown;
+  headers?: unknown;
+  header?: unknown;
+  code?: unknown;
+  errno?: unknown;
+  message?: unknown;
+  name?: unknown;
+}
+
+function isRecord(value: unknown): value is UnknownRecord {
+  return typeof value === 'object' && value !== null;
+}
+
+function toErrorLike(error: unknown): ErrorLike {
+  return isRecord(error) ? (error as ErrorLike) : {};
+}
+
+function toText(value: unknown): string {
+  if (typeof value === 'string') {
+    return value;
+  }
+  if (
+    typeof value === 'number' ||
+    typeof value === 'boolean' ||
+    typeof value === 'bigint'
+  ) {
+    return String(value);
+  }
+  return '';
+}
+
 export async function withRetry<T>(
   operation: () => Promise<T>,
   options: RetryOptions,
 ): Promise<T> {
-  const shouldRetry = options.shouldRetry || isRetryableError;
+  const shouldRetry = options.shouldRetry ?? isRetryableError;
   let attempt = 0;
 
   while (attempt < options.maxAttempts) {
@@ -54,7 +90,9 @@ export async function withRetry<T>(
       await sleep(delayMs, options.checkAbort);
     }
   }
-  throw new Error(`withRetry: exhausted ${options.maxAttempts} attempts`);
+  throw new Error(
+    `withRetry: exhausted ${String(options.maxAttempts)} attempts`,
+  );
 }
 
 function getRetryDelayMs(
@@ -69,7 +107,7 @@ function getRetryDelayMs(
   );
   const jitter = Math.floor(Math.random() * (options.jitterMs + 1));
 
-  if (retryAfterMs !== null && retryAfterMs !== undefined) {
+  if (retryAfterMs !== null) {
     const retryAfterDelay = Math.max(options.baseDelayMs, retryAfterMs);
     return Math.min(options.maxDelayMs, retryAfterDelay + jitter);
   }
@@ -86,15 +124,19 @@ function extractRetryAfterMs(error: unknown): number | null {
   return parseRetryAfterMs(value);
 }
 
-function getHeaders(error: any): any {
-  if (!error) return null;
-  return error.headers || error.response?.headers || error.response?.header;
+function getHeaders(error: unknown): unknown {
+  const candidate = toErrorLike(error);
+  const response = toErrorLike(candidate.response);
+  return candidate.headers ?? response.headers ?? response.header ?? null;
 }
 
-function getHeaderValue(headers: any, name: string): unknown {
-  if (!headers) return null;
-  if (typeof headers.get === 'function') {
-    return headers.get(name);
+function getHeaderValue(headers: unknown, name: string): unknown {
+  if (!isRecord(headers)) {
+    return null;
+  }
+  if ('get' in headers && typeof headers.get === 'function') {
+    const getMethod = headers.get as (headerName: string) => unknown;
+    return getMethod(name);
   }
   return headers[name] ?? headers[name.toLowerCase()];
 }
@@ -116,7 +158,7 @@ function parseRetryAfterMs(value: unknown): number | null {
   return null;
 }
 
-function isRetryableError(error: any): boolean {
+function isRetryableError(error: unknown): boolean {
   if (isCancellationError(error)) {
     return false;
   }
@@ -130,7 +172,8 @@ function isRetryableError(error: any): boolean {
     return true;
   }
 
-  const code = String(error?.code || error?.errno || '').toUpperCase();
+  const candidate = toErrorLike(error);
+  const code = toText(candidate.code ?? candidate.errno).toUpperCase();
   if (
     code.includes('ECONNRESET') ||
     code.includes('ETIMEDOUT') ||
@@ -142,7 +185,10 @@ function isRetryableError(error: any): boolean {
     return true;
   }
 
-  const message = String(error?.message || error || '').toLowerCase();
+  const message = (
+    toText(candidate.message) ||
+    (error instanceof Error ? error.message : '')
+  ).toLowerCase();
   if (
     message.includes('rate limit') ||
     message.includes('rate_limit') ||
@@ -159,18 +205,23 @@ function isRetryableError(error: any): boolean {
   return false;
 }
 
-function isCancellationError(error: any): boolean {
+function isCancellationError(error: unknown): boolean {
+  const candidate = toErrorLike(error);
   return (
-    error?.name === 'GenerationCancelledError' ||
-    String(error?.code || '').toUpperCase() === 'CANCELLED'
+    candidate.name === 'GenerationCancelledError' ||
+    toText(candidate.code).toUpperCase() === 'CANCELLED'
   );
 }
 
-function isAuthError(status: number | null, error: any): boolean {
+function isAuthError(status: number | null, error: unknown): boolean {
   if (status === 401 || status === 403) {
     return true;
   }
-  const message = String(error?.message || error || '').toLowerCase();
+  const candidate = toErrorLike(error);
+  const message = (
+    toText(candidate.message) ||
+    (error instanceof Error ? error.message : '')
+  ).toLowerCase();
   return (
     message.includes('invalid api key') ||
     message.includes('invalid_api_key') ||
@@ -180,12 +231,14 @@ function isAuthError(status: number | null, error: any): boolean {
   );
 }
 
-function getStatus(error: any): number | null {
+function getStatus(error: unknown): number | null {
+  const candidate = toErrorLike(error);
+  const response = toErrorLike(candidate.response);
   const status =
-    error?.status ??
-    error?.statusCode ??
-    error?.response?.status ??
-    error?.response?.statusCode;
+    candidate.status ??
+    candidate.statusCode ??
+    response.status ??
+    response.statusCode;
   return typeof status === 'number' ? status : null;
 }
 

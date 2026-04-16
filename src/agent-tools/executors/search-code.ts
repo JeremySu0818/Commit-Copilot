@@ -11,6 +11,25 @@ import {
   parseIntegerArg,
 } from './shared';
 
+function asString(value: unknown): string | undefined {
+  return typeof value === 'string' ? value : undefined;
+}
+
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'message' in error &&
+    typeof (error as { message?: unknown }).message === 'string'
+  ) {
+    return (error as { message: string }).message;
+  }
+  return String(error);
+}
+
 async function resolveSearchFiles(
   repoRoot: string,
   gitOps?: GitOperations,
@@ -39,7 +58,7 @@ async function executeSearchCode(
   gitOps?: GitOperations,
   isStaged = false,
 ): Promise<string> {
-  const query = args.query as string | undefined;
+  const query = asString(args.query);
   if (!query) {
     return "Error: 'query' is required. Provide a keyword or text pattern to search for.";
   }
@@ -51,8 +70,8 @@ async function executeSearchCode(
   let files: vscode.Uri[];
   try {
     files = await resolveSearchFiles(repoRoot, gitOps);
-  } catch (err: any) {
-    return `Error searching files: ${err.message}`;
+  } catch (err: unknown) {
+    return `Error searching files: ${getErrorMessage(err)}`;
   }
 
   const searchQuery = caseSensitive ? query : query.toLowerCase();
@@ -119,20 +138,20 @@ async function executeSearchCode(
   }
 
   outputLines.push(
-    `Search results for "${query}" (case-${caseSensitive ? 'sensitive' : 'insensitive'}): ${totalMatches} match${totalMatches === 1 ? '' : 'es'} in ${fileMatches.length} file${fileMatches.length === 1 ? '' : 's'}`,
+    `Search results for "${query}" (case-${caseSensitive ? 'sensitive' : 'insensitive'}): ${String(totalMatches)} match${totalMatches === 1 ? '' : 'es'} in ${String(fileMatches.length)} file${fileMatches.length === 1 ? '' : 's'}`,
   );
   outputLines.push('');
 
   for (const fm of fileMatches) {
     outputLines.push(fm.relPath);
     for (const m of fm.matches) {
-      outputLines.push(`  L${m.line}: ${m.text}`);
+      outputLines.push(`  L${String(m.line)}: ${m.text}`);
     }
     outputLines.push('');
   }
 
   if (fileMatches.length >= effectiveMaxFiles) {
-    outputLines.push(`... (results capped at ${effectiveMaxFiles} files)`);
+    outputLines.push(`... (results capped at ${String(effectiveMaxFiles)} files)`);
   }
 
   return outputLines.join('\n').trimEnd();

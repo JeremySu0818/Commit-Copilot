@@ -76,7 +76,7 @@ export const koLocale: LocaleTextBundle = {
         '리포지토리 선택을 위한 활성 편집기가 없습니다.',
       selectedOnlyRepo: (path) => `유일한 리포지토리 선택됨: ${path}`,
       multiRepoNotDetermined: (count) =>
-        `${count}개의 리포지토리가 발견되었지만 활성 리포지토리를 결정할 수 없습니다.`,
+        `${String(count)}개의 리포지토리가 발견되었지만 활성 리포지토리를 결정할 수 없습니다.`,
       noRepoInApi: 'API에서 리포지토리를 찾을 수 없습니다.',
       usingProvider: (providerName) => `사용 중인 프로바이더: ${providerName}`,
       usingGenerateMode: (mode) => `생성 모드 사용: ${mode}`,
@@ -233,50 +233,50 @@ export const koLocale: LocaleTextBundle = {
     analyzingChanges: '에이전트 변경 사항 분석 중...',
     generatingMessage: '메시지 생성 중...',
     transientApiError: (attempt, maxAttempts, seconds) =>
-      `일시적인 API 오류입니다. 재시도 중 (${attempt}/${maxAttempts}) ${seconds}초 후...`,
+      `일시적인 API 오류입니다. 재시도 중 (${String(attempt)}/${String(maxAttempts)}) ${String(seconds)}초 후...`,
     pulling: (model, status, percent) =>
       percent !== undefined
-        ? `가져오는 중 ${model}: ${status} (${percent}%)`
+        ? `가져오는 중 ${model}: ${status} (${String(percent)}%)`
         : `가져오는 중 ${model}: ${status}`,
 
     stepAnalyzingDiff: (step, path) =>
-      `[단계 ${step}] <code>${path}</code>에 대한 변경 사항 분석 중`,
+      `[단계 ${String(step)}] <code>${path}</code>에 대한 변경 사항 분석 중`,
     stepReadingFile: (step, path) =>
-      `[단계 ${step}] <code>${path}</code> 읽는 중`,
+      `[단계 ${String(step)}] <code>${path}</code> 읽는 중`,
     stepGettingOutline: (step, path) =>
-      `[단계 ${step}] <code>${path}</code>에 대한 코드 구조 탐색 중`,
+      `[단계 ${String(step)}] <code>${path}</code>에 대한 코드 구조 탐색 중`,
     stepFindingReferences: (step, target) =>
-      `[단계 ${step}] 코드베이스에서 <code>${target}</code> 검색 중`,
+      `[단계 ${String(step)}] 코드베이스에서 <code>${target}</code> 검색 중`,
     stepFetchingRecentCommits: (step, count) =>
       count !== undefined
-        ? `[단계 ${step}] 최근 ${count}개의 커밋 내역 가져오는 중`
-        : `[단계 ${step}] 최근 커밋 내역 가져오는 중...`,
+        ? `[단계 ${String(step)}] 최근 ${String(count)}개의 커밋 내역 가져오는 중`
+        : `[단계 ${String(step)}] 최근 커밋 내역 가져오는 중...`,
     stepSearchingProject: (step, keyword) =>
-      `[단계 ${step}] 프로젝트에서 <code>${keyword}</code> 검색 중`,
+      `[단계 ${String(step)}] 프로젝트에서 <code>${keyword}</code> 검색 중`,
     stepCalling: (step, toolName) =>
-      `[단계 ${step}] <code>${toolName}</code> 도구 실행 중...`,
+      `[단계 ${String(step)}] <code>${toolName}</code> 도구 실행 중...`,
 
     stepAnalyzingMultipleDiffs: (step, paths) =>
-      `[단계 ${step}] 여러 파일의 변경 사항 분석 중: <code>${paths}</code>`,
+      `[단계 ${String(step)}] 여러 파일의 변경 사항 분석 중: <code>${paths}</code>`,
     stepAnalyzingDiffsForCount: (step, count) =>
-      `[단계 ${step}] ${count}개 파일의 변경 사항 분석 중...`,
+      `[단계 ${String(step)}] ${String(count)}개 파일의 변경 사항 분석 중...`,
     stepReadingMultipleFiles: (step, paths) =>
-      `[단계 ${step}] 여러 파일 읽는 중: <code>${paths}</code>`,
+      `[단계 ${String(step)}] 여러 파일 읽는 중: <code>${paths}</code>`,
     stepReadingFilesForCount: (step, count) =>
-      `[단계 ${step}] ${count}개의 파일 읽는 중...`,
+      `[단계 ${String(step)}] ${String(count)}개의 파일 읽는 중...`,
     stepGettingMultipleOutlines: (step, paths) =>
-      `[단계 ${step}] 여러 파일의 코드 구조 탐색 중: <code>${paths}</code>`,
+      `[단계 ${String(step)}] 여러 파일의 코드 구조 탐색 중: <code>${paths}</code>`,
     stepGettingOutlinesForCount: (step, count) =>
-      `[단계 ${step}] ${count}개 파일의 구조 정보 가져오는 중...`,
+      `[단계 ${String(step)}] ${String(count)}개 파일의 구조 정보 가져오는 중...`,
     stepFindingReferencesForMultiple: (step, targets) =>
-      `[단계 ${step}] 여러 참조 검색 중: <code>${targets}</code>`,
+      `[단계 ${String(step)}] 여러 참조 검색 중: <code>${targets}</code>`,
     stepFindingReferencesForCount: (step, count) =>
-      `[단계 ${step}] ${count}개의 심볼 참조 검색 중...`,
+      `[단계 ${String(step)}] ${String(count)}개의 심볼 참조 검색 중...`,
     stepSearchingProjectForMultiple: (step, keywords) =>
-      `[단계 ${step}] 프로젝트에서 여러 키워드 검색 중: <code>${keywords}</code>`,
+      `[단계 ${String(step)}] 프로젝트에서 여러 키워드 검색 중: <code>${keywords}</code>`,
     stepSearchingProjectForCount: (step, count) =>
-      `[단계 ${step}] ${count}개의 프로젝트 키워드 검색 중...`,
+      `[단계 ${String(step)}] ${String(count)}개의 프로젝트 키워드 검색 중...`,
     stepExecutingMultipleTools: (step, count) =>
-      `[단계 ${step}] ${count}개의 탐색 도구 실행 중...`,
+      `[단계 ${String(step)}] ${String(count)}개의 탐색 도구 실행 중...`,
   },
 };

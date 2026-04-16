@@ -78,7 +78,7 @@ export const trLocale: LocaleTextBundle = {
         'Depo seçimi için etkin düzenleyici bulunamadı.',
       selectedOnlyRepo: (path) => `Sadece depo seçildi: ${path}`,
       multiRepoNotDetermined: (count) =>
-        `${count} depo bulundu ancak etkin olan belirlenemedi.`,
+        `${String(count)} depo bulundu ancak etkin olan belirlenemedi.`,
       noRepoInApi: "API'de depo bulunamadı.",
       usingProvider: (providerName) =>
         `Sağlayıcı kullanılıyor: ${providerName}`,
@@ -239,48 +239,48 @@ export const trLocale: LocaleTextBundle = {
     analyzingChanges: 'Ajan değişiklikleri analiz ediyor...',
     generatingMessage: 'Commit mesajı oluşturuluyor...',
     transientApiError: (attempt, maxAttempts, seconds) =>
-      `Geçici API hatası. Yeniden deneniyor (${attempt}/${maxAttempts}) ${seconds}s içinde...`,
+      `Geçici API hatası. Yeniden deneniyor (${String(attempt)}/${String(maxAttempts)}) ${String(seconds)}s içinde...`,
     pulling: (model, status, percent) =>
       percent !== undefined
-        ? `${model} çekiliyor: ${status} (${percent}%)`
+        ? `${model} çekiliyor: ${status} (${String(percent)}%)`
         : `${model} çekiliyor: ${status}`,
 
     stepAnalyzingDiff: (step, path) =>
-      `[Adım ${step}] Diff analiz ediliyor: ${path}`,
-    stepReadingFile: (step, path) => `[Adım ${step}] Dosya okunuyor: ${path}`,
+      `[Adım ${String(step)}] Diff analiz ediliyor: ${path}`,
+    stepReadingFile: (step, path) => `[Adım ${String(step)}] Dosya okunuyor: ${path}`,
     stepGettingOutline: (step, path) =>
-      `[Adım ${step}] Anahat (outline) alınıyor: ${path}`,
+      `[Adım ${String(step)}] Anahat (outline) alınıyor: ${path}`,
     stepFindingReferences: (step, target) =>
-      `[Adım ${step}] Referanslar bulunuyor: ${target}`,
+      `[Adım ${String(step)}] Referanslar bulunuyor: ${target}`,
     stepFetchingRecentCommits: (step, count) =>
       count !== undefined
-        ? `[Adım ${step}] Son commit'ler getiriliyor: ${count} kayıt`
-        : `[Adım ${step}] Son commit'ler getiriliyor...`,
+        ? `[Adım ${String(step)}] Son commit'ler getiriliyor: ${String(count)} kayıt`
+        : `[Adım ${String(step)}] Son commit'ler getiriliyor...`,
     stepSearchingProject: (step, keyword) =>
-      `[Adım ${step}] Projede aranıyor: ${keyword}`,
-    stepCalling: (step, toolName) => `[Adım ${step}] ${toolName} çağrılıyor...`,
+      `[Adım ${String(step)}] Projede aranıyor: ${keyword}`,
+    stepCalling: (step, toolName) => `[Adım ${String(step)}] ${toolName} çağrılıyor...`,
 
     stepAnalyzingMultipleDiffs: (step, paths) =>
-      `[Adım ${step}] Diff'ler analiz ediliyor: ${paths}`,
+      `[Adım ${String(step)}] Diff'ler analiz ediliyor: ${paths}`,
     stepAnalyzingDiffsForCount: (step, count) =>
-      `[Adım ${step}] ${count} dosya için diff analiz ediliyor...`,
+      `[Adım ${String(step)}] ${String(count)} dosya için diff analiz ediliyor...`,
     stepReadingMultipleFiles: (step, paths) =>
-      `[Adım ${step}] Dosyalar okunuyor: ${paths}`,
+      `[Adım ${String(step)}] Dosyalar okunuyor: ${paths}`,
     stepReadingFilesForCount: (step, count) =>
-      `[Adım ${step}] ${count} dosya okunuyor...`,
+      `[Adım ${String(step)}] ${String(count)} dosya okunuyor...`,
     stepGettingMultipleOutlines: (step, paths) =>
-      `[Adım ${step}] Anahatlar (outlines) alınıyor: ${paths}`,
+      `[Adım ${String(step)}] Anahatlar (outlines) alınıyor: ${paths}`,
     stepGettingOutlinesForCount: (step, count) =>
-      `[Adım ${step}] ${count} dosya için anahat alınıyor...`,
+      `[Adım ${String(step)}] ${String(count)} dosya için anahat alınıyor...`,
     stepFindingReferencesForMultiple: (step, targets) =>
-      `[Adım ${step}] Referanslar bulunuyor: ${targets}`,
+      `[Adım ${String(step)}] Referanslar bulunuyor: ${targets}`,
     stepFindingReferencesForCount: (step, count) =>
-      `[Adım ${step}] ${count} sembol için referans bulunuyor...`,
+      `[Adım ${String(step)}] ${String(count)} sembol için referans bulunuyor...`,
     stepSearchingProjectForMultiple: (step, keywords) =>
-      `[Adım ${step}] Projede aranıyor: ${keywords}`,
+      `[Adım ${String(step)}] Projede aranıyor: ${keywords}`,
     stepSearchingProjectForCount: (step, count) =>
-      `[Adım ${step}] ${count} anahtar kelime için projede aranıyor...`,
+      `[Adım ${String(step)}] ${String(count)} anahtar kelime için projede aranıyor...`,
     stepExecutingMultipleTools: (step, count) =>
-      `[Adım ${step}] ${count} inceleme aracı çalıştırılıyor...`,
+      `[Adım ${String(step)}] ${String(count)} inceleme aracı çalıştırılıyor...`,
   },
 };

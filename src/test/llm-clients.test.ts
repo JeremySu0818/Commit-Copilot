@@ -9,7 +9,16 @@ function getOllamaHost(client: unknown): string {
   return (client as { host: string }).host;
 }
 
-test('createLLMClient uses explicit ollamaHost when provided', () => {
+function hasExitCode(value: unknown, code: number): boolean {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'exitCode' in value &&
+    (value as { exitCode?: unknown }).exitCode === code
+  );
+}
+
+void test('createLLMClient uses explicit ollamaHost when provided', () => {
   const client = createLLMClient({
     provider: 'ollama',
     apiKey: 'http://legacy-host:11434',
@@ -20,7 +29,7 @@ test('createLLMClient uses explicit ollamaHost when provided', () => {
   assert.equal(getOllamaHost(client), 'http://custom-host:11434');
 });
 
-test('createLLMClient keeps backward compatibility for ollama apiKey host', () => {
+void test('createLLMClient keeps backward compatibility for ollama apiKey host', () => {
   const client = createLLMClient({
     provider: 'ollama',
     apiKey: 'http://legacy-host:11434',
@@ -30,7 +39,7 @@ test('createLLMClient keeps backward compatibility for ollama apiKey host', () =
   assert.equal(getOllamaHost(client), 'http://legacy-host:11434');
 });
 
-test('createLLMClient falls back to default ollama host when host is empty', () => {
+void test('createLLMClient falls back to default ollama host when host is empty', () => {
   const client = createLLMClient({
     provider: 'ollama',
     apiKey: '',
@@ -40,7 +49,7 @@ test('createLLMClient falls back to default ollama host when host is empty', () 
   assert.equal(getOllamaHost(client), OLLAMA_DEFAULT_HOST);
 });
 
-test('Anthropic direct diff uses streaming API', async () => {
+void test('Anthropic direct diff uses streaming API', async () => {
   const calls = {
     apiKeys: [] as string[],
     streamCalls: 0,
@@ -50,18 +59,20 @@ test('Anthropic direct diff uses streaming API', async () => {
 
   class AnthropicMock {
     messages = {
-      create: async () => {
+      create: () => {
         calls.createCalls += 1;
-        throw new Error('messages.create should not be called in direct diff');
+        return Promise.reject(
+          new Error('messages.create should not be called in direct diff'),
+        );
       },
       stream: (_params: Record<string, unknown>) => {
         calls.streamCalls += 1;
         return {
-          finalMessage: async () => {
+          finalMessage: () => {
             calls.finalMessageCalls += 1;
-            return {
+            return Promise.resolve({
               content: [{ type: 'text', text: 'fix(core): stream anthropic' }],
-            };
+            });
           },
         };
       },
@@ -95,19 +106,15 @@ test('Anthropic direct diff uses streaming API', async () => {
   assert.equal(calls.createCalls, 0);
 });
 
-test('OpenAI direct diff rethrows existing APIRequestError without wrapping', async () => {
+void test('OpenAI direct diff rethrows existing APIRequestError without wrapping', async () => {
   const originalError = new APIRequestError('upstream failure');
 
   class OpenAIMock {
     chat = {
       completions: {
-        create: async () => {
-          throw originalError;
-        },
+        create: () => Promise.reject(originalError),
       },
     };
-
-    constructor(_options: { apiKey: string; baseURL?: string }) {}
   }
 
   await withModuleMock(
@@ -130,19 +137,15 @@ test('OpenAI direct diff rethrows existing APIRequestError without wrapping', as
   );
 });
 
-test('Anthropic direct diff rethrows existing APIRequestError without wrapping', async () => {
+void test('Anthropic direct diff rethrows existing APIRequestError without wrapping', async () => {
   const originalError = new APIRequestError('upstream failure');
 
   class AnthropicMock {
     messages = {
       stream: (_params: Record<string, unknown>) => ({
-        finalMessage: async () => {
-          throw originalError;
-        },
+        finalMessage: () => Promise.reject(originalError),
       }),
     };
-
-    constructor(_options: { apiKey: string }) {}
   }
 
   await withModuleMock(
@@ -165,17 +168,15 @@ test('Anthropic direct diff rethrows existing APIRequestError without wrapping',
   );
 });
 
-test('Gemini direct diff maps status 401 to API key invalid', async () => {
+void test('Gemini direct diff maps status 401 to API key invalid', async () => {
   class GoogleGenAIMock {
     models = {
-      generateContent: async () => {
+      generateContent: () => {
         const error = new Error('Request failed with status 401 Unauthorized');
         (error as Error & { status?: number }).status = 401;
-        throw error;
+        return Promise.reject(error);
       },
     };
-
-    constructor(_options: { apiKey: string }) {}
   }
 
   await withModuleMock(
@@ -189,8 +190,8 @@ test('Gemini direct diff maps status 401 to API key invalid', async () => {
 
       await assert.rejects(
         () => client.generateCommitMessage('diff --git a/a b/a\n+change'),
-        (error: any) => {
-          assert.equal(error?.exitCode, EXIT_CODES.API_KEY_INVALID);
+        (error: unknown) => {
+          assert.equal(hasExitCode(error, EXIT_CODES.API_KEY_INVALID), true);
           return true;
         },
       );
@@ -198,15 +199,14 @@ test('Gemini direct diff maps status 401 to API key invalid', async () => {
   );
 });
 
-test('Gemini direct diff ignores unrelated numeric substrings', async () => {
+void test('Gemini direct diff ignores unrelated numeric substrings', async () => {
   class GoogleGenAIMock {
     models = {
-      generateContent: async () => {
-        throw new Error('parse error on line 401 near port 4013, token 4299');
-      },
+      generateContent: () =>
+        Promise.reject(
+          new Error('parse error on line 401 near port 4013, token 4299'),
+        ),
     };
-
-    constructor(_options: { apiKey: string }) {}
   }
 
   await withModuleMock(
@@ -220,8 +220,8 @@ test('Gemini direct diff ignores unrelated numeric substrings', async () => {
 
       await assert.rejects(
         () => client.generateCommitMessage('diff --git a/a b/a\n+change'),
-        (error: any) => {
-          assert.equal(error?.exitCode, EXIT_CODES.API_ERROR);
+        (error: unknown) => {
+          assert.equal(hasExitCode(error, EXIT_CODES.API_ERROR), true);
           return true;
         },
       );

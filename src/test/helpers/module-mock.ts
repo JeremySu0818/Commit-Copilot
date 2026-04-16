@@ -4,7 +4,7 @@ type AsyncOrSync<T> = T | Promise<T>;
 
 function clearRequireCache(modulePath: string): void {
   const resolved = require.resolve(modulePath);
-  delete require.cache[resolved];
+  Reflect.deleteProperty(require.cache, resolved);
 }
 
 async function withModuleMock<T>(

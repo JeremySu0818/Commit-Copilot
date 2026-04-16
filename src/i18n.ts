@@ -153,9 +153,7 @@ export function resolveEffectiveDisplayLanguage(
   ) {
     return displayLanguage;
   }
-  const normalized = String(vscodeLanguage || '')
-    .trim()
-    .toLowerCase();
+  const normalized = (vscodeLanguage ?? '').trim().toLowerCase();
 
   if (normalized.startsWith('ar')) {
     return 'ar';
@@ -222,7 +220,10 @@ export function getLocalizedErrorInfo(
   exitCode: number,
 ): ErrorInfo {
   const messages = LOCALES[language].errorMessages;
-  return messages[exitCode] || messages[EXIT_CODES.UNKNOWN_ERROR];
+  if (Object.prototype.hasOwnProperty.call(messages, exitCode)) {
+    return messages[exitCode];
+  }
+  return messages[EXIT_CODES.UNKNOWN_ERROR];
 }
 
 export function getExtensionText(
@@ -251,15 +252,15 @@ export function getDisplayLanguageLabel(
     (item) => item.value === language,
   );
   if (!option) return language;
-  return option.label || option.labels?.[uiLanguage] || language;
+  return option.label ?? option.labels?.[uiLanguage] ?? language;
 }
 
 function replacePlaceholders(
   template: string,
   values: Record<string, string>,
 ): string {
-  return template.replace(/\{([a-zA-Z0-9_]+)\}/g, (_match, key) => {
-    return values[key] ?? '';
+  return template.replace(/\{([a-zA-Z0-9_]+)\}/g, (_match, key: string) => {
+    return Object.prototype.hasOwnProperty.call(values, key) ? values[key] : '';
   });
 }
 

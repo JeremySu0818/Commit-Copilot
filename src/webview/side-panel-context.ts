@@ -92,8 +92,7 @@ export function createInitialState(
   bootstrap: WebviewBootstrapData,
 ): SidePanelState {
   const effectiveLang = bootstrap.initialEffectiveLanguage;
-  const pack =
-    bootstrap.languagePacks[effectiveLang] || bootstrap.languagePacks.en;
+  const pack = bootstrap.languagePacks[effectiveLang];
   return {
     screen: bootstrap.initialScreen === 'settings' ? 'settings' : 'main',
     currentProvider: bootstrap.defaultProvider,
@@ -214,8 +213,14 @@ export interface SidePanelContextValue {
   bootstrap: WebviewBootstrapData;
 }
 
-export const SidePanelContext = createContext<SidePanelContextValue>(null!);
+export const SidePanelContext = createContext<
+  SidePanelContextValue | undefined
+>(undefined);
 
 export function useSidePanel(): SidePanelContextValue {
-  return useContext(SidePanelContext);
+  const context = useContext(SidePanelContext);
+  if (!context) {
+    throw new Error('SidePanelContext is not available.');
+  }
+  return context;
 }

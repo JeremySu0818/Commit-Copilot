@@ -1,4 +1,13 @@
 import { useEffect } from 'react';
+import type {
+  CommitOutputOptions,
+  CustomProviderConfig,
+  ModelConfig,
+} from '../models';
+import type {
+  DisplayLanguage,
+  EffectiveDisplayLanguage,
+} from '../i18n';
 import type { WebviewBootstrapData } from '../side-panel-webview-bootstrap';
 import type { SidePanelAction, SidePanelState } from './side-panel-context';
 import {
@@ -7,6 +16,146 @@ import {
   normalizeMaxAgentStepsValue,
   normalizeOllamaHostValue,
 } from './utils';
+
+type UnknownRecord = Record<string, unknown>;
+
+interface MessagePayload extends UnknownRecord {
+  type: string;
+}
+
+function isRecord(value: unknown): value is UnknownRecord {
+  return typeof value === 'object' && value !== null;
+}
+
+function toMessagePayload(value: unknown): MessagePayload | null {
+  if (!isRecord(value) || typeof value.type !== 'string') {
+    return null;
+  }
+  return value as MessagePayload;
+}
+
+function toString(value: unknown): string | undefined {
+  return typeof value === 'string' ? value : undefined;
+}
+
+function toBoolean(value: unknown): boolean | undefined {
+  return typeof value === 'boolean' ? value : undefined;
+}
+
+function toBooleanRecord(value: unknown): Record<string, boolean> {
+  if (!isRecord(value)) {
+    return {};
+  }
+
+  const normalized: Record<string, boolean> = {};
+  for (const [provider, hasKey] of Object.entries(value)) {
+    normalized[provider] = Boolean(hasKey);
+  }
+  return normalized;
+}
+
+function isModelConfig(value: unknown): value is ModelConfig {
+  if (!isRecord(value)) {
+    return false;
+  }
+
+  const maxTokens = value.max_tokens;
+  return (
+    typeof value.id === 'string' &&
+    typeof value.alias === 'string' &&
+    (maxTokens === undefined || typeof maxTokens === 'number')
+  );
+}
+
+function toModelConfigArray(value: unknown): ModelConfig[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  return value.filter((item): item is ModelConfig => isModelConfig(item));
+}
+
+function isCustomProviderConfig(value: unknown): value is CustomProviderConfig {
+  return (
+    isRecord(value) &&
+    typeof value.id === 'string' &&
+    typeof value.name === 'string' &&
+    typeof value.baseUrl === 'string'
+  );
+}
+
+function toCustomProviderArray(value: unknown): CustomProviderConfig[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  return value.filter((item): item is CustomProviderConfig =>
+    isCustomProviderConfig(item),
+  );
+}
+
+function isDefaultModelProvider(
+  provider: string,
+  bootstrap: WebviewBootstrapData,
+): provider is keyof WebviewBootstrapData['defaultModels'] {
+  return provider in bootstrap.defaultModels;
+}
+
+function chooseModel(
+  models: ModelConfig[],
+  currentModel: string,
+  activeProvider: string,
+  bootstrap: WebviewBootstrapData,
+): string {
+  if (models.some((model) => model.id === currentModel)) {
+    return currentModel;
+  }
+  if (models.length === 0) {
+    return currentModel;
+  }
+
+  const fallbackModel = models[0];
+
+  const preferredDefaultId = isDefaultModelProvider(activeProvider, bootstrap)
+    ? bootstrap.defaultModels[activeProvider]
+    : undefined;
+  const preferredModel =
+    models.find((model) => model.id === preferredDefaultId) ?? fallbackModel;
+  return preferredModel.id;
+}
+
+function isDisplayLanguage(
+  value: string,
+  bootstrap: WebviewBootstrapData,
+): value is DisplayLanguage {
+  return bootstrap.displayLanguageOptions.some((option) => option.value === value);
+}
+
+function isEffectiveDisplayLanguage(
+  value: string,
+  bootstrap: WebviewBootstrapData,
+): value is EffectiveDisplayLanguage {
+  return value in bootstrap.languagePacks;
+}
+
+function normalizeCommitOutputOptions(
+  value: unknown,
+  defaults: CommitOutputOptions,
+): CommitOutputOptions {
+  const options = isRecord(value) ? value : {};
+  return {
+    includeScope:
+      typeof options.includeScope === 'boolean'
+        ? options.includeScope
+        : defaults.includeScope,
+    includeBody:
+      typeof options.includeBody === 'boolean'
+        ? options.includeBody
+        : defaults.includeBody,
+    includeFooter:
+      typeof options.includeFooter === 'boolean'
+        ? options.includeFooter
+        : defaults.includeFooter,
+  };
+}
 
 export function useMessageHandler(
   vscode: VSCodeWebviewApi,
@@ -31,39 +180,55 @@ export function useMessageHandler(
   }, [vscode, bootstrap]);
 
   useEffect(() => {
-    const handler = (event: MessageEvent) => {
-      const message = event.data;
-      switch (message.type) {
-        case 'currentProvider':
-          dispatch({ type: 'SET_PROVIDER', provider: message.provider });
-          vscode.postMessage({ type: 'checkKey', provider: message.provider });
-          vscode.postMessage({ type: 'getModels', provider: message.provider });
-          break;
+    const handler = (event: MessageEvent<unknown>) => {
+      const message = toMessagePayload(event.data);
+      if (!message) {
+        return;
+      }
 
-        case 'repoUpdate':
-          dispatch({ type: 'SET_HAS_CHANGES', value: message.hasChanges });
+      switch (message.type) {
+        case 'currentProvider': {
+          const provider = toString(message.provider) ?? state.currentProvider;
+          dispatch({ type: 'SET_PROVIDER', provider });
+          vscode.postMessage({ type: 'checkKey', provider });
+          vscode.postMessage({ type: 'getModels', provider });
           break;
+        }
+
+        case 'repoUpdate': {
+          dispatch({
+            type: 'SET_HAS_CHANGES',
+            value: toBoolean(message.hasChanges) ?? false,
+          });
+          break;
+        }
 
         case 'keyStatus': {
+          const provider = toString(message.provider) ?? state.currentProvider;
+          const hasKey = toBoolean(message.hasKey) ?? false;
+          const rawValue = toString(message.value);
+
           if (
-            message.provider === 'ollama' &&
+            provider === 'ollama' &&
             state.currentProvider === 'ollama' &&
-            typeof message.value === 'string'
+            typeof rawValue === 'string'
           ) {
             const host = normalizeOllamaHostValue(
-              message.value,
+              rawValue,
               bootstrap.ollamaDefaultHost,
             );
             dispatch({ type: 'SET_OLLAMA_HOST', host });
             dispatch({ type: 'SET_API_KEY_VALUE', value: host });
           }
+
           dispatch({
             type: 'SET_KEY_STATUS',
-            provider: message.provider,
-            hasKey: message.hasKey,
+            provider,
+            hasKey,
           });
-          if (message.provider === state.currentProvider) {
-            if (message.hasKey) {
+
+          if (provider === state.currentProvider) {
+            if (hasKey) {
               dispatch({
                 type: 'SET_KEY_STATUS_HTML',
                 html: renderStatusHtml(
@@ -83,7 +248,7 @@ export function useMessageHandler(
                   state.currentPack.statuses.notConfigured,
                 ),
               });
-              if (message.provider !== 'ollama') {
+              if (provider !== 'ollama') {
                 dispatch({
                   type: 'SET_MODEL_STATE',
                   state: { ...state.modelState, disabled: true },
@@ -95,15 +260,9 @@ export function useMessageHandler(
         }
 
         case 'allKeyStatuses': {
-          const statuses =
-            message.statuses && typeof message.statuses === 'object'
-              ? message.statuses
-              : {};
-          const normalized: Record<string, boolean> = {};
-          Object.keys(statuses).forEach((provider) => {
-            normalized[provider] = !!statuses[provider];
-          });
+          const normalized = toBooleanRecord(message.statuses);
           dispatch({ type: 'SET_ALL_KEY_STATUSES', statuses: normalized });
+
           if (typeof normalized[state.currentProvider] === 'boolean') {
             const hasKey = normalized[state.currentProvider];
             dispatch({
@@ -129,80 +288,72 @@ export function useMessageHandler(
           break;
         }
 
-        case 'currentCommitOutputOptions':
+        case 'currentCommitOutputOptions': {
           dispatch({
             type: 'SET_COMMIT_OUTPUT_OPTIONS',
-            options: {
-              includeScope:
-                typeof message.commitOutputOptions?.includeScope === 'boolean'
-                  ? message.commitOutputOptions.includeScope
-                  : bootstrap.defaultCommitOutputOptions.includeScope,
-              includeBody:
-                typeof message.commitOutputOptions?.includeBody === 'boolean'
-                  ? message.commitOutputOptions.includeBody
-                  : bootstrap.defaultCommitOutputOptions.includeBody,
-              includeFooter:
-                typeof message.commitOutputOptions?.includeFooter === 'boolean'
-                  ? message.commitOutputOptions.includeFooter
-                  : bootstrap.defaultCommitOutputOptions.includeFooter,
-            },
+            options: normalizeCommitOutputOptions(
+              message.commitOutputOptions,
+              bootstrap.defaultCommitOutputOptions,
+            ),
           });
           break;
+        }
 
         case 'modelsList': {
-          if (message.provider && message.provider !== state.currentProvider) {
+          const messageProvider = toString(message.provider);
+          if (messageProvider && messageProvider !== state.currentProvider) {
             break;
           }
-          const activeProvider = message.provider || state.currentProvider;
-          if (message.allowCustomModel) {
+
+          const activeProvider = messageProvider ?? state.currentProvider;
+          const currentModel = toString(message.currentModel) ?? '';
+          const allowCustomModel = toBoolean(message.allowCustomModel) ?? false;
+
+          if (allowCustomModel) {
             dispatch({
               type: 'SET_MODEL_STATE',
               state: {
                 models: [],
-                currentModel: message.currentModel || '',
+                currentModel,
                 allowCustomModel: true,
-                customModelValue: message.currentModel || '',
+                customModelValue: currentModel,
                 disabled: false,
               },
             });
-          } else {
-            const models = Array.isArray(message.models) ? message.models : [];
-            let selectedModel = message.currentModel || '';
-            const foundCurrent = models.some(
-              (m: { id: string }) => m.id === selectedModel,
-            );
-            if (!foundCurrent && models.length > 0) {
-              const preferredDefaultId =
-                bootstrap.defaultModels[
-                  activeProvider as keyof typeof bootstrap.defaultModels
-                ];
-              const preferred =
-                models.find(
-                  (m: { id: string }) => m.id === preferredDefaultId,
-                ) || models[0];
-              selectedModel = preferred.id;
-              vscode.postMessage({
-                type: 'saveModel',
-                value: preferred.id,
-                provider: activeProvider,
-              });
-            }
-            dispatch({
-              type: 'SET_MODEL_STATE',
-              state: {
-                models,
-                currentModel: selectedModel,
-                allowCustomModel: false,
-                customModelValue: '',
-                disabled: false,
-              },
+            break;
+          }
+
+          const models = toModelConfigArray(message.models);
+          const selectedModel = chooseModel(
+            models,
+            currentModel,
+            activeProvider,
+            bootstrap,
+          );
+          if (selectedModel !== currentModel && selectedModel) {
+            vscode.postMessage({
+              type: 'saveModel',
+              value: selectedModel,
+              provider: activeProvider,
             });
           }
+
+          dispatch({
+            type: 'SET_MODEL_STATE',
+            state: {
+              models,
+              currentModel: selectedModel,
+              allowCustomModel: false,
+              customModelValue: '',
+              disabled: false,
+            },
+          });
           break;
         }
 
-        case 'validating':
-          if (message.provider && message.provider !== state.currentProvider) {
+        case 'validating': {
+          const provider = toString(message.provider);
+          if (provider && provider !== state.currentProvider) {
             break;
           }
           dispatch({
@@ -218,12 +369,16 @@ export function useMessageHandler(
             ),
           });
           break;
+        }
 
         case 'validationResult': {
-          if (message.provider && message.provider !== state.currentProvider) {
+          const provider = toString(message.provider);
+          if (provider && provider !== state.currentProvider) {
             break;
           }
-          if (message.success) {
+
+          const success = toBoolean(message.success) ?? false;
+          if (success) {
             dispatch({
               type: 'SET_KEY_STATUS_HTML',
               html: renderStatusHtml(
@@ -231,46 +386,46 @@ export function useMessageHandler(
                 state.currentPack.statuses.configured,
               ),
             });
+
             if (state.currentProvider !== 'ollama') {
               dispatch({ type: 'SET_API_KEY_VALUE', value: '' });
             }
+
             dispatch({
               type: 'SET_SAVE_BTN',
               disabled: state.currentProvider !== 'ollama',
               text: state.currentPack.buttons.save,
             });
-            if (Array.isArray(message.models) || message.allowCustomModel) {
-              const activeProvider = message.provider || state.currentProvider;
-              if (message.allowCustomModel) {
+
+            const allowCustomModel = toBoolean(message.allowCustomModel) ?? false;
+            const models = toModelConfigArray(message.models);
+
+            if (Array.isArray(message.models) || allowCustomModel) {
+              const activeProvider = provider ?? state.currentProvider;
+              const currentModel = toString(message.currentModel) ?? '';
+
+              if (allowCustomModel) {
                 dispatch({
                   type: 'SET_MODEL_STATE',
                   state: {
                     models: [],
-                    currentModel: message.currentModel || '',
+                    currentModel,
                     allowCustomModel: true,
-                    customModelValue: message.currentModel || '',
+                    customModelValue: currentModel,
                     disabled: false,
                   },
                 });
               } else {
-                const models = message.models || [];
-                let selectedModel = message.currentModel || '';
-                const foundCurrent = models.some(
-                  (m: { id: string }) => m.id === selectedModel,
+                const selectedModel = chooseModel(
+                  models,
+                  currentModel,
+                  activeProvider,
+                  bootstrap,
                 );
-                if (!foundCurrent && models.length > 0) {
-                  const preferredDefaultId =
-                    bootstrap.defaultModels[
-                      activeProvider as keyof typeof bootstrap.defaultModels
-                    ];
-                  const preferred =
-                    models.find(
-                      (m: { id: string }) => m.id === preferredDefaultId,
-                    ) || models[0];
-                  selectedModel = preferred.id;
+                if (selectedModel !== currentModel && selectedModel) {
                   vscode.postMessage({
                     type: 'saveModel',
-                    value: preferred.id,
+                    value: selectedModel,
                     provider: activeProvider,
                   });
                 }
@@ -292,12 +447,12 @@ export function useMessageHandler(
               });
             }
           } else {
+            const errorMessage =
+              toString(message.error) ??
+              state.currentPack.statuses.notConfigured;
             dispatch({
               type: 'SET_KEY_STATUS_HTML',
-              html: renderStatusHtml(
-                'error',
-                message.error || state.currentPack.statuses.notConfigured,
-              ),
+              html: renderStatusHtml('error', errorMessage),
             });
             dispatch({
               type: 'SET_SAVE_BTN',
@@ -316,15 +471,17 @@ export function useMessageHandler(
           break;
 
         case 'generationStatusUpdate':
-          dispatch({ type: 'SET_IS_GENERATING', value: message.isGenerating });
+          dispatch({
+            type: 'SET_IS_GENERATING',
+            value: toBoolean(message.isGenerating) ?? false,
+          });
           dispatch({ type: 'SET_PENDING_STATUS_CHECK', value: false });
           break;
 
-        case 'validationStatusUpdate':
-          if (
-            message.isValidating &&
-            message.provider === state.currentProvider
-          ) {
+        case 'validationStatusUpdate': {
+          const isValidating = toBoolean(message.isValidating) ?? false;
+          const provider = toString(message.provider);
+          if (isValidating && provider === state.currentProvider) {
             dispatch({
               type: 'SET_SAVE_BTN',
               disabled: true,
@@ -339,16 +496,25 @@ export function useMessageHandler(
             });
           }
           break;
+        }
 
         case 'displayLanguageUpdated': {
-          const nextEffective = message.effectiveLanguage || 'en';
-          const nextPack =
-            bootstrap.languagePacks[
-              nextEffective as keyof typeof bootstrap.languagePacks
-            ] || bootstrap.languagePacks.en;
+          const nextEffectiveRaw = toString(message.effectiveLanguage);
+          const nextEffective =
+            nextEffectiveRaw && isEffectiveDisplayLanguage(nextEffectiveRaw, bootstrap)
+              ? nextEffectiveRaw
+              : 'en';
+          const nextPack = bootstrap.languagePacks[nextEffective];
+
+          const nextDisplayRaw = toString(message.displayLanguage);
+          const nextDisplay =
+            nextDisplayRaw && isDisplayLanguage(nextDisplayRaw, bootstrap)
+              ? nextDisplayRaw
+              : state.displayLanguage;
+
           dispatch({
             type: 'SET_LANGUAGE',
-            displayLanguage: message.displayLanguage,
+            displayLanguage: nextDisplay,
             effectiveLanguage: nextEffective,
             pack: nextPack,
           });
@@ -370,11 +536,13 @@ export function useMessageHandler(
           break;
 
         case 'customProviderSaved': {
+          const customProviders = toCustomProviderArray(message.customProviders);
           dispatch({
             type: 'SET_CUSTOM_PROVIDERS',
-            providers: message.customProviders || [],
+            providers: customProviders,
           });
-          const savedKey = bootstrap.customProviderPrefix + message.savedId;
+          const savedId = toString(message.savedId) ?? '';
+          const savedKey = bootstrap.customProviderPrefix + savedId;
           dispatch({ type: 'SET_PROVIDER', provider: savedKey });
           dispatch({ type: 'SET_API_KEY_VALUE', value: '' });
           dispatch({ type: 'SET_API_KEY_TYPE', inputType: 'password' });
@@ -409,9 +577,10 @@ export function useMessageHandler(
         }
 
         case 'customProviderDeleted': {
+          const customProviders = toCustomProviderArray(message.customProviders);
           dispatch({
             type: 'SET_CUSTOM_PROVIDERS',
-            providers: message.customProviders || [],
+            providers: customProviders,
           });
           const deletedFallback = bootstrap.defaultProvider;
           const deletedIsOllama = deletedFallback === 'ollama';
@@ -459,7 +628,9 @@ export function useMessageHandler(
           break;
         }
 
-        case 'customProviderSaveFailed':
+        case 'customProviderSaveFailed': {
+          const errorMessage =
+            toString(message.error) ?? state.currentPack.statuses.notConfigured;
           dispatch({
             type: 'SET_SAVE_BTN',
             disabled: false,
@@ -468,18 +639,16 @@ export function useMessageHandler(
           dispatch({
             type: 'UPDATE_ADD_PROVIDER_DRAFT',
             partial: {
-              statusHtml: renderStatusHtml(
-                'error',
-                message.error || state.currentPack.statuses.notConfigured,
-              ),
+              statusHtml: renderStatusHtml('error', errorMessage),
             },
           });
           break;
+        }
 
         case 'customProvidersLoaded':
           dispatch({
             type: 'SET_CUSTOM_PROVIDERS',
-            providers: message.customProviders || [],
+            providers: toCustomProviderArray(message.customProviders),
           });
           break;
 
@@ -489,6 +658,9 @@ export function useMessageHandler(
             type: 'setCurrentScreen',
             value: 'addProvider',
           });
+          break;
+
+        default:
           break;
       }
     };
@@ -504,6 +676,7 @@ export function useMessageHandler(
     state.currentPack,
     state.modelState,
     state.apiKeyValue,
+    state.displayLanguage,
     dispatch,
   ]);
 }

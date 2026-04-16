@@ -77,7 +77,7 @@ export const csLocale: LocaleTextBundle = {
         'Nebyl nalezen žádný aktivní editor pro výběr repozitáře.',
       selectedOnlyRepo: (path) => `Vybrán pouze repozitář: ${path}`,
       multiRepoNotDetermined: (count) =>
-        `Nalezeno ${count} repozitářů, ale nepodařilo se určit ten aktivní.`,
+        `Nalezeno ${String(count)} repozitářů, ale nepodařilo se určit ten aktivní.`,
       noRepoInApi: 'V API nebyly nalezeny žádné repozitáře.',
       usingProvider: (providerName) =>
         `Používání poskytovatele: ${providerName}`,
@@ -236,47 +236,47 @@ export const csLocale: LocaleTextBundle = {
     analyzingChanges: 'Agent analyzuje změny...',
     generatingMessage: 'Generování zprávy k potvrzení...',
     transientApiError: (attempt, maxAttempts, seconds) =>
-      `Přechodná chyba API. Probíhá nový pokus (${attempt}/${maxAttempts}) za ${seconds}s...`,
+      `Přechodná chyba API. Probíhá nový pokus (${String(attempt)}/${String(maxAttempts)}) za ${String(seconds)}s...`,
     pulling: (model, status, percent) =>
       percent !== undefined
-        ? `Stahování ${model}: ${status} (${percent}%)`
+        ? `Stahování ${model}: ${status} (${String(percent)}%)`
         : `Stahování ${model}: ${status}`,
 
-    stepAnalyzingDiff: (step, path) => `[Krok ${step}] Analýza diffu: ${path}`,
-    stepReadingFile: (step, path) => `[Krok ${step}] Čtení souboru: ${path}`,
+    stepAnalyzingDiff: (step, path) => `[Krok ${String(step)}] Analýza diffu: ${path}`,
+    stepReadingFile: (step, path) => `[Krok ${String(step)}] Čtení souboru: ${path}`,
     stepGettingOutline: (step, path) =>
-      `[Krok ${step}] Získávání osnovy: ${path}`,
+      `[Krok ${String(step)}] Získávání osnovy: ${path}`,
     stepFindingReferences: (step, target) =>
-      `[Krok ${step}] Hledání referencí: ${target}`,
+      `[Krok ${String(step)}] Hledání referencí: ${target}`,
     stepFetchingRecentCommits: (step, count) =>
       count !== undefined
-        ? `[Krok ${step}] Načítání nedávných potvrzení: ${count} záznamů`
-        : `[Krok ${step}] Načítání nedávných potvrzení...`,
+        ? `[Krok ${String(step)}] Načítání nedávných potvrzení: ${String(count)} záznamů`
+        : `[Krok ${String(step)}] Načítání nedávných potvrzení...`,
     stepSearchingProject: (step, keyword) =>
-      `[Krok ${step}] Prohledávání projektu na: ${keyword}`,
-    stepCalling: (step, toolName) => `[Krok ${step}] Volání ${toolName}...`,
+      `[Krok ${String(step)}] Prohledávání projektu na: ${keyword}`,
+    stepCalling: (step, toolName) => `[Krok ${String(step)}] Volání ${toolName}...`,
 
     stepAnalyzingMultipleDiffs: (step, paths) =>
-      `[Krok ${step}] Analýza diffů: ${paths}`,
+      `[Krok ${String(step)}] Analýza diffů: ${paths}`,
     stepAnalyzingDiffsForCount: (step, count) =>
-      `[Krok ${step}] Analýza diffů pro ${count} souborů...`,
+      `[Krok ${String(step)}] Analýza diffů pro ${String(count)} souborů...`,
     stepReadingMultipleFiles: (step, paths) =>
-      `[Krok ${step}] Čtení souborů: ${paths}`,
+      `[Krok ${String(step)}] Čtení souborů: ${paths}`,
     stepReadingFilesForCount: (step, count) =>
-      `[Krok ${step}] Čtení ${count} souborů...`,
+      `[Krok ${String(step)}] Čtení ${String(count)} souborů...`,
     stepGettingMultipleOutlines: (step, paths) =>
-      `[Krok ${step}] Získávání osnov: ${paths}`,
+      `[Krok ${String(step)}] Získávání osnov: ${paths}`,
     stepGettingOutlinesForCount: (step, count) =>
-      `[Krok ${step}] Získávání osnov pro ${count} souborů...`,
+      `[Krok ${String(step)}] Získávání osnov pro ${String(count)} souborů...`,
     stepFindingReferencesForMultiple: (step, targets) =>
-      `[Krok ${step}] Hledání referencí: ${targets}`,
+      `[Krok ${String(step)}] Hledání referencí: ${targets}`,
     stepFindingReferencesForCount: (step, count) =>
-      `[Krok ${step}] Hledání referencí pro ${count} symbolů...`,
+      `[Krok ${String(step)}] Hledání referencí pro ${String(count)} symbolů...`,
     stepSearchingProjectForMultiple: (step, keywords) =>
-      `[Krok ${step}] Prohledávání projektu na: ${keywords}`,
+      `[Krok ${String(step)}] Prohledávání projektu na: ${keywords}`,
     stepSearchingProjectForCount: (step, count) =>
-      `[Krok ${step}] Prohledávání projektu pro ${count} klíčových slov...`,
+      `[Krok ${String(step)}] Prohledávání projektu pro ${String(count)} klíčových slov...`,
     stepExecutingMultipleTools: (step, count) =>
-      `[Krok ${step}] Spouštění ${count} vyšetřovacích nástrojů...`,
+      `[Krok ${String(step)}] Spouštění ${String(count)} vyšetřovacích nástrojů...`,
   },
 };

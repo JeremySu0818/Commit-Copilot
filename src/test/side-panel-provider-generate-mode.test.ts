@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as path from 'path';
 import { createRequire } from 'node:module';
+import type * as vscode from 'vscode';
 import { clearRequireCache, withModuleMock } from './helpers/module-mock';
 import {
   API_KEY_STORAGE_KEYS,
@@ -11,14 +12,79 @@ import {
 
 const MODULE_PATH = path.resolve(__dirname, '..', 'side-panel-provider');
 
-type MessageHandler = (data: any) => Promise<void> | void;
+type MessageHandler = (data: unknown) => Promise<void> | void;
+type PostedMessage = Record<string, unknown>;
+type CommandCall = unknown[];
 
 interface Harness {
   sendMessage: (message: unknown) => Promise<void>;
-  postedMessages: any[];
-  commandCalls: any[][];
+  postedMessages: PostedMessage[];
+  commandCalls: CommandCall[];
   state: Map<string, unknown>;
   dispose: () => void;
+}
+
+interface CurrentGenerateModeMessage extends PostedMessage {
+  type: 'currentGenerateMode';
+  generateMode: string;
+}
+
+interface CurrentCommitOutputOptionsMessage extends PostedMessage {
+  type: 'currentCommitOutputOptions';
+  commitOutputOptions: unknown;
+}
+
+interface AllKeyStatusesMessage extends PostedMessage {
+  type: 'allKeyStatuses';
+  statuses: unknown;
+}
+
+interface KeyStatusMessage extends PostedMessage {
+  type: 'keyStatus';
+  provider: string;
+  hasKey: boolean;
+  value: string;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+function toPostedMessage(value: unknown): PostedMessage | null {
+  return isRecord(value) ? value : null;
+}
+
+function isCurrentGenerateModeMessage(
+  message: PostedMessage,
+): message is CurrentGenerateModeMessage {
+  return (
+    message.type === 'currentGenerateMode' &&
+    typeof message.generateMode === 'string'
+  );
+}
+
+function isCurrentCommitOutputOptionsMessage(
+  message: PostedMessage,
+): message is CurrentCommitOutputOptionsMessage {
+  return message.type === 'currentCommitOutputOptions';
+}
+
+function isAllKeyStatusesMessage(
+  message: PostedMessage,
+): message is AllKeyStatusesMessage {
+  return message.type === 'allKeyStatuses';
+}
+
+function isKeyStatusMessage(
+  message: PostedMessage,
+  provider: string,
+): message is KeyStatusMessage {
+  return (
+    message.type === 'keyStatus' &&
+    message.provider === provider &&
+    typeof message.hasKey === 'boolean' &&
+    typeof message.value === 'string'
+  );
 }
 
 async function createHarness(
@@ -27,13 +93,17 @@ async function createHarness(
 ): Promise<Harness> {
   clearRequireCache(MODULE_PATH);
 
-  const postedMessages: any[] = [];
-  const commandCalls: any[][] = [];
-  const state = new Map<string, unknown>(Object.entries(initialState || {}));
-  const secrets = new Map<string, string>(Object.entries(initialSecrets || {}));
+  const postedMessages: PostedMessage[] = [];
+  const commandCalls: CommandCall[] = [];
+  const state = new Map<string, unknown>(Object.entries(initialState ?? {}));
+  const secrets = new Map<string, string>(Object.entries(initialSecrets ?? {}));
 
-  let messageHandler: MessageHandler | null = null;
+  let messageHandler: MessageHandler = () => Promise.resolve();
   let disposeHandler: (() => void) | null = null;
+
+  const noop = (): void => {
+    return;
+  };
 
   const webview = {
     cspSource: 'mock-csp-source',
@@ -42,13 +112,16 @@ async function createHarness(
     }),
     options: undefined as unknown,
     html: '',
-    postMessage: (message: any) => {
-      postedMessages.push(message);
+    postMessage: (message: unknown) => {
+      const posted = toPostedMessage(message);
+      if (posted) {
+        postedMessages.push(posted);
+      }
       return Promise.resolve(true);
     },
     onDidReceiveMessage: (callback: MessageHandler) => {
       messageHandler = callback;
-      return { dispose: () => {} };
+      return { dispose: noop };
     },
   };
 
@@ -56,7 +129,7 @@ async function createHarness(
     webview,
     onDidDispose: (callback: () => void) => {
       disposeHandler = callback;
-      return { dispose: () => {} };
+      return { dispose: noop };
     },
   };
 
@@ -70,54 +143,55 @@ async function createHarness(
       getExtension: () => undefined,
     },
     commands: {
-      executeCommand: async (...args: any[]) => {
+      executeCommand: (...args: unknown[]) => {
         commandCalls.push(args);
-        return undefined;
+        return Promise.resolve(undefined);
       },
     },
     window: {
-      showWarningMessage: async () => undefined,
-      showInformationMessage: async () => undefined,
-      showErrorMessage: async () => undefined,
+      showWarningMessage: () => Promise.resolve(undefined),
+      showInformationMessage: () => Promise.resolve(undefined),
+      showErrorMessage: () => Promise.resolve(undefined),
     },
   };
 
-  const mod = await withModuleMock('vscode', vscodeMock, async () => {
+  const mod = await withModuleMock('vscode', vscodeMock, () => {
     const dynamicRequire = createRequire(__filename);
-    return dynamicRequire(
-      MODULE_PATH,
-    ) as typeof import('../side-panel-provider');
+    return dynamicRequire(MODULE_PATH) as typeof import('../side-panel-provider');
   });
 
   const context = {
     globalState: {
-      get: <T>(key: string) => state.get(key) as T | undefined,
-      update: async (key: string, value: unknown) => {
+      get: (key: string) => state.get(key),
+      update: (key: string, value: unknown) => {
         state.set(key, value);
+        return Promise.resolve();
       },
     },
     secrets: {
-      get: async (key: string) => secrets.get(key),
-      store: async (key: string, value: string) => {
+      get: (key: string) => Promise.resolve(secrets.get(key)),
+      store: (key: string, value: string) => {
         secrets.set(key, value);
+        return Promise.resolve();
       },
     },
-  } as any;
+  } as unknown as vscode.ExtensionContext;
 
   const provider = new mod.SidePanelProvider(
-    { fsPath: process.cwd() } as any,
+    { fsPath: process.cwd() } as unknown as vscode.Uri,
     context,
   );
-  provider.resolveWebviewView(webviewView as any, {} as any, {} as any);
+  provider.resolveWebviewView(
+    webviewView as unknown as vscode.WebviewView,
+    {} as vscode.WebviewViewResolveContext,
+    {} as vscode.CancellationToken,
+  );
 
-  if (!messageHandler) {
-    throw new Error('Webview message handler not registered');
-  }
+  const sendMessage = (message: unknown): Promise<void> =>
+    Promise.resolve(messageHandler(message));
 
   return {
-    sendMessage: async (message: unknown) => {
-      await messageHandler?.(message);
-    },
+    sendMessage,
     postedMessages,
     commandCalls,
     state,
@@ -127,51 +201,57 @@ async function createHarness(
   };
 }
 
-test('getGenerateMode returns default agentic mode when unset', async () => {
+void test('getGenerateMode returns default agentic mode when unset', async () => {
   const harness = await createHarness();
 
   try {
     await harness.sendMessage({ type: 'getGenerateMode' });
-    const modeMessage = harness.postedMessages.find(
-      (message) => message.type === 'currentGenerateMode',
+    const modeMessage = harness.postedMessages.find((message) =>
+      isCurrentGenerateModeMessage(message),
     );
-
-    assert.ok(modeMessage);
+    if (!modeMessage) {
+      throw new Error('currentGenerateMode message not found');
+    }
     assert.equal(modeMessage.generateMode, 'agentic');
   } finally {
     harness.dispose();
   }
 });
 
-test('saveGenerateMode persists normalized mode and getGenerateMode returns it', async () => {
-  const harness = await createHarness();
+void test(
+  'saveGenerateMode persists normalized mode and getGenerateMode returns it',
+  async () => {
+    const harness = await createHarness();
 
-  try {
-    await harness.sendMessage({
-      type: 'saveGenerateMode',
-      value: 'direct-diff',
-    });
-    assert.equal(harness.state.get('GENERATE_MODE'), 'direct-diff');
+    try {
+      await harness.sendMessage({
+        type: 'saveGenerateMode',
+        value: 'direct-diff',
+      });
+      assert.equal(harness.state.get('GENERATE_MODE'), 'direct-diff');
 
-    await harness.sendMessage({ type: 'getGenerateMode' });
-    const modeMessages = harness.postedMessages.filter(
-      (message) => message.type === 'currentGenerateMode',
-    );
-    const modeMessage = modeMessages[modeMessages.length - 1];
-    assert.ok(modeMessage);
-    assert.equal(modeMessage.generateMode, 'direct-diff');
+      await harness.sendMessage({ type: 'getGenerateMode' });
+      const modeMessages = harness.postedMessages.filter((message) =>
+        isCurrentGenerateModeMessage(message),
+      );
+      const modeMessage = modeMessages.at(-1);
+      if (!modeMessage) {
+        throw new Error('currentGenerateMode message not found');
+      }
+      assert.equal(modeMessage.generateMode, 'direct-diff');
 
-    await harness.sendMessage({
-      type: 'saveGenerateMode',
-      value: 'unexpected-value',
-    });
-    assert.equal(harness.state.get('GENERATE_MODE'), 'agentic');
-  } finally {
-    harness.dispose();
-  }
-});
+      await harness.sendMessage({
+        type: 'saveGenerateMode',
+        value: 'unexpected-value',
+      });
+      assert.equal(harness.state.get('GENERATE_MODE'), 'agentic');
+    } finally {
+      harness.dispose();
+    }
+  },
+);
 
-test('generate forwards normalized generateMode to command payload', async () => {
+void test('generate forwards normalized generateMode to command payload', async () => {
   const harness = await createHarness();
 
   try {
@@ -218,16 +298,17 @@ test('generate forwards normalized generateMode to command payload', async () =>
   }
 });
 
-test('getCommitOutputOptions returns defaults when unset', async () => {
+void test('getCommitOutputOptions returns defaults when unset', async () => {
   const harness = await createHarness();
 
   try {
     await harness.sendMessage({ type: 'getCommitOutputOptions' });
-    const optionsMessage = harness.postedMessages.find(
-      (message) => message.type === 'currentCommitOutputOptions',
+    const optionsMessage = harness.postedMessages.find((message) =>
+      isCurrentCommitOutputOptionsMessage(message),
     );
-
-    assert.ok(optionsMessage);
+    if (!optionsMessage) {
+      throw new Error('currentCommitOutputOptions message not found');
+    }
     assert.deepEqual(
       optionsMessage.commitOutputOptions,
       DEFAULT_COMMIT_OUTPUT_OPTIONS,
@@ -237,7 +318,7 @@ test('getCommitOutputOptions returns defaults when unset', async () => {
   }
 });
 
-test('saveCommitOutputOptions persists normalized values', async () => {
+void test('saveCommitOutputOptions persists normalized values', async () => {
   const harness = await createHarness();
 
   try {
@@ -271,28 +352,32 @@ test('saveCommitOutputOptions persists normalized values', async () => {
   }
 });
 
-test('getAllKeys reports ollama as not configured when no secret exists', async () => {
-  const harness = await createHarness();
+void test(
+  'getAllKeys reports ollama as not configured when no secret exists',
+  async () => {
+    const harness = await createHarness();
 
-  try {
-    await harness.sendMessage({ type: 'getAllKeys' });
-    const statusMessage = harness.postedMessages.find(
-      (message) => message.type === 'allKeyStatuses',
-    );
+    try {
+      await harness.sendMessage({ type: 'getAllKeys' });
+      const statusMessage = harness.postedMessages.find((message) =>
+        isAllKeyStatusesMessage(message),
+      );
+      if (!statusMessage) {
+        throw new Error('allKeyStatuses message not found');
+      }
+      assert.deepEqual(statusMessage.statuses, {
+        google: false,
+        openai: false,
+        anthropic: false,
+        ollama: false,
+      });
+    } finally {
+      harness.dispose();
+    }
+  },
+);
 
-    assert.ok(statusMessage);
-    assert.deepEqual(statusMessage.statuses, {
-      google: false,
-      openai: false,
-      anthropic: false,
-      ollama: false,
-    });
-  } finally {
-    harness.dispose();
-  }
-});
-
-test('checkKey returns stored Ollama host value', async () => {
+void test('checkKey returns stored Ollama host value', async () => {
   const customHost = 'http://192.168.1.100:11434';
   const harness = await createHarness(undefined, {
     [API_KEY_STORAGE_KEYS.ollama]: customHost,
@@ -300,12 +385,12 @@ test('checkKey returns stored Ollama host value', async () => {
 
   try {
     await harness.sendMessage({ type: 'checkKey', provider: 'ollama' });
-    const statusMessage = harness.postedMessages.find(
-      (message) =>
-        message.type === 'keyStatus' && message.provider === 'ollama',
+    const statusMessage = harness.postedMessages.find((message) =>
+      isKeyStatusMessage(message, 'ollama'),
     );
-
-    assert.ok(statusMessage);
+    if (!statusMessage) {
+      throw new Error('keyStatus message for ollama not found');
+    }
     assert.equal(statusMessage.hasKey, true);
     assert.equal(statusMessage.value, customHost);
   } finally {
@@ -313,20 +398,23 @@ test('checkKey returns stored Ollama host value', async () => {
   }
 });
 
-test('checkKey returns default Ollama host value when secret is missing', async () => {
-  const harness = await createHarness();
+void test(
+  'checkKey returns default Ollama host value when secret is missing',
+  async () => {
+    const harness = await createHarness();
 
-  try {
-    await harness.sendMessage({ type: 'checkKey', provider: 'ollama' });
-    const statusMessage = harness.postedMessages.find(
-      (message) =>
-        message.type === 'keyStatus' && message.provider === 'ollama',
-    );
-
-    assert.ok(statusMessage);
-    assert.equal(statusMessage.hasKey, false);
-    assert.equal(statusMessage.value, OLLAMA_DEFAULT_HOST);
-  } finally {
-    harness.dispose();
-  }
-});
+    try {
+      await harness.sendMessage({ type: 'checkKey', provider: 'ollama' });
+      const statusMessage = harness.postedMessages.find((message) =>
+        isKeyStatusMessage(message, 'ollama'),
+      );
+      if (!statusMessage) {
+        throw new Error('keyStatus message for ollama not found');
+      }
+      assert.equal(statusMessage.hasKey, false);
+      assert.equal(statusMessage.value, OLLAMA_DEFAULT_HOST);
+    } finally {
+      harness.dispose();
+    }
+  },
+);
