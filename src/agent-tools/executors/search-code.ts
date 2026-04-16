@@ -36,8 +36,8 @@ async function resolveSearchFiles(
 async function executeSearchCode(
   repoRoot: string,
   args: Record<string, unknown>,
-  isStaged = false,
   gitOps?: GitOperations,
+  isStaged = false,
 ): Promise<string> {
   const query = args.query as string | undefined;
   if (!query) {

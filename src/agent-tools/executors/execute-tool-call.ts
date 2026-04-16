@@ -53,8 +53,8 @@ export async function executeToolCall(
         content = await executeSearchCode(
           repoRoot,
           toolCall.arguments,
-          isStaged,
           gitOps,
+          isStaged,
         );
         break;
       default:
