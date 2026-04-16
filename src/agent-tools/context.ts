@@ -157,7 +157,9 @@ export async function getProjectStructure(
       for (let i = 0; i < entries.length; i++) {
         if (fileCount >= MAX_FILES) {
           if (!didTruncate) {
-            lines.push(`${prefix}... (truncated, ${MAX_FILES}+ files)`);
+            lines.push(
+              `${prefix}... (truncated, ${String(MAX_FILES)}+ files)`,
+            );
             didTruncate = true;
           }
           break;
@@ -226,7 +228,7 @@ export async function getProjectStructure(
 
     for (let i = 0; i < entries.length; i++) {
       if (fileCount >= MAX_FILES) {
-        lines.push(`${prefix}... (truncated, ${MAX_FILES}+ files)`);
+        lines.push(`${prefix}... (truncated, ${String(MAX_FILES)}+ files)`);
         break;
       }
 
@@ -267,7 +269,7 @@ async function formatCommitHistory(gitOps?: GitOperations): Promise<string> {
   if (count === 0) {
     return 'This repository has no commits yet.';
   }
-  return `This repository has ${count} commit${count === 1 ? '' : 's'}.`;
+  return `This repository has ${String(count)} commit${count === 1 ? '' : 's'}.`;
 }
 
 export async function buildInitialContext(
@@ -287,7 +289,7 @@ export async function buildInitialContext(
   const changedFilesSection = fileSummary
     .map(
       (f) =>
-        `  [${f.type.toUpperCase()}] ${f.path}  (+${f.added} / -${f.removed} lines)`,
+        `  [${f.type.toUpperCase()}] ${f.path}  (+${String(f.added)} / -${String(f.removed)} lines)`,
     )
     .join('\n');
 

@@ -91,7 +91,7 @@ export class GitOperations {
   constructor(private readonly repository: GitRepository) {}
 
   async isGitRepo(): Promise<boolean> {
-    const rootPath = this.repository?.rootUri?.fsPath;
+    const rootPath = this.repository.rootUri.fsPath;
     if (!rootPath) {
       return false;
     }
@@ -102,7 +102,9 @@ export class GitOperations {
       if (stat.isDirectory() || stat.isFile()) {
         return true;
       }
-    } catch {}
+    } catch {
+      // Fallback to `git status` check below.
+    }
 
     try {
       await this.repository.status();
@@ -162,7 +164,7 @@ export class GitOperations {
   }
 
   async listFilesFromGitApi(): Promise<string[] | null> {
-    const repoRoot = this.repository?.rootUri?.fsPath;
+    const repoRoot = this.repository.rootUri.fsPath;
     const normalizePaths = (files: unknown): string[] | null => {
       if (!Array.isArray(files)) {
         return null;
@@ -208,16 +210,15 @@ export class GitOperations {
     };
 
     try {
-      const lsFiles = this.repository.lsFiles;
-      if (typeof lsFiles === 'function') {
+      if (typeof this.repository.lsFiles === 'function') {
         try {
-          const apiFiles = await lsFiles.call(this.repository, '');
+          const apiFiles = await this.repository.lsFiles('');
           const normalized = normalizePaths(apiFiles);
           if (normalized !== null) {
             return normalized;
           }
         } catch {
-          const apiFiles = await lsFiles.call(this.repository);
+          const apiFiles = await this.repository.lsFiles();
           const normalized = normalizePaths(apiFiles);
           if (normalized !== null) {
             return normalized;
@@ -254,7 +255,7 @@ export class GitOperations {
 
   async getCommitCount(): Promise<number | null> {
     try {
-      const repoRoot = this.repository?.rootUri?.fsPath;
+      const repoRoot = this.repository.rootUri.fsPath;
       if (repoRoot) {
         const count = await this.getCommitCountFromCli(repoRoot);
         if (count !== null) {
@@ -312,9 +313,26 @@ export class GitOperations {
       }
       const parsed = Number.parseInt(trimmed, 10);
       return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
-    } catch (error: any) {
-      const stderr = typeof error?.stderr === 'string' ? error.stderr : '';
-      const message = [stderr, error?.message].filter(Boolean).join(' ');
+    } catch (error: unknown) {
+      const stderr =
+        typeof error === 'object' &&
+        error !== null &&
+        'stderr' in error &&
+        typeof (error as { stderr?: unknown }).stderr === 'string'
+          ? ((error as { stderr?: string }).stderr ?? '')
+          : '';
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : typeof error === 'object' &&
+              error !== null &&
+              'message' in error &&
+              typeof (error as { message?: unknown }).message === 'string'
+            ? ((error as { message?: string }).message ?? '')
+            : '';
+      const message = [stderr, errorMessage]
+        .filter((segment): segment is string => segment.length > 0)
+        .join(' ');
       if (isNoCommitsError(message)) {
         return 0;
       }
@@ -323,7 +341,7 @@ export class GitOperations {
     }
   }
 
-  async hasMixedChanges(): Promise<boolean> {
+  hasMixedChanges(): boolean {
     const hasStaged = this.repository.state.indexChanges.length > 0;
     const hasUnstaged = this.repository.state.workingTreeChanges.length > 0;
     return hasStaged && hasUnstaged;
@@ -361,7 +379,7 @@ export class GitOperations {
     }
   }
 
-  async hasUntrackedFiles(): Promise<boolean> {
+  hasUntrackedFiles(): boolean {
     try {
       if (this.repository.state.untrackedChanges.length > 0) {
         return true;
@@ -474,7 +492,7 @@ export async function generateCommitMessage(
       if (!staged) {
         throw new StageFailedError();
       }
-    } else if (!proceedWithStagedOnly && (await gitOps.hasMixedChanges())) {
+    } else if (!proceedWithStagedOnly && gitOps.hasMixedChanges()) {
       throw new MixedChangesError();
     }
 
@@ -485,7 +503,7 @@ export async function generateCommitMessage(
     if (!diff.trim() && !stageChanges) {
       const unstagedDiff = await gitOps.getDiff(false);
       throwIfCancellationRequested(cancellationToken);
-      if (!ignoreUntracked && (await gitOps.hasUntrackedFiles())) {
+      if (!ignoreUntracked && gitOps.hasUntrackedFiles()) {
         if (!unstagedDiff.trim()) {
           throw new NoTrackedChangesButUntrackedError();
         } else {
@@ -503,7 +521,8 @@ export async function generateCommitMessage(
       provider === 'ollama' ? 'direct-diff' : generateMode;
     const resolvedCommitOutputOptions =
       normalizeCommitOutputOptions(commitOutputOptions);
-    const resolvedModel = model || DEFAULT_MODELS[provider];
+    const resolvedModel =
+      model && model.length > 0 ? model : DEFAULT_MODELS[provider];
 
     const repoRoot = repository.rootUri.fsPath;
     const commitMessage =

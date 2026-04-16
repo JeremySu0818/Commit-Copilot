@@ -17,7 +17,7 @@ async function loadModule(
   vscodeMock: unknown,
 ): Promise<typeof import('../../agent-tools/executors/find-references')> {
   clearRequireCache(MODULE_PATH);
-  return withModuleMock('vscode', vscodeMock, async () => {
+  return withModuleMock('vscode', vscodeMock, () => {
     const dynamicRequire = createRequire(__filename);
     return dynamicRequire(
       MODULE_PATH,
@@ -25,7 +25,7 @@ async function loadModule(
   });
 }
 
-test('executeFindReferences validates required position args', async () => {
+void test('executeFindReferences validates required position args', async () => {
   const { executeFindReferences } = await loadModule(createVscodeMock());
   const output = await executeFindReferences(
     'repo',
@@ -39,7 +39,7 @@ test('executeFindReferences validates required position args', async () => {
   );
 });
 
-test('executeFindReferences validates line and character range', async () => {
+void test('executeFindReferences validates line and character range', async () => {
   const repoRoot = createTempDir();
   try {
     const relPath = 'src/a.ts';
@@ -48,14 +48,16 @@ test('executeFindReferences validates line and character range', async () => {
     fs.writeFileSync(absPath, 'alpha\nbeta\n', 'utf-8');
 
     const vscodeMock = createVscodeMock({
-      openTextDocument: async (input) => {
+      openTextDocument: (input) => {
         if (!(input instanceof MockUri)) {
-          throw new Error('Expected file URI');
+          return Promise.reject(new Error('Expected file URI'));
         }
-        return new MockTextDocument(
-          input,
-          fs.readFileSync(input.fsPath, 'utf-8'),
-          'typescript',
+        return Promise.resolve(
+          new MockTextDocument(
+            input,
+            fs.readFileSync(input.fsPath, 'utf-8'),
+            'typescript',
+          ),
         );
       },
     });
@@ -81,7 +83,7 @@ test('executeFindReferences validates line and character range', async () => {
   }
 });
 
-test('executeFindReferences formats grouped references with snippets', async () => {
+void test('executeFindReferences formats grouped references with snippets', async () => {
   const repoRoot = createTempDir();
   try {
     const relA = 'src/a.ts';
@@ -93,21 +95,23 @@ test('executeFindReferences formats grouped references with snippets', async () 
     fs.writeFileSync(absB, 'call foo()\n', 'utf-8');
 
     const vscodeMock = createVscodeMock({
-      openTextDocument: async (input) => {
+      openTextDocument: (input) => {
         if (!(input instanceof MockUri)) {
-          throw new Error('Expected file URI');
+          return Promise.reject(new Error('Expected file URI'));
         }
-        return new MockTextDocument(
-          input,
-          fs.readFileSync(input.fsPath, 'utf-8'),
-          'typescript',
+        return Promise.resolve(
+          new MockTextDocument(
+            input,
+            fs.readFileSync(input.fsPath, 'utf-8'),
+            'typescript',
+          ),
         );
       },
-      executeCommand: async (command: string) => {
+      executeCommand: (command: string) => {
         if (command !== 'vscode.executeReferenceProvider') {
-          return undefined;
+          return Promise.resolve(undefined);
         }
-        return [
+        return Promise.resolve([
           {
             uri: vscodeMock.Uri.file(absA),
             range: new vscodeMock.Range(
@@ -129,7 +133,7 @@ test('executeFindReferences formats grouped references with snippets', async () 
               new vscodeMock.Position(0, 8),
             ),
           },
-        ];
+        ]);
       },
     });
 
@@ -155,7 +159,7 @@ test('executeFindReferences formats grouped references with snippets', async () 
   }
 });
 
-test('executeFindReferences handles missing provider result', async () => {
+void test('executeFindReferences handles missing provider result', async () => {
   const repoRoot = createTempDir();
   try {
     const relPath = 'a.ts';
@@ -163,13 +167,15 @@ test('executeFindReferences handles missing provider result', async () => {
     fs.writeFileSync(absPath, 'const x = 1;\n', 'utf-8');
 
     const vscodeMock = createVscodeMock({
-      openTextDocument: async (input) => {
+      openTextDocument: (input) => {
         if (!(input instanceof MockUri)) {
-          throw new Error('Expected file URI');
+          return Promise.reject(new Error('Expected file URI'));
         }
-        return new MockTextDocument(input, 'const x = 1;\n', 'typescript');
+        return Promise.resolve(
+          new MockTextDocument(input, 'const x = 1;\n', 'typescript'),
+        );
       },
-      executeCommand: async () => undefined,
+      executeCommand: () => Promise.resolve(undefined),
     });
 
     const { executeFindReferences } = await loadModule(vscodeMock);

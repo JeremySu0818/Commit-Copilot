@@ -4,13 +4,24 @@ import { GitOperations } from '../../commit-copilot';
 import { isPathWithinRoot } from '../staged-workspace';
 import { MAX_FILE_LINES, parseIntegerArg } from './shared';
 
+function asString(value: unknown): string | undefined {
+  return typeof value === 'string' ? value : undefined;
+}
+
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return String(error);
+}
+
 async function executeReadFile(
   repoRoot: string,
   args: Record<string, unknown>,
   isStaged: boolean,
   gitOps?: GitOperations,
 ): Promise<string> {
-  const relPath = args.path as string;
+  const relPath = asString(args.path);
   if (!relPath) {
     return "Error: 'path' is required.";
   }
@@ -56,18 +67,20 @@ async function executeReadFile(
     if (selectedLines.length > MAX_FILE_LINES) {
       const truncated = selectedLines.slice(0, MAX_FILE_LINES);
       return (
-        `File: ${relPath} (lines ${startLine}-${startLine + MAX_FILE_LINES - 1} of ${lines.length}, truncated)\n\n` +
-        truncated.map((line, i) => `${startLine + i}: ${line}`).join('\n') +
-        `\n\n... (${selectedLines.length - MAX_FILE_LINES} more lines, use startLine/endLine to read them)`
+        `File: ${relPath} (lines ${String(startLine)}-${String(startLine + MAX_FILE_LINES - 1)} of ${String(lines.length)}, truncated)\n\n` +
+        truncated
+          .map((line, i) => `${String(startLine + i)}: ${line}`)
+          .join('\n') +
+        `\n\n... (${String(selectedLines.length - MAX_FILE_LINES)} more lines, use startLine/endLine to read them)`
       );
     }
 
     return (
-      `File: ${relPath} (lines ${startLine}-${endLine} of ${lines.length})\n\n` +
-      selectedLines.map((line, i) => `${startLine + i}: ${line}`).join('\n')
+      `File: ${relPath} (lines ${String(startLine)}-${String(endLine)} of ${String(lines.length)})\n\n` +
+      selectedLines.map((line, i) => `${String(startLine + i)}: ${line}`).join('\n')
     );
-  } catch (err: any) {
-    return `Error reading file: ${err.message}`;
+  } catch (err: unknown) {
+    return `Error reading file: ${getErrorMessage(err)}`;
   }
 }
 

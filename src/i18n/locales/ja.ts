@@ -77,7 +77,7 @@ export const jaLocale: LocaleTextBundle = {
         'リポジトリ選択用のアクティブエディタが見つかりません。',
       selectedOnlyRepo: (path) => `唯一のリポジトリを選択しました: ${path}`,
       multiRepoNotDetermined: (count) =>
-        `${count} 個のリポジトリが見つかりましたが、アクティブなものを決定できませんでした。`,
+        `${String(count)} 個のリポジトリが見つかりましたが、アクティブなものを決定できませんでした。`,
       noRepoInApi: 'API にリポジトリが見つかりません。',
       usingProvider: (providerName) => `使用するプロバイダー: ${providerName}`,
       usingGenerateMode: (mode) => `生成モード: ${mode}`,
@@ -234,50 +234,50 @@ export const jaLocale: LocaleTextBundle = {
     analyzingChanges: 'エージェントが変更を分析中...',
     generatingMessage: 'コミットメッセージを生成中...',
     transientApiError: (attempt, maxAttempts, seconds) =>
-      `一時的な API エラー。再試行中 (${attempt}/${maxAttempts}) ${seconds}秒後...`,
+      `一時的な API エラー。再試行中 (${String(attempt)}/${String(maxAttempts)}) ${String(seconds)}秒後...`,
     pulling: (model, status, percent) =>
       percent !== undefined
-        ? `${model} を取得中：${status} (${percent}%)`
+        ? `${model} を取得中：${status} (${String(percent)}%)`
         : `${model} を取得中：${status}`,
 
     stepAnalyzingDiff: (step, path) =>
-      `[ステップ ${step}] 差分を分析中：${path}`,
+      `[ステップ ${String(step)}] 差分を分析中：${path}`,
     stepReadingFile: (step, path) =>
-      `[ステップ ${step}] ファイルを読み込み中：${path}`,
+      `[ステップ ${String(step)}] ファイルを読み込み中：${path}`,
     stepGettingOutline: (step, path) =>
-      `[ステップ ${step}] アウトラインを取得中：${path}`,
+      `[ステップ ${String(step)}] アウトラインを取得中：${path}`,
     stepFindingReferences: (step, target) =>
-      `[ステップ ${step}] 参照を検索中：${target}`,
+      `[ステップ ${String(step)}] 参照を検索中：${target}`,
     stepFetchingRecentCommits: (step, count) =>
       count !== undefined
-        ? `[ステップ ${step}] 最近のコミットを取得中：${count} 件`
-        : `[ステップ ${step}] 最近のコミットを取得中...`,
+        ? `[ステップ ${String(step)}] 最近のコミットを取得中：${String(count)} 件`
+        : `[ステップ ${String(step)}] 最近のコミットを取得中...`,
     stepSearchingProject: (step, keyword) =>
-      `[ステップ ${step}] プロジェクトを検索中：${keyword}`,
+      `[ステップ ${String(step)}] プロジェクトを検索中：${keyword}`,
     stepCalling: (step, toolName) =>
-      `[ステップ ${step}] ${toolName} を呼び出し中...`,
+      `[ステップ ${String(step)}] ${toolName} を呼び出し中...`,
 
     stepAnalyzingMultipleDiffs: (step, paths) =>
-      `[ステップ ${step}] 差分を分析中：${paths}`,
+      `[ステップ ${String(step)}] 差分を分析中：${paths}`,
     stepAnalyzingDiffsForCount: (step, count) =>
-      `[ステップ ${step}] ${count} ファイルの差分を分析中...`,
+      `[ステップ ${String(step)}] ${String(count)} ファイルの差分を分析中...`,
     stepReadingMultipleFiles: (step, paths) =>
-      `[ステップ ${step}] ファイルを読み込み中：${paths}`,
+      `[ステップ ${String(step)}] ファイルを読み込み中：${paths}`,
     stepReadingFilesForCount: (step, count) =>
-      `[ステップ ${step}] ${count} ファイルを読み込み中...`,
+      `[ステップ ${String(step)}] ${String(count)} ファイルを読み込み中...`,
     stepGettingMultipleOutlines: (step, paths) =>
-      `[ステップ ${step}] アウトラインを取得中：${paths}`,
+      `[ステップ ${String(step)}] アウトラインを取得中：${paths}`,
     stepGettingOutlinesForCount: (step, count) =>
-      `[ステップ ${step}] ${count} ファイルのアウトラインを取得中...`,
+      `[ステップ ${String(step)}] ${String(count)} ファイルのアウトラインを取得中...`,
     stepFindingReferencesForMultiple: (step, targets) =>
-      `[ステップ ${step}] 参照を検索中：${targets}`,
+      `[ステップ ${String(step)}] 参照を検索中：${targets}`,
     stepFindingReferencesForCount: (step, count) =>
-      `[ステップ ${step}] ${count} 個のシンボルの参照を検索中...`,
+      `[ステップ ${String(step)}] ${String(count)} 個のシンボルの参照を検索中...`,
     stepSearchingProjectForMultiple: (step, keywords) =>
-      `[ステップ ${step}] プロジェクトを検索中：${keywords}`,
+      `[ステップ ${String(step)}] プロジェクトを検索中：${keywords}`,
     stepSearchingProjectForCount: (step, count) =>
-      `[ステップ ${step}] ${count} 個のキーワードでプロジェクトを検索中...`,
+      `[ステップ ${String(step)}] ${String(count)} 個のキーワードでプロジェクトを検索中...`,
     stepExecutingMultipleTools: (step, count) =>
-      `[ステップ ${step}] ${count} 個の調査ツールを実行中...`,
+      `[ステップ ${String(step)}] ${String(count)} 個の調査ツールを実行中...`,
   },
 };

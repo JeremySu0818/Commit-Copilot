@@ -6,7 +6,7 @@ import {
   buildFinalOutputReminder,
 } from '../../agent-loop/shared';
 
-test('buildAgentSystemPrompt requires scope and body by default', () => {
+void test('buildAgentSystemPrompt requires scope and body by default', () => {
   const prompt = buildAgentSystemPrompt({
     includeFindReferences: false,
     enableTools: false,
@@ -18,7 +18,7 @@ test('buildAgentSystemPrompt requires scope and body by default', () => {
   assert.match(prompt, /Footer is FORBIDDEN/);
 });
 
-test('buildAgentSystemPrompt forbids scope when includeScope is false', () => {
+void test('buildAgentSystemPrompt forbids scope when includeScope is false', () => {
   const prompt = buildAgentSystemPrompt({
     includeFindReferences: false,
     enableTools: false,
@@ -37,7 +37,7 @@ test('buildAgentSystemPrompt forbids scope when includeScope is false', () => {
   );
 });
 
-test('buildAgentSystemPrompt enforces footer-only layout when body is disabled', () => {
+void test('buildAgentSystemPrompt enforces footer-only layout when body is disabled', () => {
   const prompt = buildAgentSystemPrompt({
     includeFindReferences: true,
     commitOutputOptions: {
@@ -51,7 +51,7 @@ test('buildAgentSystemPrompt enforces footer-only layout when body is disabled',
   assert.match(prompt, /type\(scope\): description\n\nRefs: #123/);
 });
 
-test('reminder builders reflect selected commit output options', () => {
+void test('reminder builders reflect selected commit output options', () => {
   const options = {
     includeScope: false,
     includeBody: false,

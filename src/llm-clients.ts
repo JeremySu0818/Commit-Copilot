@@ -38,6 +38,42 @@ const GEMINI_AUTH_STATUS_PATTERN =
 const GEMINI_QUOTA_STATUS_PATTERN =
   /\b(?:status(?:\s*code)?|http(?:\s*status)?|response(?:\s*status)?)\s*[:=]?\s*429\b/i;
 
+type UnknownRecord = Record<string, unknown>;
+
+interface ErrorLike {
+  status?: unknown;
+  statusCode?: unknown;
+  response?: unknown;
+  code?: unknown;
+  error?: unknown;
+  message?: unknown;
+}
+
+interface AnthropicTextBlock {
+  type: 'text';
+  text: string;
+}
+
+function isRecord(value: unknown): value is UnknownRecord {
+  return typeof value === 'object' && value !== null;
+}
+
+function toErrorLike(error: unknown): ErrorLike {
+  return isRecord(error) ? (error as ErrorLike) : {};
+}
+
+function pickNonEmpty(primary: string | undefined, fallback: string): string {
+  return primary && primary.length > 0 ? primary : fallback;
+}
+
+function isAnthropicTextBlock(value: unknown): value is AnthropicTextBlock {
+  return (
+    isRecord(value) &&
+    value.type === 'text' &&
+    typeof value.text === 'string'
+  );
+}
+
 function getErrorMessage(error: unknown): string {
   if (error instanceof Error) {
     return error.message;
@@ -51,12 +87,14 @@ function getErrorMessage(error: unknown): string {
   return String(error);
 }
 
-function getErrorStatus(error: any): number | null {
+function getErrorStatus(error: unknown): number | null {
+  const candidate = toErrorLike(error);
+  const response = toErrorLike(candidate.response);
   const status =
-    error?.status ??
-    error?.statusCode ??
-    error?.response?.status ??
-    error?.response?.statusCode;
+    candidate.status ??
+    candidate.statusCode ??
+    response.status ??
+    response.statusCode;
   if (typeof status === 'number') {
     return status;
   }
@@ -66,13 +104,17 @@ function getErrorStatus(error: any): number | null {
   return null;
 }
 
-function getErrorCode(error: any): string {
-  return String(
-    error?.code || error?.error?.status || error?.error?.code || '',
-  ).toUpperCase();
+function getErrorCode(error: unknown): string {
+  const candidate = toErrorLike(error);
+  const nestedError = toErrorLike(candidate.error);
+  const rawCode = candidate.code ?? nestedError.status ?? nestedError.code;
+  if (typeof rawCode === 'string' || typeof rawCode === 'number') {
+    return String(rawCode).toUpperCase();
+  }
+  return '';
 }
 
-function isGeminiAuthError(error: any, message: string): boolean {
+function isGeminiAuthError(error: unknown, message: string): boolean {
   const status = getErrorStatus(error);
   if (status === 401 || status === 403) {
     return true;
@@ -97,7 +139,7 @@ function isGeminiAuthError(error: any, message: string): boolean {
   );
 }
 
-function isGeminiQuotaError(error: any, message: string): boolean {
+function isGeminiQuotaError(error: unknown, message: string): boolean {
   const status = getErrorStatus(error);
   if (status === 429) {
     return true;
@@ -143,7 +185,10 @@ export class GeminiClient implements ILLMClient {
       throw new APIKeyMissingError();
     }
     this.apiKey = apiKey;
-    this.model = (model || DEFAULT_MODELS.google).replace(/^models\//, '');
+    this.model = pickNonEmpty(model, DEFAULT_MODELS.google).replace(
+      /^models\//,
+      '',
+    );
     this.systemPrompt = buildAgentSystemPrompt({
       includeFindReferences: false,
       enableTools: false,
@@ -199,7 +244,7 @@ export class GeminiClient implements ILLMClient {
       }
 
       return text.trim();
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (
         error instanceof NoChangesError ||
         error instanceof APIKeyMissingError ||
@@ -240,7 +285,7 @@ export class OpenAIClient implements ILLMClient {
       throw new APIKeyMissingError();
     }
     this.apiKey = apiKey;
-    this.model = model || DEFAULT_MODELS.openai;
+    this.model = pickNonEmpty(model, DEFAULT_MODELS.openai);
     this.baseURL = baseURL;
     this.systemPrompt = buildAgentSystemPrompt({
       includeFindReferences: false,
@@ -291,7 +336,7 @@ export class OpenAIClient implements ILLMClient {
       }
 
       return text.trim();
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (
         error instanceof NoChangesError ||
         error instanceof APIKeyMissingError ||
@@ -303,8 +348,8 @@ export class OpenAIClient implements ILLMClient {
         throw error;
       }
 
-      const message = error?.message || String(error);
-      const status = error?.status;
+      const message = getErrorMessage(error);
+      const status = getErrorStatus(error);
 
       if (
         status === 401 ||
@@ -336,7 +381,7 @@ export class AnthropicClient implements ILLMClient {
       throw new APIKeyMissingError();
     }
     this.apiKey = apiKey;
-    this.model = model || DEFAULT_MODELS.anthropic;
+    this.model = pickNonEmpty(model, DEFAULT_MODELS.anthropic);
     this.maxTokens = getAnthropicModelMaxTokens(this.model) ?? 65536;
     this.systemPrompt = buildAgentSystemPrompt({
       includeFindReferences: false,
@@ -379,10 +424,9 @@ export class AnthropicClient implements ILLMClient {
         retryOptions,
       );
 
-      const textBlock = message.content.find(
-        (block: { type: string }) => block.type === 'text',
-      );
-      const text = textBlock?.type === 'text' ? (textBlock as any).text : null;
+      const text = message.content
+        .map((block: unknown) => (isAnthropicTextBlock(block) ? block.text : null))
+        .find((blockText): blockText is string => typeof blockText === 'string');
       throwIfCancellationRequested(cancellationToken);
 
       if (!text) {
@@ -390,7 +434,7 @@ export class AnthropicClient implements ILLMClient {
       }
 
       return text.trim();
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (
         error instanceof NoChangesError ||
         error instanceof APIKeyMissingError ||
@@ -402,8 +446,8 @@ export class AnthropicClient implements ILLMClient {
         throw error;
       }
 
-      const message = error?.message || String(error);
-      const status = error?.status;
+      const message = getErrorMessage(error);
+      const status = getErrorStatus(error);
 
       if (
         status === 401 ||
@@ -430,8 +474,8 @@ export class OllamaClient implements ILLMClient {
     model?: string,
     commitOutputOptions: CommitOutputOptions = DEFAULT_COMMIT_OUTPUT_OPTIONS,
   ) {
-    this.host = host || OLLAMA_DEFAULT_HOST;
-    this.model = model || DEFAULT_MODELS.ollama;
+    this.host = pickNonEmpty(host, OLLAMA_DEFAULT_HOST);
+    this.model = pickNonEmpty(model, DEFAULT_MODELS.ollama);
     this.systemPrompt = buildAgentSystemPrompt({
       includeFindReferences: false,
       enableTools: false,
@@ -464,7 +508,7 @@ export class OllamaClient implements ILLMClient {
             lastPercent = percent;
             if (onProgress) {
               onProgress(
-                `Pulling ${this.model}: ${part.status} (${percent}%)`,
+                `Pulling ${this.model}: ${part.status} (${String(percent)}%)`,
                 increment,
               );
             }
@@ -490,7 +534,7 @@ export class OllamaClient implements ILLMClient {
         },
       });
 
-      const text = response.message?.content;
+      const text = response.message.content;
       throwIfCancellationRequested(cancellationToken);
 
       if (!text) {
@@ -498,7 +542,7 @@ export class OllamaClient implements ILLMClient {
       }
 
       return text.trim();
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (
         error instanceof NoChangesError ||
         error instanceof GenerationCancelledError
@@ -506,7 +550,7 @@ export class OllamaClient implements ILLMClient {
         throw error;
       }
 
-      const message = error?.message || String(error);
+      const message = getErrorMessage(error);
 
       if (message.includes('ECONNREFUSED') || message.includes('connect')) {
         throw new APIRequestError(
@@ -546,7 +590,7 @@ export function createLLMClient(options: LLMClientOptions): ILLMClient {
     case 'anthropic':
       return new AnthropicClient(apiKey, model, resolvedCommitOutputOptions);
     case 'ollama': {
-      const resolvedOllamaHost = ollamaHost || apiKey;
+      const resolvedOllamaHost = pickNonEmpty(ollamaHost, apiKey);
       return new OllamaClient(
         resolvedOllamaHost,
         model,
@@ -554,6 +598,6 @@ export function createLLMClient(options: LLMClientOptions): ILLMClient {
       );
     }
     default:
-      throw new Error(`Unsupported provider: ${provider}`);
+      throw new Error(`Unsupported provider: ${String(provider)}`);
   }
 }

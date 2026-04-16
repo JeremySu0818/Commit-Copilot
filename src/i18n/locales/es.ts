@@ -80,7 +80,7 @@ export const esLocale: LocaleTextBundle = {
         'No se encontró editor activo para la selección de repositorio.',
       selectedOnlyRepo: (path) => `Seleccionado único repositorio: ${path}`,
       multiRepoNotDetermined: (count) =>
-        `Se encontraron ${count} repositorios pero no se pudo determinar el activo.`,
+        `Se encontraron ${String(count)} repositorios pero no se pudo determinar el activo.`,
       noRepoInApi: 'No se encontraron repositorios en la API.',
       usingProvider: (providerName) => `Usando proveedor: ${providerName}`,
       usingGenerateMode: (mode) => `Modo de generación: ${mode}`,
@@ -238,48 +238,48 @@ export const esLocale: LocaleTextBundle = {
     analyzingChanges: 'Agente analizando cambios...',
     generatingMessage: 'Generando mensaje de commit...',
     transientApiError: (attempt, maxAttempts, seconds) =>
-      `Error transitorio de API. Reintentando (${attempt}/${maxAttempts}) en ${seconds}s...`,
+      `Error transitorio de API. Reintentando (${String(attempt)}/${String(maxAttempts)}) en ${String(seconds)}s...`,
     pulling: (model, status, percent) =>
       percent !== undefined
-        ? `Descargando ${model}: ${status} (${percent}%)`
+        ? `Descargando ${model}: ${status} (${String(percent)}%)`
         : `Descargando ${model}: ${status}`,
 
     stepAnalyzingDiff: (step, path) =>
-      `[Paso ${step}] Analizando diff: ${path}`,
-    stepReadingFile: (step, path) => `[Paso ${step}] Leyendo archivo: ${path}`,
+      `[Paso ${String(step)}] Analizando diff: ${path}`,
+    stepReadingFile: (step, path) => `[Paso ${String(step)}] Leyendo archivo: ${path}`,
     stepGettingOutline: (step, path) =>
-      `[Paso ${step}] Obteniendo esquema: ${path}`,
+      `[Paso ${String(step)}] Obteniendo esquema: ${path}`,
     stepFindingReferences: (step, target) =>
-      `[Paso ${step}] Encontrando referencias: ${target}`,
+      `[Paso ${String(step)}] Encontrando referencias: ${target}`,
     stepFetchingRecentCommits: (step, count) =>
       count !== undefined
-        ? `[Paso ${step}] Obteniendo commits recientes: ${count} entradas`
-        : `[Paso ${step}] Obteniendo commits recientes...`,
+        ? `[Paso ${String(step)}] Obteniendo commits recientes: ${String(count)} entradas`
+        : `[Paso ${String(step)}] Obteniendo commits recientes...`,
     stepSearchingProject: (step, keyword) =>
-      `[Paso ${step}] Buscando en el proyecto: ${keyword}`,
-    stepCalling: (step, toolName) => `[Paso ${step}] Llamando ${toolName}...`,
+      `[Paso ${String(step)}] Buscando en el proyecto: ${keyword}`,
+    stepCalling: (step, toolName) => `[Paso ${String(step)}] Llamando ${toolName}...`,
 
     stepAnalyzingMultipleDiffs: (step, paths) =>
-      `[Paso ${step}] Analizando diffs: ${paths}`,
+      `[Paso ${String(step)}] Analizando diffs: ${paths}`,
     stepAnalyzingDiffsForCount: (step, count) =>
-      `[Paso ${step}] Analizando diffs para ${count} archivos...`,
+      `[Paso ${String(step)}] Analizando diffs para ${String(count)} archivos...`,
     stepReadingMultipleFiles: (step, paths) =>
-      `[Paso ${step}] Leyendo archivos: ${paths}`,
+      `[Paso ${String(step)}] Leyendo archivos: ${paths}`,
     stepReadingFilesForCount: (step, count) =>
-      `[Paso ${step}] Leyendo ${count} archivos...`,
+      `[Paso ${String(step)}] Leyendo ${String(count)} archivos...`,
     stepGettingMultipleOutlines: (step, paths) =>
-      `[Paso ${step}] Obteniendo esquemas: ${paths}`,
+      `[Paso ${String(step)}] Obteniendo esquemas: ${paths}`,
     stepGettingOutlinesForCount: (step, count) =>
-      `[Paso ${step}] Obteniendo esquemas para ${count} archivos...`,
+      `[Paso ${String(step)}] Obteniendo esquemas para ${String(count)} archivos...`,
     stepFindingReferencesForMultiple: (step, targets) =>
-      `[Paso ${step}] Encontrando referencias: ${targets}`,
+      `[Paso ${String(step)}] Encontrando referencias: ${targets}`,
     stepFindingReferencesForCount: (step, count) =>
-      `[Paso ${step}] Encontrando referencias para ${count} símbolos...`,
+      `[Paso ${String(step)}] Encontrando referencias para ${String(count)} símbolos...`,
     stepSearchingProjectForMultiple: (step, keywords) =>
-      `[Paso ${step}] Buscando en el proyecto: ${keywords}`,
+      `[Paso ${String(step)}] Buscando en el proyecto: ${keywords}`,
     stepSearchingProjectForCount: (step, count) =>
-      `[Paso ${step}] Buscando en el proyecto ${count} palabras clave...`,
+      `[Paso ${String(step)}] Buscando en el proyecto ${String(count)} palabras clave...`,
     stepExecutingMultipleTools: (step, count) =>
-      `[Paso ${step}] Ejecutando ${count} herramientas de investigación...`,
+      `[Paso ${String(step)}] Ejecutando ${String(count)} herramientas de investigación...`,
   },
 };

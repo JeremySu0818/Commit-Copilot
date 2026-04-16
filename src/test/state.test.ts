@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { GenerationStateManager, ValidationStateManager } from '../state';
 
-test('GenerationStateManager notifies listeners on state change', () => {
+void test('GenerationStateManager notifies listeners on state change', () => {
   let called = 0;
   const listener = () => {
     called++;
@@ -17,7 +17,7 @@ test('GenerationStateManager notifies listeners on state change', () => {
   assert.equal(called, 2);
 });
 
-test('ValidationStateManager tracks provider and notifies listeners', () => {
+void test('ValidationStateManager tracks provider and notifies listeners', () => {
   let called = 0;
   const listener = () => {
     called++;

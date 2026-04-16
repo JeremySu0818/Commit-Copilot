@@ -79,7 +79,7 @@ export const idLocale: LocaleTextBundle = {
         'Tidak ditemukan editor aktif untuk pemilihan repositori.',
       selectedOnlyRepo: (path) => `Hanya memilih repositori: ${path}`,
       multiRepoNotDetermined: (count) =>
-        `Ditemukan ${count} repositori tetapi tidak dapat menentukan yang aktif.`,
+        `Ditemukan ${String(count)} repositori tetapi tidak dapat menentukan yang aktif.`,
       noRepoInApi: 'Tidak ada repositori yang ditemukan di API.',
       usingProvider: (providerName) => `Menggunakan penyedia: ${providerName}`,
       usingGenerateMode: (mode) => `Mode pembuatan: ${mode}`,
@@ -237,49 +237,49 @@ export const idLocale: LocaleTextBundle = {
     analyzingChanges: 'Agen sedang menganalisis perubahan...',
     generatingMessage: 'Menghasilkan pesan komit...',
     transientApiError: (attempt, maxAttempts, seconds) =>
-      `Kesalahan API sementara. Mencoba kembali (${attempt}/${maxAttempts}) dalam ${seconds}s...`,
+      `Kesalahan API sementara. Mencoba kembali (${String(attempt)}/${String(maxAttempts)}) dalam ${String(seconds)}s...`,
     pulling: (model, status, percent) =>
       percent !== undefined
-        ? `Menarik ${model}: ${status} (${percent}%)`
+        ? `Menarik ${model}: ${status} (${String(percent)}%)`
         : `Menarik ${model}: ${status}`,
 
     stepAnalyzingDiff: (step, path) =>
-      `[Langkah ${step}] Menganalisis diff: ${path}`,
-    stepReadingFile: (step, path) => `[Langkah ${step}] Membaca file: ${path}`,
+      `[Langkah ${String(step)}] Menganalisis diff: ${path}`,
+    stepReadingFile: (step, path) => `[Langkah ${String(step)}] Membaca file: ${path}`,
     stepGettingOutline: (step, path) =>
-      `[Langkah ${step}] Mendapatkan outline: ${path}`,
+      `[Langkah ${String(step)}] Mendapatkan outline: ${path}`,
     stepFindingReferences: (step, target) =>
-      `[Langkah ${step}] Mencari referensi: ${target}`,
+      `[Langkah ${String(step)}] Mencari referensi: ${target}`,
     stepFetchingRecentCommits: (step, count) =>
       count !== undefined
-        ? `[Langkah ${step}] Mengambil komit terbaru: ${count} entri`
-        : `[Langkah ${step}] Mengambil komit terbaru...`,
+        ? `[Langkah ${String(step)}] Mengambil komit terbaru: ${String(count)} entri`
+        : `[Langkah ${String(step)}] Mengambil komit terbaru...`,
     stepSearchingProject: (step, keyword) =>
-      `[Langkah ${step}] Mencari proyek untuk: ${keyword}`,
+      `[Langkah ${String(step)}] Mencari proyek untuk: ${keyword}`,
     stepCalling: (step, toolName) =>
-      `[Langkah ${step}] Memanggil ${toolName}...`,
+      `[Langkah ${String(step)}] Memanggil ${toolName}...`,
 
     stepAnalyzingMultipleDiffs: (step, paths) =>
-      `[Langkah ${step}] Menganalisis diff: ${paths}`,
+      `[Langkah ${String(step)}] Menganalisis diff: ${paths}`,
     stepAnalyzingDiffsForCount: (step, count) =>
-      `[Langkah ${step}] Menganalisis diff untuk ${count} file...`,
+      `[Langkah ${String(step)}] Menganalisis diff untuk ${String(count)} file...`,
     stepReadingMultipleFiles: (step, paths) =>
-      `[Langkah ${step}] Membaca file: ${paths}`,
+      `[Langkah ${String(step)}] Membaca file: ${paths}`,
     stepReadingFilesForCount: (step, count) =>
-      `[Langkah ${step}] Membaca ${count} file...`,
+      `[Langkah ${String(step)}] Membaca ${String(count)} file...`,
     stepGettingMultipleOutlines: (step, paths) =>
-      `[Langkah ${step}] Mendapatkan outline: ${paths}`,
+      `[Langkah ${String(step)}] Mendapatkan outline: ${paths}`,
     stepGettingOutlinesForCount: (step, count) =>
-      `[Langkah ${step}] Mendapatkan outline untuk ${count} file...`,
+      `[Langkah ${String(step)}] Mendapatkan outline untuk ${String(count)} file...`,
     stepFindingReferencesForMultiple: (step, targets) =>
-      `[Langkah ${step}] Mencari referensi: ${targets}`,
+      `[Langkah ${String(step)}] Mencari referensi: ${targets}`,
     stepFindingReferencesForCount: (step, count) =>
-      `[Langkah ${step}] Mencari referensi untuk ${count} simbol...`,
+      `[Langkah ${String(step)}] Mencari referensi untuk ${String(count)} simbol...`,
     stepSearchingProjectForMultiple: (step, keywords) =>
-      `[Langkah ${step}] Mencari proyek untuk: ${keywords}`,
+      `[Langkah ${String(step)}] Mencari proyek untuk: ${keywords}`,
     stepSearchingProjectForCount: (step, count) =>
-      `[Langkah ${step}] Mencari proyek untuk ${count} kata kunci...`,
+      `[Langkah ${String(step)}] Mencari proyek untuk ${String(count)} kata kunci...`,
     stepExecutingMultipleTools: (step, count) =>
-      `[Langkah ${step}] Mengeksekusi ${count} alat investigasi...`,
+      `[Langkah ${String(step)}] Mengeksekusi ${String(count)} alat investigasi...`,
   },
 };

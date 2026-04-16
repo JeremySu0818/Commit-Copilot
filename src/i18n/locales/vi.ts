@@ -78,7 +78,7 @@ export const viLocale: LocaleTextBundle = {
         'Không tìm thấy trình chỉnh sửa đang hoạt động để chọn kho lưu trữ.',
       selectedOnlyRepo: (path) => `Đã chọn kho lưu trữ duy nhất: ${path}`,
       multiRepoNotDetermined: (count) =>
-        `Tìm thấy ${count} kho lưu trữ nhưng không thể xác định kho lưu trữ đang hoạt động.`,
+        `Tìm thấy ${String(count)} kho lưu trữ nhưng không thể xác định kho lưu trữ đang hoạt động.`,
       noRepoInApi: 'Không tìm thấy kho lưu trữ nào trong API.',
       usingProvider: (providerName) => `Sử dụng nhà cung cấp: ${providerName}`,
       usingGenerateMode: (mode) => `Chế độ tạo: ${mode}`,
@@ -233,46 +233,46 @@ export const viLocale: LocaleTextBundle = {
     analyzingChanges: 'Agent đang phân tích các thay đổi...',
     generatingMessage: 'Đang tạo thông báo commit...',
     transientApiError: (attempt, maxAttempts, seconds) =>
-      `Lỗi API tạm thời. Thử lại lần (${attempt}/${maxAttempts}) sau ${seconds}s...`,
+      `Lỗi API tạm thời. Thử lại lần (${String(attempt)}/${String(maxAttempts)}) sau ${String(seconds)}s...`,
     pulling: (model, status, percent) =>
       percent !== undefined
-        ? `Đang kéo ${model}: ${status} (${percent}%)`
+        ? `Đang kéo ${model}: ${status} (${String(percent)}%)`
         : `Đang kéo ${model}: ${status}`,
 
-    stepAnalyzingDiff: (step, path) => `[Bước ${step}] Phân tích diff: ${path}`,
-    stepReadingFile: (step, path) => `[Bước ${step}] Đọc tệp: ${path}`,
-    stepGettingOutline: (step, path) => `[Bước ${step}] Lấy phác thảo: ${path}`,
+    stepAnalyzingDiff: (step, path) => `[Bước ${String(step)}] Phân tích diff: ${path}`,
+    stepReadingFile: (step, path) => `[Bước ${String(step)}] Đọc tệp: ${path}`,
+    stepGettingOutline: (step, path) => `[Bước ${String(step)}] Lấy phác thảo: ${path}`,
     stepFindingReferences: (step, target) =>
-      `[Bước ${step}] Tìm tham chiếu: ${target}`,
+      `[Bước ${String(step)}] Tìm tham chiếu: ${target}`,
     stepFetchingRecentCommits: (step, count) =>
       count !== undefined
-        ? `[Bước ${step}] Đang lấy các commit gần đây: ${count} mục`
-        : `[Bước ${step}] Đang lấy các commit gần đây...`,
+        ? `[Bước ${String(step)}] Đang lấy các commit gần đây: ${String(count)} mục`
+        : `[Bước ${String(step)}] Đang lấy các commit gần đây...`,
     stepSearchingProject: (step, keyword) =>
-      `[Bước ${step}] Đang tìm kiếm dự án cho: ${keyword}`,
-    stepCalling: (step, toolName) => `[Bước ${step}] Đang gọi ${toolName}...`,
+      `[Bước ${String(step)}] Đang tìm kiếm dự án cho: ${keyword}`,
+    stepCalling: (step, toolName) => `[Bước ${String(step)}] Đang gọi ${toolName}...`,
 
     stepAnalyzingMultipleDiffs: (step, paths) =>
-      `[Bước ${step}] Phân tích diffs: ${paths}`,
+      `[Bước ${String(step)}] Phân tích diffs: ${paths}`,
     stepAnalyzingDiffsForCount: (step, count) =>
-      `[Bước ${step}] Phân tích diffs cho ${count} tệp...`,
+      `[Bước ${String(step)}] Phân tích diffs cho ${String(count)} tệp...`,
     stepReadingMultipleFiles: (step, paths) =>
-      `[Bước ${step}] Đọc tệp: ${paths}`,
+      `[Bước ${String(step)}] Đọc tệp: ${paths}`,
     stepReadingFilesForCount: (step, count) =>
-      `[Bước ${step}] Đọc ${count} tệp...`,
+      `[Bước ${String(step)}] Đọc ${String(count)} tệp...`,
     stepGettingMultipleOutlines: (step, paths) =>
-      `[Bước ${step}] Lấy phác thảo: ${paths}`,
+      `[Bước ${String(step)}] Lấy phác thảo: ${paths}`,
     stepGettingOutlinesForCount: (step, count) =>
-      `[Bước ${step}] Lấy phác thảo cho ${count} tệp...`,
+      `[Bước ${String(step)}] Lấy phác thảo cho ${String(count)} tệp...`,
     stepFindingReferencesForMultiple: (step, targets) =>
-      `[Bước ${step}] Tìm tham chiếu: ${targets}`,
+      `[Bước ${String(step)}] Tìm tham chiếu: ${targets}`,
     stepFindingReferencesForCount: (step, count) =>
-      `[Bước ${step}] Tìm tham chiếu cho ${count} biểu tượng...`,
+      `[Bước ${String(step)}] Tìm tham chiếu cho ${String(count)} biểu tượng...`,
     stepSearchingProjectForMultiple: (step, keywords) =>
-      `[Bước ${step}] Đang tìm kiếm dự án cho: ${keywords}`,
+      `[Bước ${String(step)}] Đang tìm kiếm dự án cho: ${keywords}`,
     stepSearchingProjectForCount: (step, count) =>
-      `[Bước ${step}] Đang tìm kiếm dự án cho ${count} từ khóa...`,
+      `[Bước ${String(step)}] Đang tìm kiếm dự án cho ${String(count)} từ khóa...`,
     stepExecutingMultipleTools: (step, count) =>
-      `[Bước ${step}] Đang thực thi ${count} công cụ điều tra...`,
+      `[Bước ${String(step)}] Đang thực thi ${String(count)} công cụ điều tra...`,
   },
 };

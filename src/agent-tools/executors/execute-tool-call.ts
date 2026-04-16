@@ -7,6 +7,21 @@ import { executeFindReferences } from './find-references';
 import { executeGetRecentCommits } from './get-recent-commits';
 import { executeSearchCode } from './search-code';
 
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'message' in error &&
+    typeof (error as { message?: unknown }).message === 'string'
+  ) {
+    return (error as { message: string }).message;
+  }
+  return String(error);
+}
+
 export async function executeToolCall(
   toolCall: ToolCallRequest,
   repoRoot: string,
@@ -63,10 +78,10 @@ export async function executeToolCall(
     }
 
     return { name: toolCall.name, content };
-  } catch (err: any) {
+  } catch (err: unknown) {
     return {
       name: toolCall.name,
-      content: `Tool execution error: ${err.message}`,
+      content: `Tool execution error: ${getErrorMessage(err)}`,
       error: true,
     };
   }

@@ -80,7 +80,7 @@ export const huLocale: LocaleTextBundle = {
         'Nincs aktív szerkesztő az adattár kiválasztásához.',
       selectedOnlyRepo: (path) => `Az egyetlen kiválasztott adattár: ${path}`,
       multiRepoNotDetermined: (count) =>
-        `${count} adattár található, de az aktív nem határozható meg.`,
+        `${String(count)} adattár található, de az aktív nem határozható meg.`,
       noRepoInApi: 'Nincsenek adattárak az API-ban.',
       usingProvider: (providerName) => `Használt szolgáltató: ${providerName}`,
       usingGenerateMode: (mode) => `Generálási mód: ${mode}`,
@@ -238,48 +238,48 @@ export const huLocale: LocaleTextBundle = {
     analyzingChanges: 'Ügynök elemzi a változtatásokat...',
     generatingMessage: 'Commit üzenet generálása...',
     transientApiError: (attempt, maxAttempts, seconds) =>
-      `Átmeneti API hiba. Újrapróbálkozás (${attempt}/${maxAttempts}) ${seconds} mp múlva...`,
+      `Átmeneti API hiba. Újrapróbálkozás (${String(attempt)}/${String(maxAttempts)}) ${String(seconds)} mp múlva...`,
     pulling: (model, status, percent) =>
       percent !== undefined
-        ? `${model} letöltése: ${status} (${percent}%)`
+        ? `${model} letöltése: ${status} (${String(percent)}%)`
         : `${model} letöltése: ${status}`,
 
     stepAnalyzingDiff: (step, path) =>
-      `[${step}. lépés] Diff elemzése: ${path}`,
-    stepReadingFile: (step, path) => `[${step}. lépés] Fájl olvasása: ${path}`,
+      `[${String(step)}. lépés] Diff elemzése: ${path}`,
+    stepReadingFile: (step, path) => `[${String(step)}. lépés] Fájl olvasása: ${path}`,
     stepGettingOutline: (step, path) =>
-      `[${step}. lépés] Vázlat lekérése: ${path}`,
+      `[${String(step)}. lépés] Vázlat lekérése: ${path}`,
     stepFindingReferences: (step, target) =>
-      `[${step}. lépés] Hivatkozások keresése: ${target}`,
+      `[${String(step)}. lépés] Hivatkozások keresése: ${target}`,
     stepFetchingRecentCommits: (step, count) =>
       count !== undefined
-        ? `[${step}. lépés] Legutóbbi commitok lekérése: ${count} bejegyzés`
-        : `[${step}. lépés] Legutóbbi commitok lekérése...`,
+        ? `[${String(step)}. lépés] Legutóbbi commitok lekérése: ${String(count)} bejegyzés`
+        : `[${String(step)}. lépés] Legutóbbi commitok lekérése...`,
     stepSearchingProject: (step, keyword) =>
-      `[${step}. lépés] Keresés a projektben: ${keyword}`,
-    stepCalling: (step, toolName) => `[${step}. lépés] ${toolName} hívása...`,
+      `[${String(step)}. lépés] Keresés a projektben: ${keyword}`,
+    stepCalling: (step, toolName) => `[${String(step)}. lépés] ${toolName} hívása...`,
 
     stepAnalyzingMultipleDiffs: (step, paths) =>
-      `[${step}. lépés] Diffek elemzése: ${paths}`,
+      `[${String(step)}. lépés] Diffek elemzése: ${paths}`,
     stepAnalyzingDiffsForCount: (step, count) =>
-      `[${step}. lépés] Diffek elemzése ${count} fájlhoz...`,
+      `[${String(step)}. lépés] Diffek elemzése ${String(count)} fájlhoz...`,
     stepReadingMultipleFiles: (step, paths) =>
-      `[${step}. lépés] Fájlok olvasása: ${paths}`,
+      `[${String(step)}. lépés] Fájlok olvasása: ${paths}`,
     stepReadingFilesForCount: (step, count) =>
-      `[${step}. lépés] ${count} fájl olvasása...`,
+      `[${String(step)}. lépés] ${String(count)} fájl olvasása...`,
     stepGettingMultipleOutlines: (step, paths) =>
-      `[${step}. lépés] Vázlatok lekérése: ${paths}`,
+      `[${String(step)}. lépés] Vázlatok lekérése: ${paths}`,
     stepGettingOutlinesForCount: (step, count) =>
-      `[${step}. lépés] Vázlatok lekérése ${count} fájlhoz...`,
+      `[${String(step)}. lépés] Vázlatok lekérése ${String(count)} fájlhoz...`,
     stepFindingReferencesForMultiple: (step, targets) =>
-      `[${step}. lépés] Hivatkozások keresése: ${targets}`,
+      `[${String(step)}. lépés] Hivatkozások keresése: ${targets}`,
     stepFindingReferencesForCount: (step, count) =>
-      `[${step}. lépés] Hivatkozások keresése ${count} szimbólumhoz...`,
+      `[${String(step)}. lépés] Hivatkozások keresése ${String(count)} szimbólumhoz...`,
     stepSearchingProjectForMultiple: (step, keywords) =>
-      `[${step}. lépés] Keresés a projektben: ${keywords}`,
+      `[${String(step)}. lépés] Keresés a projektben: ${keywords}`,
     stepSearchingProjectForCount: (step, count) =>
-      `[${step}. lépés] Keresés a projektben ${count} kulcsszóra...`,
+      `[${String(step)}. lépés] Keresés a projektben ${String(count)} kulcsszóra...`,
     stepExecutingMultipleTools: (step, count) =>
-      `[${step}. lépés] ${count} vizsgáló eszköz futtatása...`,
+      `[${String(step)}. lépés] ${String(count)} vizsgáló eszköz futtatása...`,
   },
 };

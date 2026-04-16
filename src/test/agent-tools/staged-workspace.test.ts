@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as fs from 'fs';
 import * as path from 'path';
+import type { GitOperations } from '../../commit-copilot';
 import {
   STAGED_WORKSPACE_DIR_NAME,
   STAGED_WORKSPACE_SUBDIR_NAME,
@@ -12,17 +13,17 @@ import {
 } from '../../agent-tools/staged-workspace';
 import { cleanupTempDir, createTempDir } from '../helpers/temp-dir';
 
-test('isPathWithinRoot validates child paths only', () => {
+void test('isPathWithinRoot validates child paths only', () => {
   const root = path.resolve('repo');
   assert.equal(isPathWithinRoot(root, path.join(root, 'src', 'a.ts')), true);
   assert.equal(isPathWithinRoot(root, path.resolve(root, '..', 'x.ts')), false);
 });
 
-test('toPosixPath normalizes windows separators', () => {
+void test('toPosixPath normalizes windows separators', () => {
   assert.equal(toPosixPath(`a${path.sep}b${path.sep}c.ts`), 'a/b/c.ts');
 });
 
-test('createStagedWorkspaceSnapshot builds index-based snapshot', async () => {
+void test('createStagedWorkspaceSnapshot builds index-based snapshot', async () => {
   const repoRoot = createTempDir();
   try {
     fs.mkdirSync(path.join(repoRoot, 'src'), { recursive: true });
@@ -43,22 +44,22 @@ test('createStagedWorkspaceSnapshot builds index-based snapshot', async () => {
     ].join('\n');
 
     const gitOps = {
-      listFilesFromGitApi: async () => null,
-      showIndexFile: async (relPath: string) => {
+      listFilesFromGitApi: () => Promise.resolve(null),
+      showIndexFile: (relPath: string) => {
         if (relPath === 'src/a.ts') {
-          return { content: 'index-a', found: true };
+          return Promise.resolve({ content: 'index-a', found: true });
         }
         if (relPath === 'src/deleted.ts') {
-          return { content: '', found: false };
+          return Promise.resolve({ content: '', found: false });
         }
         if (relPath === 'src/b.ts') {
-          return { content: 'index-b', found: true };
+          return Promise.resolve({ content: 'index-b', found: true });
         }
-        return { content: '', found: false };
+        return Promise.resolve({ content: '', found: false });
       },
       getUntrackedPaths: () => [],
       getWorkingTreePaths: () => [path.join(repoRoot, 'src', 'b.ts')],
-    } as any;
+    } as unknown as GitOperations;
 
     const snapshot = await createStagedWorkspaceSnapshot(
       repoRoot,

@@ -2,10 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as fs from 'fs';
 import * as path from 'path';
+import type { GitOperations } from '../../commit-copilot';
 import { executeReadFile } from '../../agent-tools/executors/read-file';
 import { cleanupTempDir, createTempDir } from '../helpers/temp-dir';
 
-test('executeReadFile validates required path', async () => {
+void test('executeReadFile validates required path', async () => {
   const repoRoot = createTempDir();
   try {
     const output = await executeReadFile(repoRoot, {}, false);
@@ -15,7 +16,7 @@ test('executeReadFile validates required path', async () => {
   }
 });
 
-test('executeReadFile prevents path traversal', async () => {
+void test('executeReadFile prevents path traversal', async () => {
   const repoRoot = createTempDir();
   try {
     const output = await executeReadFile(repoRoot, { path: '../x.txt' }, false);
@@ -25,7 +26,7 @@ test('executeReadFile prevents path traversal', async () => {
   }
 });
 
-test('executeReadFile reads disk file and line range', async () => {
+void test('executeReadFile reads disk file and line range', async () => {
   const repoRoot = createTempDir();
   try {
     const filePath = path.join(repoRoot, 'src', 'index.ts');
@@ -45,7 +46,7 @@ test('executeReadFile reads disk file and line range', async () => {
   }
 });
 
-test('executeReadFile clamps endLine to startLine for negative values', async () => {
+void test('executeReadFile clamps endLine to startLine for negative values', async () => {
   const repoRoot = createTempDir();
   try {
     const filePath = path.join(repoRoot, 'src', 'index.ts');
@@ -65,15 +66,16 @@ test('executeReadFile clamps endLine to startLine for negative values', async ()
   }
 });
 
-test('executeReadFile prefers staged index content when available', async () => {
+void test('executeReadFile prefers staged index content when available', async () => {
   const repoRoot = createTempDir();
   try {
     const filePath = path.join(repoRoot, 'file.txt');
     fs.writeFileSync(filePath, 'disk', 'utf-8');
 
     const gitOps = {
-      showIndexFile: async () => ({ content: 'index-content', found: true }),
-    } as any;
+      showIndexFile: () =>
+        Promise.resolve({ content: 'index-content', found: true }),
+    } as unknown as GitOperations;
 
     const output = await executeReadFile(
       repoRoot,
@@ -88,15 +90,15 @@ test('executeReadFile prefers staged index content when available', async () => 
   }
 });
 
-test('executeReadFile falls back to disk when staged file not found in index', async () => {
+void test('executeReadFile falls back to disk when staged file not found in index', async () => {
   const repoRoot = createTempDir();
   try {
     const filePath = path.join(repoRoot, 'file.txt');
     fs.writeFileSync(filePath, 'disk-only', 'utf-8');
 
     const gitOps = {
-      showIndexFile: async () => ({ content: '', found: false }),
-    } as any;
+      showIndexFile: () => Promise.resolve({ content: '', found: false }),
+    } as unknown as GitOperations;
 
     const output = await executeReadFile(
       repoRoot,

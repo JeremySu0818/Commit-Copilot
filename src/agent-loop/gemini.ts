@@ -28,7 +28,6 @@ import {
   buildFinalOutputReminder,
   extractCommitMessage,
   formatBatchProgressMessage,
-  MAX_AGENT_STEPS,
 } from './shared';
 import { DEFAULT_RETRY_OPTIONS, RetryInfo, withRetry } from '../retry';
 import { LOCALES } from '../i18n/locales';
@@ -38,6 +37,37 @@ interface GeminiFunctionCall {
   id?: string;
   name: string;
   args: Record<string, unknown>;
+}
+
+type UnknownRecord = Record<string, unknown>;
+
+interface ErrorLike {
+  status?: unknown;
+  statusCode?: unknown;
+  response?: unknown;
+  code?: unknown;
+  error?: unknown;
+  message?: unknown;
+}
+
+function isRecord(value: unknown): value is UnknownRecord {
+  return typeof value === 'object' && value !== null;
+}
+
+function isUnknownArray(value: unknown): value is unknown[] {
+  return Array.isArray(value);
+}
+
+function asString(value: unknown): string | undefined {
+  return typeof value === 'string' ? value : undefined;
+}
+
+function toErrorLike(error: unknown): ErrorLike {
+  return isRecord(error) ? (error as ErrorLike) : {};
+}
+
+function pickNonEmpty(primary: string | undefined, fallback: string): string {
+  return primary && primary.length > 0 ? primary : fallback;
 }
 
 const GEMINI_AUTH_STATUS_PATTERN =
@@ -58,12 +88,14 @@ function getErrorMessage(error: unknown): string {
   return String(error);
 }
 
-function getErrorStatus(error: any): number | null {
+function getErrorStatus(error: unknown): number | null {
+  const candidate = toErrorLike(error);
+  const response = toErrorLike(candidate.response);
   const status =
-    error?.status ??
-    error?.statusCode ??
-    error?.response?.status ??
-    error?.response?.statusCode;
+    candidate.status ??
+    candidate.statusCode ??
+    response.status ??
+    response.statusCode;
   if (typeof status === 'number') {
     return status;
   }
@@ -73,13 +105,17 @@ function getErrorStatus(error: any): number | null {
   return null;
 }
 
-function getErrorCode(error: any): string {
-  return String(
-    error?.code || error?.error?.status || error?.error?.code || '',
-  ).toUpperCase();
+function getErrorCode(error: unknown): string {
+  const candidate = toErrorLike(error);
+  const nestedError = toErrorLike(candidate.error);
+  const rawCode = candidate.code ?? nestedError.status ?? nestedError.code;
+  if (typeof rawCode === 'string' || typeof rawCode === 'number') {
+    return String(rawCode).toUpperCase();
+  }
+  return '';
 }
 
-function isGeminiAuthError(error: any, message: string): boolean {
+function isGeminiAuthError(error: unknown, message: string): boolean {
   const status = getErrorStatus(error);
   if (status === 401 || status === 403) {
     return true;
@@ -104,7 +140,7 @@ function isGeminiAuthError(error: any, message: string): boolean {
   );
 }
 
-function isGeminiQuotaError(error: any, message: string): boolean {
+function isGeminiQuotaError(error: unknown, message: string): boolean {
   const status = getErrorStatus(error);
   if (status === 429) {
     return true;
@@ -128,50 +164,79 @@ function isGeminiQuotaError(error: any, message: string): boolean {
   );
 }
 
-function normalizeGeminiFunctionCalls(response: any): GeminiFunctionCall[] {
-  const directCalls = Array.isArray(response?.functionCalls)
-    ? response.functionCalls
+function normalizeGeminiFunctionCall(call: unknown): GeminiFunctionCall | null {
+  if (!isRecord(call)) {
+    return null;
+  }
+
+  const name = asString(call.name);
+  if (!name || name.length === 0) {
+    return null;
+  }
+
+  return {
+    id: asString(call.id),
+    name,
+    args: isRecord(call.args) ? call.args : {},
+  };
+}
+
+function getGeminiResponseParts(response: unknown): unknown[] {
+  if (!isRecord(response) || !isUnknownArray(response.candidates)) {
+    return [];
+  }
+  const firstCandidate = response.candidates[0];
+  if (!isRecord(firstCandidate) || !isRecord(firstCandidate.content)) {
+    return [];
+  }
+  return isUnknownArray(firstCandidate.content.parts)
+    ? firstCandidate.content.parts
     : [];
+}
+
+function getGeminiResponseText(response: unknown): string | undefined {
+  if (!isRecord(response)) {
+    return undefined;
+  }
+  return asString(response.text);
+}
+
+function getGeminiCandidateContent(response: unknown): UnknownRecord | null {
+  if (!isRecord(response) || !isUnknownArray(response.candidates)) {
+    return null;
+  }
+  const firstCandidate = response.candidates[0];
+  if (!isRecord(firstCandidate) || !isRecord(firstCandidate.content)) {
+    return null;
+  }
+  return firstCandidate.content;
+}
+
+function getGeminiFirstCandidate(response: unknown): UnknownRecord | null {
+  if (!isRecord(response) || !isUnknownArray(response.candidates)) {
+    return null;
+  }
+  const firstCandidate = response.candidates[0];
+  return isRecord(firstCandidate) ? firstCandidate : null;
+}
+
+function normalizeGeminiFunctionCalls(response: unknown): GeminiFunctionCall[] {
+  const directCalls =
+    isRecord(response) && Array.isArray(response.functionCalls)
+      ? response.functionCalls
+      : [];
   const normalizedDirect = directCalls
-    .map((call: any) => ({
-      id: typeof call?.id === 'string' ? call.id : undefined,
-      name: call?.name,
-      args:
-        call?.args && typeof call.args === 'object'
-          ? (call.args as Record<string, unknown>)
-          : {},
-    }))
-    .filter(
-      (
-        call: Partial<GeminiFunctionCall>,
-      ): call is GeminiFunctionCall & { name: string } =>
-        typeof call.name === 'string' && call.name.length > 0,
-    );
+    .map((call) => normalizeGeminiFunctionCall(call))
+    .filter((call): call is GeminiFunctionCall => call !== null);
   if (normalizedDirect.length > 0) {
     return normalizedDirect;
   }
 
-  const parts = response?.candidates?.[0]?.content?.parts;
-  if (!Array.isArray(parts)) {
-    return [];
-  }
-
-  return parts
-    .map((part: any) => part?.functionCall)
-    .filter(
-      (
-        call: { name?: unknown; args?: unknown; id?: unknown } | undefined,
-      ): call is { name: string; args?: unknown; id?: unknown } =>
-        !!call && typeof call.name === 'string' && call.name.length > 0,
+  return getGeminiResponseParts(response)
+    .map((part) =>
+      isRecord(part) ? normalizeGeminiFunctionCall(part.functionCall) : null,
     )
-    .map((call) => ({
-      id: typeof call.id === 'string' ? call.id : undefined,
-      name: call.name,
-      args:
-        call.args && typeof call.args === 'object'
-          ? (call.args as Record<string, unknown>)
-          : {},
-    }));
+    .filter((call): call is GeminiFunctionCall => call !== null);
 }
 
 async function runGeminiAgentLoop(
@@ -198,7 +263,10 @@ async function runGeminiAgentLoop(
   try {
     const { GoogleGenAI } = await import('@google/genai');
     const client = new GoogleGenAI({ apiKey });
-    const modelName = (model || DEFAULT_MODELS.google).replace(/^models\//, '');
+    const modelName = pickNonEmpty(model, DEFAULT_MODELS.google).replace(
+      /^models\//,
+      '',
+    );
     const resolvedCommitOutputOptions =
       normalizeCommitOutputOptions(commitOutputOptions);
 
@@ -211,7 +279,9 @@ async function runGeminiAgentLoop(
       systemInstruction: systemPrompt,
       tools: [
         {
-          functionDeclarations: toGeminiFunctionDeclarations(isStaged) as any,
+          functionDeclarations: toGeminiFunctionDeclarations(
+            isStaged,
+          ) as unknown,
         },
       ],
     };
@@ -227,7 +297,7 @@ async function runGeminiAgentLoop(
       true,
       resolvedCommitOutputOptions,
     );
-    const history: any[] = [
+    const history: UnknownRecord[] = [
       {
         role: 'user',
         parts: [{ text: initialContext }],
@@ -258,8 +328,8 @@ async function runGeminiAgentLoop(
     };
 
     const requestGeminiResponse = async (
-      contents: any[],
-      config: any = generationConfig,
+      contents: UnknownRecord[],
+      config: UnknownRecord = generationConfig,
     ) => {
       throwIfCancellationRequested(cancellationToken);
       const result = await withRetry(
@@ -268,14 +338,14 @@ async function runGeminiAgentLoop(
           return client.models.generateContent({
             model: modelName,
             contents,
-            config: config,
+            config,
           });
         },
         {
           ...retryOptions,
           onRetry: (info: RetryInfo) => {
             throwIfCancellationRequested(cancellationToken);
-            retryOptions.onRetry?.(info);
+            retryOptions.onRetry(info);
           },
         },
       );
@@ -284,45 +354,47 @@ async function runGeminiAgentLoop(
     };
 
     let step = 0;
+    const stepLimit =
+      maxAgentSteps && maxAgentSteps > 0 ? maxAgentSteps : Number.POSITIVE_INFINITY;
 
-    while (
-      step < (maxAgentSteps && maxAgentSteps > 0 ? maxAgentSteps : Infinity)
-    ) {
+    while (step < stepLimit) {
       throwIfCancellationRequested(cancellationToken);
       const response = await requestGeminiResponse(history);
-      const candidate = response.candidates?.[0];
+      const candidate = getGeminiFirstCandidate(response);
       if (!candidate) {
         throw new APIRequestError('Empty response from Gemini API');
       }
 
       const functionCalls = normalizeGeminiFunctionCalls(response);
 
-      if (!functionCalls || functionCalls.length === 0) {
-        const text = response.text;
+      if (functionCalls.length === 0) {
+        const text = getGeminiResponseText(response);
         if (!text) {
           throw new APIRequestError('Empty text response from Gemini API');
         }
         return extractCommitMessage(text);
       }
 
+      const candidateContent = getGeminiCandidateContent(response);
       history.push(
-        candidate.content || {
-          role: 'model',
-          parts: functionCalls.map((fc: any) => ({
-            functionCall: {
-              id: fc.id,
-              name: fc.name,
-              args: fc.args || {},
-            },
-          })),
-        },
+        candidateContent ??
+          {
+            role: 'model',
+            parts: functionCalls.map((fc) => ({
+              functionCall: {
+                id: fc.id,
+                name: fc.name,
+                args: fc.args,
+              },
+            })),
+          },
       );
 
-      const toolResults: any[] = [];
+      const toolResults: UnknownRecord[] = [];
       if (onProgress && functionCalls.length > 0) {
         const calls = functionCalls.map((call) => ({
           name: call.name,
-          args: call.args || {},
+          args: call.args,
         }));
         onProgress(formatBatchProgressMessage(step + 1, calls, language));
       }
@@ -330,7 +402,7 @@ async function runGeminiAgentLoop(
       for (const fc of functionCalls) {
         throwIfCancellationRequested(cancellationToken);
         const result = await executeToolCall(
-          { name: fc.name, arguments: fc.args || {} },
+          { name: fc.name, arguments: fc.args },
           repoRoot,
           diff,
           isStaged,
@@ -362,9 +434,9 @@ async function runGeminiAgentLoop(
       ],
       finalGenerationConfig,
     );
-    const text = finalResponse.text;
+    const text = getGeminiResponseText(finalResponse);
     return text ? extractCommitMessage(text) : 'chore(project): update files';
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (
       error instanceof NoChangesError ||
       error instanceof APIKeyMissingError ||

@@ -7,7 +7,7 @@ import {
   toOpenAITools,
 } from '../../agent-tools/definitions';
 
-test('AGENT_TOOLS includes all expected tool names', () => {
+void test('AGENT_TOOLS includes all expected tool names', () => {
   const names = AGENT_TOOLS.map((tool) => tool.name).sort();
   assert.deepEqual(names, [
     'find_references',
@@ -19,7 +19,7 @@ test('AGENT_TOOLS includes all expected tool names', () => {
   ]);
 });
 
-test('toGeminiFunctionDeclarations mirrors tool definitions', () => {
+void test('toGeminiFunctionDeclarations mirrors tool definitions', () => {
   const declarations = toGeminiFunctionDeclarations();
   assert.equal(declarations.length, AGENT_TOOLS.length);
   assert.deepEqual(declarations[0], {
@@ -29,7 +29,7 @@ test('toGeminiFunctionDeclarations mirrors tool definitions', () => {
   });
 });
 
-test('toOpenAITools wraps each tool as function type', () => {
+void test('toOpenAITools wraps each tool as function type', () => {
   const tools = toOpenAITools();
   assert.equal(tools.length, AGENT_TOOLS.length);
   const first = tools[0] as {
@@ -40,7 +40,7 @@ test('toOpenAITools wraps each tool as function type', () => {
   assert.equal(first.function.name, AGENT_TOOLS[0].name);
 });
 
-test('toAnthropicTools maps parameters to input_schema', () => {
+void test('toAnthropicTools maps parameters to input_schema', () => {
   const tools = toAnthropicTools();
   assert.equal(tools.length, AGENT_TOOLS.length);
   const first = tools[0] as {

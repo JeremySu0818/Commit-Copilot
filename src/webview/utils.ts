@@ -1,5 +1,14 @@
 export function escapeHtml(value: unknown): string {
-  return String(value || '')
+  const textValue =
+    typeof value === 'string'
+      ? value
+      : typeof value === 'number' ||
+          typeof value === 'boolean' ||
+          typeof value === 'bigint'
+        ? String(value)
+        : '';
+
+  return textValue
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
@@ -11,7 +20,7 @@ export function fillTemplate(
   template: string,
   values: Record<string, string>,
 ): string {
-  return String(template).replace(/\{([a-zA-Z0-9_]+)\}/g, (_, key) => {
+  return template.replace(/\{([a-zA-Z0-9_]+)\}/g, (_match, key: string) => {
     return escapeHtml(values[key] ?? '');
   });
 }
@@ -42,20 +51,25 @@ export function normalizeCommitOutputOptions(
     includeScope:
       typeof candidate.includeScope === 'boolean'
         ? candidate.includeScope
-        : !!defaults.includeScope,
+        : defaults.includeScope,
     includeBody:
       typeof candidate.includeBody === 'boolean'
         ? candidate.includeBody
-        : !!defaults.includeBody,
+        : defaults.includeBody,
     includeFooter:
       typeof candidate.includeFooter === 'boolean'
         ? candidate.includeFooter
-        : !!defaults.includeFooter,
+        : defaults.includeFooter,
   };
 }
 
 export function normalizeMaxAgentStepsValue(value: unknown): number {
-  const raw = String(value || '').trim();
+  const raw =
+    typeof value === 'string'
+      ? value.trim()
+      : typeof value === 'number'
+        ? String(value)
+        : '';
   if (!raw || !/^\d+$/.test(raw)) {
     return 0;
   }
@@ -71,5 +85,5 @@ export function normalizeOllamaHostValue(
   ollamaDefaultHost: string,
 ): string {
   const raw = typeof value === 'string' ? value.trim() : '';
-  return raw || ollamaDefaultHost;
+  return raw.length > 0 ? raw : ollamaDefaultHost;
 }

@@ -33,6 +33,79 @@ import {
 import { DEFAULT_RETRY_OPTIONS, RetryInfo, withRetry } from '../retry';
 import { LOCALES } from '../i18n/locales';
 import type { EffectiveDisplayLanguage } from '../i18n/types';
+import type {
+  MessageParam,
+  Tool,
+  ToolResultBlockParam,
+} from '@anthropic-ai/sdk/resources/messages/messages';
+
+type UnknownRecord = Record<string, unknown>;
+
+interface ErrorLike {
+  status?: unknown;
+  message?: unknown;
+}
+
+interface AnthropicTextBlock {
+  type: 'text';
+  text: string;
+}
+
+interface AnthropicToolUseBlock {
+  type: 'tool_use';
+  id: string;
+  name: string;
+  input: Record<string, unknown>;
+}
+
+function isRecord(value: unknown): value is UnknownRecord {
+  return typeof value === 'object' && value !== null;
+}
+
+function asString(value: unknown): string | undefined {
+  return typeof value === 'string' ? value : undefined;
+}
+
+function pickNonEmpty(primary: string | undefined, fallback: string): string {
+  return primary && primary.length > 0 ? primary : fallback;
+}
+
+function toErrorLike(error: unknown): ErrorLike {
+  return isRecord(error) ? (error as ErrorLike) : {};
+}
+
+function isAnthropicTextBlock(block: unknown): block is AnthropicTextBlock {
+  return (
+    isRecord(block) &&
+    block.type === 'text' &&
+    typeof block.text === 'string'
+  );
+}
+
+function isAnthropicToolUseBlock(
+  block: unknown,
+): block is AnthropicToolUseBlock {
+  return (
+    isRecord(block) &&
+    block.type === 'tool_use' &&
+    typeof block.id === 'string' &&
+    typeof block.name === 'string' &&
+    isRecord(block.input)
+  );
+}
+
+function getAnthropicErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  const candidate = toErrorLike(error);
+  return asString(candidate.message) ?? String(error);
+}
+
+function getAnthropicErrorStatus(error: unknown): number | null {
+  const status = toErrorLike(error).status;
+  return typeof status === 'number' ? status : null;
+}
 
 async function runAnthropicAgentLoop(
   apiKey: string,
@@ -58,7 +131,7 @@ async function runAnthropicAgentLoop(
   try {
     const Anthropic = (await import('@anthropic-ai/sdk')).default;
     const client = new Anthropic({ apiKey });
-    const modelName = model || DEFAULT_MODELS.anthropic;
+    const modelName = pickNonEmpty(model, DEFAULT_MODELS.anthropic);
     const maxTokens = getAnthropicModelMaxTokens(modelName) ?? 16384;
     const resolvedCommitOutputOptions =
       normalizeCommitOutputOptions(commitOutputOptions);
@@ -77,7 +150,7 @@ async function runAnthropicAgentLoop(
       maxAgentSteps,
     });
 
-    const messages: any[] = [{ role: 'user', content: initialContext }];
+    const messages: MessageParam[] = [{ role: 'user', content: initialContext }];
 
     if (onProgress) {
       onProgress(LOCALES[language].progressMessages.analyzingChanges);
@@ -103,10 +176,10 @@ async function runAnthropicAgentLoop(
     };
 
     let step = 0;
+    const stepLimit =
+      maxAgentSteps && maxAgentSteps > 0 ? maxAgentSteps : Number.POSITIVE_INFINITY;
 
-    while (
-      step < (maxAgentSteps && maxAgentSteps > 0 ? maxAgentSteps : Infinity)
-    ) {
+    while (step < stepLimit) {
       throwIfCancellationRequested(cancellationToken);
       const response = await withRetry(
         () =>
@@ -116,15 +189,20 @@ async function runAnthropicAgentLoop(
               max_tokens: maxTokens,
               system: systemPrompt,
               messages,
-              tools: toAnthropicTools(isStaged) as any,
+              tools: toAnthropicTools(isStaged) as unknown as Tool[],
             })
             .finalMessage(),
         retryOptions,
       );
 
-      const textBlocks = response.content.filter((b: any) => b.type === 'text');
-      const toolUseBlocks = response.content.filter(
-        (b: any) => b.type === 'tool_use',
+      const responseContent = Array.isArray(response.content)
+        ? response.content
+        : [];
+      const textBlocks = responseContent.filter((block) =>
+        isAnthropicTextBlock(block),
+      );
+      const toolUseBlocks = responseContent.filter((block) =>
+        isAnthropicToolUseBlock(block),
       );
 
       const stopReason = response.stop_reason;
@@ -134,7 +212,7 @@ async function runAnthropicAgentLoop(
         (stopReason === 'end_turn' || stopReason === 'stop_sequence');
 
       if (isCompleteTextResponse) {
-        const text = textBlocks.map((b: any) => b.text).join('');
+        const text = textBlocks.map((block) => block.text).join('');
         if (!text) {
           throw new APIRequestError('Empty response from Anthropic API');
         }
@@ -149,20 +227,19 @@ async function runAnthropicAgentLoop(
 
       messages.push({ role: 'assistant', content: response.content });
 
-      const toolResults: any[] = [];
+      const toolResults: ToolResultBlockParam[] = [];
       if (onProgress && toolUseBlocks.length > 0) {
-        const calls = toolUseBlocks.map((b: any) => ({
-          name: b.name,
-          args: b.input || {},
+        const calls = toolUseBlocks.map((block) => ({
+          name: block.name,
+          args: block.input,
         }));
         onProgress(formatBatchProgressMessage(step + 1, calls, language));
       }
 
       for (const block of toolUseBlocks) {
         throwIfCancellationRequested(cancellationToken);
-        const toolUse = block as any;
         const result = await executeToolCall(
-          { name: toolUse.name, arguments: toolUse.input || {} },
+          { name: block.name, arguments: block.input },
           repoRoot,
           diff,
           isStaged,
@@ -171,7 +248,7 @@ async function runAnthropicAgentLoop(
 
         toolResults.push({
           type: 'tool_result',
-          tool_use_id: toolUse.id,
+          tool_use_id: block.id,
           content: result.content,
         });
       }
@@ -203,9 +280,12 @@ async function runAnthropicAgentLoop(
           .finalMessage(),
       retryOptions,
     );
-    const text = finalResponse.content
-      .filter((b: any) => b.type === 'text')
-      .map((b: any) => b.text)
+    const finalResponseContent = Array.isArray(finalResponse.content)
+      ? finalResponse.content
+      : [];
+    const text = finalResponseContent
+      .filter((block) => isAnthropicTextBlock(block))
+      .map((block) => block.text)
       .join('');
 
     if (finalResponse.stop_reason === 'max_tokens') {
@@ -215,7 +295,7 @@ async function runAnthropicAgentLoop(
     }
 
     return text ? extractCommitMessage(text) : 'chore(project): update files';
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (
       error instanceof NoChangesError ||
       error instanceof APIKeyMissingError ||
@@ -223,8 +303,8 @@ async function runAnthropicAgentLoop(
     ) {
       throw error;
     }
-    const message = error?.message || String(error);
-    const status = error?.status;
+    const message = getAnthropicErrorMessage(error);
+    const status = getAnthropicErrorStatus(error);
     if (
       status === 401 ||
       status === 403 ||

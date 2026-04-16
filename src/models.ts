@@ -146,7 +146,8 @@ export const DEFAULT_MODELS: Record<APIProvider, string> = {
 export function getAnthropicModelMaxTokens(
   modelId?: string,
 ): number | undefined {
-  const resolvedModelId = modelId || DEFAULT_MODELS.anthropic;
+  const resolvedModelId =
+    modelId && modelId.length > 0 ? modelId : DEFAULT_MODELS.anthropic;
   const selectedModel = ANTHROPIC_MODELS.find(
     ({ id }) => id === resolvedModelId,
   );

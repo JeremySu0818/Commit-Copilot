@@ -75,7 +75,26 @@ function formatOutlineLine(
   name: string,
 ): string {
   const indent = '  '.repeat(depth);
-  return `${indent}L${line} [${label}] ${name}`;
+  return `${indent}L${String(line)} [${label}] ${name}`;
+}
+
+function asString(value: unknown): string | undefined {
+  return typeof value === 'string' ? value : undefined;
+}
+
+function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'message' in error &&
+    typeof (error as { message?: unknown }).message === 'string'
+  ) {
+    return (error as { message: string }).message;
+  }
+  return String(error);
 }
 
 async function resolveLanguageId(absPath: string): Promise<string | undefined> {
@@ -121,7 +140,7 @@ function collectOutlineFromDocumentSymbols(
     }
 
     const nextDepth = depth + 1;
-    if (symbol.children?.length) {
+    if (symbol.children.length > 0) {
       const ok = collectOutlineFromDocumentSymbols(
         symbol.children,
         lines,
@@ -168,7 +187,7 @@ async function executeGetFileOutline(
   isStaged: boolean,
   gitOps?: GitOperations,
 ): Promise<string> {
-  const relPath = args.path as string;
+  const relPath = asString(args.path);
   if (!relPath) {
     return "Error: 'path' is required.";
   }
@@ -202,7 +221,7 @@ async function executeGetFileOutline(
     const lines = content.split(/\r?\n/);
     const outlineLines: string[] = [];
 
-    outlineLines.push(`File: ${relPath} (${lines.length} total lines)`);
+    outlineLines.push(`File: ${relPath} (${String(lines.length)} total lines)`);
     outlineLines.push('');
 
     let document: vscode.TextDocument;
@@ -249,9 +268,8 @@ async function executeGetFileOutline(
     }
 
     return outlineLines.join('\n');
-  } catch (err: any) {
-    const message = err?.message || String(err);
-    return `Error generating outline: ${message}`;
+  } catch (err: unknown) {
+    return `Error generating outline: ${getErrorMessage(err)}`;
   }
 }
 

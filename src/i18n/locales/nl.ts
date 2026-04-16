@@ -78,7 +78,7 @@ export const nlLocale: LocaleTextBundle = {
         'Geen actieve editor gevonden voor repository selectie.',
       selectedOnlyRepo: (path) => `Enige repository geselecteerd: ${path}`,
       multiRepoNotDetermined: (count) =>
-        `Vond ${count} repositories maar kon de actieve niet bepalen.`,
+        `Vond ${String(count)} repositories maar kon de actieve niet bepalen.`,
       noRepoInApi: 'Geen repositories gevonden in API.',
       usingProvider: (providerName) => `Gebruikt provider: ${providerName}`,
       usingGenerateMode: (mode) => `Generatie modus: ${mode}`,
@@ -236,48 +236,48 @@ export const nlLocale: LocaleTextBundle = {
     analyzingChanges: 'Agent analyseert wijzigingen...',
     generatingMessage: 'Commitbericht genereren...',
     transientApiError: (attempt, maxAttempts, seconds) =>
-      `Tijdelijke API-fout. Opnieuw proberen (${attempt}/${maxAttempts}) in ${seconds}s...`,
+      `Tijdelijke API-fout. Opnieuw proberen (${String(attempt)}/${String(maxAttempts)}) in ${String(seconds)}s...`,
     pulling: (model, status, percent) =>
       percent !== undefined
-        ? `Pulling ${model}: ${status} (${percent}%)`
+        ? `Pulling ${model}: ${status} (${String(percent)}%)`
         : `Pulling ${model}: ${status}`,
 
     stepAnalyzingDiff: (step, path) =>
-      `[Stap ${step}] Diff analyseren: ${path}`,
-    stepReadingFile: (step, path) => `[Stap ${step}] Bestand lezen: ${path}`,
+      `[Stap ${String(step)}] Diff analyseren: ${path}`,
+    stepReadingFile: (step, path) => `[Stap ${String(step)}] Bestand lezen: ${path}`,
     stepGettingOutline: (step, path) =>
-      `[Stap ${step}] Outline ophalen: ${path}`,
+      `[Stap ${String(step)}] Outline ophalen: ${path}`,
     stepFindingReferences: (step, target) =>
-      `[Stap ${step}] Referenties zoeken: ${target}`,
+      `[Stap ${String(step)}] Referenties zoeken: ${target}`,
     stepFetchingRecentCommits: (step, count) =>
       count !== undefined
-        ? `[Stap ${step}] Recente commits ophalen: ${count} vermeldingen`
-        : `[Stap ${step}] Recente commits ophalen...`,
+        ? `[Stap ${String(step)}] Recente commits ophalen: ${String(count)} vermeldingen`
+        : `[Stap ${String(step)}] Recente commits ophalen...`,
     stepSearchingProject: (step, keyword) =>
-      `[Stap ${step}] Project doorzoeken op: ${keyword}`,
-    stepCalling: (step, toolName) => `[Stap ${step}] Aanroepen ${toolName}...`,
+      `[Stap ${String(step)}] Project doorzoeken op: ${keyword}`,
+    stepCalling: (step, toolName) => `[Stap ${String(step)}] Aanroepen ${toolName}...`,
 
     stepAnalyzingMultipleDiffs: (step, paths) =>
-      `[Stap ${step}] Diffs analyseren: ${paths}`,
+      `[Stap ${String(step)}] Diffs analyseren: ${paths}`,
     stepAnalyzingDiffsForCount: (step, count) =>
-      `[Stap ${step}] Diffs analyseren voor ${count} bestanden...`,
+      `[Stap ${String(step)}] Diffs analyseren voor ${String(count)} bestanden...`,
     stepReadingMultipleFiles: (step, paths) =>
-      `[Stap ${step}] Bestanden lezen: ${paths}`,
+      `[Stap ${String(step)}] Bestanden lezen: ${paths}`,
     stepReadingFilesForCount: (step, count) =>
-      `[Stap ${step}] Lezen van ${count} bestanden...`,
+      `[Stap ${String(step)}] Lezen van ${String(count)} bestanden...`,
     stepGettingMultipleOutlines: (step, paths) =>
-      `[Stap ${step}] Outlines ophalen: ${paths}`,
+      `[Stap ${String(step)}] Outlines ophalen: ${paths}`,
     stepGettingOutlinesForCount: (step, count) =>
-      `[Stap ${step}] Outlines ophalen voor ${count} bestanden...`,
+      `[Stap ${String(step)}] Outlines ophalen voor ${String(count)} bestanden...`,
     stepFindingReferencesForMultiple: (step, targets) =>
-      `[Stap ${step}] Referenties zoeken: ${targets}`,
+      `[Stap ${String(step)}] Referenties zoeken: ${targets}`,
     stepFindingReferencesForCount: (step, count) =>
-      `[Stap ${step}] Referenties zoeken voor ${count} symbolen...`,
+      `[Stap ${String(step)}] Referenties zoeken voor ${String(count)} symbolen...`,
     stepSearchingProjectForMultiple: (step, keywords) =>
-      `[Stap ${step}] Project doorzoeken op: ${keywords}`,
+      `[Stap ${String(step)}] Project doorzoeken op: ${keywords}`,
     stepSearchingProjectForCount: (step, count) =>
-      `[Stap ${step}] Project doorzoeken op ${count} trefwoorden...`,
+      `[Stap ${String(step)}] Project doorzoeken op ${String(count)} trefwoorden...`,
     stepExecutingMultipleTools: (step, count) =>
-      `[Stap ${step}] Uitvoeren van ${count} onderzoekstools...`,
+      `[Stap ${String(step)}] Uitvoeren van ${String(count)} onderzoekstools...`,
   },
 };

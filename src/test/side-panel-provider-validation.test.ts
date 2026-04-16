@@ -2,19 +2,64 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as path from 'path';
 import { createRequire } from 'node:module';
+import type * as vscode from 'vscode';
 import { clearRequireCache, withModuleMock } from './helpers/module-mock';
 
 const MODULE_PATH = path.resolve(__dirname, '..', 'side-panel-provider');
 
-type MessageHandler = (data: any) => Promise<void> | void;
+type ProviderModule = typeof import('../side-panel-provider');
+type MessageHandler = (data: unknown) => Promise<void> | void;
+type PostedMessage = Record<string, unknown>;
+
+interface ValidationResult {
+  valid: boolean;
+  error?: string;
+}
+
+interface ProviderWithValidators {
+  resolveWebviewView(
+    webviewView: vscode.WebviewView,
+    context: vscode.WebviewViewResolveContext,
+    token: vscode.CancellationToken,
+  ): void;
+  validateGoogleApiKey(apiKey: string): Promise<ValidationResult>;
+  validateOpenAIApiKey(apiKey: string): Promise<ValidationResult>;
+  validateAnthropicApiKey(apiKey: string): Promise<ValidationResult>;
+}
 
 interface Harness {
   sendMessage: (message: unknown) => Promise<void>;
-  postedMessages: any[];
+  postedMessages: PostedMessage[];
   warningMessages: string[];
   infoMessages: string[];
   storedSecrets: { key: string; value: string }[];
   dispose: () => void;
+}
+
+interface ValidationResultMessage extends PostedMessage {
+  type: 'validationResult';
+  provider: string;
+  success: boolean;
+  error?: string;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+function toPostedMessage(value: unknown): PostedMessage | null {
+  return isRecord(value) ? value : null;
+}
+
+function isValidationResultMessage(
+  message: PostedMessage,
+  provider: string,
+): message is ValidationResultMessage {
+  return (
+    message.type === 'validationResult' &&
+    message.provider === provider &&
+    typeof message.success === 'boolean'
+  );
 }
 
 const baseVscodeMock = {
@@ -27,29 +72,37 @@ const baseVscodeMock = {
     getExtension: () => undefined,
   },
   commands: {
-    executeCommand: async () => undefined,
+    executeCommand: () => Promise.resolve(undefined),
   },
   window: {
-    showWarningMessage: async () => undefined,
-    showInformationMessage: async () => undefined,
-    showErrorMessage: async () => undefined,
+    showWarningMessage: () => Promise.resolve(undefined),
+    showInformationMessage: () => Promise.resolve(undefined),
+    showErrorMessage: () => Promise.resolve(undefined),
   },
 };
 
-function createProvider(mod: any) {
-  return new mod.SidePanelProvider({ fsPath: process.cwd() } as any, {} as any);
+function createProvider(mod: ProviderModule): ProviderWithValidators {
+  const provider = new mod.SidePanelProvider(
+    { fsPath: process.cwd() } as unknown as vscode.Uri,
+    {} as vscode.ExtensionContext,
+  );
+  return provider as unknown as ProviderWithValidators;
 }
 
 async function createHarness(): Promise<Harness> {
   clearRequireCache(MODULE_PATH);
 
-  const postedMessages: any[] = [];
+  const postedMessages: PostedMessage[] = [];
   const warningMessages: string[] = [];
   const infoMessages: string[] = [];
   const storedSecrets: { key: string; value: string }[] = [];
 
-  let messageHandler: MessageHandler | null = null;
+  let messageHandler: MessageHandler = () => Promise.resolve();
   let disposeHandler: (() => void) | null = null;
+
+  const noop = (): void => {
+    return;
+  };
 
   const webview = {
     cspSource: 'mock-csp-source',
@@ -58,13 +111,16 @@ async function createHarness(): Promise<Harness> {
     }),
     options: undefined as unknown,
     html: '',
-    postMessage: (message: any) => {
-      postedMessages.push(message);
+    postMessage: (message: unknown) => {
+      const posted = toPostedMessage(message);
+      if (posted) {
+        postedMessages.push(posted);
+      }
       return Promise.resolve(true);
     },
     onDidReceiveMessage: (callback: MessageHandler) => {
       messageHandler = callback;
-      return { dispose: () => {} };
+      return { dispose: noop };
     },
   };
 
@@ -72,57 +128,59 @@ async function createHarness(): Promise<Harness> {
     webview,
     onDidDispose: (callback: () => void) => {
       disposeHandler = callback;
-      return { dispose: () => {} };
+      return { dispose: noop };
     },
   };
 
   const vscodeMock = {
     ...baseVscodeMock,
     window: {
-      showWarningMessage: async (message: string) => {
+      showWarningMessage: (message: string) => {
         warningMessages.push(message);
-        return undefined;
+        return Promise.resolve(undefined);
       },
-      showInformationMessage: async (message: string) => {
+      showInformationMessage: (message: string) => {
         infoMessages.push(message);
-        return undefined;
+        return Promise.resolve(undefined);
       },
-      showErrorMessage: async () => undefined,
+      showErrorMessage: () => Promise.resolve(undefined),
     },
   };
 
-  const mod = await withModuleMock('vscode', vscodeMock, async () => {
+  const mod = await withModuleMock('vscode', vscodeMock, () => {
     const dynamicRequire = createRequire(__filename);
-    return dynamicRequire(MODULE_PATH);
+    return dynamicRequire(MODULE_PATH) as ProviderModule;
   });
 
   const context = {
     globalState: {
       get: () => undefined,
-      update: async () => {},
+      update: () => Promise.resolve(),
     },
     secrets: {
-      get: async () => undefined,
-      store: async (key: string, value: string) => {
+      get: () => Promise.resolve(undefined),
+      store: (key: string, value: string) => {
         storedSecrets.push({ key, value });
+        return Promise.resolve();
       },
     },
-  } as any;
+  } as unknown as vscode.ExtensionContext;
 
   const provider = new mod.SidePanelProvider(
-    { fsPath: process.cwd() } as any,
+    { fsPath: process.cwd() } as unknown as vscode.Uri,
     context,
+  ) as unknown as ProviderWithValidators;
+  provider.resolveWebviewView(
+    webviewView as unknown as vscode.WebviewView,
+    {} as vscode.WebviewViewResolveContext,
+    {} as vscode.CancellationToken,
   );
-  provider.resolveWebviewView(webviewView as any, {} as any, {} as any);
 
-  if (!messageHandler) {
-    throw new Error('Webview message handler not registered');
-  }
+  const sendMessage = (message: unknown): Promise<void> =>
+    Promise.resolve(messageHandler(message));
 
   return {
-    sendMessage: async (message: unknown) => {
-      await messageHandler?.(message);
-    },
+    sendMessage,
     postedMessages,
     warningMessages,
     infoMessages,
@@ -133,7 +191,7 @@ async function createHarness(): Promise<Harness> {
   };
 }
 
-test('validateGoogleApiKey uses Google SDK models.list API', async () => {
+void test('validateGoogleApiKey uses Google SDK models.list API', async () => {
   const calls = {
     apiKeys: [] as string[],
     listArgs: [] as (Record<string, unknown> | undefined)[],
@@ -141,9 +199,9 @@ test('validateGoogleApiKey uses Google SDK models.list API', async () => {
 
   class GoogleGenAIMock {
     models = {
-      list: async (params?: Record<string, unknown>) => {
+      list: (params?: Record<string, unknown>) => {
         calls.listArgs.push(params);
-        return { data: [] };
+        return Promise.resolve({ data: [] });
       },
     };
 
@@ -152,28 +210,22 @@ test('validateGoogleApiKey uses Google SDK models.list API', async () => {
     }
   }
 
-  await withModuleMock('vscode', baseVscodeMock, async () =>
-    withModuleMock(
-      '@google/genai',
-      { GoogleGenAI: GoogleGenAIMock },
-      async () => {
-        clearRequireCache(MODULE_PATH);
-        const dynamicRequire = createRequire(__filename);
-        const mod = dynamicRequire(
-          MODULE_PATH,
-        ) as typeof import('../side-panel-provider');
-        const provider = createProvider(mod);
-        const result = await provider.validateGoogleApiKey('google-test-key');
-
+  await withModuleMock('vscode', baseVscodeMock, () =>
+    withModuleMock('@google/genai', { GoogleGenAI: GoogleGenAIMock }, () => {
+      clearRequireCache(MODULE_PATH);
+      const dynamicRequire = createRequire(__filename);
+      const mod = dynamicRequire(MODULE_PATH) as ProviderModule;
+      const provider = createProvider(mod);
+      return provider.validateGoogleApiKey('google-test-key').then((result) => {
         assert.deepEqual(calls.apiKeys, ['google-test-key']);
         assert.deepEqual(calls.listArgs, [{ config: { pageSize: 1 } }]);
         assert.deepEqual(result, { valid: true });
-      },
-    ),
+      });
+    }),
   );
 });
 
-test('validateOpenAIApiKey uses OpenAI SDK models.list', async () => {
+void test('validateOpenAIApiKey uses OpenAI SDK models.list', async () => {
   const calls = {
     apiKeys: [] as string[],
     listCalls: 0,
@@ -181,9 +233,9 @@ test('validateOpenAIApiKey uses OpenAI SDK models.list', async () => {
 
   class OpenAIMock {
     models = {
-      list: async () => {
+      list: () => {
         calls.listCalls += 1;
-        return { data: [] };
+        return Promise.resolve({ data: [] });
       },
     };
 
@@ -192,88 +244,73 @@ test('validateOpenAIApiKey uses OpenAI SDK models.list', async () => {
     }
   }
 
-  await withModuleMock('vscode', baseVscodeMock, async () =>
-    withModuleMock(
-      'openai',
-      { __esModule: true, default: OpenAIMock },
-      async () => {
-        clearRequireCache(MODULE_PATH);
-        const dynamicRequire = createRequire(__filename);
-        const mod = dynamicRequire(
-          MODULE_PATH,
-        ) as typeof import('../side-panel-provider');
-        const provider = createProvider(mod);
-        const result = await provider.validateOpenAIApiKey('openai-test-key');
-
+  await withModuleMock('vscode', baseVscodeMock, () =>
+    withModuleMock('openai', { __esModule: true, default: OpenAIMock }, () => {
+      clearRequireCache(MODULE_PATH);
+      const dynamicRequire = createRequire(__filename);
+      const mod = dynamicRequire(MODULE_PATH) as ProviderModule;
+      const provider = createProvider(mod);
+      return provider.validateOpenAIApiKey('openai-test-key').then((result) => {
         assert.deepEqual(calls.apiKeys, ['openai-test-key']);
         assert.equal(calls.listCalls, 1);
         assert.deepEqual(result, { valid: true });
-      },
-    ),
+      });
+    }),
   );
 });
 
-test('validation errors use unified API request failed format for Google/OpenAI/Anthropic', async () => {
-  class GoogleGenAIMock {
-    models = {
-      list: async () => {
-        const error = new Error('google upstream failed') as Error & {
-          status?: number;
-        };
-        error.status = 500;
-        throw error;
-      },
-    };
+void test(
+  'validation errors use unified API request failed format for Google/OpenAI/Anthropic',
+  async () => {
+    class GoogleGenAIMock {
+      models = {
+        list: () => {
+          const error = new Error('google upstream failed') as Error & {
+            status?: number;
+          };
+          error.status = 500;
+          return Promise.reject(error);
+        },
+      };
+    }
 
-    constructor(_options: { apiKey: string }) {}
-  }
+    class OpenAIMock {
+      models = {
+        list: () => {
+          const error = new Error('openai upstream failed') as Error & {
+            status?: number;
+          };
+          error.status = 500;
+          return Promise.reject(error);
+        },
+      };
+    }
 
-  class OpenAIMock {
-    models = {
-      list: async () => {
-        const error = new Error('openai upstream failed') as Error & {
-          status?: number;
-        };
-        error.status = 500;
-        throw error;
-      },
-    };
+    class AnthropicMock {
+      models = {
+        list: () => {
+          const error = new Error('anthropic upstream failed') as Error & {
+            status?: number;
+          };
+          error.status = 500;
+          return Promise.reject(error);
+        },
+      };
+    }
 
-    constructor(_options: { apiKey: string }) {}
-  }
-
-  class AnthropicMock {
-    models = {
-      list: async () => {
-        const error = new Error('anthropic upstream failed') as Error & {
-          status?: number;
-        };
-        error.status = 500;
-        throw error;
-      },
-    };
-
-    constructor(_options: { apiKey: string }) {}
-  }
-
-  await withModuleMock('vscode', baseVscodeMock, async () =>
-    withModuleMock(
-      '@google/genai',
-      { GoogleGenAI: GoogleGenAIMock },
-      async () =>
+    await withModuleMock('vscode', baseVscodeMock, () =>
+      withModuleMock('@google/genai', { GoogleGenAI: GoogleGenAIMock }, () =>
         withModuleMock(
           'openai',
           { __esModule: true, default: OpenAIMock },
-          async () =>
+          () =>
             withModuleMock(
               '@anthropic-ai/sdk',
               { __esModule: true, default: AnthropicMock },
               async () => {
                 clearRequireCache(MODULE_PATH);
                 const dynamicRequire = createRequire(__filename);
-                const mod = dynamicRequire(
-                  MODULE_PATH,
-                ) as typeof import('../side-panel-provider');
+                const mod = dynamicRequire(MODULE_PATH) as ProviderModule;
                 const provider = createProvider(mod);
 
                 const googleResult =
@@ -301,103 +338,131 @@ test('validation errors use unified API request failed format for Google/OpenAI/
               },
             ),
         ),
-    ),
-  );
-});
+      ),
+    );
+  },
+);
 
-test('Anthropic API key validation uses SDK models.list and avoids fetch token calls', async () => {
-  const originalFetch = global.fetch;
-  const fetchCalls: { input: unknown; init: unknown }[] = [];
-  global.fetch = (async (input: unknown, init?: unknown) => {
-    fetchCalls.push({ input, init });
-    return new Response(
-      JSON.stringify({
-        data: [
+void test(
+  'Anthropic API key validation uses SDK models.list and avoids fetch token calls',
+  async () => {
+    const originalFetch = global.fetch;
+    type FetchFn = NonNullable<typeof global.fetch>;
+    type FetchInput = Parameters<FetchFn>[0];
+    type FetchInit = Parameters<FetchFn>[1];
+    const fetchCalls: { input: FetchInput; init: FetchInit | undefined }[] = [];
+    const fetchMock: FetchFn = (input: FetchInput, init?: FetchInit) => {
+      fetchCalls.push({ input, init });
+      return Promise.resolve(
+        new Response(
+          JSON.stringify({
+            data: [
+              {
+                id: 'mock-model',
+                created_at: '2026-01-01T00:00:00Z',
+                display_name: 'Mock',
+                type: 'model',
+              },
+            ],
+            first_id: 'mock-model',
+            last_id: 'mock-model',
+            has_more: false,
+          }),
           {
-            id: 'mock-model',
-            created_at: '2026-01-01T00:00:00Z',
-            display_name: 'Mock',
-            type: 'model',
+            status: 200,
+            headers: { 'content-type': 'application/json' },
           },
-        ],
-        first_id: 'mock-model',
-        last_id: 'mock-model',
-        has_more: false,
-      }),
-      {
-        status: 200,
-        headers: { 'content-type': 'application/json' },
-      },
-    );
-  }) as any;
+        ),
+      );
+    };
+    global.fetch = fetchMock;
 
-  const harness = await createHarness();
+    const harness = await createHarness();
 
-  try {
-    await harness.sendMessage({
-      type: 'saveKey',
-      provider: 'anthropic',
-      value: 'test-anthropic-key',
-    });
+    try {
+      await harness.sendMessage({
+        type: 'saveKey',
+        provider: 'anthropic',
+        value: 'test-anthropic-key',
+      });
 
-    assert.equal(fetchCalls.length, 1);
-    const requestUrl = String(fetchCalls[0].input);
-    assert.match(requestUrl, /\/v1\/models/);
-    assert.doesNotMatch(requestUrl, /\/v1\/messages/);
-    assert.match(requestUrl, /limit=1/);
-    assert.equal(harness.warningMessages.length, 0);
-    assert.equal(harness.storedSecrets.length, 1);
+      assert.equal(fetchCalls.length, 1);
+      const firstFetchCall = fetchCalls[0];
+      const requestInput = firstFetchCall.input;
+      const requestUrl =
+        typeof requestInput === 'string'
+          ? requestInput
+          : requestInput instanceof URL
+            ? requestInput.toString()
+            : requestInput instanceof Request
+              ? requestInput.url
+              : '';
+      assert.match(requestUrl, /\/v1\/models/);
+      assert.doesNotMatch(requestUrl, /\/v1\/messages/);
+      assert.match(requestUrl, /limit=1/);
+      assert.equal(harness.warningMessages.length, 0);
+      assert.equal(harness.storedSecrets.length, 1);
 
-    const resultMessage = harness.postedMessages.find(
-      (message) =>
-        message.type === 'validationResult' && message.provider === 'anthropic',
-    );
-    assert.ok(resultMessage);
-    assert.equal(resultMessage.success, true);
-  } finally {
-    harness.dispose();
-    global.fetch = originalFetch;
-  }
-});
+      const resultMessage = harness.postedMessages.find((message) =>
+        isValidationResultMessage(message, 'anthropic'),
+      );
+      if (!resultMessage) {
+        throw new Error('Anthropic validation result message not found');
+      }
+      assert.equal(resultMessage.success, true);
+    } finally {
+      harness.dispose();
+      global.fetch = originalFetch;
+    }
+  },
+);
 
-test('Anthropic API key validation maps 401 SDK errors to invalid key message', async () => {
-  const originalFetch = global.fetch;
-  global.fetch = (async () =>
-    new Response(
-      JSON.stringify({
-        error: {
-          type: 'authentication_error',
-          message: 'invalid_api_key',
-        },
-      }),
-      {
-        status: 401,
-        headers: { 'content-type': 'application/json' },
-      },
-    )) as any;
+void test(
+  'Anthropic API key validation maps 401 SDK errors to invalid key message',
+  async () => {
+    const originalFetch = global.fetch;
+    type FetchFn = NonNullable<typeof global.fetch>;
+    const fetchMock: FetchFn = () =>
+      Promise.resolve(
+        new Response(
+          JSON.stringify({
+            error: {
+              type: 'authentication_error',
+              message: 'invalid_api_key',
+            },
+          }),
+          {
+            status: 401,
+            headers: { 'content-type': 'application/json' },
+          },
+        ),
+      );
+    global.fetch = fetchMock;
 
-  const harness = await createHarness();
+    const harness = await createHarness();
 
-  try {
-    await harness.sendMessage({
-      type: 'saveKey',
-      provider: 'anthropic',
-      value: 'bad-anthropic-key',
-    });
+    try {
+      await harness.sendMessage({
+        type: 'saveKey',
+        provider: 'anthropic',
+        value: 'bad-anthropic-key',
+      });
 
-    assert.equal(harness.storedSecrets.length, 0);
-    assert.equal(harness.warningMessages.length, 1);
-    assert.match(harness.warningMessages[0], /Invalid API Key/i);
+      assert.equal(harness.storedSecrets.length, 0);
+      assert.equal(harness.warningMessages.length, 1);
+      assert.match(harness.warningMessages[0] ?? '', /Invalid API Key/i);
 
-    const resultMessage = harness.postedMessages.find(
-      (message) =>
-        message.type === 'validationResult' && message.provider === 'anthropic',
-    );
-    assert.ok(resultMessage);
-    assert.equal(resultMessage.success, false);
-    assert.match(String(resultMessage.error), /Invalid API Key/i);
-  } finally {
-    harness.dispose();
-    global.fetch = originalFetch;
-  }
-});
+      const resultMessage = harness.postedMessages.find((message) =>
+        isValidationResultMessage(message, 'anthropic'),
+      );
+      if (!resultMessage) {
+        throw new Error('Anthropic validation result message not found');
+      }
+      assert.equal(resultMessage.success, false);
+      assert.match(String(resultMessage.error), /Invalid API Key/i);
+    } finally {
+      harness.dispose();
+      global.fetch = originalFetch;
+    }
+  },
+);

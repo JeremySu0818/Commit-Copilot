@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as path from 'path';
 import { createRequire } from 'node:module';
+import type { GitOperations } from '../../commit-copilot';
 import { clearRequireCache, withModuleMock } from '../helpers/module-mock';
 import { MockUri, createVscodeMock } from '../helpers/vscode-mock';
 
@@ -11,7 +12,7 @@ async function loadModule(
   vscodeMock: unknown,
 ): Promise<typeof import('../../agent-tools/executors/search-code')> {
   clearRequireCache(MODULE_PATH);
-  return withModuleMock('vscode', vscodeMock, async () => {
+  return withModuleMock('vscode', vscodeMock, () => {
     const dynamicRequire = createRequire(__filename);
     return dynamicRequire(
       MODULE_PATH,
@@ -19,7 +20,7 @@ async function loadModule(
   });
 }
 
-test('executeSearchCode requires query', async () => {
+void test('executeSearchCode requires query', async () => {
   const { executeSearchCode } = await loadModule(createVscodeMock());
   const output = await executeSearchCode('repo', {});
   assert.equal(
@@ -28,13 +29,13 @@ test('executeSearchCode requires query', async () => {
   );
 });
 
-test('executeSearchCode returns no matches message', async () => {
+void test('executeSearchCode returns no matches message', async () => {
   const repoRoot = path.resolve('repo');
   const file = MockUri.file(path.join(repoRoot, 'src', 'a.ts'));
 
   const vscodeMock = createVscodeMock({
-    findFiles: async () => [file],
-    readFile: async () => Buffer.from('const x = 1;\n', 'utf-8'),
+    findFiles: () => Promise.resolve([file]),
+    readFile: () => Promise.resolve(Buffer.from('const x = 1;\n', 'utf-8')),
   });
 
   const { executeSearchCode } = await loadModule(vscodeMock);
@@ -42,7 +43,7 @@ test('executeSearchCode returns no matches message', async () => {
   assert.equal(output, 'No matches found for "needle" in the project.');
 });
 
-test('executeSearchCode performs case-insensitive search and result capping', async () => {
+void test('executeSearchCode performs case-insensitive search and result capping', async () => {
   const repoRoot = path.resolve('repo');
   const fileA = MockUri.file(path.join(repoRoot, 'src', 'a.ts'));
   const fileB = MockUri.file(path.join(repoRoot, 'src', 'b.ts'));
@@ -53,9 +54,9 @@ test('executeSearchCode performs case-insensitive search and result capping', as
   ]);
 
   const vscodeMock = createVscodeMock({
-    findFiles: async () => [fileA, fileB],
-    readFile: async (uri: MockUri) =>
-      Buffer.from(contentByPath.get(uri.fsPath) ?? '', 'utf-8'),
+    findFiles: () => Promise.resolve([fileA, fileB]),
+    readFile: (uri: MockUri) =>
+      Promise.resolve(Buffer.from(contentByPath.get(uri.fsPath) ?? '', 'utf-8')),
   });
 
   const { executeSearchCode } = await loadModule(vscodeMock);
@@ -70,32 +71,35 @@ test('executeSearchCode performs case-insensitive search and result capping', as
   assert.match(output, /\.\.\. \(results capped at 1 files\)/);
 });
 
-test('executeSearchCode prefers Git file list when available', async () => {
+void test('executeSearchCode prefers Git file list when available', async () => {
   const repoRoot = path.resolve('repo');
   const srcFilePath = path.join(repoRoot, 'src', 'a.ts');
   const gitIgnoredPath = path.join(repoRoot, 'node_modules', 'pkg', 'index.js');
 
   const vscodeMock = createVscodeMock({
-    findFiles: async () => {
-      throw new Error(
-        'findFiles should not be called when git file list exists',
-      );
-    },
-    readFile: async (uri: MockUri) => {
+    findFiles: () =>
+      Promise.reject(
+        new Error('findFiles should not be called when git file list exists'),
+      ),
+    readFile: (uri: MockUri) => {
       if (uri.fsPath === srcFilePath) {
-        return Buffer.from('const needle = true;\n', 'utf-8');
+        return Promise.resolve(Buffer.from('const needle = true;\n', 'utf-8'));
       }
       if (uri.fsPath === gitIgnoredPath) {
-        return Buffer.from('const needle = true;\n', 'utf-8');
+        return Promise.resolve(Buffer.from('const needle = true;\n', 'utf-8'));
       }
-      return Buffer.from('', 'utf-8');
+      return Promise.resolve(Buffer.from('', 'utf-8'));
     },
   });
 
   const { executeSearchCode } = await loadModule(vscodeMock);
-  const output = await executeSearchCode(repoRoot, { query: 'needle' }, {
-    listFilesFromGitApi: async () => ['src/a.ts'],
-  } as any);
+  const output = await executeSearchCode(
+    repoRoot,
+    { query: 'needle' },
+    {
+      listFilesFromGitApi: () => Promise.resolve(['src/a.ts']),
+    } as unknown as GitOperations,
+  );
 
   assert.match(output, /src\/a\.ts/);
   assert.doesNotMatch(output, /node_modules\/pkg\/index\.js/);

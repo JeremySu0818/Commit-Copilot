@@ -1,53 +1,53 @@
-export class GenerationStateManager {
-  private static _isGenerating = false;
-  private static _listeners = new Set<() => void>();
+let isGenerating = false;
+const generationListeners = new Set<() => void>();
 
-  static get isGenerating(): boolean {
-    return this._isGenerating;
-  }
+let isValidating = false;
+let validatingProvider: string | null = null;
+const validationListeners = new Set<() => void>();
 
-  static setGenerating(value: boolean): void {
-    this._isGenerating = value;
-    this._listeners.forEach((listener) => {
+export const GenerationStateManager = {
+  get isGenerating(): boolean {
+    return isGenerating;
+  },
+
+  setGenerating(value: boolean): void {
+    isGenerating = value;
+    generationListeners.forEach((listener) => {
       listener();
     });
-  }
+  },
 
-  static addListener(listener: () => void): void {
-    this._listeners.add(listener);
-  }
+  addListener(listener: () => void): void {
+    generationListeners.add(listener);
+  },
 
-  static removeListener(listener: () => void): void {
-    this._listeners.delete(listener);
-  }
-}
+  removeListener(listener: () => void): void {
+    generationListeners.delete(listener);
+  },
+};
 
-export class ValidationStateManager {
-  private static _isValidating = false;
-  private static _validatingProvider: string | null = null;
-  private static _listeners = new Set<() => void>();
+export const ValidationStateManager = {
+  get isValidating(): boolean {
+    return isValidating;
+  },
 
-  static get isValidating(): boolean {
-    return this._isValidating;
-  }
+  get validatingProvider(): string | null {
+    return validatingProvider;
+  },
 
-  static get validatingProvider(): string | null {
-    return this._validatingProvider;
-  }
-
-  static setValidating(value: boolean, provider: string | null = null): void {
-    this._isValidating = value;
-    this._validatingProvider = provider;
-    this._listeners.forEach((listener) => {
+  setValidating(value: boolean, provider: string | null = null): void {
+    isValidating = value;
+    validatingProvider = provider;
+    validationListeners.forEach((listener) => {
       listener();
     });
-  }
+  },
 
-  static addListener(listener: () => void): void {
-    this._listeners.add(listener);
-  }
+  addListener(listener: () => void): void {
+    validationListeners.add(listener);
+  },
 
-  static removeListener(listener: () => void): void {
-    this._listeners.delete(listener);
-  }
-}
+  removeListener(listener: () => void): void {
+    validationListeners.delete(listener);
+  },
+};

@@ -8,6 +8,42 @@ import type { EffectiveDisplayLanguage } from '../i18n/types';
 
 const MAX_AGENT_STEPS = Infinity;
 
+type UnknownRecord = Record<string, unknown>;
+
+interface ToolArgs {
+  path?: string;
+  line?: number;
+  character?: number;
+  count?: number;
+  query?: string;
+}
+
+function isRecord(value: unknown): value is UnknownRecord {
+  return typeof value === 'object' && value !== null;
+}
+
+function asString(value: unknown): string | undefined {
+  return typeof value === 'string' ? value : undefined;
+}
+
+function asNumber(value: unknown): number | undefined {
+  return typeof value === 'number' ? value : undefined;
+}
+
+function normalizeToolArgs(args: unknown): ToolArgs {
+  if (!isRecord(args)) {
+    return {};
+  }
+
+  return {
+    path: asString(args.path),
+    line: asNumber(args.line),
+    character: asNumber(args.character),
+    count: asNumber(args.count),
+    query: asString(args.query),
+  };
+}
+
 const CONVENTIONAL_COMMIT_TYPES = [
   'feat',
   'fix',
@@ -120,7 +156,7 @@ function buildOutputFormatRules(options: CommitOutputOptions): string {
   return `## Output Format (MANDATORY — ZERO TOLERANCE FOR VIOLATIONS)
 
 ### Strict Rules
-${strictRules.map((rule, index) => `${index + 1}. ${rule}`).join('\n')}
+${strictRules.map((rule, index) => `${String(index + 1)}. ${rule}`).join('\n')}
 
 ### Required Layout
 ${buildCommitLayout(options)}
@@ -215,7 +251,7 @@ function buildAgentSystemPrompt(options: {
   );
   const maxAgentStepsLine =
     typeof options.maxAgentSteps === 'number' && options.maxAgentSteps > 0
-      ? `You may use at most ${options.maxAgentSteps} investigation steps. To use these steps efficiently, batch multiple tool calls in the same step whenever possible.`
+      ? `You may use at most ${String(options.maxAgentSteps)} investigation steps. To use these steps efficiently, batch multiple tool calls in the same step whenever possible.`
       : '';
   const scopeWorkflowLine = commitOutputOptions.includeScope
     ? 'Determine the appropriate scope from the affected module/area.'
@@ -310,29 +346,39 @@ ${outputRules}`;
 function formatProgressMessage(
   step: number,
   toolName: string,
-  args: any,
+  args: unknown,
   language: EffectiveDisplayLanguage = 'en',
 ): string {
+  const normalizedArgs = normalizeToolArgs(args);
   const msgs = LOCALES[language].progressMessages;
   switch (toolName) {
     case 'get_diff':
-      return msgs.stepAnalyzingDiff(step, args.path || 'unknown file');
+      return msgs.stepAnalyzingDiff(step, normalizedArgs.path ?? 'unknown file');
     case 'read_file':
-      return msgs.stepReadingFile(step, args.path || 'unknown file');
+      return msgs.stepReadingFile(step, normalizedArgs.path ?? 'unknown file');
     case 'get_file_outline':
-      return msgs.stepGettingOutline(step, args.path || 'unknown file');
+      return msgs.stepGettingOutline(step, normalizedArgs.path ?? 'unknown file');
     case 'find_references': {
-      const line = args.line ?? 'unknown line';
-      const character = args.character ?? 'unknown char';
+      const line =
+        typeof normalizedArgs.line === 'number'
+          ? String(normalizedArgs.line)
+          : 'unknown line';
+      const character =
+        typeof normalizedArgs.character === 'number'
+          ? String(normalizedArgs.character)
+          : 'unknown char';
       return msgs.stepFindingReferences(
         step,
-        `${args.path || 'unknown file'}:${line}:${character}`,
+        `${normalizedArgs.path ?? 'unknown file'}:${line}:${character}`,
       );
     }
     case 'get_recent_commits':
-      return msgs.stepFetchingRecentCommits(step, args.count);
+      return msgs.stepFetchingRecentCommits(step, normalizedArgs.count);
     case 'search_code':
-      return msgs.stepSearchingProject(step, args.query || 'unknown keyword');
+      return msgs.stepSearchingProject(
+        step,
+        normalizedArgs.query ?? 'unknown keyword',
+      );
     default:
       return msgs.stepCalling(step, toolName);
   }
@@ -340,7 +386,7 @@ function formatProgressMessage(
 
 function formatBatchProgressMessage(
   step: number,
-  toolCalls: { name: string; args: any }[],
+  toolCalls: { name: string; args: unknown }[],
   language: EffectiveDisplayLanguage = 'en',
 ): string {
   if (toolCalls.length === 0) return '';
@@ -359,7 +405,9 @@ function formatBatchProgressMessage(
 
   if (toolNames.length === 1) {
     const name = toolNames[0];
-    const paths = toolCalls.map((tc) => tc.args.path).filter(Boolean);
+    const paths = toolCalls
+      .map((toolCall) => normalizeToolArgs(toolCall.args).path)
+      .filter((path): path is string => typeof path === 'string');
 
     if (name === 'get_diff') {
       if (paths.length <= 2)
@@ -378,17 +426,18 @@ function formatBatchProgressMessage(
     }
     if (name === 'find_references') {
       const targets = toolCalls
-        .map((tc) => {
-          const path = tc.args.path;
-          const line = tc.args.line;
-          const character = tc.args.character;
+        .map((toolCall) => {
+          const args = normalizeToolArgs(toolCall.args);
+          const path = args.path;
+          const line = args.line;
+          const character = args.character;
           if (!path) return null;
           if (typeof line !== 'undefined' && typeof character !== 'undefined') {
-            return `${path}:${line}:${character}`;
+            return `${path}:${String(line)}:${String(character)}`;
           }
           return path;
         })
-        .filter(Boolean) as string[];
+        .filter((target): target is string => typeof target === 'string');
       if (targets.length <= 2) {
         return msgs.stepFindingReferencesForMultiple(step, targets.join(', '));
       }
@@ -396,8 +445,8 @@ function formatBatchProgressMessage(
     }
     if (name === 'get_recent_commits') {
       const counts = toolCalls
-        .map((tc) => tc.args.count)
-        .filter((count) => typeof count !== 'undefined');
+        .map((toolCall) => normalizeToolArgs(toolCall.args).count)
+        .filter((count): count is number => typeof count === 'number');
       if (counts.length === 1) {
         return msgs.stepFetchingRecentCommits(step, counts[0]);
       }
@@ -405,8 +454,8 @@ function formatBatchProgressMessage(
     }
     if (name === 'search_code') {
       const queries = toolCalls
-        .map((tc) => tc.args.query)
-        .filter(Boolean) as string[];
+        .map((toolCall) => normalizeToolArgs(toolCall.args).query)
+        .filter((query): query is string => typeof query === 'string');
       if (queries.length <= 2) {
         return msgs.stepSearchingProjectForMultiple(step, queries.join(', '));
       }
