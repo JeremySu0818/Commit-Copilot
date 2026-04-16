@@ -376,10 +376,26 @@ export function useMessageHandler(
           });
           const savedKey = bootstrap.customProviderPrefix + message.savedId;
           dispatch({ type: 'SET_PROVIDER', provider: savedKey });
+          dispatch({ type: 'SET_API_KEY_VALUE', value: '' });
+          dispatch({ type: 'SET_API_KEY_TYPE', inputType: 'password' });
           dispatch({
             type: 'SET_SAVE_BTN',
             disabled: true,
             text: state.currentPack.buttons.save,
+          });
+          dispatch({
+            type: 'SET_KEY_STATUS_HTML',
+            html: renderStatusHtml('warning', state.currentPack.statuses.checkingStatus),
+          });
+          dispatch({
+            type: 'SET_MODEL_STATE',
+            state: {
+              models: [],
+              currentModel: '',
+              allowCustomModel: false,
+              customModelValue: '',
+              disabled: true,
+            },
           });
           vscode.postMessage({ type: 'saveProvider', value: savedKey });
           vscode.postMessage({ type: 'checkKey', provider: savedKey });
@@ -394,22 +410,38 @@ export function useMessageHandler(
             type: 'SET_CUSTOM_PROVIDERS',
             providers: message.customProviders || [],
           });
+          const deletedFallback = bootstrap.defaultProvider;
+          const deletedIsOllama = deletedFallback === 'ollama';
+          dispatch({ type: 'SET_PROVIDER', provider: deletedFallback });
           dispatch({
-            type: 'SET_PROVIDER',
-            provider: bootstrap.defaultProvider,
+            type: 'SET_API_KEY_VALUE',
+            value: deletedIsOllama
+              ? normalizeOllamaHostValue(state.ollamaStoredHost, bootstrap.ollamaDefaultHost)
+              : '',
           });
-          vscode.postMessage({
-            type: 'saveProvider',
-            value: bootstrap.defaultProvider,
+          dispatch({ type: 'SET_API_KEY_TYPE', inputType: deletedIsOllama ? 'text' : 'password' });
+          dispatch({
+            type: 'SET_SAVE_BTN',
+            disabled: !deletedIsOllama,
+            text: state.currentPack.buttons.save,
           });
-          vscode.postMessage({
-            type: 'checkKey',
-            provider: bootstrap.defaultProvider,
+          dispatch({
+            type: 'SET_KEY_STATUS_HTML',
+            html: renderStatusHtml('warning', state.currentPack.statuses.checkingStatus),
           });
-          vscode.postMessage({
-            type: 'getModels',
-            provider: bootstrap.defaultProvider,
+          dispatch({
+            type: 'SET_MODEL_STATE',
+            state: {
+              models: [],
+              currentModel: '',
+              allowCustomModel: false,
+              customModelValue: '',
+              disabled: true,
+            },
           });
+          vscode.postMessage({ type: 'saveProvider', value: deletedFallback });
+          vscode.postMessage({ type: 'checkKey', provider: deletedFallback });
+          vscode.postMessage({ type: 'getModels', provider: deletedFallback });
           dispatch({ type: 'SET_SCREEN', screen: 'main' });
           vscode.postMessage({ type: 'setCurrentScreen', value: 'main' });
           break;
