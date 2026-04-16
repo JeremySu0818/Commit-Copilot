@@ -258,7 +258,8 @@ export const frLocale: LocaleTextBundle = {
         : `[Étape ${String(step)}] Récupération des commits récents...`,
     stepSearchingProject: (step, keyword) =>
       `[Étape ${String(step)}] Recherche dans le projet pour : ${keyword}`,
-    stepCalling: (step, toolName) => `[Étape ${String(step)}] Appel de ${toolName}...`,
+    stepCalling: (step, toolName) =>
+      `[Étape ${String(step)}] Appel de ${toolName}...`,
 
     stepAnalyzingMultipleDiffs: (step, paths) =>
       `[Étape ${String(step)}] Analyse des différences : ${paths}`,

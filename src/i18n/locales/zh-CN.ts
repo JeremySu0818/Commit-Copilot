@@ -225,9 +225,11 @@ export const zhCNLocale: LocaleTextBundle = {
         ? `正在下载 ${model}：${status} (${String(percent)}%)`
         : `正在下载 ${model}：${status}`,
 
-    stepAnalyzingDiff: (step, path) => `[步骤 ${String(step)}] 分析 diff：${path}`,
+    stepAnalyzingDiff: (step, path) =>
+      `[步骤 ${String(step)}] 分析 diff：${path}`,
     stepReadingFile: (step, path) => `[步骤 ${String(step)}] 读取文件：${path}`,
-    stepGettingOutline: (step, path) => `[步骤 ${String(step)}] 获取结构：${path}`,
+    stepGettingOutline: (step, path) =>
+      `[步骤 ${String(step)}] 获取结构：${path}`,
     stepFindingReferences: (step, target) =>
       `[步骤 ${String(step)}] 查找引用：${target}`,
     stepFetchingRecentCommits: (step, count) =>
@@ -236,7 +238,8 @@ export const zhCNLocale: LocaleTextBundle = {
         : `[步骤 ${String(step)}] 获取近期 commits...`,
     stepSearchingProject: (step, keyword) =>
       `[步骤 ${String(step)}] 在项目中搜索：${keyword}`,
-    stepCalling: (step, toolName) => `[步骤 ${String(step)}] 调用 ${toolName}...`,
+    stepCalling: (step, toolName) =>
+      `[步骤 ${String(step)}] 调用 ${toolName}...`,
 
     stepAnalyzingMultipleDiffs: (step, paths) =>
       `[步骤 ${String(step)}] 分析多个 diff：${paths}`,

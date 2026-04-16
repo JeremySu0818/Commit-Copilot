@@ -153,9 +153,8 @@ export function activate(context: vscode.ExtensionContext) {
           );
         }
 
-        const gitExtensionExports = vscode.extensions.getExtension<unknown>(
-          'vscode.git',
-        )?.exports;
+        const gitExtensionExports =
+          vscode.extensions.getExtension<unknown>('vscode.git')?.exports;
         if (!isGitExtensionExports(gitExtensionExports)) {
           outputChannel.appendLine(text.output.gitExtensionMissing);
           vscode.window.showErrorMessage(text.notification.gitExtensionMissing);

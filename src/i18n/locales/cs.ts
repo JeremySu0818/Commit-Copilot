@@ -242,8 +242,10 @@ export const csLocale: LocaleTextBundle = {
         ? `Stahování ${model}: ${status} (${String(percent)}%)`
         : `Stahování ${model}: ${status}`,
 
-    stepAnalyzingDiff: (step, path) => `[Krok ${String(step)}] Analýza diffu: ${path}`,
-    stepReadingFile: (step, path) => `[Krok ${String(step)}] Čtení souboru: ${path}`,
+    stepAnalyzingDiff: (step, path) =>
+      `[Krok ${String(step)}] Analýza diffu: ${path}`,
+    stepReadingFile: (step, path) =>
+      `[Krok ${String(step)}] Čtení souboru: ${path}`,
     stepGettingOutline: (step, path) =>
       `[Krok ${String(step)}] Získávání osnovy: ${path}`,
     stepFindingReferences: (step, target) =>
@@ -254,7 +256,8 @@ export const csLocale: LocaleTextBundle = {
         : `[Krok ${String(step)}] Načítání nedávných potvrzení...`,
     stepSearchingProject: (step, keyword) =>
       `[Krok ${String(step)}] Prohledávání projektu na: ${keyword}`,
-    stepCalling: (step, toolName) => `[Krok ${String(step)}] Volání ${toolName}...`,
+    stepCalling: (step, toolName) =>
+      `[Krok ${String(step)}] Volání ${toolName}...`,
 
     stepAnalyzingMultipleDiffs: (step, paths) =>
       `[Krok ${String(step)}] Analýza diffů: ${paths}`,

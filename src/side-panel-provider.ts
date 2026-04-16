@@ -63,7 +63,9 @@ interface GitApi {
   getRepository?(uri: vscode.Uri): GitRepository | null;
   state?: string;
   onDidChangeState?(listener: (state: string) => void): vscode.Disposable;
-  onDidOpenRepository?(listener: (repo: GitRepository) => void): vscode.Disposable;
+  onDidOpenRepository?(
+    listener: (repo: GitRepository) => void,
+  ): vscode.Disposable;
 }
 
 interface GitExtensionExports {
@@ -133,9 +135,11 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
   }
 
   private getCustomProviders(): CustomProviderConfig[] {
-    return this._context.globalState.get<CustomProviderConfig[]>(
-      CUSTOM_PROVIDERS_STATE_KEY,
-    ) ?? [];
+    return (
+      this._context.globalState.get<CustomProviderConfig[]>(
+        CUSTOM_PROVIDERS_STATE_KEY,
+      ) ?? []
+    );
   }
 
   private async saveCustomProviders(
@@ -244,10 +248,10 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
     }
 
     if (typeof status === 'number') {
-        return {
-          valid: false,
-          error: `${text.apiRequestFailedPrefix} (${String(status)})`,
-        };
+      return {
+        valid: false,
+        error: `${text.apiRequestFailedPrefix} (${String(status)})`,
+      };
     }
 
     return { valid: false, error: text.connectionErrorPrefix };
@@ -434,7 +438,8 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
     });
 
     const getActiveGitApi = (): GitApi | null => {
-      const gitExtension = vscode.extensions.getExtension<unknown>('vscode.git');
+      const gitExtension =
+        vscode.extensions.getExtension<unknown>('vscode.git');
       if (!gitExtension?.isActive) {
         return null;
       }
@@ -531,7 +536,8 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
     };
 
     try {
-      const gitExtension = vscode.extensions.getExtension<unknown>('vscode.git');
+      const gitExtension =
+        vscode.extensions.getExtension<unknown>('vscode.git');
       if (
         gitExtension &&
         gitExtension.isActive &&
@@ -669,10 +675,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
               }
               try {
                 const storageKey = API_KEY_STORAGE_KEYS[builtIn];
-                await this._context.secrets.store(
-                  storageKey,
-                  resolvedApiValue,
-                );
+                await this._context.secrets.store(storageKey, resolvedApiValue);
                 vscode.window.showInformationMessage(
                   text.saveConfigSuccess(PROVIDER_DISPLAY_NAMES[builtIn]),
                 );
@@ -686,9 +689,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
                   type: 'keyStatus',
                   hasKey: true,
                   provider,
-                  ...(builtIn === 'ollama'
-                    ? { value: resolvedApiValue }
-                    : {}),
+                  ...(builtIn === 'ollama' ? { value: resolvedApiValue } : {}),
                 });
               } catch {
                 vscode.window.showErrorMessage(text.saveConfigFailed);
@@ -737,7 +738,9 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
               getCustomProviderStorageKey(customId),
             );
           } else {
-            const builtIn = isAPIProvider(provider) ? provider : DEFAULT_PROVIDER;
+            const builtIn = isAPIProvider(provider)
+              ? provider
+              : DEFAULT_PROVIDER;
             const storageKey = API_KEY_STORAGE_KEYS[builtIn];
             key = await this._context.secrets.get(storageKey);
           }
@@ -746,9 +749,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
             type: 'keyStatus',
             hasKey: Boolean(key),
             provider,
-            ...(provider === 'ollama'
-              ? { value: resolvedKey }
-              : {}),
+            ...(provider === 'ollama' ? { value: resolvedKey } : {}),
           });
           break;
         }
@@ -776,7 +777,9 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
               });
             }
           } else {
-            const builtIn = isAPIProvider(provider) ? provider : DEFAULT_PROVIDER;
+            const builtIn = isAPIProvider(provider)
+              ? provider
+              : DEFAULT_PROVIDER;
             const storageKey = API_KEY_STORAGE_KEYS[builtIn];
             const key = await this._context.secrets.get(storageKey);
             if (key || builtIn === 'ollama') {
@@ -812,10 +815,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
         }
         case 'saveProvider': {
           const provider = toStoredModel(message.value);
-          await this._context.globalState.update(
-            'CURRENT_PROVIDER',
-            provider,
-          );
+          await this._context.globalState.update('CURRENT_PROVIDER', provider);
           break;
         }
         case 'getProvider': {
@@ -844,7 +844,9 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
           break;
         }
         case 'saveCommitOutputOptions': {
-          const commitOutputOptions = normalizeCommitOutputOptions(message.value);
+          const commitOutputOptions = normalizeCommitOutputOptions(
+            message.value,
+          );
           await this._context.globalState.update(
             'COMMIT_OUTPUT_OPTIONS',
             commitOutputOptions,

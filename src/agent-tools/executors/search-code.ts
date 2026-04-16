@@ -151,7 +151,9 @@ async function executeSearchCode(
   }
 
   if (fileMatches.length >= effectiveMaxFiles) {
-    outputLines.push(`... (results capped at ${String(effectiveMaxFiles)} files)`);
+    outputLines.push(
+      `... (results capped at ${String(effectiveMaxFiles)} files)`,
+    );
   }
 
   return outputLines.join('\n').trimEnd();

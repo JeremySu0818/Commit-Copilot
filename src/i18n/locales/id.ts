@@ -245,7 +245,8 @@ export const idLocale: LocaleTextBundle = {
 
     stepAnalyzingDiff: (step, path) =>
       `[Langkah ${String(step)}] Menganalisis diff: ${path}`,
-    stepReadingFile: (step, path) => `[Langkah ${String(step)}] Membaca file: ${path}`,
+    stepReadingFile: (step, path) =>
+      `[Langkah ${String(step)}] Membaca file: ${path}`,
     stepGettingOutline: (step, path) =>
       `[Langkah ${String(step)}] Mendapatkan outline: ${path}`,
     stepFindingReferences: (step, target) =>

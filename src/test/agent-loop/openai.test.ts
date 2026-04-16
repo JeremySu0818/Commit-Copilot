@@ -54,112 +54,109 @@ async function withOpenAIModule<T>(
   );
 }
 
-void test(
-  'runOpenAIAgentLoop continues when one tool call has malformed JSON arguments',
-  async () => {
-    const completionRequests: unknown[] = [];
-    const executedCalls: ToolCallShape[] = [];
+void test('runOpenAIAgentLoop continues when one tool call has malformed JSON arguments', async () => {
+  const completionRequests: unknown[] = [];
+  const executedCalls: ToolCallShape[] = [];
 
-    class OpenAIMock {
-      chat = {
-        completions: {
-          create: (params: unknown) => {
-            completionRequests.push(params);
-            if (completionRequests.length === 1) {
-              return Promise.resolve({
-                choices: [
-                  {
-                    message: {
-                      tool_calls: [
-                        {
-                          id: 'tool-call-bad',
-                          type: 'function',
-                          function: {
-                            name: 'read_file',
-                            arguments: '{"path":"src/a.ts"',
-                          },
-                        },
-                        {
-                          id: 'tool-call-good',
-                          type: 'function',
-                          function: {
-                            name: 'get_diff',
-                            arguments: '{"path":"src/b.ts"}',
-                          },
-                        },
-                      ],
-                    },
-                  },
-                ],
-              });
-            }
-
+  class OpenAIMock {
+    chat = {
+      completions: {
+        create: (params: unknown) => {
+          completionRequests.push(params);
+          if (completionRequests.length === 1) {
             return Promise.resolve({
               choices: [
                 {
                   message: {
-                    content: 'fix(agent): recover from malformed tool args',
+                    tool_calls: [
+                      {
+                        id: 'tool-call-bad',
+                        type: 'function',
+                        function: {
+                          name: 'read_file',
+                          arguments: '{"path":"src/a.ts"',
+                        },
+                      },
+                      {
+                        id: 'tool-call-good',
+                        type: 'function',
+                        function: {
+                          name: 'get_diff',
+                          arguments: '{"path":"src/b.ts"}',
+                        },
+                      },
+                    ],
                   },
                 },
               ],
             });
-          },
+          }
+
+          return Promise.resolve({
+            choices: [
+              {
+                message: {
+                  content: 'fix(agent): recover from malformed tool args',
+                },
+              },
+            ],
+          });
         },
-      };
-    }
-
-    const agentToolsMock = {
-      buildInitialContext: () => Promise.resolve('mocked initial context'),
-      executeToolCall: (toolCall: unknown) => {
-        const call = asToolCallShape(toolCall);
-        if (!call) {
-          throw new Error('Invalid tool call shape');
-        }
-        executedCalls.push(call);
-        return Promise.resolve({ name: call.name, content: 'tool ok' });
       },
-      toOpenAITools: () => [],
     };
+  }
 
-    try {
-      const result = await withOpenAIModule(
-        OpenAIMock,
-        agentToolsMock,
-        async ({ runOpenAIAgentLoop }) =>
-          runOpenAIAgentLoop(
-            'openai-test-key',
-            'gpt-test',
-            'diff --git a/a.ts b/a.ts\n+line',
-            process.cwd(),
-          ),
-      );
+  const agentToolsMock = {
+    buildInitialContext: () => Promise.resolve('mocked initial context'),
+    executeToolCall: (toolCall: unknown) => {
+      const call = asToolCallShape(toolCall);
+      if (!call) {
+        throw new Error('Invalid tool call shape');
+      }
+      executedCalls.push(call);
+      return Promise.resolve({ name: call.name, content: 'tool ok' });
+    },
+    toOpenAITools: () => [],
+  };
 
-      assert.equal(result, 'fix(agent): recover from malformed tool args');
-    } finally {
-      clearRequireCache(MODULE_PATH);
-    }
-
-    assert.deepEqual(executedCalls, [
-      {
-        name: 'get_diff',
-        arguments: { path: 'src/b.ts' },
-      },
-    ]);
-
-    const secondRequestMessages = getMessagesFromCompletionRequest(
-      completionRequests[1],
+  try {
+    const result = await withOpenAIModule(
+      OpenAIMock,
+      agentToolsMock,
+      async ({ runOpenAIAgentLoop }) =>
+        runOpenAIAgentLoop(
+          'openai-test-key',
+          'gpt-test',
+          'diff --git a/a.ts b/a.ts\n+line',
+          process.cwd(),
+        ),
     );
-    const toolMessages = secondRequestMessages.filter(
-      (message): message is Record<string, unknown> =>
-        isRecord(message) && message.role === 'tool',
-    );
-    assert.equal(toolMessages.length, 2);
-    assert.equal(toolMessages[0].tool_call_id, 'tool-call-bad');
-    assert.match(
-      String(toolMessages[0].content),
-      /Invalid JSON arguments for read_file/,
-    );
-    assert.equal(toolMessages[1].tool_call_id, 'tool-call-good');
-    assert.equal(toolMessages[1].content, 'tool ok');
-  },
-);
+
+    assert.equal(result, 'fix(agent): recover from malformed tool args');
+  } finally {
+    clearRequireCache(MODULE_PATH);
+  }
+
+  assert.deepEqual(executedCalls, [
+    {
+      name: 'get_diff',
+      arguments: { path: 'src/b.ts' },
+    },
+  ]);
+
+  const secondRequestMessages = getMessagesFromCompletionRequest(
+    completionRequests[1],
+  );
+  const toolMessages = secondRequestMessages.filter(
+    (message): message is Record<string, unknown> =>
+      isRecord(message) && message.role === 'tool',
+  );
+  assert.equal(toolMessages.length, 2);
+  assert.equal(toolMessages[0].tool_call_id, 'tool-call-bad');
+  assert.match(
+    String(toolMessages[0].content),
+    /Invalid JSON arguments for read_file/,
+  );
+  assert.equal(toolMessages[1].tool_call_id, 'tool-call-good');
+  assert.equal(toolMessages[1].content, 'tool ok');
+});

@@ -76,9 +76,7 @@ function toErrorLike(error: unknown): ErrorLike {
 
 function isAnthropicTextBlock(block: unknown): block is AnthropicTextBlock {
   return (
-    isRecord(block) &&
-    block.type === 'text' &&
-    typeof block.text === 'string'
+    isRecord(block) && block.type === 'text' && typeof block.text === 'string'
   );
 }
 
@@ -150,7 +148,9 @@ async function runAnthropicAgentLoop(
       maxAgentSteps,
     });
 
-    const messages: MessageParam[] = [{ role: 'user', content: initialContext }];
+    const messages: MessageParam[] = [
+      { role: 'user', content: initialContext },
+    ];
 
     if (onProgress) {
       onProgress(LOCALES[language].progressMessages.analyzingChanges);
@@ -177,7 +177,9 @@ async function runAnthropicAgentLoop(
 
     let step = 0;
     const stepLimit =
-      maxAgentSteps && maxAgentSteps > 0 ? maxAgentSteps : Number.POSITIVE_INFINITY;
+      maxAgentSteps && maxAgentSteps > 0
+        ? maxAgentSteps
+        : Number.POSITIVE_INFINITY;
 
     while (step < stepLimit) {
       throwIfCancellationRequested(cancellationToken);

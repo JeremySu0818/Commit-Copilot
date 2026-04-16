@@ -56,7 +56,9 @@ void test('executeSearchCode performs case-insensitive search and result capping
   const vscodeMock = createVscodeMock({
     findFiles: () => Promise.resolve([fileA, fileB]),
     readFile: (uri: MockUri) =>
-      Promise.resolve(Buffer.from(contentByPath.get(uri.fsPath) ?? '', 'utf-8')),
+      Promise.resolve(
+        Buffer.from(contentByPath.get(uri.fsPath) ?? '', 'utf-8'),
+      ),
   });
 
   const { executeSearchCode } = await loadModule(vscodeMock);
@@ -93,13 +95,9 @@ void test('executeSearchCode prefers Git file list when available', async () => 
   });
 
   const { executeSearchCode } = await loadModule(vscodeMock);
-  const output = await executeSearchCode(
-    repoRoot,
-    { query: 'needle' },
-    {
-      listFilesFromGitApi: () => Promise.resolve(['src/a.ts']),
-    } as unknown as GitOperations,
-  );
+  const output = await executeSearchCode(repoRoot, { query: 'needle' }, {
+    listFilesFromGitApi: () => Promise.resolve(['src/a.ts']),
+  } as unknown as GitOperations);
 
   assert.match(output, /src\/a\.ts/);
   assert.doesNotMatch(output, /node_modules\/pkg\/index\.js/);

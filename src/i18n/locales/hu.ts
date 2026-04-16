@@ -246,7 +246,8 @@ export const huLocale: LocaleTextBundle = {
 
     stepAnalyzingDiff: (step, path) =>
       `[${String(step)}. lépés] Diff elemzése: ${path}`,
-    stepReadingFile: (step, path) => `[${String(step)}. lépés] Fájl olvasása: ${path}`,
+    stepReadingFile: (step, path) =>
+      `[${String(step)}. lépés] Fájl olvasása: ${path}`,
     stepGettingOutline: (step, path) =>
       `[${String(step)}. lépés] Vázlat lekérése: ${path}`,
     stepFindingReferences: (step, target) =>
@@ -257,7 +258,8 @@ export const huLocale: LocaleTextBundle = {
         : `[${String(step)}. lépés] Legutóbbi commitok lekérése...`,
     stepSearchingProject: (step, keyword) =>
       `[${String(step)}. lépés] Keresés a projektben: ${keyword}`,
-    stepCalling: (step, toolName) => `[${String(step)}. lépés] ${toolName} hívása...`,
+    stepCalling: (step, toolName) =>
+      `[${String(step)}. lépés] ${toolName} hívása...`,
 
     stepAnalyzingMultipleDiffs: (step, paths) =>
       `[${String(step)}. lépés] Diffek elemzése: ${paths}`,

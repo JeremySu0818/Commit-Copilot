@@ -157,7 +157,9 @@ async function createHarness(
 
   const mod = await withModuleMock('vscode', vscodeMock, () => {
     const dynamicRequire = createRequire(__filename);
-    return dynamicRequire(MODULE_PATH) as typeof import('../side-panel-provider');
+    return dynamicRequire(
+      MODULE_PATH,
+    ) as typeof import('../side-panel-provider');
   });
 
   const context = {
@@ -218,38 +220,35 @@ void test('getGenerateMode returns default agentic mode when unset', async () =>
   }
 });
 
-void test(
-  'saveGenerateMode persists normalized mode and getGenerateMode returns it',
-  async () => {
-    const harness = await createHarness();
+void test('saveGenerateMode persists normalized mode and getGenerateMode returns it', async () => {
+  const harness = await createHarness();
 
-    try {
-      await harness.sendMessage({
-        type: 'saveGenerateMode',
-        value: 'direct-diff',
-      });
-      assert.equal(harness.state.get('GENERATE_MODE'), 'direct-diff');
+  try {
+    await harness.sendMessage({
+      type: 'saveGenerateMode',
+      value: 'direct-diff',
+    });
+    assert.equal(harness.state.get('GENERATE_MODE'), 'direct-diff');
 
-      await harness.sendMessage({ type: 'getGenerateMode' });
-      const modeMessages = harness.postedMessages.filter((message) =>
-        isCurrentGenerateModeMessage(message),
-      );
-      const modeMessage = modeMessages.at(-1);
-      if (!modeMessage) {
-        throw new Error('currentGenerateMode message not found');
-      }
-      assert.equal(modeMessage.generateMode, 'direct-diff');
-
-      await harness.sendMessage({
-        type: 'saveGenerateMode',
-        value: 'unexpected-value',
-      });
-      assert.equal(harness.state.get('GENERATE_MODE'), 'agentic');
-    } finally {
-      harness.dispose();
+    await harness.sendMessage({ type: 'getGenerateMode' });
+    const modeMessages = harness.postedMessages.filter((message) =>
+      isCurrentGenerateModeMessage(message),
+    );
+    const modeMessage = modeMessages.at(-1);
+    if (!modeMessage) {
+      throw new Error('currentGenerateMode message not found');
     }
-  },
-);
+    assert.equal(modeMessage.generateMode, 'direct-diff');
+
+    await harness.sendMessage({
+      type: 'saveGenerateMode',
+      value: 'unexpected-value',
+    });
+    assert.equal(harness.state.get('GENERATE_MODE'), 'agentic');
+  } finally {
+    harness.dispose();
+  }
+});
 
 void test('generate forwards normalized generateMode to command payload', async () => {
   const harness = await createHarness();
@@ -352,30 +351,27 @@ void test('saveCommitOutputOptions persists normalized values', async () => {
   }
 });
 
-void test(
-  'getAllKeys reports ollama as not configured when no secret exists',
-  async () => {
-    const harness = await createHarness();
+void test('getAllKeys reports ollama as not configured when no secret exists', async () => {
+  const harness = await createHarness();
 
-    try {
-      await harness.sendMessage({ type: 'getAllKeys' });
-      const statusMessage = harness.postedMessages.find((message) =>
-        isAllKeyStatusesMessage(message),
-      );
-      if (!statusMessage) {
-        throw new Error('allKeyStatuses message not found');
-      }
-      assert.deepEqual(statusMessage.statuses, {
-        google: false,
-        openai: false,
-        anthropic: false,
-        ollama: false,
-      });
-    } finally {
-      harness.dispose();
+  try {
+    await harness.sendMessage({ type: 'getAllKeys' });
+    const statusMessage = harness.postedMessages.find((message) =>
+      isAllKeyStatusesMessage(message),
+    );
+    if (!statusMessage) {
+      throw new Error('allKeyStatuses message not found');
     }
-  },
-);
+    assert.deepEqual(statusMessage.statuses, {
+      google: false,
+      openai: false,
+      anthropic: false,
+      ollama: false,
+    });
+  } finally {
+    harness.dispose();
+  }
+});
 
 void test('checkKey returns stored Ollama host value', async () => {
   const customHost = 'http://192.168.1.100:11434';
@@ -398,23 +394,20 @@ void test('checkKey returns stored Ollama host value', async () => {
   }
 });
 
-void test(
-  'checkKey returns default Ollama host value when secret is missing',
-  async () => {
-    const harness = await createHarness();
+void test('checkKey returns default Ollama host value when secret is missing', async () => {
+  const harness = await createHarness();
 
-    try {
-      await harness.sendMessage({ type: 'checkKey', provider: 'ollama' });
-      const statusMessage = harness.postedMessages.find((message) =>
-        isKeyStatusMessage(message, 'ollama'),
-      );
-      if (!statusMessage) {
-        throw new Error('keyStatus message for ollama not found');
-      }
-      assert.equal(statusMessage.hasKey, false);
-      assert.equal(statusMessage.value, OLLAMA_DEFAULT_HOST);
-    } finally {
-      harness.dispose();
+  try {
+    await harness.sendMessage({ type: 'checkKey', provider: 'ollama' });
+    const statusMessage = harness.postedMessages.find((message) =>
+      isKeyStatusMessage(message, 'ollama'),
+    );
+    if (!statusMessage) {
+      throw new Error('keyStatus message for ollama not found');
     }
-  },
-);
+    assert.equal(statusMessage.hasKey, false);
+    assert.equal(statusMessage.value, OLLAMA_DEFAULT_HOST);
+  } finally {
+    harness.dispose();
+  }
+});

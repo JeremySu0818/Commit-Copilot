@@ -22,11 +22,11 @@ export function MainView() {
 
   const isCustom = currentProvider.startsWith(bootstrap.customProviderPrefix);
   const customProviderConfig = isCustom
-    ? state.customProviders.find(
+    ? (state.customProviders.find(
         (cp) =>
           cp.id ===
           currentProvider.slice(bootstrap.customProviderPrefix.length),
-      ) ?? null
+      ) ?? null)
     : null;
 
   const isOllama = currentProvider === 'ollama';

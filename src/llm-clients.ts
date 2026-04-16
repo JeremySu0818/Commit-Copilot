@@ -68,9 +68,7 @@ function pickNonEmpty(primary: string | undefined, fallback: string): string {
 
 function isAnthropicTextBlock(value: unknown): value is AnthropicTextBlock {
   return (
-    isRecord(value) &&
-    value.type === 'text' &&
-    typeof value.text === 'string'
+    isRecord(value) && value.type === 'text' && typeof value.text === 'string'
   );
 }
 
@@ -425,8 +423,12 @@ export class AnthropicClient implements ILLMClient {
       );
 
       const text = message.content
-        .map((block: unknown) => (isAnthropicTextBlock(block) ? block.text : null))
-        .find((blockText): blockText is string => typeof blockText === 'string');
+        .map((block: unknown) =>
+          isAnthropicTextBlock(block) ? block.text : null,
+        )
+        .find(
+          (blockText): blockText is string => typeof blockText === 'string',
+        );
       throwIfCancellationRequested(cancellationToken);
 
       if (!text) {

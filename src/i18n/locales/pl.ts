@@ -245,7 +245,8 @@ export const plLocale: LocaleTextBundle = {
 
     stepAnalyzingDiff: (step, path) =>
       `[Krok ${String(step)}] Analizowanie różnic: ${path}`,
-    stepReadingFile: (step, path) => `[Krok ${String(step)}] Czytanie pliku: ${path}`,
+    stepReadingFile: (step, path) =>
+      `[Krok ${String(step)}] Czytanie pliku: ${path}`,
     stepGettingOutline: (step, path) =>
       `[Krok ${String(step)}] Pobieranie struktury: ${path}`,
     stepFindingReferences: (step, target) =>

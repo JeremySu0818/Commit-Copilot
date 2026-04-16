@@ -246,7 +246,8 @@ export const esLocale: LocaleTextBundle = {
 
     stepAnalyzingDiff: (step, path) =>
       `[Paso ${String(step)}] Analizando diff: ${path}`,
-    stepReadingFile: (step, path) => `[Paso ${String(step)}] Leyendo archivo: ${path}`,
+    stepReadingFile: (step, path) =>
+      `[Paso ${String(step)}] Leyendo archivo: ${path}`,
     stepGettingOutline: (step, path) =>
       `[Paso ${String(step)}] Obteniendo esquema: ${path}`,
     stepFindingReferences: (step, target) =>
@@ -257,7 +258,8 @@ export const esLocale: LocaleTextBundle = {
         : `[Paso ${String(step)}] Obteniendo commits recientes...`,
     stepSearchingProject: (step, keyword) =>
       `[Paso ${String(step)}] Buscando en el proyecto: ${keyword}`,
-    stepCalling: (step, toolName) => `[Paso ${String(step)}] Llamando ${toolName}...`,
+    stepCalling: (step, toolName) =>
+      `[Paso ${String(step)}] Llamando ${toolName}...`,
 
     stepAnalyzingMultipleDiffs: (step, paths) =>
       `[Paso ${String(step)}] Analizando diffs: ${paths}`,

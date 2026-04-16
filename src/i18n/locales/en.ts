@@ -239,8 +239,10 @@ export const enLocale: LocaleTextBundle = {
         ? `Pulling ${model}: ${status} (${String(percent)}%)`
         : `Pulling ${model}: ${status}`,
 
-    stepAnalyzingDiff: (step, path) => `[Step ${String(step)}] Analyzing diff: ${path}`,
-    stepReadingFile: (step, path) => `[Step ${String(step)}] Reading file: ${path}`,
+    stepAnalyzingDiff: (step, path) =>
+      `[Step ${String(step)}] Analyzing diff: ${path}`,
+    stepReadingFile: (step, path) =>
+      `[Step ${String(step)}] Reading file: ${path}`,
     stepGettingOutline: (step, path) =>
       `[Step ${String(step)}] Getting outline: ${path}`,
     stepFindingReferences: (step, target) =>
@@ -251,7 +253,8 @@ export const enLocale: LocaleTextBundle = {
         : `[Step ${String(step)}] Fetching recent commits...`,
     stepSearchingProject: (step, keyword) =>
       `[Step ${String(step)}] Searching project for: ${keyword}`,
-    stepCalling: (step, toolName) => `[Step ${String(step)}] Calling ${toolName}...`,
+    stepCalling: (step, toolName) =>
+      `[Step ${String(step)}] Calling ${toolName}...`,
 
     stepAnalyzingMultipleDiffs: (step, paths) =>
       `[Step ${String(step)}] Analyzing diffs: ${paths}`,

@@ -196,7 +196,9 @@ void test('executeGetFileOutline infers language for staged new files', async ()
         openInputs.push(input);
 
         if (input instanceof MockUri) {
-          return Promise.reject(new Error('Document is not available on disk.'));
+          return Promise.reject(
+            new Error('Document is not available on disk.'),
+          );
         }
 
         if (input && typeof input === 'object' && 'content' in input) {

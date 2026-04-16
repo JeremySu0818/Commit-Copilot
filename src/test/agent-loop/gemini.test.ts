@@ -21,10 +21,7 @@ function asToolCallShape(value: unknown): ToolCallShape | null {
     return null;
   }
   const args = value.arguments;
-  if (
-    typeof value.name !== 'string' ||
-    !isRecord(args)
-  ) {
+  if (typeof value.name !== 'string' || !isRecord(args)) {
     return null;
   }
   return {
@@ -64,100 +61,100 @@ async function withGeminiModule<T>(
   );
 }
 
-void test(
-  'runGeminiAgentLoop handles functionCall parts and sends functionResponse',
-  async () => {
-    const generateRequests: unknown[] = [];
-    const executedCalls: ToolCallShape[] = [];
+void test('runGeminiAgentLoop handles functionCall parts and sends functionResponse', async () => {
+  const generateRequests: unknown[] = [];
+  const executedCalls: ToolCallShape[] = [];
 
-    class GoogleGenAIMock {
-      models = {
-        generateContent: (params: unknown) => {
-          generateRequests.push(params);
-          if (generateRequests.length === 1) {
-            return Promise.resolve({
-              candidates: [
-                {
-                  content: {
-                    role: 'model',
-                    parts: [
-                      {
-                        functionCall: {
-                          id: 'fc-1',
-                          name: 'search_code',
-                          args: { query: 'TODO' },
-                        },
-                      },
-                    ],
-                  },
-                },
-              ],
-              text: '',
-            });
-          }
-
+  class GoogleGenAIMock {
+    models = {
+      generateContent: (params: unknown) => {
+        generateRequests.push(params);
+        if (generateRequests.length === 1) {
           return Promise.resolve({
-            candidates: [{ content: { role: 'model', parts: [] } }],
-            text: 'feat(gemini): parsed function call response',
+            candidates: [
+              {
+                content: {
+                  role: 'model',
+                  parts: [
+                    {
+                      functionCall: {
+                        id: 'fc-1',
+                        name: 'search_code',
+                        args: { query: 'TODO' },
+                      },
+                    },
+                  ],
+                },
+              },
+            ],
+            text: '',
           });
-        },
-      };
-    }
-
-    const agentToolsMock = {
-      buildInitialContext: () => Promise.resolve('initial context'),
-      executeToolCall: (toolCall: unknown) => {
-        const call = asToolCallShape(toolCall);
-        if (!call) {
-          throw new Error('Invalid tool call shape');
         }
-        executedCalls.push(call);
-        return Promise.resolve({ name: call.name, content: 'tool response ok' });
+
+        return Promise.resolve({
+          candidates: [{ content: { role: 'model', parts: [] } }],
+          text: 'feat(gemini): parsed function call response',
+        });
       },
-      toGeminiFunctionDeclarations: () => [],
     };
+  }
 
-    try {
-      const result = await withGeminiModule(
-        { GoogleGenAI: GoogleGenAIMock },
-        agentToolsMock,
-        async ({ runGeminiAgentLoop }) =>
-          runGeminiAgentLoop(
-            'gemini-test-key',
-            'models/gemini-2.5-pro',
-            'diff --git a/a.ts b/a.ts\n+line',
-            process.cwd(),
-          ),
-      );
+  const agentToolsMock = {
+    buildInitialContext: () => Promise.resolve('initial context'),
+    executeToolCall: (toolCall: unknown) => {
+      const call = asToolCallShape(toolCall);
+      if (!call) {
+        throw new Error('Invalid tool call shape');
+      }
+      executedCalls.push(call);
+      return Promise.resolve({ name: call.name, content: 'tool response ok' });
+    },
+    toGeminiFunctionDeclarations: () => [],
+  };
 
-      assert.equal(result, 'feat(gemini): parsed function call response');
-    } finally {
-      clearRequireCache(MODULE_PATH);
-    }
+  try {
+    const result = await withGeminiModule(
+      { GoogleGenAI: GoogleGenAIMock },
+      agentToolsMock,
+      async ({ runGeminiAgentLoop }) =>
+        runGeminiAgentLoop(
+          'gemini-test-key',
+          'models/gemini-2.5-pro',
+          'diff --git a/a.ts b/a.ts\n+line',
+          process.cwd(),
+        ),
+    );
 
-    assert.deepEqual(executedCalls, [
-      {
+    assert.equal(result, 'feat(gemini): parsed function call response');
+  } finally {
+    clearRequireCache(MODULE_PATH);
+  }
+
+  assert.deepEqual(executedCalls, [
+    {
+      name: 'search_code',
+      arguments: { query: 'TODO' },
+    },
+  ]);
+
+  const secondRequestContents = getContentsFromGenerateRequest(
+    generateRequests[1],
+  );
+  const toolResponseMessage =
+    secondRequestContents[secondRequestContents.length - 1];
+  if (!isRecord(toolResponseMessage)) {
+    throw new Error('Expected tool response message object');
+  }
+  assert.equal(toolResponseMessage.role, 'user');
+  assert.deepEqual(toolResponseMessage.parts, [
+    {
+      functionResponse: {
         name: 'search_code',
-        arguments: { query: 'TODO' },
+        response: { content: 'tool response ok' },
       },
-    ]);
-
-    const secondRequestContents = getContentsFromGenerateRequest(generateRequests[1]);
-    const toolResponseMessage = secondRequestContents[secondRequestContents.length - 1];
-    if (!isRecord(toolResponseMessage)) {
-      throw new Error('Expected tool response message object');
-    }
-    assert.equal(toolResponseMessage.role, 'user');
-    assert.deepEqual(toolResponseMessage.parts, [
-      {
-        functionResponse: {
-          name: 'search_code',
-          response: { content: 'tool response ok' },
-        },
-      },
-    ]);
-  },
-);
+    },
+  ]);
+});
 
 void test('runGeminiAgentLoop maps API_KEY_INVALID to APIKeyInvalidError', async () => {
   class GoogleGenAIErrorMock {

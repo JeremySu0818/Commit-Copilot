@@ -219,7 +219,9 @@ void test('generateCommitMessage uses agent loop in agentic mode', async () => {
     },
     runAgentLoop: (input) => {
       capturedAgentInput = input;
-      return Promise.resolve('feat(core): add mode switch\n\nImplemented mode routing.');
+      return Promise.resolve(
+        'feat(core): add mode switch\n\nImplemented mode routing.',
+      );
     },
     createLLMClient: () => {
       directCallCount++;
@@ -307,78 +309,72 @@ void test('generateCommitMessage uses direct diff client in direct-diff mode', a
   }
 });
 
-void test(
-  'generateCommitMessage forces ollama to direct diff even if agentic requested',
-  async () => {
-    let capturedClientOptions: unknown;
-    let agentCallCount = 0;
+void test('generateCommitMessage forces ollama to direct diff even if agentic requested', async () => {
+  let capturedClientOptions: unknown;
+  let agentCallCount = 0;
 
-    const { result, repoRoot } = await runGenerate({
-      provider: 'ollama',
-      generateMode: 'agentic',
-      runAgentLoop: () => {
-        agentCallCount++;
-        return Promise.resolve('should not be used');
-      },
-      createLLMClient: (clientOptions) => {
-        capturedClientOptions = clientOptions;
-        return {
-          generateCommitMessage: () =>
-            Promise.resolve(
-              'chore(local): use ollama direct diff\n\nEnforced direct mode for local provider.',
-            ),
-        };
-      },
-    });
+  const { result, repoRoot } = await runGenerate({
+    provider: 'ollama',
+    generateMode: 'agentic',
+    runAgentLoop: () => {
+      agentCallCount++;
+      return Promise.resolve('should not be used');
+    },
+    createLLMClient: (clientOptions) => {
+      capturedClientOptions = clientOptions;
+      return {
+        generateCommitMessage: () =>
+          Promise.resolve(
+            'chore(local): use ollama direct diff\n\nEnforced direct mode for local provider.',
+          ),
+      };
+    },
+  });
 
-    try {
-      assert.equal(result.success, true);
-      assert.equal(agentCallCount, 0);
-      const clientOptions = toClientOptionsSummary(capturedClientOptions);
-      if (!clientOptions) {
-        throw new Error('capturedClientOptions not set');
-      }
-      assert.equal(clientOptions.provider, 'ollama');
-      assert.equal(clientOptions.model, DEFAULT_MODELS.ollama);
-      assert.deepEqual(
-        clientOptions.commitOutputOptions,
-        DEFAULT_COMMIT_OUTPUT_OPTIONS,
-      );
-    } finally {
-      cleanupTempDir(repoRoot);
+  try {
+    assert.equal(result.success, true);
+    assert.equal(agentCallCount, 0);
+    const clientOptions = toClientOptionsSummary(capturedClientOptions);
+    if (!clientOptions) {
+      throw new Error('capturedClientOptions not set');
     }
-  },
-);
+    assert.equal(clientOptions.provider, 'ollama');
+    assert.equal(clientOptions.model, DEFAULT_MODELS.ollama);
+    assert.deepEqual(
+      clientOptions.commitOutputOptions,
+      DEFAULT_COMMIT_OUTPUT_OPTIONS,
+    );
+  } finally {
+    cleanupTempDir(repoRoot);
+  }
+});
 
-void test(
-  'generateCommitMessage returns cancelled when cancellation is already requested',
-  async () => {
-    let directCallCount = 0;
-    let agentCallCount = 0;
+void test('generateCommitMessage returns cancelled when cancellation is already requested', async () => {
+  let directCallCount = 0;
+  let agentCallCount = 0;
 
-    const { result, repoRoot } = await runGenerate({
-      provider: 'openai',
-      generateMode: 'direct-diff',
-      cancellationToken: { isCancellationRequested: true },
-      runAgentLoop: () => {
-        agentCallCount++;
-        return Promise.resolve('should not be used');
-      },
-      createLLMClient: () => {
-        directCallCount++;
-        return {
-          generateCommitMessage: () => Promise.resolve('should not be used'),
-        };
-      },
-    });
+  const { result, repoRoot } = await runGenerate({
+    provider: 'openai',
+    generateMode: 'direct-diff',
+    cancellationToken: { isCancellationRequested: true },
+    runAgentLoop: () => {
+      agentCallCount++;
+      return Promise.resolve('should not be used');
+    },
+    createLLMClient: () => {
+      directCallCount++;
+      return {
+        generateCommitMessage: () => Promise.resolve('should not be used'),
+      };
+    },
+  });
 
-    try {
-      assert.equal(result.success, false);
-      assert.equal(result.error?.exitCode, EXIT_CODES.CANCELLED);
-      assert.equal(agentCallCount, 0);
-      assert.equal(directCallCount, 0);
-    } finally {
-      cleanupTempDir(repoRoot);
-    }
-  },
-);
+  try {
+    assert.equal(result.success, false);
+    assert.equal(result.error?.exitCode, EXIT_CODES.CANCELLED);
+    assert.equal(agentCallCount, 0);
+    assert.equal(directCallCount, 0);
+  } finally {
+    cleanupTempDir(repoRoot);
+  }
+});

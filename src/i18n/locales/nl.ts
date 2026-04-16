@@ -244,7 +244,8 @@ export const nlLocale: LocaleTextBundle = {
 
     stepAnalyzingDiff: (step, path) =>
       `[Stap ${String(step)}] Diff analyseren: ${path}`,
-    stepReadingFile: (step, path) => `[Stap ${String(step)}] Bestand lezen: ${path}`,
+    stepReadingFile: (step, path) =>
+      `[Stap ${String(step)}] Bestand lezen: ${path}`,
     stepGettingOutline: (step, path) =>
       `[Stap ${String(step)}] Outline ophalen: ${path}`,
     stepFindingReferences: (step, target) =>
@@ -255,7 +256,8 @@ export const nlLocale: LocaleTextBundle = {
         : `[Stap ${String(step)}] Recente commits ophalen...`,
     stepSearchingProject: (step, keyword) =>
       `[Stap ${String(step)}] Project doorzoeken op: ${keyword}`,
-    stepCalling: (step, toolName) => `[Stap ${String(step)}] Aanroepen ${toolName}...`,
+    stepCalling: (step, toolName) =>
+      `[Stap ${String(step)}] Aanroepen ${toolName}...`,
 
     stepAnalyzingMultipleDiffs: (step, paths) =>
       `[Stap ${String(step)}] Diffs analyseren: ${paths}`,
