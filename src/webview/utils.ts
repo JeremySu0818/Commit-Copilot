@@ -12,7 +12,7 @@ export function fillTemplate(
   values: Record<string, string>,
 ): string {
   return String(template).replace(/\{([a-zA-Z0-9_]+)\}/g, (_, key) => {
-    return values[key] ?? '';
+    return escapeHtml(values[key] ?? '');
   });
 }
 

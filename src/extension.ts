@@ -29,6 +29,7 @@ import {
   getExtensionText,
   getLocalizedErrorInfo,
   getDisplayLanguageLabel,
+  getModelNameRequiredText,
   normalizeDisplayLanguage,
   resolveEffectiveDisplayLanguage,
 } from './i18n';
@@ -295,6 +296,24 @@ export function activate(context: vscode.ExtensionContext) {
           return;
         }
 
+        let savedModel: string | undefined;
+        if (isCustom) {
+          const customId = getCustomProviderId(currentProviderRaw);
+          savedModel = context.globalState.get<string>(
+            `CUSTOM_${customId}_MODEL`,
+          );
+        } else {
+          savedModel = context.globalState.get<string>(
+            `${currentProvider.toUpperCase()}_MODEL`,
+          );
+        }
+
+        if (isCustom && !savedModel) {
+          vscode.window.showWarningMessage(getModelNameRequiredText(language));
+          await vscode.commands.executeCommand('commit-copilot.view.focus');
+          return;
+        }
+
         const progressTitle =
           currentProvider === 'ollama' ? 'Ollama' : providerDisplayName;
 
@@ -319,17 +338,6 @@ export function activate(context: vscode.ExtensionContext) {
               text.output.repositoryPath(repository.rootUri.fsPath),
             );
 
-            let savedModel: string | undefined;
-            if (isCustom) {
-              const customId = getCustomProviderId(currentProviderRaw);
-              savedModel = context.globalState.get<string>(
-                `CUSTOM_${customId}_MODEL`,
-              );
-            } else {
-              savedModel = context.globalState.get<string>(
-                `${currentProvider.toUpperCase()}_MODEL`,
-              );
-            }
             if (savedModel) {
               outputChannel.appendLine(text.output.usingModel(savedModel));
             }
