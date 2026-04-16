@@ -229,8 +229,10 @@ export const arLocale: LocaleTextBundle = {
         ? `جاري سحب ${model}: ${status} (${String(percent)}%)`
         : `جاري سحب ${model}: ${status}`,
 
-    stepAnalyzingDiff: (step, path) => `[الخطوة ${String(step)}] تحليل الفرق: ${path}`,
-    stepReadingFile: (step, path) => `[الخطوة ${String(step)}] قراءة الملف: ${path}`,
+    stepAnalyzingDiff: (step, path) =>
+      `[الخطوة ${String(step)}] تحليل الفرق: ${path}`,
+    stepReadingFile: (step, path) =>
+      `[الخطوة ${String(step)}] قراءة الملف: ${path}`,
     stepGettingOutline: (step, path) =>
       `[الخطوة ${String(step)}] الحصول على المخطط: ${path}`,
     stepFindingReferences: (step, target) =>
@@ -241,7 +243,8 @@ export const arLocale: LocaleTextBundle = {
         : `[الخطوة ${String(step)}] جلب الالتزامات الأخيرة...`,
     stepSearchingProject: (step, keyword) =>
       `[الخطوة ${String(step)}] البحث في المشروع عن: ${keyword}`,
-    stepCalling: (step, toolName) => `[الخطوة ${String(step)}] استدعاء ${toolName}...`,
+    stepCalling: (step, toolName) =>
+      `[الخطوة ${String(step)}] استدعاء ${toolName}...`,
 
     stepAnalyzingMultipleDiffs: (step, paths) =>
       `[الخطوة ${String(step)}] تحليل الفروق: ${paths}`,

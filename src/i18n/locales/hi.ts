@@ -242,7 +242,8 @@ export const hiLocale: LocaleTextBundle = {
 
     stepAnalyzingDiff: (step, path) =>
       `[कदम ${String(step)}] अंतर का विश्लेषण कर रहा है: ${path}`,
-    stepReadingFile: (step, path) => `[कदम ${String(step)}] फ़ाइल पढ़ रहा है: ${path}`,
+    stepReadingFile: (step, path) =>
+      `[कदम ${String(step)}] फ़ाइल पढ़ रहा है: ${path}`,
     stepGettingOutline: (step, path) =>
       `[कदम ${String(step)}] रूपरेखा प्राप्त कर रहा है: ${path}`,
     stepFindingReferences: (step, target) =>

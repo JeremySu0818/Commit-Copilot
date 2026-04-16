@@ -64,98 +64,95 @@ async function withAnthropicModule<T>(
   );
 }
 
-void test(
-  'runAnthropicAgentLoop executes tool_use blocks and sends tool_result messages',
-  async () => {
-    const streamRequests: unknown[] = [];
-    const executedCalls: ToolCallShape[] = [];
+void test('runAnthropicAgentLoop executes tool_use blocks and sends tool_result messages', async () => {
+  const streamRequests: unknown[] = [];
+  const executedCalls: ToolCallShape[] = [];
 
-    class AnthropicMock {
-      messages = {
-        stream: (params: unknown) => {
-          streamRequests.push(params);
-          const currentCall = streamRequests.length;
-          return {
-            finalMessage: () => {
-              if (currentCall === 1) {
-                return Promise.resolve({
-                  content: [
-                    {
-                      type: 'tool_use',
-                      id: 'tool-1',
-                      name: 'read_file',
-                      input: { path: 'src/a.ts' },
-                    },
-                  ],
-                  stop_reason: 'tool_use',
-                });
-              }
-
+  class AnthropicMock {
+    messages = {
+      stream: (params: unknown) => {
+        streamRequests.push(params);
+        const currentCall = streamRequests.length;
+        return {
+          finalMessage: () => {
+            if (currentCall === 1) {
               return Promise.resolve({
                 content: [
-                  { type: 'text', text: 'feat(agent): anthropic tool ok' },
+                  {
+                    type: 'tool_use',
+                    id: 'tool-1',
+                    name: 'read_file',
+                    input: { path: 'src/a.ts' },
+                  },
                 ],
-                stop_reason: 'end_turn',
+                stop_reason: 'tool_use',
               });
-            },
-          };
-        },
-      };
-    }
+            }
 
-    const agentToolsMock = {
-      buildInitialContext: () => Promise.resolve('initial context'),
-      executeToolCall: (toolCall: unknown) => {
-        const call = asToolCallShape(toolCall);
-        if (!call) {
-          throw new Error('Invalid tool call shape');
-        }
-        executedCalls.push(call);
-        return Promise.resolve({ name: call.name, content: 'tool result ok' });
+            return Promise.resolve({
+              content: [
+                { type: 'text', text: 'feat(agent): anthropic tool ok' },
+              ],
+              stop_reason: 'end_turn',
+            });
+          },
+        };
       },
-      toAnthropicTools: () => [],
     };
+  }
 
-    try {
-      const result = await withAnthropicModule(
-        AnthropicMock,
-        agentToolsMock,
-        async ({ runAnthropicAgentLoop }) =>
-          runAnthropicAgentLoop(
-            'anthropic-test-key',
-            'claude-test',
-            'diff --git a/a.ts b/a.ts\n+line',
-            process.cwd(),
-          ),
-      );
+  const agentToolsMock = {
+    buildInitialContext: () => Promise.resolve('initial context'),
+    executeToolCall: (toolCall: unknown) => {
+      const call = asToolCallShape(toolCall);
+      if (!call) {
+        throw new Error('Invalid tool call shape');
+      }
+      executedCalls.push(call);
+      return Promise.resolve({ name: call.name, content: 'tool result ok' });
+    },
+    toAnthropicTools: () => [],
+  };
 
-      assert.equal(result, 'feat(agent): anthropic tool ok');
-    } finally {
-      clearRequireCache(MODULE_PATH);
-    }
+  try {
+    const result = await withAnthropicModule(
+      AnthropicMock,
+      agentToolsMock,
+      async ({ runAnthropicAgentLoop }) =>
+        runAnthropicAgentLoop(
+          'anthropic-test-key',
+          'claude-test',
+          'diff --git a/a.ts b/a.ts\n+line',
+          process.cwd(),
+        ),
+    );
 
-    assert.deepEqual(executedCalls, [
-      {
-        name: 'read_file',
-        arguments: { path: 'src/a.ts' },
-      },
-    ]);
+    assert.equal(result, 'feat(agent): anthropic tool ok');
+  } finally {
+    clearRequireCache(MODULE_PATH);
+  }
 
-    const secondRequestMessages = getMessagesFromStreamRequest(streamRequests[1]);
-    const lastMessage = secondRequestMessages[secondRequestMessages.length - 1];
-    if (!isRecord(lastMessage)) {
-      throw new Error('Expected final user message');
-    }
-    assert.equal(lastMessage.role, 'user');
-    assert.deepEqual(lastMessage.content, [
-      {
-        type: 'tool_result',
-        tool_use_id: 'tool-1',
-        content: 'tool result ok',
-      },
-    ]);
-  },
-);
+  assert.deepEqual(executedCalls, [
+    {
+      name: 'read_file',
+      arguments: { path: 'src/a.ts' },
+    },
+  ]);
+
+  const secondRequestMessages = getMessagesFromStreamRequest(streamRequests[1]);
+  const lastMessage = secondRequestMessages[secondRequestMessages.length - 1];
+  if (!isRecord(lastMessage)) {
+    throw new Error('Expected final user message');
+  }
+  assert.equal(lastMessage.role, 'user');
+  assert.deepEqual(lastMessage.content, [
+    {
+      type: 'tool_result',
+      tool_use_id: 'tool-1',
+      content: 'tool result ok',
+    },
+  ]);
+});
 
 void test('runAnthropicAgentLoop maps 401 errors to APIKeyInvalidError', async () => {
   class AnthropicErrorMock {

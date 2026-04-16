@@ -186,8 +186,7 @@ function isRetryableError(error: unknown): boolean {
   }
 
   const message = (
-    toText(candidate.message) ||
-    (error instanceof Error ? error.message : '')
+    toText(candidate.message) || (error instanceof Error ? error.message : '')
   ).toLowerCase();
   if (
     message.includes('rate limit') ||
@@ -219,8 +218,7 @@ function isAuthError(status: number | null, error: unknown): boolean {
   }
   const candidate = toErrorLike(error);
   const message = (
-    toText(candidate.message) ||
-    (error instanceof Error ? error.message : '')
+    toText(candidate.message) || (error instanceof Error ? error.message : '')
   ).toLowerCase();
   return (
     message.includes('invalid api key') ||

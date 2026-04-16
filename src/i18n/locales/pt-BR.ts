@@ -248,7 +248,8 @@ export const ptBRLocale: LocaleTextBundle = {
 
     stepAnalyzingDiff: (step, path) =>
       `[Passo ${String(step)}] Analisando diff: ${path}`,
-    stepReadingFile: (step, path) => `[Passo ${String(step)}] Lendo arquivo: ${path}`,
+    stepReadingFile: (step, path) =>
+      `[Passo ${String(step)}] Lendo arquivo: ${path}`,
     stepGettingOutline: (step, path) =>
       `[Passo ${String(step)}] Obtendo outline: ${path}`,
     stepFindingReferences: (step, target) =>
@@ -259,7 +260,8 @@ export const ptBRLocale: LocaleTextBundle = {
         : `[Passo ${String(step)}] Buscando commits mais recentes...`,
     stepSearchingProject: (step, keyword) =>
       `[Passo ${String(step)}] Pesquisando o projeto por: ${keyword}`,
-    stepCalling: (step, toolName) => `[Passo ${String(step)}] Chamando ${toolName}...`,
+    stepCalling: (step, toolName) =>
+      `[Passo ${String(step)}] Chamando ${toolName}...`,
 
     stepAnalyzingMultipleDiffs: (step, paths) =>
       `[Passo ${String(step)}] Analisando diffs: ${paths}`,

@@ -355,7 +355,9 @@ async function runGeminiAgentLoop(
 
     let step = 0;
     const stepLimit =
-      maxAgentSteps && maxAgentSteps > 0 ? maxAgentSteps : Number.POSITIVE_INFINITY;
+      maxAgentSteps && maxAgentSteps > 0
+        ? maxAgentSteps
+        : Number.POSITIVE_INFINITY;
 
     while (step < stepLimit) {
       throwIfCancellationRequested(cancellationToken);
@@ -377,17 +379,16 @@ async function runGeminiAgentLoop(
 
       const candidateContent = getGeminiCandidateContent(response);
       history.push(
-        candidateContent ??
-          {
-            role: 'model',
-            parts: functionCalls.map((fc) => ({
-              functionCall: {
-                id: fc.id,
-                name: fc.name,
-                args: fc.args,
-              },
-            })),
-          },
+        candidateContent ?? {
+          role: 'model',
+          parts: functionCalls.map((fc) => ({
+            functionCall: {
+              id: fc.id,
+              name: fc.name,
+              args: fc.args,
+            },
+          })),
+        },
       );
 
       const toolResults: UnknownRecord[] = [];

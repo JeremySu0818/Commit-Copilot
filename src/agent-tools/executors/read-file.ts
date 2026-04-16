@@ -77,7 +77,9 @@ async function executeReadFile(
 
     return (
       `File: ${relPath} (lines ${String(startLine)}-${String(endLine)} of ${String(lines.length)})\n\n` +
-      selectedLines.map((line, i) => `${String(startLine + i)}: ${line}`).join('\n')
+      selectedLines
+        .map((line, i) => `${String(startLine + i)}: ${line}`)
+        .join('\n')
     );
   } catch (err: unknown) {
     return `Error reading file: ${getErrorMessage(err)}`;

@@ -4,10 +4,7 @@ import type {
   CustomProviderConfig,
   ModelConfig,
 } from '../models';
-import type {
-  DisplayLanguage,
-  EffectiveDisplayLanguage,
-} from '../i18n';
+import type { DisplayLanguage, EffectiveDisplayLanguage } from '../i18n';
 import type { WebviewBootstrapData } from '../side-panel-webview-bootstrap';
 import type { SidePanelAction, SidePanelState } from './side-panel-context';
 import {
@@ -126,7 +123,9 @@ function isDisplayLanguage(
   value: string,
   bootstrap: WebviewBootstrapData,
 ): value is DisplayLanguage {
-  return bootstrap.displayLanguageOptions.some((option) => option.value === value);
+  return bootstrap.displayLanguageOptions.some(
+    (option) => option.value === value,
+  );
 }
 
 function isEffectiveDisplayLanguage(
@@ -397,7 +396,8 @@ export function useMessageHandler(
               text: state.currentPack.buttons.save,
             });
 
-            const allowCustomModel = toBoolean(message.allowCustomModel) ?? false;
+            const allowCustomModel =
+              toBoolean(message.allowCustomModel) ?? false;
             const models = toModelConfigArray(message.models);
 
             if (Array.isArray(message.models) || allowCustomModel) {
@@ -501,7 +501,8 @@ export function useMessageHandler(
         case 'displayLanguageUpdated': {
           const nextEffectiveRaw = toString(message.effectiveLanguage);
           const nextEffective =
-            nextEffectiveRaw && isEffectiveDisplayLanguage(nextEffectiveRaw, bootstrap)
+            nextEffectiveRaw &&
+            isEffectiveDisplayLanguage(nextEffectiveRaw, bootstrap)
               ? nextEffectiveRaw
               : 'en';
           const nextPack = bootstrap.languagePacks[nextEffective];
@@ -536,7 +537,9 @@ export function useMessageHandler(
           break;
 
         case 'customProviderSaved': {
-          const customProviders = toCustomProviderArray(message.customProviders);
+          const customProviders = toCustomProviderArray(
+            message.customProviders,
+          );
           dispatch({
             type: 'SET_CUSTOM_PROVIDERS',
             providers: customProviders,
@@ -577,7 +580,9 @@ export function useMessageHandler(
         }
 
         case 'customProviderDeleted': {
-          const customProviders = toCustomProviderArray(message.customProviders);
+          const customProviders = toCustomProviderArray(
+            message.customProviders,
+          );
           dispatch({
             type: 'SET_CUSTOM_PROVIDERS',
             providers: customProviders,

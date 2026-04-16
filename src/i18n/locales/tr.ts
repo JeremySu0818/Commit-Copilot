@@ -247,7 +247,8 @@ export const trLocale: LocaleTextBundle = {
 
     stepAnalyzingDiff: (step, path) =>
       `[Adım ${String(step)}] Diff analiz ediliyor: ${path}`,
-    stepReadingFile: (step, path) => `[Adım ${String(step)}] Dosya okunuyor: ${path}`,
+    stepReadingFile: (step, path) =>
+      `[Adım ${String(step)}] Dosya okunuyor: ${path}`,
     stepGettingOutline: (step, path) =>
       `[Adım ${String(step)}] Anahat (outline) alınıyor: ${path}`,
     stepFindingReferences: (step, target) =>
@@ -258,7 +259,8 @@ export const trLocale: LocaleTextBundle = {
         : `[Adım ${String(step)}] Son commit'ler getiriliyor...`,
     stepSearchingProject: (step, keyword) =>
       `[Adım ${String(step)}] Projede aranıyor: ${keyword}`,
-    stepCalling: (step, toolName) => `[Adım ${String(step)}] ${toolName} çağrılıyor...`,
+    stepCalling: (step, toolName) =>
+      `[Adım ${String(step)}] ${toolName} çağrılıyor...`,
 
     stepAnalyzingMultipleDiffs: (step, paths) =>
       `[Adım ${String(step)}] Diff'ler analiz ediliyor: ${paths}`,

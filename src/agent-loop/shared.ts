@@ -353,11 +353,17 @@ function formatProgressMessage(
   const msgs = LOCALES[language].progressMessages;
   switch (toolName) {
     case 'get_diff':
-      return msgs.stepAnalyzingDiff(step, normalizedArgs.path ?? 'unknown file');
+      return msgs.stepAnalyzingDiff(
+        step,
+        normalizedArgs.path ?? 'unknown file',
+      );
     case 'read_file':
       return msgs.stepReadingFile(step, normalizedArgs.path ?? 'unknown file');
     case 'get_file_outline':
-      return msgs.stepGettingOutline(step, normalizedArgs.path ?? 'unknown file');
+      return msgs.stepGettingOutline(
+        step,
+        normalizedArgs.path ?? 'unknown file',
+      );
     case 'find_references': {
       const line =
         typeof normalizedArgs.line === 'number'

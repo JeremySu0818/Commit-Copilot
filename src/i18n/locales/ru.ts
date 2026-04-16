@@ -242,8 +242,10 @@ export const ruLocale: LocaleTextBundle = {
         ? `Скачивание ${model}: ${status} (${String(percent)}%)`
         : `Скачивание ${model}: ${status}`,
 
-    stepAnalyzingDiff: (step, path) => `[Шаг ${String(step)}] Анализ diff: ${path}`,
-    stepReadingFile: (step, path) => `[Шаг ${String(step)}] Чтение файла: ${path}`,
+    stepAnalyzingDiff: (step, path) =>
+      `[Шаг ${String(step)}] Анализ diff: ${path}`,
+    stepReadingFile: (step, path) =>
+      `[Шаг ${String(step)}] Чтение файла: ${path}`,
     stepGettingOutline: (step, path) =>
       `[Шаг ${String(step)}] Получение структуры: ${path}`,
     stepFindingReferences: (step, target) =>
@@ -254,7 +256,8 @@ export const ruLocale: LocaleTextBundle = {
         : `[Шаг ${String(step)}] Получение недавних коммитов...`,
     stepSearchingProject: (step, keyword) =>
       `[Шаг ${String(step)}] Поиск по проекту: ${keyword}`,
-    stepCalling: (step, toolName) => `[Шаг ${String(step)}] Вызов ${toolName}...`,
+    stepCalling: (step, toolName) =>
+      `[Шаг ${String(step)}] Вызов ${toolName}...`,
 
     stepAnalyzingMultipleDiffs: (step, paths) =>
       `[Шаг ${String(step)}] Анализ diff для: ${paths}`,

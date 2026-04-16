@@ -259,210 +259,198 @@ void test('validateOpenAIApiKey uses OpenAI SDK models.list', async () => {
   );
 });
 
-void test(
-  'validation errors use unified API request failed format for Google/OpenAI/Anthropic',
-  async () => {
-    class GoogleGenAIMock {
-      models = {
-        list: () => {
-          const error = new Error('google upstream failed') as Error & {
-            status?: number;
-          };
-          error.status = 500;
-          return Promise.reject(error);
-        },
-      };
-    }
+void test('validation errors use unified API request failed format for Google/OpenAI/Anthropic', async () => {
+  class GoogleGenAIMock {
+    models = {
+      list: () => {
+        const error = new Error('google upstream failed') as Error & {
+          status?: number;
+        };
+        error.status = 500;
+        return Promise.reject(error);
+      },
+    };
+  }
 
-    class OpenAIMock {
-      models = {
-        list: () => {
-          const error = new Error('openai upstream failed') as Error & {
-            status?: number;
-          };
-          error.status = 500;
-          return Promise.reject(error);
-        },
-      };
-    }
+  class OpenAIMock {
+    models = {
+      list: () => {
+        const error = new Error('openai upstream failed') as Error & {
+          status?: number;
+        };
+        error.status = 500;
+        return Promise.reject(error);
+      },
+    };
+  }
 
-    class AnthropicMock {
-      models = {
-        list: () => {
-          const error = new Error('anthropic upstream failed') as Error & {
-            status?: number;
-          };
-          error.status = 500;
-          return Promise.reject(error);
-        },
-      };
-    }
+  class AnthropicMock {
+    models = {
+      list: () => {
+        const error = new Error('anthropic upstream failed') as Error & {
+          status?: number;
+        };
+        error.status = 500;
+        return Promise.reject(error);
+      },
+    };
+  }
 
-    await withModuleMock('vscode', baseVscodeMock, () =>
-      withModuleMock('@google/genai', { GoogleGenAI: GoogleGenAIMock }, () =>
+  await withModuleMock('vscode', baseVscodeMock, () =>
+    withModuleMock('@google/genai', { GoogleGenAI: GoogleGenAIMock }, () =>
+      withModuleMock('openai', { __esModule: true, default: OpenAIMock }, () =>
         withModuleMock(
-          'openai',
-          { __esModule: true, default: OpenAIMock },
-          () =>
-            withModuleMock(
-              '@anthropic-ai/sdk',
-              { __esModule: true, default: AnthropicMock },
-              async () => {
-                clearRequireCache(MODULE_PATH);
-                const dynamicRequire = createRequire(__filename);
-                const mod = dynamicRequire(MODULE_PATH) as ProviderModule;
-                const provider = createProvider(mod);
+          '@anthropic-ai/sdk',
+          { __esModule: true, default: AnthropicMock },
+          async () => {
+            clearRequireCache(MODULE_PATH);
+            const dynamicRequire = createRequire(__filename);
+            const mod = dynamicRequire(MODULE_PATH) as ProviderModule;
+            const provider = createProvider(mod);
 
-                const googleResult =
-                  await provider.validateGoogleApiKey('google-test-key');
-                const openaiResult =
-                  await provider.validateOpenAIApiKey('openai-test-key');
-                const anthropicResult =
-                  await provider.validateAnthropicApiKey('anthropic-test-key');
+            const googleResult =
+              await provider.validateGoogleApiKey('google-test-key');
+            const openaiResult =
+              await provider.validateOpenAIApiKey('openai-test-key');
+            const anthropicResult =
+              await provider.validateAnthropicApiKey('anthropic-test-key');
 
-                assert.equal(googleResult.valid, false);
-                assert.equal(openaiResult.valid, false);
-                assert.equal(anthropicResult.valid, false);
-                assert.equal(
-                  String(googleResult.error),
-                  'API request failed (500)',
-                );
-                assert.equal(
-                  String(openaiResult.error),
-                  'API request failed (500)',
-                );
-                assert.equal(
-                  String(anthropicResult.error),
-                  'API request failed (500)',
-                );
-              },
-            ),
+            assert.equal(googleResult.valid, false);
+            assert.equal(openaiResult.valid, false);
+            assert.equal(anthropicResult.valid, false);
+            assert.equal(
+              String(googleResult.error),
+              'API request failed (500)',
+            );
+            assert.equal(
+              String(openaiResult.error),
+              'API request failed (500)',
+            );
+            assert.equal(
+              String(anthropicResult.error),
+              'API request failed (500)',
+            );
+          },
         ),
       ),
-    );
-  },
-);
+    ),
+  );
+});
 
-void test(
-  'Anthropic API key validation uses SDK models.list and avoids fetch token calls',
-  async () => {
-    const originalFetch = global.fetch;
-    type FetchFn = NonNullable<typeof global.fetch>;
-    type FetchInput = Parameters<FetchFn>[0];
-    type FetchInit = Parameters<FetchFn>[1];
-    const fetchCalls: { input: FetchInput; init: FetchInit | undefined }[] = [];
-    const fetchMock: FetchFn = (input: FetchInput, init?: FetchInit) => {
-      fetchCalls.push({ input, init });
-      return Promise.resolve(
-        new Response(
-          JSON.stringify({
-            data: [
-              {
-                id: 'mock-model',
-                created_at: '2026-01-01T00:00:00Z',
-                display_name: 'Mock',
-                type: 'model',
-              },
-            ],
-            first_id: 'mock-model',
-            last_id: 'mock-model',
-            has_more: false,
-          }),
-          {
-            status: 200,
-            headers: { 'content-type': 'application/json' },
-          },
-        ),
-      );
-    };
-    global.fetch = fetchMock;
-
-    const harness = await createHarness();
-
-    try {
-      await harness.sendMessage({
-        type: 'saveKey',
-        provider: 'anthropic',
-        value: 'test-anthropic-key',
-      });
-
-      assert.equal(fetchCalls.length, 1);
-      const firstFetchCall = fetchCalls[0];
-      const requestInput = firstFetchCall.input;
-      const requestUrl =
-        typeof requestInput === 'string'
-          ? requestInput
-          : requestInput instanceof URL
-            ? requestInput.toString()
-            : requestInput instanceof Request
-              ? requestInput.url
-              : '';
-      assert.match(requestUrl, /\/v1\/models/);
-      assert.doesNotMatch(requestUrl, /\/v1\/messages/);
-      assert.match(requestUrl, /limit=1/);
-      assert.equal(harness.warningMessages.length, 0);
-      assert.equal(harness.storedSecrets.length, 1);
-
-      const resultMessage = harness.postedMessages.find((message) =>
-        isValidationResultMessage(message, 'anthropic'),
-      );
-      if (!resultMessage) {
-        throw new Error('Anthropic validation result message not found');
-      }
-      assert.equal(resultMessage.success, true);
-    } finally {
-      harness.dispose();
-      global.fetch = originalFetch;
-    }
-  },
-);
-
-void test(
-  'Anthropic API key validation maps 401 SDK errors to invalid key message',
-  async () => {
-    const originalFetch = global.fetch;
-    type FetchFn = NonNullable<typeof global.fetch>;
-    const fetchMock: FetchFn = () =>
-      Promise.resolve(
-        new Response(
-          JSON.stringify({
-            error: {
-              type: 'authentication_error',
-              message: 'invalid_api_key',
+void test('Anthropic API key validation uses SDK models.list and avoids fetch token calls', async () => {
+  const originalFetch = global.fetch;
+  type FetchFn = NonNullable<typeof global.fetch>;
+  type FetchInput = Parameters<FetchFn>[0];
+  type FetchInit = Parameters<FetchFn>[1];
+  const fetchCalls: { input: FetchInput; init: FetchInit | undefined }[] = [];
+  const fetchMock: FetchFn = (input: FetchInput, init?: FetchInit) => {
+    fetchCalls.push({ input, init });
+    return Promise.resolve(
+      new Response(
+        JSON.stringify({
+          data: [
+            {
+              id: 'mock-model',
+              created_at: '2026-01-01T00:00:00Z',
+              display_name: 'Mock',
+              type: 'model',
             },
-          }),
-          {
-            status: 401,
-            headers: { 'content-type': 'application/json' },
-          },
-        ),
-      );
-    global.fetch = fetchMock;
+          ],
+          first_id: 'mock-model',
+          last_id: 'mock-model',
+          has_more: false,
+        }),
+        {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        },
+      ),
+    );
+  };
+  global.fetch = fetchMock;
 
-    const harness = await createHarness();
+  const harness = await createHarness();
 
-    try {
-      await harness.sendMessage({
-        type: 'saveKey',
-        provider: 'anthropic',
-        value: 'bad-anthropic-key',
-      });
+  try {
+    await harness.sendMessage({
+      type: 'saveKey',
+      provider: 'anthropic',
+      value: 'test-anthropic-key',
+    });
 
-      assert.equal(harness.storedSecrets.length, 0);
-      assert.equal(harness.warningMessages.length, 1);
-      assert.match(harness.warningMessages[0] ?? '', /Invalid API Key/i);
+    assert.equal(fetchCalls.length, 1);
+    const firstFetchCall = fetchCalls[0];
+    const requestInput = firstFetchCall.input;
+    const requestUrl =
+      typeof requestInput === 'string'
+        ? requestInput
+        : requestInput instanceof URL
+          ? requestInput.toString()
+          : requestInput instanceof Request
+            ? requestInput.url
+            : '';
+    assert.match(requestUrl, /\/v1\/models/);
+    assert.doesNotMatch(requestUrl, /\/v1\/messages/);
+    assert.match(requestUrl, /limit=1/);
+    assert.equal(harness.warningMessages.length, 0);
+    assert.equal(harness.storedSecrets.length, 1);
 
-      const resultMessage = harness.postedMessages.find((message) =>
-        isValidationResultMessage(message, 'anthropic'),
-      );
-      if (!resultMessage) {
-        throw new Error('Anthropic validation result message not found');
-      }
-      assert.equal(resultMessage.success, false);
-      assert.match(String(resultMessage.error), /Invalid API Key/i);
-    } finally {
-      harness.dispose();
-      global.fetch = originalFetch;
+    const resultMessage = harness.postedMessages.find((message) =>
+      isValidationResultMessage(message, 'anthropic'),
+    );
+    if (!resultMessage) {
+      throw new Error('Anthropic validation result message not found');
     }
-  },
-);
+    assert.equal(resultMessage.success, true);
+  } finally {
+    harness.dispose();
+    global.fetch = originalFetch;
+  }
+});
+
+void test('Anthropic API key validation maps 401 SDK errors to invalid key message', async () => {
+  const originalFetch = global.fetch;
+  type FetchFn = NonNullable<typeof global.fetch>;
+  const fetchMock: FetchFn = () =>
+    Promise.resolve(
+      new Response(
+        JSON.stringify({
+          error: {
+            type: 'authentication_error',
+            message: 'invalid_api_key',
+          },
+        }),
+        {
+          status: 401,
+          headers: { 'content-type': 'application/json' },
+        },
+      ),
+    );
+  global.fetch = fetchMock;
+
+  const harness = await createHarness();
+
+  try {
+    await harness.sendMessage({
+      type: 'saveKey',
+      provider: 'anthropic',
+      value: 'bad-anthropic-key',
+    });
+
+    assert.equal(harness.storedSecrets.length, 0);
+    assert.equal(harness.warningMessages.length, 1);
+    assert.match(harness.warningMessages[0] ?? '', /Invalid API Key/i);
+
+    const resultMessage = harness.postedMessages.find((message) =>
+      isValidationResultMessage(message, 'anthropic'),
+    );
+    if (!resultMessage) {
+      throw new Error('Anthropic validation result message not found');
+    }
+    assert.equal(resultMessage.success, false);
+    assert.match(String(resultMessage.error), /Invalid API Key/i);
+  } finally {
+    harness.dispose();
+    global.fetch = originalFetch;
+  }
+});

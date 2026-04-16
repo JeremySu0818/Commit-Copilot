@@ -46,7 +46,9 @@ interface ErrorLike {
 }
 
 function toErrorLike(error: unknown): ErrorLike {
-  return typeof error === 'object' && error !== null ? (error as ErrorLike) : {};
+  return typeof error === 'object' && error !== null
+    ? (error as ErrorLike)
+    : {};
 }
 
 function pickNonEmpty(primary: string | undefined, fallback: string): string {
@@ -195,7 +197,9 @@ async function runOpenAIAgentLoop(
 
     let step = 0;
     const stepLimit =
-      maxAgentSteps && maxAgentSteps > 0 ? maxAgentSteps : Number.POSITIVE_INFINITY;
+      maxAgentSteps && maxAgentSteps > 0
+        ? maxAgentSteps
+        : Number.POSITIVE_INFINITY;
 
     while (step < stepLimit) {
       throwIfCancellationRequested(cancellationToken);

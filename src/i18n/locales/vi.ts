@@ -239,9 +239,11 @@ export const viLocale: LocaleTextBundle = {
         ? `Đang kéo ${model}: ${status} (${String(percent)}%)`
         : `Đang kéo ${model}: ${status}`,
 
-    stepAnalyzingDiff: (step, path) => `[Bước ${String(step)}] Phân tích diff: ${path}`,
+    stepAnalyzingDiff: (step, path) =>
+      `[Bước ${String(step)}] Phân tích diff: ${path}`,
     stepReadingFile: (step, path) => `[Bước ${String(step)}] Đọc tệp: ${path}`,
-    stepGettingOutline: (step, path) => `[Bước ${String(step)}] Lấy phác thảo: ${path}`,
+    stepGettingOutline: (step, path) =>
+      `[Bước ${String(step)}] Lấy phác thảo: ${path}`,
     stepFindingReferences: (step, target) =>
       `[Bước ${String(step)}] Tìm tham chiếu: ${target}`,
     stepFetchingRecentCommits: (step, count) =>
@@ -250,7 +252,8 @@ export const viLocale: LocaleTextBundle = {
         : `[Bước ${String(step)}] Đang lấy các commit gần đây...`,
     stepSearchingProject: (step, keyword) =>
       `[Bước ${String(step)}] Đang tìm kiếm dự án cho: ${keyword}`,
-    stepCalling: (step, toolName) => `[Bước ${String(step)}] Đang gọi ${toolName}...`,
+    stepCalling: (step, toolName) =>
+      `[Bước ${String(step)}] Đang gọi ${toolName}...`,
 
     stepAnalyzingMultipleDiffs: (step, paths) =>
       `[Bước ${String(step)}] Phân tích diffs: ${paths}`,

@@ -131,45 +131,42 @@ void test('withRetry does not retry generation cancellation errors', async () =>
   assert.equal(attempts, 1);
 });
 
-void test(
-  'withRetry aborts before scheduling retry delay when cancellation is requested',
-  async () => {
-    const originalSetTimeout = globalThis.setTimeout;
-    const scheduledDelays: number[] = [];
-    let attempts = 0;
+void test('withRetry aborts before scheduling retry delay when cancellation is requested', async () => {
+  const originalSetTimeout = globalThis.setTimeout;
+  const scheduledDelays: number[] = [];
+  let attempts = 0;
 
-    globalThis.setTimeout = createImmediateSetTimeout(scheduledDelays);
+  globalThis.setTimeout = createImmediateSetTimeout(scheduledDelays);
 
-    try {
-      await assert.rejects(
-        withRetry(
-          () => {
-            attempts++;
-            const err = new Error('rate limit exceeded') as Error & {
-              status?: number;
-            };
-            err.status = 429;
-            return Promise.reject(err);
+  try {
+    await assert.rejects(
+      withRetry(
+        () => {
+          attempts++;
+          const err = new Error('rate limit exceeded') as Error & {
+            status?: number;
+          };
+          err.status = 429;
+          return Promise.reject(err);
+        },
+        {
+          maxAttempts: 4,
+          baseDelayMs: 10,
+          maxDelayMs: 10,
+          jitterMs: 0,
+          checkAbort: () => {
+            if (attempts >= 1) {
+              throw new GenerationCancelledError();
+            }
           },
-          {
-            maxAttempts: 4,
-            baseDelayMs: 10,
-            maxDelayMs: 10,
-            jitterMs: 0,
-            checkAbort: () => {
-              if (attempts >= 1) {
-                throw new GenerationCancelledError();
-              }
-            },
-          },
-        ),
-        (error) => error instanceof GenerationCancelledError,
-      );
+        },
+      ),
+      (error) => error instanceof GenerationCancelledError,
+    );
 
-      assert.equal(attempts, 1);
-      assert.deepEqual(scheduledDelays, []);
-    } finally {
-      globalThis.setTimeout = originalSetTimeout;
-    }
-  },
-);
+    assert.equal(attempts, 1);
+    assert.deepEqual(scheduledDelays, []);
+  } finally {
+    globalThis.setTimeout = originalSetTimeout;
+  }
+});

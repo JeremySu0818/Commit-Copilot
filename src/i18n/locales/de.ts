@@ -248,7 +248,8 @@ export const deLocale: LocaleTextBundle = {
 
     stepAnalyzingDiff: (step, path) =>
       `[Schritt ${String(step)}] Analysiere Diff: ${path}`,
-    stepReadingFile: (step, path) => `[Schritt ${String(step)}] Lese Datei: ${path}`,
+    stepReadingFile: (step, path) =>
+      `[Schritt ${String(step)}] Lese Datei: ${path}`,
     stepGettingOutline: (step, path) =>
       `[Schritt ${String(step)}] Hole Gliederung: ${path}`,
     stepFindingReferences: (step, target) =>

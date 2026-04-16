@@ -157,9 +157,7 @@ export async function getProjectStructure(
       for (let i = 0; i < entries.length; i++) {
         if (fileCount >= MAX_FILES) {
           if (!didTruncate) {
-            lines.push(
-              `${prefix}... (truncated, ${String(MAX_FILES)}+ files)`,
-            );
+            lines.push(`${prefix}... (truncated, ${String(MAX_FILES)}+ files)`);
             didTruncate = true;
           }
           break;
