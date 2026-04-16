@@ -237,6 +237,12 @@ export function getSidePanelText(
   return LOCALES[language].sidePanelText;
 }
 
+export function getModelNameRequiredText(
+  language: EffectiveDisplayLanguage,
+): string {
+  return LOCALES[language].webviewLanguagePack.statuses.modelNameRequired;
+}
+
 export function getDisplayLanguageLabel(
   language: DisplayLanguage,
   uiLanguage: EffectiveDisplayLanguage,
