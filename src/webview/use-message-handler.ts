@@ -376,6 +376,11 @@ export function useMessageHandler(
           });
           const savedKey = bootstrap.customProviderPrefix + message.savedId;
           dispatch({ type: 'SET_PROVIDER', provider: savedKey });
+          dispatch({
+            type: 'SET_SAVE_BTN',
+            disabled: true,
+            text: state.currentPack.buttons.save,
+          });
           vscode.postMessage({ type: 'saveProvider', value: savedKey });
           vscode.postMessage({ type: 'checkKey', provider: savedKey });
           vscode.postMessage({ type: 'getModels', provider: savedKey });
