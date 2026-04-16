@@ -1,6 +1,7 @@
-import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
+import test from 'node:test';
+
 import type { GitOperations } from '../../commit-copilot';
 import { clearRequireCache, withModuleMock } from '../helpers/module-mock';
 import { createVscodeMock } from '../helpers/vscode-mock';

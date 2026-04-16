@@ -1,8 +1,11 @@
 import * as fs from 'fs';
 import * as path from 'path';
+
 import * as vscode from 'vscode';
+
 import { GitOperations } from '../../commit-copilot';
 import { isPathWithinRoot } from '../staged-workspace';
+
 import { MAX_OUTLINE_LINES } from './shared';
 
 const OUTLINE_KIND_LABELS: Partial<Record<vscode.SymbolKind, string>> = {

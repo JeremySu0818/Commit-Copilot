@@ -1,17 +1,8 @@
+import { execFile } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
-import { execFile } from 'child_process';
 import { promisify } from 'util';
-import {
-  APIProvider,
-  CommitOutputOptions,
-  DEFAULT_COMMIT_OUTPUT_OPTIONS,
-  DEFAULT_GENERATE_MODE,
-  DEFAULT_MODELS,
-  GenerateMode,
-  normalizeCommitOutputOptions,
-} from './models';
-import { createLLMClient, ProgressCallback } from './llm-clients';
+
 import { runAgentLoop } from './agent-loop';
 import {
   CancellationSignal,
@@ -27,6 +18,16 @@ import {
   MixedChangesError,
 } from './errors';
 import type { EffectiveDisplayLanguage } from './i18n/types';
+import { createLLMClient, ProgressCallback } from './llm-clients';
+import {
+  APIProvider,
+  CommitOutputOptions,
+  DEFAULT_COMMIT_OUTPUT_OPTIONS,
+  DEFAULT_GENERATE_MODE,
+  DEFAULT_MODELS,
+  GenerateMode,
+  normalizeCommitOutputOptions,
+} from './models';
 
 export {
   EXIT_CODES,

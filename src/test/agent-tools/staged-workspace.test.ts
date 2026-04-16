@@ -1,8 +1,8 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
 import * as fs from 'fs';
+import assert from 'node:assert/strict';
+import test from 'node:test';
 import * as path from 'path';
-import type { GitOperations } from '../../commit-copilot';
+
 import {
   STAGED_WORKSPACE_DIR_NAME,
   STAGED_WORKSPACE_SUBDIR_NAME,
@@ -11,6 +11,7 @@ import {
   isPathWithinRoot,
   toPosixPath,
 } from '../../agent-tools/staged-workspace';
+import type { GitOperations } from '../../commit-copilot';
 import { cleanupTempDir, createTempDir } from '../helpers/temp-dir';
 
 void test('isPathWithinRoot validates child paths only', () => {

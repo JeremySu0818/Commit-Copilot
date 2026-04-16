@@ -1,6 +1,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
+
 import * as vscode from 'vscode';
+
 import { GitOperations } from '../../commit-copilot';
 import {
   STAGED_WORKSPACE_DIR_NAME,
@@ -9,6 +11,7 @@ import {
   cleanupStagedWorkspaceSnapshot,
   isPathWithinRoot,
 } from '../staged-workspace';
+
 import {
   MAX_REFERENCE_SNIPPET_LENGTH,
   parseBooleanArg,

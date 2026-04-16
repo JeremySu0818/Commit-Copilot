@@ -1,13 +1,15 @@
 import * as fs from 'fs';
 import * as path from 'path';
+
 import ignore from 'ignore';
+
+import { buildCommitOutputReminder } from '../agent-loop/shared';
 import { GitOperations } from '../commit-copilot';
 import {
   CommitOutputOptions,
   DEFAULT_COMMIT_OUTPUT_OPTIONS,
   normalizeCommitOutputOptions,
 } from '../models';
-import { buildCommitOutputReminder } from '../agent-loop/shared';
 
 export function parseDiffSummary(
   diff: string,

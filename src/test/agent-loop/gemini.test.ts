@@ -1,6 +1,7 @@
-import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
+import test from 'node:test';
+
 import { clearRequireCache, withModuleMock } from '../helpers/module-mock';
 
 const MODULE_PATH = '../../agent-loop/gemini';

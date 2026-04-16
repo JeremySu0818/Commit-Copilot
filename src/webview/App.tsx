@@ -1,14 +1,16 @@
 import React, { useReducer, useMemo } from 'react';
+
 import type { WebviewBootstrapData } from '../side-panel-webview-bootstrap';
+
 import {
   SidePanelContext,
   createInitialState,
   sidePanelReducer,
 } from './side-panel-context';
 import { useMessageHandler } from './use-message-handler';
+import { AddProviderView } from './views/AddProviderView';
 import { MainView } from './views/MainView';
 import { SettingsView } from './views/SettingsView';
-import { AddProviderView } from './views/AddProviderView';
 
 interface AppProps {
   bootstrap: WebviewBootstrapData;

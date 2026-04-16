@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo } from 'react';
-import { useSidePanel } from '../side-panel-context';
+
 import { BackIcon } from '../components/BackIcon';
+import { useSidePanel } from '../side-panel-context';
 import { renderStatusHtml } from '../utils';
 
 export function AddProviderView() {

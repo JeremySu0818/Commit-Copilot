@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useSidePanel } from '../side-panel-context';
+
 import { BackIcon } from '../components/BackIcon';
+import { useSidePanel } from '../side-panel-context';
 import { normalizeMaxAgentStepsValue, renderStatusHtml } from '../utils';
 
 export function SettingsView() {
