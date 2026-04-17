@@ -14,7 +14,34 @@ interface StagedDiffEntry {
   status: 'added' | 'modified' | 'deleted' | 'renamed';
 }
 
+function applyDiffLineStatus(entry: StagedDiffEntry, line: string): void {
+  if (line.startsWith('new file mode') || line.startsWith('--- /dev/null')) {
+    entry.status = 'added';
+    return;
+  }
+  if (
+    line.startsWith('deleted file mode') ||
+    line.startsWith('+++ /dev/null')
+  ) {
+    entry.status = 'deleted';
+    return;
+  }
+  if (line.startsWith('rename from') || line.startsWith('rename to')) {
+    entry.status = 'renamed';
+  }
+}
+
+function normalizeModifiedRenames(entries: StagedDiffEntry[]): void {
+  for (const entry of entries) {
+    if (entry.status === 'modified' && entry.aPath !== entry.bPath) {
+      entry.status = 'renamed';
+    }
+  }
+}
+
 function parseStagedDiffEntries(diffContent: string): StagedDiffEntry[] {
+  const aPathMatchIndex = 1;
+  const bPathMatchIndex = 2;
   const entries: StagedDiffEntry[] = [];
   const lines = diffContent.split('\n');
   let current: StagedDiffEntry | null = null;
@@ -26,8 +53,8 @@ function parseStagedDiffEntries(diffContent: string): StagedDiffEntry[] {
         entries.push(current);
       }
       current = {
-        aPath: match[1],
-        bPath: match[2],
+        aPath: match[aPathMatchIndex],
+        bPath: match[bPathMatchIndex],
         status: 'modified',
       };
       continue;
@@ -35,32 +62,14 @@ function parseStagedDiffEntries(diffContent: string): StagedDiffEntry[] {
 
     if (!current) continue;
 
-    if (line.startsWith('new file mode') || line.startsWith('--- /dev/null')) {
-      current.status = 'added';
-      continue;
-    }
-    if (
-      line.startsWith('deleted file mode') ||
-      line.startsWith('+++ /dev/null')
-    ) {
-      current.status = 'deleted';
-      continue;
-    }
-    if (line.startsWith('rename from') || line.startsWith('rename to')) {
-      current.status = 'renamed';
-      continue;
-    }
+    applyDiffLineStatus(current, line);
   }
 
   if (current) {
     entries.push(current);
   }
 
-  for (const entry of entries) {
-    if (entry.status === 'modified' && entry.aPath !== entry.bPath) {
-      entry.status = 'renamed';
-    }
-  }
+  normalizeModifiedRenames(entries);
 
   return entries;
 }
@@ -109,70 +118,106 @@ async function copyWorkspaceSnapshot(
 ): Promise<void> {
   const trackedFiles = await gitOps.listFilesFromGitApi();
   if (trackedFiles !== null) {
-    for (const relPath of trackedFiles) {
-      const nativePath = relPath.replace(/\//g, path.sep);
-      const srcPath = path.join(repoRoot, nativePath);
-      const destPath = path.join(destRoot, nativePath);
-      if (!fs.existsSync(srcPath)) {
-        continue;
-      }
-      fs.mkdirSync(path.dirname(destPath), { recursive: true });
-      fs.copyFileSync(srcPath, destPath);
-    }
+    copyTrackedFilesSnapshot(repoRoot, destRoot, trackedFiles);
     return;
   }
 
-  const ig = ignore().add('.git');
+  const ignoreMatcher = createIgnoreMatcher(repoRoot);
+  copyWorkspaceTree(repoRoot, destRoot, ignoreMatcher);
+}
+
+function copyTrackedFilesSnapshot(
+  repoRoot: string,
+  destRoot: string,
+  trackedFiles: string[],
+): void {
+  for (const relPath of trackedFiles) {
+    const nativePath = relPath.replace(/\//g, path.sep);
+    const srcPath = path.join(repoRoot, nativePath);
+    if (!fs.existsSync(srcPath)) {
+      continue;
+    }
+
+    const destPath = path.join(destRoot, nativePath);
+    fs.mkdirSync(path.dirname(destPath), { recursive: true });
+    fs.copyFileSync(srcPath, destPath);
+  }
+}
+
+function createIgnoreMatcher(repoRoot: string): ReturnType<typeof ignore> {
+  const matcher = ignore().add('.git');
   const gitignorePath = path.join(repoRoot, '.gitignore');
   try {
-    const gitignoreContent = fs.readFileSync(gitignorePath, 'utf-8');
-    ig.add(gitignoreContent);
+    matcher.add(fs.readFileSync(gitignorePath, 'utf-8'));
   } catch {
-    // No .gitignore found; only .git is excluded
+    // No .gitignore found; only .git is excluded.
   }
+  return matcher;
+}
 
+function listNonIgnoredEntries(
+  srcPath: string,
+  relDir: string,
+  matcher: ReturnType<typeof ignore>,
+): fs.Dirent[] {
+  try {
+    return fs.readdirSync(srcPath, { withFileTypes: true }).filter((entry) => {
+      const relPath = relDir ? `${relDir}/${entry.name}` : entry.name;
+      return !matcher.ignores(relPath);
+    });
+  } catch {
+    return [];
+  }
+}
+
+function copyWorkspaceTree(
+  repoRoot: string,
+  destRoot: string,
+  matcher: ReturnType<typeof ignore>,
+): void {
   const stack: { src: string; dest: string; relDir: string }[] = [
     { src: repoRoot, dest: destRoot, relDir: '' },
   ];
 
   while (stack.length > 0) {
     const current = stack.pop();
-    if (!current) break;
-    const { src, dest, relDir } = current;
-    fs.mkdirSync(dest, { recursive: true });
-
-    let allEntries: fs.Dirent[];
-    try {
-      allEntries = fs.readdirSync(src, { withFileTypes: true });
-    } catch {
-      continue;
+    if (!current) {
+      break;
     }
 
-    const entries = allEntries.filter((entry) => {
-      const relPath = relDir ? `${relDir}/${entry.name}` : entry.name;
-      return !ig.ignores(relPath);
-    });
+    fs.mkdirSync(current.dest, { recursive: true });
+    const entries = listNonIgnoredEntries(current.src, current.relDir, matcher);
 
     for (const entry of entries) {
-      if (entry.isSymbolicLink()) {
-        continue;
-      }
-      const relPath = relDir ? `${relDir}/${entry.name}` : entry.name;
-      const srcPath = path.join(src, entry.name);
-      const destPath = path.join(dest, entry.name);
-
-      if (entry.isDirectory()) {
-        if (entry.name === STAGED_WORKSPACE_DIR_NAME) {
-          continue;
-        }
-        stack.push({ src: srcPath, dest: destPath, relDir: relPath });
-        continue;
-      }
-
-      if (entry.isFile()) {
-        fs.copyFileSync(srcPath, destPath);
-      }
+      processWorkspaceEntry(entry, current, stack);
     }
+  }
+}
+
+function processWorkspaceEntry(
+  entry: fs.Dirent,
+  current: { src: string; dest: string; relDir: string },
+  stack: { src: string; dest: string; relDir: string }[],
+): void {
+  if (entry.isSymbolicLink()) {
+    return;
+  }
+
+  const relPath = current.relDir
+    ? `${current.relDir}/${entry.name}`
+    : entry.name;
+  const srcPath = path.join(current.src, entry.name);
+  const destPath = path.join(current.dest, entry.name);
+
+  if (entry.isDirectory()) {
+    if (entry.name !== STAGED_WORKSPACE_DIR_NAME) {
+      stack.push({ src: srcPath, dest: destPath, relDir: relPath });
+    }
+    return;
+  }
+
+  if (entry.isFile()) {
+    fs.copyFileSync(srcPath, destPath);
   }
 }
 
@@ -280,56 +325,84 @@ async function createStagedWorkspaceSnapshot(
 
   const stagedEntries = parseStagedDiffEntries(diffContent);
   for (const entry of stagedEntries) {
-    if (entry.status === 'deleted') {
-      const deletedPath = path.resolve(workspaceRoot, entry.aPath);
-      if (isPathWithinRoot(workspaceRoot, deletedPath)) {
-        removePath(deletedPath);
-      }
-      continue;
-    }
-
-    if (entry.status === 'renamed' && entry.aPath !== entry.bPath) {
-      const oldPath = path.resolve(workspaceRoot, entry.aPath);
-      if (isPathWithinRoot(workspaceRoot, oldPath)) {
-        removePath(oldPath);
-      }
-    }
-
-    const targetRel = entry.bPath === '/dev/null' ? entry.aPath : entry.bPath;
-    if (!targetRel || targetRel === '/dev/null') continue;
-
-    const targetAbs = path.resolve(workspaceRoot, targetRel);
-    if (!isPathWithinRoot(workspaceRoot, targetAbs)) {
-      continue;
-    }
-
-    fs.mkdirSync(path.dirname(targetAbs), { recursive: true });
-
-    let content = '';
-    let hasContent = false;
-    const { content: indexContent, found } =
-      await gitOps.showIndexFile(targetRel);
-    if (found) {
-      content = indexContent;
-      hasContent = true;
-    } else {
-      const diskAbs = path.resolve(repoRoot, targetRel);
-      if (isPathWithinRoot(repoRoot, diskAbs) && fs.existsSync(diskAbs)) {
-        try {
-          content = fs.readFileSync(diskAbs, 'utf-8');
-          hasContent = true;
-        } catch {
-          hasContent = false;
-        }
-      }
-    }
-
-    if (hasContent) {
-      fs.writeFileSync(targetAbs, content, 'utf-8');
-    }
+    await applyStagedEntryToWorkspace(repoRoot, workspaceRoot, entry, gitOps);
   }
 
   return workspaceRoot;
+}
+
+function removeWorkspacePathIfWithin(
+  workspaceRoot: string,
+  targetPath: string,
+): void {
+  const resolved = path.resolve(workspaceRoot, targetPath);
+  if (isPathWithinRoot(workspaceRoot, resolved)) {
+    removePath(resolved);
+  }
+}
+
+function resolveEntryTargetPath(entry: StagedDiffEntry): string | null {
+  const target = entry.bPath === '/dev/null' ? entry.aPath : entry.bPath;
+  if (!target || target === '/dev/null') {
+    return null;
+  }
+  return target;
+}
+
+async function resolveEntryContent(
+  repoRoot: string,
+  targetRel: string,
+  gitOps: GitOperations,
+): Promise<string | null> {
+  const { content, found } = await gitOps.showIndexFile(targetRel);
+  if (found) {
+    return content;
+  }
+
+  const diskAbs = path.resolve(repoRoot, targetRel);
+  if (!isPathWithinRoot(repoRoot, diskAbs) || !fs.existsSync(diskAbs)) {
+    return null;
+  }
+
+  try {
+    return fs.readFileSync(diskAbs, 'utf-8');
+  } catch {
+    return null;
+  }
+}
+
+async function applyStagedEntryToWorkspace(
+  repoRoot: string,
+  workspaceRoot: string,
+  entry: StagedDiffEntry,
+  gitOps: GitOperations,
+): Promise<void> {
+  if (entry.status === 'deleted') {
+    removeWorkspacePathIfWithin(workspaceRoot, entry.aPath);
+    return;
+  }
+
+  if (entry.status === 'renamed' && entry.aPath !== entry.bPath) {
+    removeWorkspacePathIfWithin(workspaceRoot, entry.aPath);
+  }
+
+  const targetRel = resolveEntryTargetPath(entry);
+  if (!targetRel) {
+    return;
+  }
+
+  const targetAbs = path.resolve(workspaceRoot, targetRel);
+  if (!isPathWithinRoot(workspaceRoot, targetAbs)) {
+    return;
+  }
+
+  const content = await resolveEntryContent(repoRoot, targetRel, gitOps);
+  if (content === null) {
+    return;
+  }
+
+  fs.mkdirSync(path.dirname(targetAbs), { recursive: true });
+  fs.writeFileSync(targetAbs, content, 'utf-8');
 }
 
 function cleanupStagedWorkspaceSnapshot(workspaceRoot: string): void {

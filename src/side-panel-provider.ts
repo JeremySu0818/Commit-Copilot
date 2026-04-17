@@ -43,6 +43,12 @@ import {
 import { GenerationStateManager, ValidationStateManager } from './state';
 
 type UnknownRecord = Record<string, unknown>;
+type MessageHandler = (message: IncomingMessage) => void | Promise<void>;
+const badRequestStatus = 400;
+const unauthorizedStatus = 401;
+const forbiddenStatus = 403;
+const tooManyRequestsStatus = 429;
+const nonceByteLength = 16;
 
 interface IncomingMessage extends UnknownRecord {
   type: string;
@@ -241,7 +247,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
       return { valid: false, error: text.invalidApiKeyPrefix };
     }
 
-    const quotaStatusCodes = rules.quotaStatusCodes ?? [429];
+    const quotaStatusCodes = rules.quotaStatusCodes ?? [tooManyRequestsStatus];
     const isQuotaExceeded =
       (typeof status === 'number' && quotaStatusCodes.includes(status)) ||
       this.includesMessage(message, rules.quotaMessagePatterns);
@@ -263,14 +269,19 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
     apiKey: string,
   ): Promise<{ valid: boolean; error?: string }> {
     try {
-      const { GoogleGenAI } = await import('@google/genai');
-      const client = new GoogleGenAI({ apiKey });
+      const { GoogleGenAI: googleGenAIClientClass } =
+        await import('@google/genai');
+      const client = new googleGenAIClientClass({ apiKey });
 
       await client.models.list({ config: { pageSize: 1 } });
       return { valid: true };
     } catch (error) {
       return this.mapProviderValidationError(error, {
-        invalidStatusCodes: [400, 401, 403],
+        invalidStatusCodes: [
+          badRequestStatus,
+          unauthorizedStatus,
+          forbiddenStatus,
+        ],
         invalidMessagePatterns: ['API key not valid', 'PERMISSION_DENIED'],
         quotaMessagePatterns: ['RESOURCE_EXHAUSTED', 'quota'],
       });
@@ -281,14 +292,14 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
     apiKey: string,
   ): Promise<{ valid: boolean; error?: string }> {
     try {
-      const OpenAI = (await import('openai')).default;
-      const client = new OpenAI({ apiKey });
+      const openAIClientClass = (await import('openai')).default;
+      const client = new openAIClientClass({ apiKey });
 
       await client.models.list();
       return { valid: true };
     } catch (error) {
       return this.mapProviderValidationError(error, {
-        invalidStatusCodes: [401, 403],
+        invalidStatusCodes: [unauthorizedStatus, forbiddenStatus],
         invalidMessagePatterns: ['Invalid API Key'],
       });
     }
@@ -298,14 +309,14 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
     apiKey: string,
   ): Promise<{ valid: boolean; error?: string }> {
     try {
-      const Anthropic = (await import('@anthropic-ai/sdk')).default;
-      const client = new Anthropic({ apiKey });
+      const anthropicClientClass = (await import('@anthropic-ai/sdk')).default;
+      const client = new anthropicClientClass({ apiKey });
 
       await client.models.list({ limit: 1 });
       return { valid: true };
     } catch (error) {
       return this.mapProviderValidationError(error, {
-        invalidStatusCodes: [401, 403],
+        invalidStatusCodes: [unauthorizedStatus, forbiddenStatus],
         invalidMessagePatterns: ['invalid_api_key'],
         quotaMessagePatterns: ['rate_limit'],
       });
@@ -343,13 +354,13 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
     baseUrl: string,
   ): Promise<{ valid: boolean; error?: string }> {
     try {
-      const OpenAI = (await import('openai')).default;
-      const client = new OpenAI({ apiKey, baseURL: baseUrl });
+      const openAIClientClass = (await import('openai')).default;
+      const client = new openAIClientClass({ apiKey, baseURL: baseUrl });
       await client.models.list();
       return { valid: true };
     } catch (error) {
       return this.mapProviderValidationError(error, {
-        invalidStatusCodes: [401, 403],
+        invalidStatusCodes: [unauthorizedStatus, forbiddenStatus],
         invalidMessagePatterns: ['Invalid API Key', 'Unauthorized'],
       });
     }
@@ -451,6 +462,46 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
       return gitExtension.exports.getAPI(1);
     };
 
+    const selectTargetRepository = (git: GitApi): GitRepository | null => {
+      const repos = git.repositories;
+      if (repos.length === 0) {
+        return null;
+      }
+      if (repos.length === 1) {
+        return repos[0];
+      }
+
+      const activeUri = vscode.window.activeTextEditor?.document.uri;
+      if (!activeUri) {
+        return null;
+      }
+
+      if (typeof git.getRepository === 'function') {
+        const resolved = git.getRepository(activeUri);
+        if (resolved) {
+          return resolved;
+        }
+      }
+
+      const activeUriString = activeUri.toString();
+      return (
+        repos.find((repo) =>
+          activeUriString.startsWith(repo.rootUri.toString()),
+        ) ?? null
+      );
+    };
+
+    const hasRepositoryChanges = (repo: GitRepository | null): boolean => {
+      if (!repo) {
+        return false;
+      }
+      return (
+        repo.state.workingTreeChanges.length > 0 ||
+        repo.state.indexChanges.length > 0 ||
+        repo.state.untrackedChanges.length > 0
+      );
+    };
+
     const checkGitStatus = () => {
       if (isViewDisposed) {
         return;
@@ -460,38 +511,10 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
         if (!git) {
           return;
         }
-        const repos = git.repositories;
-        if (repos.length > 0) {
-          let targetRepo: GitRepository | null = null;
-          if (repos.length === 1) {
-            targetRepo = repos[0];
-          } else {
-            const activeUri = vscode.window.activeTextEditor?.document.uri;
-            if (activeUri) {
-              if (typeof git.getRepository === 'function') {
-                targetRepo = git.getRepository(activeUri);
-              }
-              if (!targetRepo) {
-                const activeUriString = activeUri.toString();
-                targetRepo =
-                  repos.find((repo) =>
-                    activeUriString.startsWith(repo.rootUri.toString()),
-                  ) ?? null;
-              }
-            }
-          }
-          const hasChanges = targetRepo
-            ? targetRepo.state.workingTreeChanges.length > 0 ||
-              targetRepo.state.indexChanges.length > 0 ||
-              targetRepo.state.untrackedChanges.length > 0
-            : false;
-          webviewView.webview.postMessage({ type: 'repoUpdate', hasChanges });
-        } else {
-          webviewView.webview.postMessage({
-            type: 'repoUpdate',
-            hasChanges: false,
-          });
-        }
+        webviewView.webview.postMessage({
+          type: 'repoUpdate',
+          hasChanges: hasRepositoryChanges(selectTargetRepository(git)),
+        });
       } catch (error) {
         console.error('[Commit-Copilot] Error checking git status:', error);
       }
@@ -571,512 +594,534 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
       console.error('[Commit-Copilot] Error setting up git listeners:', error);
     }
 
+    const postValidationResult = (
+      provider: string,
+      success: boolean,
+      extra: Record<string, unknown> = {},
+    ) => {
+      this._view?.webview.postMessage({
+        type: 'validationResult',
+        success,
+        provider,
+        ...extra,
+      });
+    };
+
+    const handleCustomProviderSaveKey = async (
+      provider: string,
+      apiKey: string,
+      text: ReturnType<typeof getSidePanelText>,
+    ): Promise<void> => {
+      const customId = getCustomProviderId(provider);
+      const customProviders = this.getCustomProviders();
+      const cp = customProviders.find((candidate) => candidate.id === customId);
+      if (!cp) {
+        postValidationResult(provider, false, { error: text.unknownProvider });
+        return;
+      }
+
+      const validationResult = await this.validateCustomProviderKey(
+        apiKey,
+        cp.baseUrl,
+      );
+      if (!validationResult.valid) {
+        vscode.window.showWarningMessage(
+          `${text.validationFailedPrefix}: ${validationResult.error ?? text.unableToConnectFallback}`,
+        );
+        postValidationResult(provider, false, {
+          error: validationResult.error,
+        });
+        return;
+      }
+
+      const storageKey = getCustomProviderStorageKey(customId);
+      await this._context.secrets.store(storageKey, apiKey);
+      const savedModel = this._context.globalState.get<string>(
+        `CUSTOM_${customId}_MODEL`,
+      );
+      vscode.window.showInformationMessage(text.saveConfigSuccess(cp.name));
+      postValidationResult(provider, true, {
+        models: [],
+        currentModel: savedModel ?? '',
+        allowCustomModel: true,
+      });
+      this._view?.webview.postMessage({
+        type: 'keyStatus',
+        hasKey: true,
+        provider,
+      });
+    };
+
+    const handleBuiltInProviderSaveKey = async (
+      provider: string,
+      apiKey: string,
+      text: ReturnType<typeof getSidePanelText>,
+    ): Promise<void> => {
+      const builtIn = isAPIProvider(provider) ? provider : DEFAULT_PROVIDER;
+      const resolvedApiValue = apiKey.length > 0 ? apiKey : OLLAMA_DEFAULT_HOST;
+      const validationResult = await this.validateApiKey(
+        builtIn,
+        resolvedApiValue,
+      );
+      if (!validationResult.valid) {
+        vscode.window.showWarningMessage(
+          `${text.validationFailedPrefix}: ${validationResult.error ?? text.unableToConnectFallback}`,
+        );
+        postValidationResult(provider, false, {
+          error: validationResult.error,
+        });
+        return;
+      }
+
+      const storageKey = API_KEY_STORAGE_KEYS[builtIn];
+      await this._context.secrets.store(storageKey, resolvedApiValue);
+      vscode.window.showInformationMessage(
+        text.saveConfigSuccess(PROVIDER_DISPLAY_NAMES[builtIn]),
+      );
+      postValidationResult(provider, true, {
+        models: MODELS_BY_PROVIDER[builtIn],
+      });
+      this._view?.webview.postMessage({
+        type: 'keyStatus',
+        hasKey: true,
+        provider,
+        ...(builtIn === 'ollama' ? { value: resolvedApiValue } : {}),
+      });
+    };
+
+    const handleSaveKeyMessage = async (
+      message: IncomingMessage,
+    ): Promise<void> => {
+      const text = getSidePanelText(this.getEffectiveDisplayLanguage());
+      const provider = toProvider(message.provider);
+      const apiKey = asString(message.value) ?? '';
+      if (!apiKey && provider !== 'ollama') {
+        vscode.window.showErrorMessage(text.apiKeyCannotBeEmpty);
+        postValidationResult(provider, false);
+        return;
+      }
+
+      ValidationStateManager.setValidating(true, provider);
+      this._view?.webview.postMessage({ type: 'validating', provider });
+      try {
+        if (isCustomProvider(provider)) {
+          await handleCustomProviderSaveKey(provider, apiKey, text);
+        } else {
+          await handleBuiltInProviderSaveKey(provider, apiKey, text);
+        }
+      } catch {
+        vscode.window.showErrorMessage(text.saveConfigFailed);
+        postValidationResult(provider, false);
+      } finally {
+        ValidationStateManager.setValidating(false, null);
+      }
+    };
+
+    const parseEditId = (value: unknown): string | null => {
+      const editIdRaw = asString(value);
+      return editIdRaw && editIdRaw.length > 0 ? editIdRaw : null;
+    };
+
+    const createCustomProviderBaseId = (name: string): string => {
+      const normalized = name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '_')
+        .replace(/^_|_$/g, '');
+      return normalized || 'provider';
+    };
+
+    const createUniqueCustomProviderId = (
+      baseId: string,
+      providers: CustomProviderConfig[],
+    ): string => {
+      const existingIds = new Set(providers.map((cp) => cp.id));
+      let uniqueId = baseId;
+      let counter = 1;
+      while (existingIds.has(uniqueId)) {
+        uniqueId = `${baseId}_${String(counter)}`;
+        counter += 1;
+      }
+      return uniqueId;
+    };
+
+    const upsertCustomProvider = (
+      providers: CustomProviderConfig[],
+      payload: { name: string; baseUrl: string; editId: string | null },
+    ): string => {
+      if (payload.editId) {
+        const id = payload.editId;
+        const index = providers.findIndex((cp) => cp.id === id);
+        if (index >= 0) {
+          providers[index] = {
+            id,
+            name: payload.name,
+            baseUrl: payload.baseUrl,
+          };
+        } else {
+          providers.push({ id, name: payload.name, baseUrl: payload.baseUrl });
+        }
+        return id;
+      }
+
+      const baseId = createCustomProviderBaseId(payload.name);
+      const id = createUniqueCustomProviderId(baseId, providers);
+      providers.push({ id, name: payload.name, baseUrl: payload.baseUrl });
+      return id;
+    };
+
+    const validateCustomProviderBeforeSave = async (
+      payload: { apiKey: string; baseUrl: string; editId: string | null },
+      text: ReturnType<typeof getSidePanelText>,
+    ): Promise<boolean> => {
+      if (payload.editId && !payload.apiKey) {
+        return true;
+      }
+
+      const validationResult = await this.validateCustomProviderKey(
+        payload.apiKey,
+        payload.baseUrl,
+      );
+      if (validationResult.valid) {
+        return true;
+      }
+      this._view?.webview.postMessage({
+        type: 'customProviderSaveFailed',
+        error: validationResult.error ?? text.unableToConnectFallback,
+      });
+      return false;
+    };
+
+    const handleSaveCustomProviderMessage = async (
+      message: IncomingMessage,
+    ): Promise<void> => {
+      const text = getSidePanelText(this.getEffectiveDisplayLanguage());
+      const customProviders = this.getCustomProviders();
+      const payload = {
+        name: (asString(message.name) ?? '').trim(),
+        baseUrl: (asString(message.baseUrl) ?? '').trim(),
+        apiKey: (asString(message.apiKey) ?? '').trim(),
+        editId: parseEditId(message.editId),
+      };
+
+      if (!payload.editId && !payload.apiKey) {
+        this._view?.webview.postMessage({
+          type: 'customProviderSaveFailed',
+          error: text.apiKeyCannotBeEmpty,
+        });
+        return;
+      }
+
+      const isValid = await validateCustomProviderBeforeSave(payload, text);
+      if (!isValid) {
+        return;
+      }
+
+      const id = upsertCustomProvider(customProviders, payload);
+
+      await this.saveCustomProviders(customProviders);
+      if (payload.apiKey) {
+        await this._context.secrets.store(
+          getCustomProviderStorageKey(id),
+          payload.apiKey,
+        );
+      }
+
+      this._view?.webview.postMessage({
+        type: 'customProviderSaved',
+        savedId: id,
+        customProviders,
+      });
+    };
+
+    const handleDeleteCustomProviderMessage = async (
+      message: IncomingMessage,
+    ): Promise<void> => {
+      const deleteId = asString(message.id) ?? '';
+      const customProviders = this.getCustomProviders().filter(
+        (cp) => cp.id !== deleteId,
+      );
+      await this.saveCustomProviders(customProviders);
+      await this._context.secrets.delete(getCustomProviderStorageKey(deleteId));
+
+      const currentProviderValue =
+        this._context.globalState.get<string>('CURRENT_PROVIDER');
+      if (currentProviderValue === `${CUSTOM_PROVIDER_PREFIX}${deleteId}`) {
+        await this._context.globalState.update(
+          'CURRENT_PROVIDER',
+          DEFAULT_PROVIDER,
+        );
+      }
+
+      await this._context.globalState.update(
+        `CUSTOM_${deleteId}_MODEL`,
+        undefined,
+      );
+      this._view?.webview.postMessage({
+        type: 'customProviderDeleted',
+        customProviders,
+      });
+    };
+
+    const simpleMessageHandlers: Partial<Record<string, MessageHandler>> = {
+      generate: async (message) => {
+        try {
+          const requestedMode =
+            message.generateMode === 'direct-diff' ? 'direct-diff' : 'agentic';
+          const commitOutputOptions = normalizeCommitOutputOptions(
+            message.commitOutputOptions,
+          );
+          await vscode.commands.executeCommand('commit-copilot.generate', {
+            generateMode: requestedMode,
+            commitOutputOptions,
+          });
+        } finally {
+          this._view?.webview.postMessage({ type: 'generationDone' });
+        }
+      },
+      cancelGenerate: async () => {
+        await vscode.commands.executeCommand('commit-copilot.cancelGeneration');
+      },
+      checkKey: async (message) => {
+        const provider = toProvider(message.provider);
+        let key: string | undefined;
+        if (isCustomProvider(provider)) {
+          key = await this._context.secrets.get(
+            getCustomProviderStorageKey(getCustomProviderId(provider)),
+          );
+        } else {
+          const builtIn = isAPIProvider(provider) ? provider : DEFAULT_PROVIDER;
+          key = await this._context.secrets.get(API_KEY_STORAGE_KEYS[builtIn]);
+        }
+        const resolvedKey = key && key.length > 0 ? key : OLLAMA_DEFAULT_HOST;
+        this._view?.webview.postMessage({
+          type: 'keyStatus',
+          hasKey: Boolean(key),
+          provider,
+          ...(provider === 'ollama' ? { value: resolvedKey } : {}),
+        });
+      },
+      checkGit: () => {
+        checkGitStatus();
+      },
+      getModels: async (message) => {
+        const provider = toProvider(message.provider);
+        if (isCustomProvider(provider)) {
+          const customId = getCustomProviderId(provider);
+          const key = await this._context.secrets.get(
+            getCustomProviderStorageKey(customId),
+          );
+          if (key) {
+            const savedModel = this._context.globalState.get<string>(
+              `CUSTOM_${customId}_MODEL`,
+            );
+            this._view?.webview.postMessage({
+              type: 'modelsList',
+              models: [],
+              currentModel: savedModel ?? '',
+              provider,
+              allowCustomModel: true,
+            });
+          }
+          return;
+        }
+
+        const builtIn = isAPIProvider(provider) ? provider : DEFAULT_PROVIDER;
+        const key = await this._context.secrets.get(
+          API_KEY_STORAGE_KEYS[builtIn],
+        );
+        if (key || builtIn === 'ollama') {
+          const savedModel = this._context.globalState.get<string>(
+            `${builtIn.toUpperCase()}_MODEL`,
+          );
+          this._view?.webview.postMessage({
+            type: 'modelsList',
+            models: MODELS_BY_PROVIDER[builtIn],
+            currentModel: savedModel ?? DEFAULT_MODELS[builtIn],
+            provider,
+          });
+        }
+      },
+      saveModel: async (message) => {
+        const provider = toProvider(message.provider);
+        const modelValue = toStoredModel(message.value);
+        if (isCustomProvider(provider)) {
+          await this._context.globalState.update(
+            `CUSTOM_${getCustomProviderId(provider)}_MODEL`,
+            modelValue,
+          );
+          return;
+        }
+        await this._context.globalState.update(
+          `${provider.toUpperCase()}_MODEL`,
+          modelValue,
+        );
+      },
+      saveProvider: async (message) => {
+        await this._context.globalState.update(
+          'CURRENT_PROVIDER',
+          toStoredModel(message.value),
+        );
+      },
+      getProvider: () => {
+        const savedProvider =
+          this._context.globalState.get<APIProvider>('CURRENT_PROVIDER');
+        this._view?.webview.postMessage({
+          type: 'currentProvider',
+          provider: savedProvider ?? DEFAULT_PROVIDER,
+        });
+      },
+      saveGenerateMode: async (message) => {
+        const mode: GenerateMode =
+          message.value === 'direct-diff' ? 'direct-diff' : 'agentic';
+        await this._context.globalState.update('GENERATE_MODE', mode);
+      },
+      getGenerateMode: () => {
+        const savedMode =
+          this._context.globalState.get<GenerateMode>('GENERATE_MODE') ??
+          DEFAULT_GENERATE_MODE;
+        this._view?.webview.postMessage({
+          type: 'currentGenerateMode',
+          generateMode: savedMode,
+        });
+      },
+      saveCommitOutputOptions: async (message) => {
+        await this._context.globalState.update(
+          'COMMIT_OUTPUT_OPTIONS',
+          normalizeCommitOutputOptions(message.value),
+        );
+      },
+      getCommitOutputOptions: () => {
+        const savedOptions = normalizeCommitOutputOptions(
+          this._context.globalState.get<CommitOutputOptions>(
+            'COMMIT_OUTPUT_OPTIONS',
+          ) ?? DEFAULT_COMMIT_OUTPUT_OPTIONS,
+        );
+        this._view?.webview.postMessage({
+          type: 'currentCommitOutputOptions',
+          commitOutputOptions: savedOptions,
+        });
+      },
+      getAllKeys: async () => {
+        const keyStatuses: Record<string, boolean> = {
+          google: false,
+          openai: false,
+          anthropic: false,
+          ollama: false,
+        };
+        for (const [provider, storageKey] of Object.entries(
+          API_KEY_STORAGE_KEYS,
+        )) {
+          keyStatuses[provider] = Boolean(
+            await this._context.secrets.get(storageKey),
+          );
+        }
+        for (const cp of this.getCustomProviders()) {
+          keyStatuses[`${CUSTOM_PROVIDER_PREFIX}${cp.id}`] = Boolean(
+            await this._context.secrets.get(getCustomProviderStorageKey(cp.id)),
+          );
+        }
+        this._view?.webview.postMessage({
+          type: 'allKeyStatuses',
+          statuses: keyStatuses,
+        });
+      },
+      checkGenerationStatus: () => {
+        this._view?.webview.postMessage({
+          type: 'generationStatusUpdate',
+          isGenerating: GenerationStateManager.isGenerating,
+        });
+      },
+      checkValidationStatus: () => {
+        this._view?.webview.postMessage({
+          type: 'validationStatusUpdate',
+          isValidating: ValidationStateManager.isValidating,
+          provider: ValidationStateManager.validatingProvider,
+        });
+      },
+      saveDisplayLanguage: async (message) => {
+        const nextLanguage = normalizeDisplayLanguage(message.value);
+        await this._context.globalState.update(
+          DISPLAY_LANGUAGE_STATE_KEY,
+          nextLanguage,
+        );
+        const effectiveLanguage = resolveEffectiveDisplayLanguage(
+          nextLanguage,
+          this.getVSCodeLanguage(),
+        );
+        const text = getSidePanelText(effectiveLanguage);
+        vscode.window.showInformationMessage(
+          text.languageSaved(
+            getDisplayLanguageLabel(nextLanguage, effectiveLanguage),
+          ),
+        );
+        this._view?.webview.postMessage({
+          type: 'displayLanguageUpdated',
+          ...this.getWebviewLanguagePayload(),
+        });
+      },
+      getDisplayLanguage: () => {
+        this._view?.webview.postMessage({
+          type: 'displayLanguageUpdated',
+          ...this.getWebviewLanguagePayload(),
+        });
+      },
+      saveMaxAgentSteps: async (message) => {
+        const steps = normalizeMaxAgentStepsValue(message.value);
+        await this._context.globalState.update(
+          MAX_AGENT_STEPS_STATE_KEY,
+          steps > 0 ? steps : null,
+        );
+      },
+      getMaxAgentSteps: () => {
+        const steps = normalizeMaxAgentStepsValue(
+          this._context.globalState.get<number | string | null>(
+            MAX_AGENT_STEPS_STATE_KEY,
+          ),
+        );
+        this._view?.webview.postMessage({
+          type: 'currentMaxAgentSteps',
+          maxAgentSteps: steps,
+        });
+      },
+      getCustomProviders: () => {
+        this._view?.webview.postMessage({
+          type: 'customProvidersLoaded',
+          customProviders: this.getCustomProviders(),
+        });
+      },
+      showWarning: (message) => {
+        const warningMessage = asString(message.message) ?? '';
+        if (warningMessage) {
+          vscode.window.showWarningMessage(warningMessage);
+        }
+      },
+      setCurrentScreen: (message) => {
+        this.updateCurrentScreen(message.value);
+      },
+    };
+
     webviewView.webview.onDidReceiveMessage(async (data: unknown) => {
       const message = asMessage(data);
       if (!message) {
         return;
       }
 
-      switch (message.type) {
-        case 'saveKey': {
-          const text = getSidePanelText(this.getEffectiveDisplayLanguage());
-          const provider = toProvider(message.provider);
-          const apiKey = asString(message.value) ?? '';
-          if (!apiKey && provider !== 'ollama') {
-            vscode.window.showErrorMessage(text.apiKeyCannotBeEmpty);
-            this._view?.webview.postMessage({
-              type: 'validationResult',
-              success: false,
-              provider,
-            });
-            return;
-          }
-          ValidationStateManager.setValidating(true, provider);
-          this._view?.webview.postMessage({ type: 'validating', provider });
-          try {
-            if (isCustomProvider(provider)) {
-              const customId = getCustomProviderId(provider);
-              const customProviders = this.getCustomProviders();
-              const cp = customProviders.find((c) => c.id === customId);
-              if (!cp) {
-                this._view?.webview.postMessage({
-                  type: 'validationResult',
-                  success: false,
-                  error: text.unknownProvider,
-                  provider,
-                });
-                return;
-              }
-              try {
-                const validationResult = await this.validateCustomProviderKey(
-                  apiKey,
-                  cp.baseUrl,
-                );
-                if (!validationResult.valid) {
-                  vscode.window.showWarningMessage(
-                    `${text.validationFailedPrefix}: ${validationResult.error ?? text.unableToConnectFallback}`,
-                  );
-                  this._view?.webview.postMessage({
-                    type: 'validationResult',
-                    success: false,
-                    error: validationResult.error,
-                    provider,
-                  });
-                  return;
-                }
-                const storageKey = getCustomProviderStorageKey(customId);
-                await this._context.secrets.store(storageKey, apiKey);
-                const savedModel = this._context.globalState.get<string>(
-                  `CUSTOM_${customId}_MODEL`,
-                );
-                vscode.window.showInformationMessage(
-                  text.saveConfigSuccess(cp.name),
-                );
-                this._view?.webview.postMessage({
-                  type: 'validationResult',
-                  success: true,
-                  models: [],
-                  currentModel: savedModel ?? '',
-                  allowCustomModel: true,
-                  provider,
-                });
-                this._view?.webview.postMessage({
-                  type: 'keyStatus',
-                  hasKey: true,
-                  provider,
-                });
-              } catch {
-                vscode.window.showErrorMessage(text.saveConfigFailed);
-                this._view?.webview.postMessage({
-                  type: 'validationResult',
-                  success: false,
-                  provider,
-                });
-              }
-            } else {
-              const builtIn = isAPIProvider(provider)
-                ? provider
-                : DEFAULT_PROVIDER;
-              const resolvedApiValue =
-                apiKey.length > 0 ? apiKey : OLLAMA_DEFAULT_HOST;
-              const validationResult = await this.validateApiKey(
-                builtIn,
-                resolvedApiValue,
-              );
-              if (!validationResult.valid) {
-                vscode.window.showWarningMessage(
-                  `${text.validationFailedPrefix}: ${validationResult.error ?? text.unableToConnectFallback}`,
-                );
-                this._view?.webview.postMessage({
-                  type: 'validationResult',
-                  success: false,
-                  error: validationResult.error,
-                  provider,
-                });
-                return;
-              }
-              try {
-                const storageKey = API_KEY_STORAGE_KEYS[builtIn];
-                await this._context.secrets.store(storageKey, resolvedApiValue);
-                vscode.window.showInformationMessage(
-                  text.saveConfigSuccess(PROVIDER_DISPLAY_NAMES[builtIn]),
-                );
-                this._view?.webview.postMessage({
-                  type: 'validationResult',
-                  success: true,
-                  models: MODELS_BY_PROVIDER[builtIn],
-                  provider,
-                });
-                this._view?.webview.postMessage({
-                  type: 'keyStatus',
-                  hasKey: true,
-                  provider,
-                  ...(builtIn === 'ollama' ? { value: resolvedApiValue } : {}),
-                });
-              } catch {
-                vscode.window.showErrorMessage(text.saveConfigFailed);
-                this._view?.webview.postMessage({
-                  type: 'validationResult',
-                  success: false,
-                  provider,
-                });
-              }
-            }
-          } finally {
-            ValidationStateManager.setValidating(false, null);
-          }
-          break;
-        }
-        case 'generate': {
-          try {
-            const requestedMode =
-              message.generateMode === 'direct-diff'
-                ? 'direct-diff'
-                : 'agentic';
-            const commitOutputOptions = normalizeCommitOutputOptions(
-              message.commitOutputOptions,
-            );
-            await vscode.commands.executeCommand('commit-copilot.generate', {
-              generateMode: requestedMode,
-              commitOutputOptions,
-            });
-          } finally {
-            this._view?.webview.postMessage({ type: 'generationDone' });
-          }
-          break;
-        }
-        case 'cancelGenerate': {
-          await vscode.commands.executeCommand(
-            'commit-copilot.cancelGeneration',
-          );
-          break;
-        }
-        case 'checkKey': {
-          const provider = toProvider(message.provider);
-          let key: string | undefined;
-          if (isCustomProvider(provider)) {
-            const customId = getCustomProviderId(provider);
-            key = await this._context.secrets.get(
-              getCustomProviderStorageKey(customId),
-            );
-          } else {
-            const builtIn = isAPIProvider(provider)
-              ? provider
-              : DEFAULT_PROVIDER;
-            const storageKey = API_KEY_STORAGE_KEYS[builtIn];
-            key = await this._context.secrets.get(storageKey);
-          }
-          const resolvedKey = key && key.length > 0 ? key : OLLAMA_DEFAULT_HOST;
-          this._view?.webview.postMessage({
-            type: 'keyStatus',
-            hasKey: Boolean(key),
-            provider,
-            ...(provider === 'ollama' ? { value: resolvedKey } : {}),
-          });
-          break;
-        }
-        case 'checkGit': {
-          checkGitStatus();
-          break;
-        }
-        case 'getModels': {
-          const provider = toProvider(message.provider);
-          if (isCustomProvider(provider)) {
-            const customId = getCustomProviderId(provider);
-            const key = await this._context.secrets.get(
-              getCustomProviderStorageKey(customId),
-            );
-            if (key) {
-              const savedModel = this._context.globalState.get<string>(
-                `CUSTOM_${customId}_MODEL`,
-              );
-              this._view?.webview.postMessage({
-                type: 'modelsList',
-                models: [],
-                currentModel: savedModel ?? '',
-                provider,
-                allowCustomModel: true,
-              });
-            }
-          } else {
-            const builtIn = isAPIProvider(provider)
-              ? provider
-              : DEFAULT_PROVIDER;
-            const storageKey = API_KEY_STORAGE_KEYS[builtIn];
-            const key = await this._context.secrets.get(storageKey);
-            if (key || builtIn === 'ollama') {
-              const savedModel = this._context.globalState.get<string>(
-                `${builtIn.toUpperCase()}_MODEL`,
-              );
-              this._view?.webview.postMessage({
-                type: 'modelsList',
-                models: MODELS_BY_PROVIDER[builtIn],
-                currentModel: savedModel ?? DEFAULT_MODELS[builtIn],
-                provider,
-              });
-            }
-          }
-          break;
-        }
-        case 'saveModel': {
-          const provider = toProvider(message.provider);
-          const modelValue = toStoredModel(message.value);
-          if (isCustomProvider(provider)) {
-            const customId = getCustomProviderId(provider);
-            await this._context.globalState.update(
-              `CUSTOM_${customId}_MODEL`,
-              modelValue,
-            );
-          } else {
-            await this._context.globalState.update(
-              `${provider.toUpperCase()}_MODEL`,
-              modelValue,
-            );
-          }
-          break;
-        }
-        case 'saveProvider': {
-          const provider = toStoredModel(message.value);
-          await this._context.globalState.update('CURRENT_PROVIDER', provider);
-          break;
-        }
-        case 'getProvider': {
-          const savedProvider =
-            this._context.globalState.get<APIProvider>('CURRENT_PROVIDER');
-          this._view?.webview.postMessage({
-            type: 'currentProvider',
-            provider: savedProvider ?? DEFAULT_PROVIDER,
-          });
-          break;
-        }
-        case 'saveGenerateMode': {
-          const mode: GenerateMode =
-            message.value === 'direct-diff' ? 'direct-diff' : 'agentic';
-          await this._context.globalState.update('GENERATE_MODE', mode);
-          break;
-        }
-        case 'getGenerateMode': {
-          const savedMode =
-            this._context.globalState.get<GenerateMode>('GENERATE_MODE') ??
-            DEFAULT_GENERATE_MODE;
-          this._view?.webview.postMessage({
-            type: 'currentGenerateMode',
-            generateMode: savedMode,
-          });
-          break;
-        }
-        case 'saveCommitOutputOptions': {
-          const commitOutputOptions = normalizeCommitOutputOptions(
-            message.value,
-          );
-          await this._context.globalState.update(
-            'COMMIT_OUTPUT_OPTIONS',
-            commitOutputOptions,
-          );
-          break;
-        }
-        case 'getCommitOutputOptions': {
-          const savedOptions = normalizeCommitOutputOptions(
-            this._context.globalState.get<CommitOutputOptions>(
-              'COMMIT_OUTPUT_OPTIONS',
-            ) ?? DEFAULT_COMMIT_OUTPUT_OPTIONS,
-          );
-          this._view?.webview.postMessage({
-            type: 'currentCommitOutputOptions',
-            commitOutputOptions: savedOptions,
-          });
-          break;
-        }
-        case 'getAllKeys': {
-          const keyStatuses: Record<string, boolean> = {
-            google: false,
-            openai: false,
-            anthropic: false,
-            ollama: false,
-          };
-          for (const [provider, storageKey] of Object.entries(
-            API_KEY_STORAGE_KEYS,
-          )) {
-            const key = await this._context.secrets.get(storageKey);
-            keyStatuses[provider] = !!key;
-          }
-          for (const cp of this.getCustomProviders()) {
-            const key = await this._context.secrets.get(
-              getCustomProviderStorageKey(cp.id),
-            );
-            keyStatuses[`${CUSTOM_PROVIDER_PREFIX}${cp.id}`] = !!key;
-          }
-          this._view?.webview.postMessage({
-            type: 'allKeyStatuses',
-            statuses: keyStatuses,
-          });
-          break;
-        }
-        case 'checkGenerationStatus': {
-          this._view?.webview.postMessage({
-            type: 'generationStatusUpdate',
-            isGenerating: GenerationStateManager.isGenerating,
-          });
-          break;
-        }
-        case 'checkValidationStatus': {
-          this._view?.webview.postMessage({
-            type: 'validationStatusUpdate',
-            isValidating: ValidationStateManager.isValidating,
-            provider: ValidationStateManager.validatingProvider,
-          });
-          break;
-        }
-        case 'saveDisplayLanguage': {
-          const nextLanguage = normalizeDisplayLanguage(message.value);
-          await this._context.globalState.update(
-            DISPLAY_LANGUAGE_STATE_KEY,
-            nextLanguage,
-          );
-          const effectiveLanguage = resolveEffectiveDisplayLanguage(
-            nextLanguage,
-            this.getVSCodeLanguage(),
-          );
-          const text = getSidePanelText(effectiveLanguage);
-          vscode.window.showInformationMessage(
-            text.languageSaved(
-              getDisplayLanguageLabel(nextLanguage, effectiveLanguage),
-            ),
-          );
-          this._view?.webview.postMessage({
-            type: 'displayLanguageUpdated',
-            ...this.getWebviewLanguagePayload(),
-          });
-          break;
-        }
-        case 'getDisplayLanguage': {
-          this._view?.webview.postMessage({
-            type: 'displayLanguageUpdated',
-            ...this.getWebviewLanguagePayload(),
-          });
-          break;
-        }
-        case 'saveMaxAgentSteps': {
-          const steps = normalizeMaxAgentStepsValue(message.value);
-          await this._context.globalState.update(
-            MAX_AGENT_STEPS_STATE_KEY,
-            steps > 0 ? steps : null,
-          );
-          break;
-        }
-        case 'getMaxAgentSteps': {
-          const steps = normalizeMaxAgentStepsValue(
-            this._context.globalState.get<number | string | null>(
-              MAX_AGENT_STEPS_STATE_KEY,
-            ),
-          );
-          this._view?.webview.postMessage({
-            type: 'currentMaxAgentSteps',
-            maxAgentSteps: steps,
-          });
-          break;
-        }
-        case 'saveCustomProvider': {
-          const text = getSidePanelText(this.getEffectiveDisplayLanguage());
-          const customProviders = this.getCustomProviders();
-          const name = (asString(message.name) ?? '').trim();
-          const baseUrl = (asString(message.baseUrl) ?? '').trim();
-          const apiKey = (asString(message.apiKey) ?? '').trim();
-          const editIdRaw = asString(message.editId);
-          const editId = editIdRaw && editIdRaw.length > 0 ? editIdRaw : null;
+      if (message.type === 'saveKey') {
+        await handleSaveKeyMessage(message);
+        return;
+      }
+      if (message.type === 'saveCustomProvider') {
+        await handleSaveCustomProviderMessage(message);
+        return;
+      }
+      if (message.type === 'deleteCustomProvider') {
+        await handleDeleteCustomProviderMessage(message);
+        return;
+      }
 
-          if (!editId && !apiKey) {
-            this._view?.webview.postMessage({
-              type: 'customProviderSaveFailed',
-              error: text.apiKeyCannotBeEmpty,
-            });
-            break;
-          }
-
-          const shouldValidate = !editId || !!apiKey;
-          if (shouldValidate) {
-            const validationResult = await this.validateCustomProviderKey(
-              apiKey,
-              baseUrl,
-            );
-            if (!validationResult.valid) {
-              this._view?.webview.postMessage({
-                type: 'customProviderSaveFailed',
-                error: validationResult.error ?? text.unableToConnectFallback,
-              });
-              break;
-            }
-          }
-
-          let id: string;
-          if (editId) {
-            id = editId;
-            const idx = customProviders.findIndex((cp) => cp.id === id);
-            if (idx >= 0) {
-              customProviders[idx] = { id, name, baseUrl };
-            } else {
-              customProviders.push({ id, name, baseUrl });
-            }
-          } else {
-            id = name
-              .toLowerCase()
-              .replace(/[^a-z0-9]+/g, '_')
-              .replace(/^_|_$/g, '');
-            if (!id) {
-              id = 'provider';
-            }
-            const existingIds = new Set(customProviders.map((cp) => cp.id));
-            let uniqueId = id;
-            let counter = 1;
-            while (existingIds.has(uniqueId)) {
-              uniqueId = `${id}_${String(counter)}`;
-              counter += 1;
-            }
-            id = uniqueId;
-            customProviders.push({ id, name, baseUrl });
-          }
-
-          await this.saveCustomProviders(customProviders);
-
-          if (apiKey) {
-            const storageKey = getCustomProviderStorageKey(id);
-            await this._context.secrets.store(storageKey, apiKey);
-          }
-
-          this._view?.webview.postMessage({
-            type: 'customProviderSaved',
-            savedId: id,
-            customProviders,
-          });
-          break;
-        }
-        case 'deleteCustomProvider': {
-          const deleteId = asString(message.id) ?? '';
-          let customProviders = this.getCustomProviders();
-          customProviders = customProviders.filter((cp) => cp.id !== deleteId);
-          await this.saveCustomProviders(customProviders);
-
-          const storageKey = getCustomProviderStorageKey(deleteId);
-          await this._context.secrets.delete(storageKey);
-
-          const currentProviderValue =
-            this._context.globalState.get<string>('CURRENT_PROVIDER');
-          if (currentProviderValue === `${CUSTOM_PROVIDER_PREFIX}${deleteId}`) {
-            await this._context.globalState.update(
-              'CURRENT_PROVIDER',
-              DEFAULT_PROVIDER,
-            );
-          }
-
-          await this._context.globalState.update(
-            `CUSTOM_${deleteId}_MODEL`,
-            undefined,
-          );
-
-          this._view?.webview.postMessage({
-            type: 'customProviderDeleted',
-            customProviders,
-          });
-          break;
-        }
-        case 'getCustomProviders': {
-          this._view?.webview.postMessage({
-            type: 'customProvidersLoaded',
-            customProviders: this.getCustomProviders(),
-          });
-          break;
-        }
-        case 'showWarning': {
-          const warningMessage = asString(message.message) ?? '';
-          if (warningMessage) {
-            vscode.window.showWarningMessage(warningMessage);
-          }
-          break;
-        }
-        case 'setCurrentScreen': {
-          this.updateCurrentScreen(message.value);
-          break;
-        }
+      const simpleHandler = simpleMessageHandlers[message.type];
+      if (typeof simpleHandler === 'function') {
+        await simpleHandler(message);
       }
     });
   }
@@ -1172,5 +1217,5 @@ function escapeHtmlAttribute(value: string): string {
 }
 
 function getNonce() {
-  return randomBytes(16).toString('hex');
+  return randomBytes(nonceByteLength).toString('hex');
 }

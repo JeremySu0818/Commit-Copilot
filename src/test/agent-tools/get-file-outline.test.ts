@@ -14,6 +14,13 @@ import {
 } from '../helpers/vscode-mock';
 
 const MODULE_PATH = '../../agent-tools/executors/get-file-outline';
+const classRangeEndLine = 2;
+const classRangeEndCharacter = 1;
+const classSelectionStartCharacter = 6;
+const classSelectionEndCharacter = 7;
+const methodRangeStartCharacter = 2;
+const methodRangeEndCharacter = 9;
+const methodSelectionEndCharacter = 5;
 
 function toText(value: unknown): string {
   if (typeof value === 'string') {
@@ -98,11 +105,14 @@ void test('executeGetFileOutline renders outline from document symbols', async (
             vscodeMock.SymbolKind.Class,
             new vscodeMock.Range(
               new vscodeMock.Position(0, 0),
-              new vscodeMock.Position(2, 1),
+              new vscodeMock.Position(
+                classRangeEndLine,
+                classRangeEndCharacter,
+              ),
             ),
             new vscodeMock.Range(
-              new vscodeMock.Position(0, 6),
-              new vscodeMock.Position(0, 7),
+              new vscodeMock.Position(0, classSelectionStartCharacter),
+              new vscodeMock.Position(0, classSelectionEndCharacter),
             ),
             [
               new vscodeMock.DocumentSymbol(
@@ -110,12 +120,12 @@ void test('executeGetFileOutline renders outline from document symbols', async (
                 '',
                 vscodeMock.SymbolKind.Method,
                 new vscodeMock.Range(
-                  new vscodeMock.Position(1, 2),
-                  new vscodeMock.Position(1, 9),
+                  new vscodeMock.Position(1, methodRangeStartCharacter),
+                  new vscodeMock.Position(1, methodRangeEndCharacter),
                 ),
                 new vscodeMock.Range(
-                  new vscodeMock.Position(1, 2),
-                  new vscodeMock.Position(1, 5),
+                  new vscodeMock.Position(1, methodRangeStartCharacter),
+                  new vscodeMock.Position(1, methodSelectionEndCharacter),
                 ),
                 [],
               ),

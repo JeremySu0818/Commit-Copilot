@@ -149,8 +149,7 @@ export const AGENT_TOOLS: ToolDefinition[] = [
   },
 ];
 
-function getAvailableTools(isStaged: boolean): ToolDefinition[] {
-  void isStaged;
+function getAvailableTools(_isStaged: boolean): ToolDefinition[] {
   return AGENT_TOOLS;
 }
 

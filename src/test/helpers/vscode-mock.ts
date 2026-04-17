@@ -146,7 +146,7 @@ function toText(value: unknown): string {
 }
 
 function createVscodeMock(options: VscodeMockFactoryOptions = {}): VscodeMock {
-  const SymbolKind = {
+  const symbolKind = {
     File: 0,
     Module: 1,
     Namespace: 2,
@@ -182,7 +182,7 @@ function createVscodeMock(options: VscodeMockFactoryOptions = {}): VscodeMock {
     DocumentSymbol: MockDocumentSymbol,
     SymbolInformation: MockSymbolInformation,
     RelativePattern: MockRelativePattern,
-    SymbolKind,
+    SymbolKind: symbolKind,
     workspace: {
       openTextDocument: async (input: unknown): Promise<MockTextDocument> => {
         if (options.openTextDocument) {

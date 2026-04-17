@@ -181,30 +181,46 @@ export function useMessageHandler(
   }, [vscode, bootstrap]);
 
   useEffect(() => {
-    const handler = (event: MessageEvent<unknown>) => {
-      const message = toMessagePayload(event.data);
-      if (!message) {
-        return;
-      }
+    const setModelStateToLocked = (saveButtonDisabled: boolean) => {
+      dispatch({
+        type: 'SET_SAVE_BTN',
+        disabled: saveButtonDisabled,
+        text: state.currentPack.buttons.save,
+      });
+      dispatch({
+        type: 'SET_KEY_STATUS_HTML',
+        html: renderStatusHtml(
+          'warning',
+          state.currentPack.statuses.checkingStatus,
+        ),
+      });
+      dispatch({
+        type: 'SET_MODEL_STATE',
+        state: {
+          models: [],
+          currentModel: '',
+          allowCustomModel: false,
+          customModelValue: '',
+          disabled: true,
+        },
+      });
+    };
 
-      switch (message.type) {
-        case 'currentProvider': {
+    const handlers: Partial<Record<string, (message: MessagePayload) => void>> =
+      {
+        currentProvider: (message) => {
           const provider = toString(message.provider) ?? state.currentProvider;
           dispatch({ type: 'SET_PROVIDER', provider });
           vscode.postMessage({ type: 'checkKey', provider });
           vscode.postMessage({ type: 'getModels', provider });
-          break;
-        }
-
-        case 'repoUpdate': {
+        },
+        repoUpdate: (message) => {
           dispatch({
             type: 'SET_HAS_CHANGES',
             value: toBoolean(message.hasChanges) ?? false,
           });
-          break;
-        }
-
-        case 'keyStatus': {
+        },
+        keyStatus: (message) => {
           const provider = toString(message.provider) ?? state.currentProvider;
           const hasKey = toBoolean(message.hasKey) ?? false;
           const rawValue = toString(message.value);
@@ -222,74 +238,66 @@ export function useMessageHandler(
             dispatch({ type: 'SET_API_KEY_VALUE', value: host });
           }
 
-          dispatch({
-            type: 'SET_KEY_STATUS',
-            provider,
-            hasKey,
-          });
+          dispatch({ type: 'SET_KEY_STATUS', provider, hasKey });
+          if (provider !== state.currentProvider) {
+            return;
+          }
 
-          if (provider === state.currentProvider) {
-            if (hasKey) {
-              dispatch({
-                type: 'SET_KEY_STATUS_HTML',
-                html: renderStatusHtml(
+          if (hasKey) {
+            dispatch({
+              type: 'SET_KEY_STATUS_HTML',
+              html: renderStatusHtml(
+                'success',
+                state.currentPack.statuses.configured,
+              ),
+            });
+            dispatch({
+              type: 'SET_MODEL_STATE',
+              state: { ...state.modelState, disabled: false },
+            });
+            return;
+          }
+
+          dispatch({
+            type: 'SET_KEY_STATUS_HTML',
+            html: renderStatusHtml(
+              'error',
+              state.currentPack.statuses.notConfigured,
+            ),
+          });
+          if (provider !== 'ollama') {
+            dispatch({
+              type: 'SET_MODEL_STATE',
+              state: { ...state.modelState, disabled: true },
+            });
+          }
+        },
+        allKeyStatuses: (message) => {
+          const normalized = toBooleanRecord(message.statuses);
+          dispatch({ type: 'SET_ALL_KEY_STATUSES', statuses: normalized });
+          if (typeof normalized[state.currentProvider] !== 'boolean') {
+            return;
+          }
+          const hasKey = normalized[state.currentProvider];
+          dispatch({
+            type: 'SET_KEY_STATUS_HTML',
+            html: hasKey
+              ? renderStatusHtml(
                   'success',
                   state.currentPack.statuses.configured,
-                ),
-              });
-              dispatch({
-                type: 'SET_MODEL_STATE',
-                state: { ...state.modelState, disabled: false },
-              });
-            } else {
-              dispatch({
-                type: 'SET_KEY_STATUS_HTML',
-                html: renderStatusHtml(
+                )
+              : renderStatusHtml(
                   'error',
                   state.currentPack.statuses.notConfigured,
                 ),
-              });
-              if (provider !== 'ollama') {
-                dispatch({
-                  type: 'SET_MODEL_STATE',
-                  state: { ...state.modelState, disabled: true },
-                });
-              }
-            }
-          }
-          break;
-        }
-
-        case 'allKeyStatuses': {
-          const normalized = toBooleanRecord(message.statuses);
-          dispatch({ type: 'SET_ALL_KEY_STATUSES', statuses: normalized });
-
-          if (typeof normalized[state.currentProvider] === 'boolean') {
-            const hasKey = normalized[state.currentProvider];
-            dispatch({
-              type: 'SET_KEY_STATUS_HTML',
-              html: hasKey
-                ? renderStatusHtml(
-                    'success',
-                    state.currentPack.statuses.configured,
-                  )
-                : renderStatusHtml(
-                    'error',
-                    state.currentPack.statuses.notConfigured,
-                  ),
-            });
-          }
-          break;
-        }
-
-        case 'currentGenerateMode': {
+          });
+        },
+        currentGenerateMode: (message) => {
           const mode = normalizeGenerateMode(message.generateMode);
           dispatch({ type: 'SET_PREFERRED_GENERATE_MODE', mode });
           dispatch({ type: 'SET_GENERATE_MODE', mode });
-          break;
-        }
-
-        case 'currentCommitOutputOptions': {
+        },
+        currentCommitOutputOptions: (message) => {
           dispatch({
             type: 'SET_COMMIT_OUTPUT_OPTIONS',
             options: normalizeCommitOutputOptions(
@@ -297,19 +305,16 @@ export function useMessageHandler(
               bootstrap.defaultCommitOutputOptions,
             ),
           });
-          break;
-        }
-
-        case 'modelsList': {
+        },
+        modelsList: (message) => {
           const messageProvider = toString(message.provider);
           if (messageProvider && messageProvider !== state.currentProvider) {
-            break;
+            return;
           }
 
           const activeProvider = messageProvider ?? state.currentProvider;
           const currentModel = toString(message.currentModel) ?? '';
           const allowCustomModel = toBoolean(message.allowCustomModel) ?? false;
-
           if (allowCustomModel) {
             dispatch({
               type: 'SET_MODEL_STATE',
@@ -321,7 +326,7 @@ export function useMessageHandler(
                 disabled: false,
               },
             });
-            break;
+            return;
           }
 
           const models = toModelConfigArray(message.models);
@@ -338,7 +343,6 @@ export function useMessageHandler(
               provider: activeProvider,
             });
           }
-
           dispatch({
             type: 'SET_MODEL_STATE',
             state: {
@@ -349,13 +353,11 @@ export function useMessageHandler(
               disabled: false,
             },
           });
-          break;
-        }
-
-        case 'validating': {
+        },
+        validating: (message) => {
           const provider = toString(message.provider);
           if (provider && provider !== state.currentProvider) {
-            break;
+            return;
           }
           dispatch({
             type: 'SET_SAVE_BTN',
@@ -369,86 +371,15 @@ export function useMessageHandler(
               state.currentPack.statuses.validating,
             ),
           });
-          break;
-        }
-
-        case 'validationResult': {
+        },
+        validationResult: (message) => {
           const provider = toString(message.provider);
           if (provider && provider !== state.currentProvider) {
-            break;
+            return;
           }
 
           const success = toBoolean(message.success) ?? false;
-          if (success) {
-            dispatch({
-              type: 'SET_KEY_STATUS_HTML',
-              html: renderStatusHtml(
-                'success',
-                state.currentPack.statuses.configured,
-              ),
-            });
-
-            if (state.currentProvider !== 'ollama') {
-              dispatch({ type: 'SET_API_KEY_VALUE', value: '' });
-            }
-
-            dispatch({
-              type: 'SET_SAVE_BTN',
-              disabled: state.currentProvider !== 'ollama',
-              text: state.currentPack.buttons.save,
-            });
-
-            const allowCustomModel =
-              toBoolean(message.allowCustomModel) ?? false;
-            const models = toModelConfigArray(message.models);
-
-            if (Array.isArray(message.models) || allowCustomModel) {
-              const activeProvider = provider ?? state.currentProvider;
-              const currentModel = toString(message.currentModel) ?? '';
-
-              if (allowCustomModel) {
-                dispatch({
-                  type: 'SET_MODEL_STATE',
-                  state: {
-                    models: [],
-                    currentModel,
-                    allowCustomModel: true,
-                    customModelValue: currentModel,
-                    disabled: false,
-                  },
-                });
-              } else {
-                const selectedModel = chooseModel(
-                  models,
-                  currentModel,
-                  activeProvider,
-                  bootstrap,
-                );
-                if (selectedModel !== currentModel && selectedModel) {
-                  vscode.postMessage({
-                    type: 'saveModel',
-                    value: selectedModel,
-                    provider: activeProvider,
-                  });
-                }
-                dispatch({
-                  type: 'SET_MODEL_STATE',
-                  state: {
-                    models,
-                    currentModel: selectedModel,
-                    allowCustomModel: false,
-                    customModelValue: '',
-                    disabled: false,
-                  },
-                });
-              }
-            } else {
-              dispatch({
-                type: 'SET_MODEL_STATE',
-                state: { ...state.modelState, disabled: false },
-              });
-            }
-          } else {
+          if (!success) {
             const errorMessage =
               toString(message.error) ??
               state.currentPack.statuses.notConfigured;
@@ -464,43 +395,105 @@ export function useMessageHandler(
                   : !state.apiKeyValue.trim(),
               text: state.currentPack.buttons.save,
             });
+            return;
           }
-          break;
-        }
 
-        case 'generationDone':
+          dispatch({
+            type: 'SET_KEY_STATUS_HTML',
+            html: renderStatusHtml(
+              'success',
+              state.currentPack.statuses.configured,
+            ),
+          });
+          if (state.currentProvider !== 'ollama') {
+            dispatch({ type: 'SET_API_KEY_VALUE', value: '' });
+          }
+          dispatch({
+            type: 'SET_SAVE_BTN',
+            disabled: state.currentProvider !== 'ollama',
+            text: state.currentPack.buttons.save,
+          });
+
+          const allowCustomModel = toBoolean(message.allowCustomModel) ?? false;
+          const models = toModelConfigArray(message.models);
+          if (!Array.isArray(message.models) && !allowCustomModel) {
+            dispatch({
+              type: 'SET_MODEL_STATE',
+              state: { ...state.modelState, disabled: false },
+            });
+            return;
+          }
+
+          const activeProvider = provider ?? state.currentProvider;
+          const currentModel = toString(message.currentModel) ?? '';
+          if (allowCustomModel) {
+            dispatch({
+              type: 'SET_MODEL_STATE',
+              state: {
+                models: [],
+                currentModel,
+                allowCustomModel: true,
+                customModelValue: currentModel,
+                disabled: false,
+              },
+            });
+            return;
+          }
+
+          const selectedModel = chooseModel(
+            models,
+            currentModel,
+            activeProvider,
+            bootstrap,
+          );
+          if (selectedModel !== currentModel && selectedModel) {
+            vscode.postMessage({
+              type: 'saveModel',
+              value: selectedModel,
+              provider: activeProvider,
+            });
+          }
+          dispatch({
+            type: 'SET_MODEL_STATE',
+            state: {
+              models,
+              currentModel: selectedModel,
+              allowCustomModel: false,
+              customModelValue: '',
+              disabled: false,
+            },
+          });
+        },
+        generationDone: () => {
           dispatch({ type: 'SET_IS_GENERATING', value: false });
-          break;
-
-        case 'generationStatusUpdate':
+        },
+        generationStatusUpdate: (message) => {
           dispatch({
             type: 'SET_IS_GENERATING',
             value: toBoolean(message.isGenerating) ?? false,
           });
           dispatch({ type: 'SET_PENDING_STATUS_CHECK', value: false });
-          break;
-
-        case 'validationStatusUpdate': {
+        },
+        validationStatusUpdate: (message) => {
           const isValidating = toBoolean(message.isValidating) ?? false;
           const provider = toString(message.provider);
-          if (isValidating && provider === state.currentProvider) {
-            dispatch({
-              type: 'SET_SAVE_BTN',
-              disabled: true,
-              text: state.currentPack.buttons.validating,
-            });
-            dispatch({
-              type: 'SET_KEY_STATUS_HTML',
-              html: renderStatusHtml(
-                'warning',
-                state.currentPack.statuses.validating,
-              ),
-            });
+          if (!isValidating || provider !== state.currentProvider) {
+            return;
           }
-          break;
-        }
-
-        case 'displayLanguageUpdated': {
+          dispatch({
+            type: 'SET_SAVE_BTN',
+            disabled: true,
+            text: state.currentPack.buttons.validating,
+          });
+          dispatch({
+            type: 'SET_KEY_STATUS_HTML',
+            html: renderStatusHtml(
+              'warning',
+              state.currentPack.statuses.validating,
+            ),
+          });
+        },
+        displayLanguageUpdated: (message) => {
           const nextEffectiveRaw = toString(message.effectiveLanguage);
           const nextEffective =
             nextEffectiveRaw &&
@@ -508,7 +501,6 @@ export function useMessageHandler(
               ? nextEffectiveRaw
               : 'en';
           const nextPack = bootstrap.languagePacks[nextEffective];
-
           const nextDisplayRaw = toString(message.displayLanguage);
           const nextDisplay =
             nextDisplayRaw && isDisplayLanguage(nextDisplayRaw, bootstrap)
@@ -525,20 +517,15 @@ export function useMessageHandler(
             type: 'SET_LANGUAGE_STATUS_HTML',
             html: renderStatusHtml('success', nextPack.statuses.languageSaved),
           });
-          break;
-        }
-
-        case 'currentMaxAgentSteps': {
+        },
+        currentMaxAgentSteps: (message) => {
           const steps = normalizeMaxAgentStepsValue(message.maxAgentSteps);
           dispatch({ type: 'SET_MAX_AGENT_STEPS', value: steps });
-          break;
-        }
-
-        case 'openSettingsView':
+        },
+        openSettingsView: () => {
           dispatch({ type: 'SET_SCREEN', screen: 'settings' });
-          break;
-
-        case 'customProviderSaved': {
+        },
+        customProviderSaved: (message) => {
           const customProviders = toCustomProviderArray(
             message.customProviders,
           );
@@ -551,37 +538,14 @@ export function useMessageHandler(
           dispatch({ type: 'SET_PROVIDER', provider: savedKey });
           dispatch({ type: 'SET_API_KEY_VALUE', value: '' });
           dispatch({ type: 'SET_API_KEY_TYPE', inputType: 'password' });
-          dispatch({
-            type: 'SET_SAVE_BTN',
-            disabled: true,
-            text: state.currentPack.buttons.save,
-          });
-          dispatch({
-            type: 'SET_KEY_STATUS_HTML',
-            html: renderStatusHtml(
-              'warning',
-              state.currentPack.statuses.checkingStatus,
-            ),
-          });
-          dispatch({
-            type: 'SET_MODEL_STATE',
-            state: {
-              models: [],
-              currentModel: '',
-              allowCustomModel: false,
-              customModelValue: '',
-              disabled: true,
-            },
-          });
+          setModelStateToLocked(true);
           vscode.postMessage({ type: 'saveProvider', value: savedKey });
           vscode.postMessage({ type: 'checkKey', provider: savedKey });
           vscode.postMessage({ type: 'getModels', provider: savedKey });
           dispatch({ type: 'SET_SCREEN', screen: 'main' });
           vscode.postMessage({ type: 'setCurrentScreen', value: 'main' });
-          break;
-        }
-
-        case 'customProviderDeleted': {
+        },
+        customProviderDeleted: (message) => {
           const customProviders = toCustomProviderArray(
             message.customProviders,
           );
@@ -605,37 +569,14 @@ export function useMessageHandler(
             type: 'SET_API_KEY_TYPE',
             inputType: deletedIsOllama ? 'text' : 'password',
           });
-          dispatch({
-            type: 'SET_SAVE_BTN',
-            disabled: !deletedIsOllama,
-            text: state.currentPack.buttons.save,
-          });
-          dispatch({
-            type: 'SET_KEY_STATUS_HTML',
-            html: renderStatusHtml(
-              'warning',
-              state.currentPack.statuses.checkingStatus,
-            ),
-          });
-          dispatch({
-            type: 'SET_MODEL_STATE',
-            state: {
-              models: [],
-              currentModel: '',
-              allowCustomModel: false,
-              customModelValue: '',
-              disabled: true,
-            },
-          });
+          setModelStateToLocked(!deletedIsOllama);
           vscode.postMessage({ type: 'saveProvider', value: deletedFallback });
           vscode.postMessage({ type: 'checkKey', provider: deletedFallback });
           vscode.postMessage({ type: 'getModels', provider: deletedFallback });
           dispatch({ type: 'SET_SCREEN', screen: 'main' });
           vscode.postMessage({ type: 'setCurrentScreen', value: 'main' });
-          break;
-        }
-
-        case 'customProviderSaveFailed': {
+        },
+        customProviderSaveFailed: (message) => {
           const errorMessage =
             toString(message.error) ?? state.currentPack.statuses.notConfigured;
           dispatch({
@@ -645,30 +586,33 @@ export function useMessageHandler(
           });
           dispatch({
             type: 'UPDATE_ADD_PROVIDER_DRAFT',
-            partial: {
-              statusHtml: renderStatusHtml('error', errorMessage),
-            },
+            partial: { statusHtml: renderStatusHtml('error', errorMessage) },
           });
-          break;
-        }
-
-        case 'customProvidersLoaded':
+        },
+        customProvidersLoaded: (message) => {
           dispatch({
             type: 'SET_CUSTOM_PROVIDERS',
             providers: toCustomProviderArray(message.customProviders),
           });
-          break;
-
-        case 'openAddProviderView':
+        },
+        openAddProviderView: () => {
           dispatch({ type: 'SET_SCREEN', screen: 'addProvider' });
           vscode.postMessage({
             type: 'setCurrentScreen',
             value: 'addProvider',
           });
-          break;
+        },
+      };
 
-        default:
-          break;
+    const handler = (event: MessageEvent<unknown>) => {
+      const message = toMessagePayload(event.data);
+      if (!message) {
+        return;
+      }
+
+      const process = handlers[message.type];
+      if (typeof process === 'function') {
+        process(message);
       }
     };
 
@@ -683,6 +627,7 @@ export function useMessageHandler(
     state.currentPack,
     state.modelState,
     state.apiKeyValue,
+    state.ollamaStoredHost,
     state.displayLanguage,
     dispatch,
   ]);

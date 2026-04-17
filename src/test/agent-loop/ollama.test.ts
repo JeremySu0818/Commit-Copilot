@@ -8,6 +8,8 @@ import { clearRequireCache, withModuleMock } from '../helpers/module-mock';
 const MODULE_PATH = '../../agent-loop/ollama';
 
 type OllamaModule = typeof import('../../agent-loop/ollama');
+const minimumProgressEventCount = 3;
+const expectedIncrement = 50;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
@@ -120,9 +122,9 @@ void test('runOllamaAgentLoop pulls model, reports progress, and generates from 
   }
   assert.match(String(chatMessages[1].content), /Full Diff/);
   assert.match(String(chatMessages[1].content), /\+line/);
-  assert.ok(progressEvents.length >= 3);
+  assert.ok(progressEvents.length >= minimumProgressEventCount);
   assert.equal(
-    progressEvents.some((event) => event.increment === 50),
+    progressEvents.some((event) => event.increment === expectedIncrement),
     true,
   );
 });

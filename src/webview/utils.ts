@@ -1,12 +1,14 @@
 export function escapeHtml(value: unknown): string {
-  const textValue =
-    typeof value === 'string'
-      ? value
-      : typeof value === 'number' ||
-          typeof value === 'boolean' ||
-          typeof value === 'bigint'
-        ? String(value)
-        : '';
+  let textValue = '';
+  if (typeof value === 'string') {
+    textValue = value;
+  } else if (
+    typeof value === 'number' ||
+    typeof value === 'boolean' ||
+    typeof value === 'bigint'
+  ) {
+    textValue = String(value);
+  }
 
   return textValue
     .replace(/&/g, '&amp;')
@@ -20,7 +22,7 @@ export function fillTemplate(
   template: string,
   values: Record<string, string>,
 ): string {
-  return template.replace(/\{([a-zA-Z0-9_]+)\}/g, (_match, key: string) => {
+  return template.replace(/\{(\w+)\}/g, (_match, key: string) => {
     return escapeHtml(values[key] ?? '');
   });
 }
@@ -64,12 +66,12 @@ export function normalizeCommitOutputOptions(
 }
 
 export function normalizeMaxAgentStepsValue(value: unknown): number {
-  const raw =
-    typeof value === 'string'
-      ? value.trim()
-      : typeof value === 'number'
-        ? String(value)
-        : '';
+  let raw = '';
+  if (typeof value === 'string') {
+    raw = value.trim();
+  } else if (typeof value === 'number') {
+    raw = String(value);
+  }
   if (!raw || !/^\d+$/.test(raw)) {
     return 0;
   }

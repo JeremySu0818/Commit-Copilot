@@ -18,6 +18,7 @@ const MODULE_PATH = path.resolve(__dirname, '..', 'side-panel-provider');
 type MessageHandler = (data: unknown) => Promise<void> | void;
 type PostedMessage = Record<string, unknown>;
 type CommandCall = unknown[];
+const expectedGenerateCallCount = 2;
 
 interface Harness {
   sendMessage: (message: unknown) => Promise<void>;
@@ -101,7 +102,7 @@ async function createHarness(
   const state = new Map<string, unknown>(Object.entries(initialState ?? {}));
   const secrets = new Map<string, string>(Object.entries(initialSecrets ?? {}));
 
-  let messageHandler: MessageHandler = () => Promise.resolve();
+  let messageHandler: MessageHandler = (_data: unknown) => Promise.resolve();
   let disposeHandler: (() => void) | null = null;
 
   const noop = (): void => {
@@ -192,8 +193,9 @@ async function createHarness(
     {} as vscode.CancellationToken,
   );
 
-  const sendMessage = (message: unknown): Promise<void> =>
-    Promise.resolve(messageHandler(message));
+  const sendMessage = async (message: unknown): Promise<void> => {
+    await messageHandler(message);
+  };
 
   return {
     sendMessage,
@@ -271,7 +273,7 @@ void test('generate forwards normalized generateMode to command payload', async 
     const generateCalls = harness.commandCalls.filter(
       (call) => call[0] === 'commit-copilot.generate',
     );
-    assert.equal(generateCalls.length, 2);
+    assert.equal(generateCalls.length, expectedGenerateCallCount);
     assert.deepEqual(generateCalls[0], [
       'commit-copilot.generate',
       {
@@ -294,7 +296,7 @@ void test('generate forwards normalized generateMode to command payload', async 
     const doneMessages = harness.postedMessages.filter(
       (message) => message.type === 'generationDone',
     );
-    assert.equal(doneMessages.length, 2);
+    assert.equal(doneMessages.length, expectedGenerateCallCount);
   } finally {
     harness.dispose();
   }
@@ -377,7 +379,7 @@ void test('getAllKeys reports ollama as not configured when no secret exists', a
 });
 
 void test('checkKey returns stored Ollama host value', async () => {
-  const customHost = 'http://192.168.1.100:11434';
+  const customHost = 'https://192.168.1.100:11434';
   const harness = await createHarness(undefined, {
     [API_KEY_STORAGE_KEYS.ollama]: customHost,
   });

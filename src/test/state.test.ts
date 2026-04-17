@@ -3,6 +3,8 @@ import test from 'node:test';
 
 import { GenerationStateManager, ValidationStateManager } from '../state';
 
+const expectedListenerCalls = 2;
+
 void test('GenerationStateManager notifies listeners on state change', () => {
   let called = 0;
   const listener = () => {
@@ -15,7 +17,7 @@ void test('GenerationStateManager notifies listeners on state change', () => {
   GenerationStateManager.removeListener(listener);
 
   assert.equal(GenerationStateManager.isGenerating, false);
-  assert.equal(called, 2);
+  assert.equal(called, expectedListenerCalls);
 });
 
 void test('ValidationStateManager tracks provider and notifies listeners', () => {
@@ -34,5 +36,5 @@ void test('ValidationStateManager tracks provider and notifies listeners', () =>
 
   assert.equal(ValidationStateManager.isValidating, false);
   assert.equal(ValidationStateManager.validatingProvider, null);
-  assert.equal(called, 2);
+  assert.equal(called, expectedListenerCalls);
 });

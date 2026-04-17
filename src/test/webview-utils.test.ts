@@ -11,6 +11,12 @@ import {
   normalizeOllamaHostValue,
 } from '../webview/utils';
 
+const expectedMaxSteps = 15;
+const expectedPaddedMaxSteps = 12;
+const customHost = 'https://192.168.1.100:11434';
+const shortDefaultHost = 'https://d';
+const defaultHost = 'https://default';
+
 void test('escapeHtml escapes special characters', () => {
   const input = `<div class="x">A&B's</div>`;
   const output = escapeHtml(input);
@@ -62,8 +68,8 @@ void test('normalizeCommitOutputOptions keeps booleans and falls back to default
 });
 
 void test('normalizeMaxAgentStepsValue returns positive integer or zero', () => {
-  assert.equal(normalizeMaxAgentStepsValue('15'), 15);
-  assert.equal(normalizeMaxAgentStepsValue('0012'), 12);
+  assert.equal(normalizeMaxAgentStepsValue('15'), expectedMaxSteps);
+  assert.equal(normalizeMaxAgentStepsValue('0012'), expectedPaddedMaxSteps);
   assert.equal(normalizeMaxAgentStepsValue('0'), 0);
   assert.equal(normalizeMaxAgentStepsValue('-1'), 0);
   assert.equal(normalizeMaxAgentStepsValue('abc'), 0);
@@ -71,11 +77,8 @@ void test('normalizeMaxAgentStepsValue returns positive integer or zero', () => 
 
 void test('normalizeOllamaHostValue trims custom host and falls back to default', () => {
   assert.equal(
-    normalizeOllamaHostValue('  http://192.168.1.100:11434  ', 'http://d'),
-    'http://192.168.1.100:11434',
+    normalizeOllamaHostValue(`  ${customHost}  `, shortDefaultHost),
+    customHost,
   );
-  assert.equal(
-    normalizeOllamaHostValue('   ', 'http://default'),
-    'http://default',
-  );
+  assert.equal(normalizeOllamaHostValue('   ', defaultHost), defaultHost);
 });

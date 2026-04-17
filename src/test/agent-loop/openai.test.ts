@@ -7,6 +7,7 @@ import { clearRequireCache, withModuleMock } from '../helpers/module-mock';
 const MODULE_PATH = '../../agent-loop/openai';
 
 type OpenAIModule = typeof import('../../agent-loop/openai');
+const expectedToolMessageCount = 2;
 
 interface ToolCallShape {
   name: string;
@@ -152,7 +153,7 @@ void test('runOpenAIAgentLoop continues when one tool call has malformed JSON ar
     (message): message is Record<string, unknown> =>
       isRecord(message) && message.role === 'tool',
   );
-  assert.equal(toolMessages.length, 2);
+  assert.equal(toolMessages.length, expectedToolMessageCount);
   assert.equal(toolMessages[0].tool_call_id, 'tool-call-bad');
   assert.match(
     String(toolMessages[0].content),

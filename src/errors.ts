@@ -78,6 +78,13 @@ export const ERROR_MESSAGES: Record<
   },
 };
 
+function appendDetails(prefix: string, details?: string): string {
+  if (!details) {
+    return prefix;
+  }
+  return `${prefix}: ${details}`;
+}
+
 export class CommitCopilotError extends Error {
   constructor(
     message: string,
@@ -103,7 +110,7 @@ export class APIKeyMissingError extends CommitCopilotError {
 export class APIKeyInvalidError extends CommitCopilotError {
   constructor(details?: string) {
     super(
-      `Invalid API Key${details ? `: ${details}` : ''}`,
+      appendDetails('Invalid API Key', details),
       'API_KEY_INVALID',
       EXIT_CODES.API_KEY_INVALID,
     );
@@ -114,7 +121,7 @@ export class APIKeyInvalidError extends CommitCopilotError {
 export class APIQuotaExceededError extends CommitCopilotError {
   constructor(details?: string) {
     super(
-      `API quota exceeded${details ? `: ${details}` : ''}`,
+      appendDetails('API quota exceeded', details),
       'QUOTA_EXCEEDED',
       EXIT_CODES.QUOTA_EXCEEDED,
     );
@@ -125,7 +132,7 @@ export class APIQuotaExceededError extends CommitCopilotError {
 export class APIRequestError extends CommitCopilotError {
   constructor(details?: string) {
     super(
-      `API request failed${details ? `: ${details}` : ''}`,
+      appendDetails('API request failed', details),
       'API_ERROR',
       EXIT_CODES.API_ERROR,
     );
@@ -180,7 +187,7 @@ export class MixedChangesError extends CommitCopilotError {
 export class StageFailedError extends CommitCopilotError {
   constructor(details?: string) {
     super(
-      `Failed to stage changes${details ? `: ${details}` : ''}`,
+      appendDetails('Failed to stage changes', details),
       'STAGE_FAILED',
       EXIT_CODES.STAGE_FAILED,
     );

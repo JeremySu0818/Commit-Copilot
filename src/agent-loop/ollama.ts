@@ -22,6 +22,8 @@ import {
 
 import { buildAgentSystemPrompt, extractCommitMessage } from './shared';
 
+const progressPercentageScale = 100;
+
 function pickNonEmpty(primary: string | undefined, fallback: string): string {
   return primary && primary.length > 0 ? primary : fallback;
 }
@@ -37,6 +39,65 @@ function getErrorMessage(error: unknown): string {
     }
   }
   return String(error);
+}
+
+async function reportPullProgress(
+  pullStream: AsyncIterable<{
+    status?: string;
+    total?: number;
+    completed?: number;
+  }>,
+  modelName: string,
+  onProgress: ProgressCallback | undefined,
+  cancellationToken: CancellationSignal | undefined,
+  language: EffectiveDisplayLanguage,
+): Promise<void> {
+  let lastPercent = 0;
+  for await (const part of pullStream) {
+    throwIfCancellationRequested(cancellationToken);
+    if (part.total && part.completed) {
+      const percent = Math.round(
+        (part.completed / part.total) * progressPercentageScale,
+      );
+      if (percent > lastPercent) {
+        const increment = percent - lastPercent;
+        lastPercent = percent;
+        onProgress?.(
+          LOCALES[language].progressMessages.pulling(
+            modelName,
+            part.status ?? '',
+            percent,
+          ),
+          increment,
+        );
+      }
+      continue;
+    }
+
+    if (part.status) {
+      onProgress?.(
+        LOCALES[language].progressMessages.pulling(modelName, part.status),
+      );
+    }
+  }
+}
+
+function rethrowMappedOllamaError(
+  message: string,
+  resolvedHost: string,
+  modelName: string,
+): never {
+  if (message.includes('ECONNREFUSED') || message.includes('connect')) {
+    throw new APIRequestError(
+      `Cannot connect to Ollama. Make sure Ollama is running at ${resolvedHost}`,
+    );
+  }
+  if (message.includes('model') && message.includes('not found')) {
+    throw new APIRequestError(
+      `Model "${modelName}" not found. Please pull it first.`,
+    );
+  }
+  throw new APIRequestError(message);
 }
 
 async function runOllamaAgentLoop(
@@ -59,38 +120,20 @@ async function runOllamaAgentLoop(
   const resolvedHost = pickNonEmpty(host, OLLAMA_DEFAULT_HOST);
 
   try {
-    const { Ollama } = await import('ollama');
-    const client = new Ollama({ host: resolvedHost });
+    const { Ollama: ollamaClientClass } = await import('ollama');
+    const client = new ollamaClientClass({ host: resolvedHost });
     const modelName = pickNonEmpty(model, DEFAULT_MODELS.ollama);
     const resolvedCommitOutputOptions =
       normalizeCommitOutputOptions(commitOutputOptions);
 
     const pullStream = await client.pull({ model: modelName, stream: true });
-    let lastPercent = 0;
-    for await (const part of pullStream) {
-      throwIfCancellationRequested(cancellationToken);
-      if (part.total && part.completed) {
-        const percent = Math.round((part.completed / part.total) * 100);
-        if (percent > lastPercent) {
-          const increment = percent - lastPercent;
-          lastPercent = percent;
-          if (onProgress) {
-            onProgress(
-              LOCALES[language].progressMessages.pulling(
-                modelName,
-                part.status,
-                percent,
-              ),
-              increment,
-            );
-          }
-        }
-      } else if (part.status && onProgress) {
-        onProgress(
-          LOCALES[language].progressMessages.pulling(modelName, part.status),
-        );
-      }
-    }
+    await reportPullProgress(
+      pullStream,
+      modelName,
+      onProgress,
+      cancellationToken,
+      language,
+    );
 
     if (onProgress) {
       onProgress(LOCALES[language].progressMessages.generatingMessage, 0);
@@ -137,16 +180,11 @@ async function runOllamaAgentLoop(
       throw error;
     }
     const message = getErrorMessage(error);
-    if (message.includes('ECONNREFUSED') || message.includes('connect')) {
-      throw new APIRequestError(
-        `Cannot connect to Ollama. Make sure Ollama is running at ${resolvedHost}`,
-      );
-    } else if (message.includes('model') && message.includes('not found')) {
-      throw new APIRequestError(
-        `Model "${pickNonEmpty(model, DEFAULT_MODELS.ollama)}" not found. Please pull it first.`,
-      );
-    }
-    throw new APIRequestError(message);
+    rethrowMappedOllamaError(
+      message,
+      resolvedHost,
+      pickNonEmpty(model, DEFAULT_MODELS.ollama),
+    );
   }
 }
 

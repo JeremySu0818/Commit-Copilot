@@ -152,12 +152,22 @@ void test('webview html shell includes nonce/csp/assets and bootstrap payload', 
   assert.match(webview.html, new RegExp(`script-src 'nonce-${nonce}'`));
   assert.match(webview.html, /style-src mock-csp-source 'unsafe-inline';/);
 
-  const bootstrapMatch =
-    /window\.__COMMIT_COPILOT_WEBVIEW_BOOTSTRAP__\s*=\s*(.+);/.exec(
-      webview.html,
+  const bootstrapLine = webview.html
+    .split('\n')
+    .find((line) =>
+      line.includes('window.__COMMIT_COPILOT_WEBVIEW_BOOTSTRAP__'),
     );
-  assert.ok(bootstrapMatch);
-  const parsedBootstrap: unknown = JSON.parse(bootstrapMatch[1]);
+  assert.ok(bootstrapLine);
+
+  const assignmentToken = 'window.__COMMIT_COPILOT_WEBVIEW_BOOTSTRAP__ = ';
+  const assignmentStart = bootstrapLine.indexOf(assignmentToken);
+  assert.equal(assignmentStart >= 0, true);
+  const statementEnd = bootstrapLine.lastIndexOf(';');
+  assert.equal(statementEnd > assignmentStart, true);
+  const payloadText = bootstrapLine
+    .slice(assignmentStart + assignmentToken.length, statementEnd)
+    .trim();
+  const parsedBootstrap: unknown = JSON.parse(payloadText);
   const bootstrap = toBootstrapPayload(parsedBootstrap);
   if (!bootstrap) {
     throw new Error('Failed to parse bootstrap payload');

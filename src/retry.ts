@@ -1,3 +1,5 @@
+import { randomInt } from 'crypto';
+
 export interface RetryOptions {
   maxAttempts: number;
   baseDelayMs: number;
@@ -35,6 +37,14 @@ interface ErrorLike {
   message?: unknown;
   name?: unknown;
 }
+
+const secondsToMilliseconds = 1000;
+const retryBackoffBase = 2;
+const unauthorizedStatus = 401;
+const forbiddenStatus = 403;
+const tooManyRequestsStatus = 429;
+const serverErrorStatusFloor = 500;
+const sleepPollIntervalMs = 100;
 
 function isRecord(value: unknown): value is UnknownRecord {
   return typeof value === 'object' && value !== null;
@@ -103,9 +113,9 @@ function getRetryDelayMs(
   const retryAfterMs = extractRetryAfterMs(error);
   const baseDelay = Math.min(
     options.maxDelayMs,
-    options.baseDelayMs * Math.pow(2, Math.max(0, attempt - 1)),
+    options.baseDelayMs * Math.pow(retryBackoffBase, Math.max(0, attempt - 1)),
   );
-  const jitter = Math.floor(Math.random() * (options.jitterMs + 1));
+  const jitter = options.jitterMs > 0 ? randomInt(options.jitterMs + 1) : 0;
 
   if (retryAfterMs !== null) {
     const retryAfterDelay = Math.max(options.baseDelayMs, retryAfterMs);
@@ -143,12 +153,12 @@ function getHeaderValue(headers: unknown, name: string): unknown {
 
 function parseRetryAfterMs(value: unknown): number | null {
   if (typeof value === 'number' && Number.isFinite(value)) {
-    return Math.max(0, value * 1000);
+    return Math.max(0, value * secondsToMilliseconds);
   }
   if (typeof value === 'string') {
     const asNumber = Number(value);
     if (Number.isFinite(asNumber)) {
-      return Math.max(0, asNumber * 1000);
+      return Math.max(0, asNumber * secondsToMilliseconds);
     }
     const dateMs = Date.parse(value);
     if (!Number.isNaN(dateMs)) {
@@ -168,7 +178,10 @@ function isRetryableError(error: unknown): boolean {
     return false;
   }
 
-  if (status === 429 || (typeof status === 'number' && status >= 500)) {
+  if (
+    status === tooManyRequestsStatus ||
+    (typeof status === 'number' && status >= serverErrorStatusFloor)
+  ) {
     return true;
   }
 
@@ -213,7 +226,7 @@ function isCancellationError(error: unknown): boolean {
 }
 
 function isAuthError(status: number | null, error: unknown): boolean {
-  if (status === 401 || status === 403) {
+  if (status === unauthorizedStatus || status === forbiddenStatus) {
     return true;
   }
   const candidate = toErrorLike(error);
@@ -246,12 +259,11 @@ async function sleep(ms: number, checkAbort?: () => void): Promise<void> {
     return;
   }
 
-  const pollIntervalMs = 100;
   let remainingMs = ms;
 
   while (remainingMs > 0) {
     checkAbort();
-    const waitMs = Math.min(pollIntervalMs, remainingMs);
+    const waitMs = Math.min(sleepPollIntervalMs, remainingMs);
     await new Promise((resolve) => setTimeout(resolve, waitMs));
     remainingMs -= waitMs;
   }

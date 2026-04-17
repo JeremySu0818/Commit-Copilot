@@ -12,9 +12,15 @@ export function SettingsView() {
   );
 
   useEffect(() => {
-    setMaxStepsInput(
-      currentMaxAgentSteps > 0 ? String(currentMaxAgentSteps) : '',
-    );
+    const nextInputValue =
+      currentMaxAgentSteps > 0 ? String(currentMaxAgentSteps) : '';
+    const syncTimer = setTimeout(() => {
+      setMaxStepsInput(nextInputValue);
+    }, 0);
+
+    return () => {
+      clearTimeout(syncTimer);
+    };
   }, [currentMaxAgentSteps]);
 
   const maxStepsInputValue = normalizeMaxAgentStepsValue(maxStepsInput);

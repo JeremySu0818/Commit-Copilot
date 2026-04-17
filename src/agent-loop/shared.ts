@@ -7,6 +7,7 @@ import {
 } from '../models';
 
 const MAX_AGENT_STEPS = Infinity;
+const compactBatchSizeThreshold = 2;
 
 type UnknownRecord = Record<string, unknown>;
 
@@ -229,7 +230,7 @@ function extractCommitMessage(raw: string): string {
   }
 
   const stripped = trimmed
-    .replace(/^```[\w]*\n?/gm, '')
+    .replace(/^```\w*\n?/gm, '')
     .replace(/\n?```\s*$/gm, '')
     .trim();
   const strippedFirstLine = stripped.split('\n')[0];
@@ -390,6 +391,95 @@ function formatProgressMessage(
   }
 }
 
+function getToolCallPaths(
+  toolCalls: { name: string; args: unknown }[],
+): string[] {
+  return toolCalls
+    .map((toolCall) => normalizeToolArgs(toolCall.args).path)
+    .filter((path): path is string => typeof path === 'string');
+}
+
+function getReferenceTargets(
+  toolCalls: { name: string; args: unknown }[],
+): string[] {
+  return toolCalls
+    .map((toolCall) => {
+      const args = normalizeToolArgs(toolCall.args);
+      if (!args.path) {
+        return null;
+      }
+      if (typeof args.line === 'number' && typeof args.character === 'number') {
+        return `${args.path}:${String(args.line)}:${String(args.character)}`;
+      }
+      return args.path;
+    })
+    .filter((target): target is string => typeof target === 'string');
+}
+
+function getRecentCommitCounts(
+  toolCalls: { name: string; args: unknown }[],
+): number[] {
+  return toolCalls
+    .map((toolCall) => normalizeToolArgs(toolCall.args).count)
+    .filter((count): count is number => typeof count === 'number');
+}
+
+function getSearchQueries(
+  toolCalls: { name: string; args: unknown }[],
+): string[] {
+  return toolCalls
+    .map((toolCall) => normalizeToolArgs(toolCall.args).query)
+    .filter((query): query is string => typeof query === 'string');
+}
+
+function isCompactBatch(values: unknown[]): boolean {
+  return values.length <= compactBatchSizeThreshold;
+}
+
+function formatSingleToolBatchProgress(
+  step: number,
+  toolName: string,
+  toolCalls: { name: string; args: unknown }[],
+  msgs: typeof LOCALES.en.progressMessages,
+): string | null {
+  const paths = getToolCallPaths(toolCalls);
+
+  switch (toolName) {
+    case 'get_diff':
+      return isCompactBatch(paths)
+        ? msgs.stepAnalyzingMultipleDiffs(step, paths.join(', '))
+        : msgs.stepAnalyzingDiffsForCount(step, paths.length);
+    case 'read_file':
+      return isCompactBatch(paths)
+        ? msgs.stepReadingMultipleFiles(step, paths.join(', '))
+        : msgs.stepReadingFilesForCount(step, paths.length);
+    case 'get_file_outline':
+      return isCompactBatch(paths)
+        ? msgs.stepGettingMultipleOutlines(step, paths.join(', '))
+        : msgs.stepGettingOutlinesForCount(step, paths.length);
+    case 'find_references': {
+      const targets = getReferenceTargets(toolCalls);
+      return isCompactBatch(targets)
+        ? msgs.stepFindingReferencesForMultiple(step, targets.join(', '))
+        : msgs.stepFindingReferencesForCount(step, targets.length);
+    }
+    case 'get_recent_commits': {
+      const counts = getRecentCommitCounts(toolCalls);
+      return counts.length === 1
+        ? msgs.stepFetchingRecentCommits(step, counts[0])
+        : msgs.stepFetchingRecentCommits(step);
+    }
+    case 'search_code': {
+      const queries = getSearchQueries(toolCalls);
+      return isCompactBatch(queries)
+        ? msgs.stepSearchingProjectForMultiple(step, queries.join(', '))
+        : msgs.stepSearchingProjectForCount(step, queries.length);
+    }
+    default:
+      return null;
+  }
+}
+
 function formatBatchProgressMessage(
   step: number,
   toolCalls: { name: string; args: unknown }[],
@@ -410,62 +500,14 @@ function formatBatchProgressMessage(
   const toolNames = Array.from(new Set(toolCalls.map((tc) => tc.name)));
 
   if (toolNames.length === 1) {
-    const name = toolNames[0];
-    const paths = toolCalls
-      .map((toolCall) => normalizeToolArgs(toolCall.args).path)
-      .filter((path): path is string => typeof path === 'string');
-
-    if (name === 'get_diff') {
-      if (paths.length <= 2)
-        return msgs.stepAnalyzingMultipleDiffs(step, paths.join(', '));
-      return msgs.stepAnalyzingDiffsForCount(step, paths.length);
-    }
-    if (name === 'read_file') {
-      if (paths.length <= 2)
-        return msgs.stepReadingMultipleFiles(step, paths.join(', '));
-      return msgs.stepReadingFilesForCount(step, paths.length);
-    }
-    if (name === 'get_file_outline') {
-      if (paths.length <= 2)
-        return msgs.stepGettingMultipleOutlines(step, paths.join(', '));
-      return msgs.stepGettingOutlinesForCount(step, paths.length);
-    }
-    if (name === 'find_references') {
-      const targets = toolCalls
-        .map((toolCall) => {
-          const args = normalizeToolArgs(toolCall.args);
-          const path = args.path;
-          const line = args.line;
-          const character = args.character;
-          if (!path) return null;
-          if (typeof line !== 'undefined' && typeof character !== 'undefined') {
-            return `${path}:${String(line)}:${String(character)}`;
-          }
-          return path;
-        })
-        .filter((target): target is string => typeof target === 'string');
-      if (targets.length <= 2) {
-        return msgs.stepFindingReferencesForMultiple(step, targets.join(', '));
-      }
-      return msgs.stepFindingReferencesForCount(step, targets.length);
-    }
-    if (name === 'get_recent_commits') {
-      const counts = toolCalls
-        .map((toolCall) => normalizeToolArgs(toolCall.args).count)
-        .filter((count): count is number => typeof count === 'number');
-      if (counts.length === 1) {
-        return msgs.stepFetchingRecentCommits(step, counts[0]);
-      }
-      return msgs.stepFetchingRecentCommits(step);
-    }
-    if (name === 'search_code') {
-      const queries = toolCalls
-        .map((toolCall) => normalizeToolArgs(toolCall.args).query)
-        .filter((query): query is string => typeof query === 'string');
-      if (queries.length <= 2) {
-        return msgs.stepSearchingProjectForMultiple(step, queries.join(', '));
-      }
-      return msgs.stepSearchingProjectForCount(step, queries.length);
+    const formatted = formatSingleToolBatchProgress(
+      step,
+      toolNames[0],
+      toolCalls,
+      msgs,
+    );
+    if (formatted) {
+      return formatted;
     }
   }
 

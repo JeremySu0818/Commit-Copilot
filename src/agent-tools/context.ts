@@ -11,24 +11,90 @@ import {
   normalizeCommitOutputOptions,
 } from '../models';
 
+interface DiffSummaryEntry {
+  path: string;
+  type: string;
+  added: number;
+  removed: number;
+}
+
+function createInitialDiffSummaryEntry(
+  aPath: string,
+  bPath: string,
+  renamePathSeparator: string,
+): DiffSummaryEntry {
+  if (aPath !== bPath) {
+    return {
+      path: `${aPath}${renamePathSeparator}${bPath}`,
+      type: 'renamed',
+      added: 0,
+      removed: 0,
+    };
+  }
+
+  return {
+    path: bPath,
+    type: 'modified',
+    added: 0,
+    removed: 0,
+  };
+}
+
+function updateDiffSummaryEntryType(
+  line: string,
+  entry: DiffSummaryEntry,
+  currentAPath: string,
+  currentBPath: string,
+  renamePathSeparator: string,
+): boolean {
+  if (line.startsWith('new file mode') || line.startsWith('--- /dev/null')) {
+    entry.type = 'added';
+    entry.path = currentBPath;
+    return true;
+  }
+  if (
+    line.startsWith('deleted file mode') ||
+    line.startsWith('+++ /dev/null')
+  ) {
+    entry.type = 'deleted';
+    entry.path = currentAPath;
+    return true;
+  }
+  if (line.startsWith('rename from') || line.startsWith('rename to')) {
+    entry.type = 'renamed';
+    entry.path = `${currentAPath}${renamePathSeparator}${currentBPath}`;
+    return true;
+  }
+  if (line.startsWith('Binary files ') && line.endsWith(' differ')) {
+    entry.added = Math.max(entry.added, 1);
+    entry.removed = Math.max(entry.removed, 1);
+    return true;
+  }
+
+  return false;
+}
+
+function updateDiffSummaryLineStats(
+  line: string,
+  entry: DiffSummaryEntry,
+): void {
+  if (line.startsWith('+') && !line.startsWith('+++')) {
+    entry.added += 1;
+  } else if (line.startsWith('-') && !line.startsWith('---')) {
+    entry.removed += 1;
+  }
+}
+
 export function parseDiffSummary(
   diff: string,
 ): { path: string; type: string; added: number; removed: number }[] {
-  const RENAME_PATH_SEPARATOR = ' → ';
-  const files: {
-    path: string;
-    type: string;
-    added: number;
-    removed: number;
-  }[] = [];
+  const renamePathSeparator = ' → ';
+  const aPathMatchIndex = 1;
+  const bPathMatchIndex = 2;
+  const files: DiffSummaryEntry[] = [];
   const lines = diff.split('\n');
 
-  let currentFile: {
-    path: string;
-    type: string;
-    added: number;
-    removed: number;
-  } | null = null;
+  let currentFile: DiffSummaryEntry | null = null;
   let currentAPath = '';
   let currentBPath = '';
 
@@ -39,51 +105,32 @@ export function parseDiffSummary(
         files.push(currentFile);
       }
 
-      currentAPath = diffMatch[1];
-      currentBPath = diffMatch[2];
+      currentAPath = diffMatch[aPathMatchIndex];
+      currentBPath = diffMatch[bPathMatchIndex];
 
-      let type = 'modified';
-      let filePath = currentBPath;
-      if (currentAPath !== currentBPath) {
-        type = 'renamed';
-        filePath = `${currentAPath}${RENAME_PATH_SEPARATOR}${currentBPath}`;
-      }
-
-      currentFile = { path: filePath, type, added: 0, removed: 0 };
+      currentFile = createInitialDiffSummaryEntry(
+        currentAPath,
+        currentBPath,
+        renamePathSeparator,
+      );
       continue;
     }
 
     if (!currentFile) continue;
 
-    if (line.startsWith('new file mode') || line.startsWith('--- /dev/null')) {
-      currentFile.type = 'added';
-      currentFile.path = currentBPath;
-      continue;
-    }
     if (
-      line.startsWith('deleted file mode') ||
-      line.startsWith('+++ /dev/null')
+      updateDiffSummaryEntryType(
+        line,
+        currentFile,
+        currentAPath,
+        currentBPath,
+        renamePathSeparator,
+      )
     ) {
-      currentFile.type = 'deleted';
-      currentFile.path = currentAPath;
-      continue;
-    }
-    if (line.startsWith('rename from') || line.startsWith('rename to')) {
-      currentFile.type = 'renamed';
-      currentFile.path = `${currentAPath}${RENAME_PATH_SEPARATOR}${currentBPath}`;
-      continue;
-    }
-    if (line.startsWith('Binary files ') && line.endsWith(' differ')) {
-      currentFile.added = Math.max(currentFile.added, 1);
-      currentFile.removed = Math.max(currentFile.removed, 1);
       continue;
     }
 
-    if (line.startsWith('+') && !line.startsWith('+++')) {
-      currentFile.added++;
-    } else if (line.startsWith('-') && !line.startsWith('---')) {
-      currentFile.removed++;
-    }
+    updateDiffSummaryLineStats(line, currentFile);
   }
 
   if (currentFile) {
@@ -97,7 +144,7 @@ export async function getProjectStructure(
   repoRoot: string,
   gitOps?: GitOperations,
 ): Promise<string> {
-  const MAX_FILES = Infinity;
+  const maxFiles = Infinity;
 
   interface TreeNode {
     dirs: Map<string, TreeNode>;
@@ -157,9 +204,9 @@ export async function getProjectStructure(
       ];
 
       for (let i = 0; i < entries.length; i++) {
-        if (fileCount >= MAX_FILES) {
+        if (fileCount >= maxFiles) {
           if (!didTruncate) {
-            lines.push(`${prefix}... (truncated, ${String(MAX_FILES)}+ files)`);
+            lines.push(`${prefix}... (truncated, ${String(maxFiles)}+ files)`);
             didTruncate = true;
           }
           break;
@@ -227,8 +274,8 @@ export async function getProjectStructure(
     });
 
     for (let i = 0; i < entries.length; i++) {
-      if (fileCount >= MAX_FILES) {
-        lines.push(`${prefix}... (truncated, ${String(MAX_FILES)}+ files)`);
+      if (fileCount >= maxFiles) {
+        lines.push(`${prefix}... (truncated, ${String(maxFiles)}+ files)`);
         break;
       }
 

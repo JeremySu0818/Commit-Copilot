@@ -33,10 +33,35 @@ export interface LLMClientOptions {
 
 export type ProgressCallback = (message: string, increment?: number) => void;
 
-const GEMINI_AUTH_STATUS_PATTERN =
-  /\b(?:status(?:\s*code)?|http(?:\s*status)?|response(?:\s*status)?)\s*[:=]?\s*(401|403)\b/i;
-const GEMINI_QUOTA_STATUS_PATTERN =
-  /\b(?:status(?:\s*code)?|http(?:\s*status)?|response(?:\s*status)?)\s*[:=]?\s*429\b/i;
+const unauthorizedStatus = 401;
+const forbiddenStatus = 403;
+const tooManyRequestsStatus = 429;
+const progressPercentageScale = 100;
+const defaultAnthropicMaxTokens = 65536;
+const geminiAuthMessagePatterns = [
+  'unauthorized',
+  'forbidden',
+  'api key invalid',
+  'invalid api key',
+  'unauthenticated',
+  'permission denied',
+];
+const geminiQuotaMessagePatterns = [
+  'too many requests',
+  'resource exhausted',
+  'rate limit',
+  'rate_limited',
+  'quota exceeded',
+  'quota exhausted',
+  'quota reached',
+  'quota limited',
+];
+const statusPrefixes = [
+  'status',
+  'status code',
+  'http status',
+  'response status',
+];
 
 type UnknownRecord = Record<string, unknown>;
 
@@ -112,9 +137,85 @@ function getErrorCode(error: unknown): string {
   return '';
 }
 
+function hasStatusToken(message: string, status: number): boolean {
+  const normalized = message.toLowerCase();
+  const statusText = String(status);
+
+  for (const prefix of statusPrefixes) {
+    if (
+      normalized.includes(`${prefix} ${statusText}`) ||
+      normalized.includes(`${prefix}: ${statusText}`) ||
+      normalized.includes(`${prefix}:${statusText}`) ||
+      normalized.includes(`${prefix}=${statusText}`) ||
+      normalized.includes(`${prefix} = ${statusText}`)
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function includesAnyPattern(message: string, patterns: string[]): boolean {
+  const normalized = message.toLowerCase();
+  return patterns.some((pattern) => normalized.includes(pattern));
+}
+
+async function reportOllamaPullProgress(
+  pullStream: AsyncIterable<{
+    status?: string;
+    total?: number;
+    completed?: number;
+  }>,
+  modelName: string,
+  onProgress: ProgressCallback | undefined,
+  cancellationToken: CancellationSignal | undefined,
+): Promise<void> {
+  let lastPercent = 0;
+  for await (const part of pullStream) {
+    throwIfCancellationRequested(cancellationToken);
+    if (part.total && part.completed) {
+      const percent = Math.round(
+        (part.completed / part.total) * progressPercentageScale,
+      );
+      if (percent > lastPercent) {
+        const increment = percent - lastPercent;
+        lastPercent = percent;
+        onProgress?.(
+          `Pulling ${modelName}: ${part.status ?? ''} (${String(percent)}%)`,
+          increment,
+        );
+      }
+      continue;
+    }
+
+    if (part.status) {
+      onProgress?.(`Pulling ${modelName}: ${part.status}`);
+    }
+  }
+}
+
+function rethrowMappedOllamaClientError(
+  message: string,
+  host: string,
+  modelName: string,
+): never {
+  if (message.includes('ECONNREFUSED') || message.includes('connect')) {
+    throw new APIRequestError(
+      `Cannot connect to Ollama. Make sure Ollama is running at ${host}`,
+    );
+  }
+  if (message.includes('model') && message.includes('not found')) {
+    throw new APIRequestError(
+      `Model "${modelName}" not found. Please pull it first with: ollama pull ${modelName}`,
+    );
+  }
+  throw new APIRequestError(message);
+}
+
 function isGeminiAuthError(error: unknown, message: string): boolean {
   const status = getErrorStatus(error);
-  if (status === 401 || status === 403) {
+  if (status === unauthorizedStatus || status === forbiddenStatus) {
     return true;
   }
 
@@ -130,16 +231,15 @@ function isGeminiAuthError(error: unknown, message: string): boolean {
   }
 
   return (
-    GEMINI_AUTH_STATUS_PATTERN.test(message) ||
-    /\b(?:401\s+unauthorized|403\s+forbidden|api[_\s-]?key[_\s-]?invalid|invalid[_\s-]?api[_\s-]?key|unauthenticated|permission denied)\b/i.test(
-      message,
-    )
+    hasStatusToken(message, unauthorizedStatus) ||
+    hasStatusToken(message, forbiddenStatus) ||
+    includesAnyPattern(message, geminiAuthMessagePatterns)
   );
 }
 
 function isGeminiQuotaError(error: unknown, message: string): boolean {
   const status = getErrorStatus(error);
-  if (status === 429) {
+  if (status === tooManyRequestsStatus) {
     return true;
   }
 
@@ -154,10 +254,8 @@ function isGeminiQuotaError(error: unknown, message: string): boolean {
   }
 
   return (
-    GEMINI_QUOTA_STATUS_PATTERN.test(message) ||
-    /\b(?:429\s+too many requests|resource[_\s-]?exhausted|rate[\s_-]?limit(?:ed)?|quota(?:\s+(?:exceeded|exhausted|reached|limit(?:ed)?)))\b/i.test(
-      message,
-    )
+    hasStatusToken(message, tooManyRequestsStatus) ||
+    includesAnyPattern(message, geminiQuotaMessagePatterns)
   );
 }
 
@@ -205,8 +303,9 @@ export class GeminiClient implements ILLMClient {
     }
 
     try {
-      const { GoogleGenAI } = await import('@google/genai');
-      const client = new GoogleGenAI({ apiKey: this.apiKey });
+      const { GoogleGenAI: googleGenAIClientClass } =
+        await import('@google/genai');
+      const client = new googleGenAIClientClass({ apiKey: this.apiKey });
       const retryOptions = {
         ...DEFAULT_RETRY_OPTIONS,
         checkAbort: () => {
@@ -303,8 +402,8 @@ export class OpenAIClient implements ILLMClient {
     }
 
     try {
-      const OpenAI = (await import('openai')).default;
-      const client = new OpenAI({
+      const openAIClientClass = (await import('openai')).default;
+      const client = new openAIClientClass({
         apiKey: this.apiKey,
         ...(this.baseURL ? { baseURL: this.baseURL } : {}),
       });
@@ -350,12 +449,15 @@ export class OpenAIClient implements ILLMClient {
       const status = getErrorStatus(error);
 
       if (
-        status === 401 ||
-        status === 403 ||
+        status === unauthorizedStatus ||
+        status === forbiddenStatus ||
         message.includes('Invalid API Key')
       ) {
         throw new APIKeyInvalidError(message);
-      } else if (status === 429 || message.includes('rate limit')) {
+      } else if (
+        status === tooManyRequestsStatus ||
+        message.includes('rate limit')
+      ) {
         throw new APIQuotaExceededError(message);
       }
 
@@ -380,7 +482,8 @@ export class AnthropicClient implements ILLMClient {
     }
     this.apiKey = apiKey;
     this.model = pickNonEmpty(model, DEFAULT_MODELS.anthropic);
-    this.maxTokens = getAnthropicModelMaxTokens(this.model) ?? 65536;
+    this.maxTokens =
+      getAnthropicModelMaxTokens(this.model) ?? defaultAnthropicMaxTokens;
     this.systemPrompt = buildAgentSystemPrompt({
       includeFindReferences: false,
       enableTools: false,
@@ -399,8 +502,8 @@ export class AnthropicClient implements ILLMClient {
     }
 
     try {
-      const Anthropic = (await import('@anthropic-ai/sdk')).default;
-      const client = new Anthropic({ apiKey: this.apiKey });
+      const anthropicClientClass = (await import('@anthropic-ai/sdk')).default;
+      const client = new anthropicClientClass({ apiKey: this.apiKey });
       const retryOptions = {
         ...DEFAULT_RETRY_OPTIONS,
         checkAbort: () => {
@@ -452,12 +555,15 @@ export class AnthropicClient implements ILLMClient {
       const status = getErrorStatus(error);
 
       if (
-        status === 401 ||
-        status === 403 ||
+        status === unauthorizedStatus ||
+        status === forbiddenStatus ||
         message.includes('invalid_api_key')
       ) {
         throw new APIKeyInvalidError(message);
-      } else if (status === 429 || message.includes('rate_limit')) {
+      } else if (
+        status === tooManyRequestsStatus ||
+        message.includes('rate_limit')
+      ) {
         throw new APIQuotaExceededError(message);
       }
 
@@ -496,29 +602,16 @@ export class OllamaClient implements ILLMClient {
     }
 
     try {
-      const { Ollama } = await import('ollama');
-      const client = new Ollama({ host: this.host });
+      const { Ollama: ollamaClientClass } = await import('ollama');
+      const client = new ollamaClientClass({ host: this.host });
 
       const pullStream = await client.pull({ model: this.model, stream: true });
-      let lastPercent = 0;
-      for await (const part of pullStream) {
-        throwIfCancellationRequested(cancellationToken);
-        if (part.total && part.completed) {
-          const percent = Math.round((part.completed / part.total) * 100);
-          if (percent > lastPercent) {
-            const increment = percent - lastPercent;
-            lastPercent = percent;
-            if (onProgress) {
-              onProgress(
-                `Pulling ${this.model}: ${part.status} (${String(percent)}%)`,
-                increment,
-              );
-            }
-          }
-        } else if (part.status && onProgress) {
-          onProgress(`Pulling ${this.model}: ${part.status}`);
-        }
-      }
+      await reportOllamaPullProgress(
+        pullStream,
+        this.model,
+        onProgress,
+        cancellationToken,
+      );
 
       if (onProgress) {
         onProgress('Generating commit message...', 0);
@@ -553,18 +646,7 @@ export class OllamaClient implements ILLMClient {
       }
 
       const message = getErrorMessage(error);
-
-      if (message.includes('ECONNREFUSED') || message.includes('connect')) {
-        throw new APIRequestError(
-          `Cannot connect to Ollama. Make sure Ollama is running at ${this.host}`,
-        );
-      } else if (message.includes('model') && message.includes('not found')) {
-        throw new APIRequestError(
-          `Model "${this.model}" not found. Please pull it first with: ollama pull ${this.model}`,
-        );
-      }
-
-      throw new APIRequestError(message);
+      rethrowMappedOllamaClientError(message, this.host, this.model);
     }
   }
 }

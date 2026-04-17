@@ -203,12 +203,12 @@ export function normalizeCommitOutputOptions(
 }
 
 export function normalizeMaxAgentStepsValue(value: unknown): number {
-  const raw =
-    typeof value === 'string'
-      ? value.trim()
-      : typeof value === 'number'
-        ? String(value)
-        : '';
+  let raw = '';
+  if (typeof value === 'string') {
+    raw = value.trim();
+  } else if (typeof value === 'number') {
+    raw = String(value);
+  }
   if (!raw || !/^\d+$/.test(raw)) {
     return 0;
   }

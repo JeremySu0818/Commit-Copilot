@@ -60,6 +60,12 @@ interface AnthropicToolUseBlock {
   input: Record<string, unknown>;
 }
 
+const defaultAnthropicMaxTokens = 16384;
+const millisecondsPerSecond = 1000;
+const unauthorizedStatus = 401;
+const forbiddenStatus = 403;
+const tooManyRequestsStatus = 429;
+
 function isRecord(value: unknown): value is UnknownRecord {
   return typeof value === 'object' && value !== null;
 }
@@ -107,6 +113,141 @@ function getAnthropicErrorStatus(error: unknown): number | null {
   return typeof status === 'number' ? status : null;
 }
 
+function resolveStepLimit(maxAgentSteps: number | undefined): number {
+  return maxAgentSteps && maxAgentSteps > 0
+    ? maxAgentSteps
+    : Number.POSITIVE_INFINITY;
+}
+
+function splitResponseBlocks(response: { content: unknown }): {
+  textBlocks: AnthropicTextBlock[];
+  toolUseBlocks: AnthropicToolUseBlock[];
+} {
+  const responseContent = Array.isArray(response.content)
+    ? response.content
+    : [];
+  return {
+    textBlocks: responseContent.filter((block) => isAnthropicTextBlock(block)),
+    toolUseBlocks: responseContent.filter((block) =>
+      isAnthropicToolUseBlock(block),
+    ),
+  };
+}
+
+async function executeToolUseBlocks(params: {
+  toolUseBlocks: AnthropicToolUseBlock[];
+  repoRoot: string;
+  diff: string;
+  isStaged: boolean;
+  gitOps?: GitOperations;
+  cancellationToken?: CancellationSignal;
+}): Promise<ToolResultBlockParam[]> {
+  const toolResults: ToolResultBlockParam[] = [];
+  for (const block of params.toolUseBlocks) {
+    throwIfCancellationRequested(params.cancellationToken);
+    const result = await executeToolCall(
+      { name: block.name, arguments: block.input },
+      params.repoRoot,
+      params.diff,
+      params.isStaged,
+      params.gitOps,
+    );
+    toolResults.push({
+      type: 'tool_result',
+      tool_use_id: block.id,
+      content: result.content,
+    });
+  }
+  return toolResults;
+}
+
+async function executeAnthropicInvestigationLoop(params: {
+  messages: MessageParam[];
+  stepLimit: number;
+  requestResponse: (messages: MessageParam[]) => Promise<{
+    content: unknown;
+    stop_reason: string | null;
+  }>;
+  onProgress?: ProgressCallback;
+  language: EffectiveDisplayLanguage;
+  repoRoot: string;
+  diff: string;
+  isStaged: boolean;
+  gitOps?: GitOperations;
+  cancellationToken?: CancellationSignal;
+}): Promise<string | null> {
+  let step = 0;
+  while (step < params.stepLimit) {
+    throwIfCancellationRequested(params.cancellationToken);
+    const response = await params.requestResponse(params.messages);
+    const { textBlocks, toolUseBlocks } = splitResponseBlocks(response);
+
+    const isCompleteTextResponse =
+      toolUseBlocks.length === 0 &&
+      (response.stop_reason === 'end_turn' ||
+        response.stop_reason === 'stop_sequence');
+    if (isCompleteTextResponse) {
+      const text = textBlocks.map((block) => block.text).join('');
+      if (!text) {
+        throw new APIRequestError('Empty response from Anthropic API');
+      }
+      return extractCommitMessage(text);
+    }
+
+    if (toolUseBlocks.length === 0 && response.stop_reason === 'max_tokens') {
+      throw new APIRequestError(
+        'Anthropic response was truncated (stop_reason=max_tokens)',
+      );
+    }
+
+    params.messages.push({
+      role: 'assistant',
+      content: response.content as MessageParam['content'],
+    });
+    if (params.onProgress && toolUseBlocks.length > 0) {
+      params.onProgress(
+        formatBatchProgressMessage(
+          step + 1,
+          toolUseBlocks.map((block) => ({
+            name: block.name,
+            args: block.input,
+          })),
+          params.language,
+        ),
+      );
+    }
+
+    const toolResults = await executeToolUseBlocks({
+      toolUseBlocks,
+      repoRoot: params.repoRoot,
+      diff: params.diff,
+      isStaged: params.isStaged,
+      gitOps: params.gitOps,
+      cancellationToken: params.cancellationToken,
+    });
+    params.messages.push({ role: 'user', content: toolResults });
+    step += 1;
+  }
+
+  return null;
+}
+
+function throwMappedAnthropicError(error: unknown): never {
+  const message = getAnthropicErrorMessage(error);
+  const status = getAnthropicErrorStatus(error);
+  if (
+    status === unauthorizedStatus ||
+    status === forbiddenStatus ||
+    message.includes('invalid_api_key')
+  ) {
+    throw new APIKeyInvalidError(message);
+  }
+  if (status === tooManyRequestsStatus || message.includes('rate_limit')) {
+    throw new APIQuotaExceededError(message);
+  }
+  throw new APIRequestError(message);
+}
+
 async function runAnthropicAgentLoop(
   apiKey: string,
   model: string | undefined,
@@ -129,10 +270,11 @@ async function runAnthropicAgentLoop(
   }
 
   try {
-    const Anthropic = (await import('@anthropic-ai/sdk')).default;
-    const client = new Anthropic({ apiKey });
+    const anthropicClientClass = (await import('@anthropic-ai/sdk')).default;
+    const client = new anthropicClientClass({ apiKey });
     const modelName = pickNonEmpty(model, DEFAULT_MODELS.anthropic);
-    const maxTokens = getAnthropicModelMaxTokens(modelName) ?? 16384;
+    const maxTokens =
+      getAnthropicModelMaxTokens(modelName) ?? defaultAnthropicMaxTokens;
     const resolvedCommitOutputOptions =
       normalizeCommitOutputOptions(commitOutputOptions);
 
@@ -170,95 +312,41 @@ async function runAnthropicAgentLoop(
             LOCALES[language].progressMessages.transientApiError(
               nextAttempt,
               maxAttempts,
-              Math.ceil(delayMs / 1000),
+              Math.ceil(delayMs / millisecondsPerSecond),
             ),
           );
         }
       },
     };
 
-    let step = 0;
-    const stepLimit =
-      maxAgentSteps && maxAgentSteps > 0
-        ? maxAgentSteps
-        : Number.POSITIVE_INFINITY;
-
-    while (step < stepLimit) {
-      throwIfCancellationRequested(cancellationToken);
-      const response = await withRetry(
+    const requestResponse = (currentMessages: MessageParam[]) =>
+      withRetry(
         () =>
           client.messages
             .stream({
               model: modelName,
               max_tokens: maxTokens,
               system: systemPrompt,
-              messages,
+              messages: currentMessages,
               tools: toAnthropicTools(isStaged) as unknown as Tool[],
             })
             .finalMessage(),
         retryOptions,
       );
-
-      const responseContent = Array.isArray(response.content)
-        ? response.content
-        : [];
-      const textBlocks = responseContent.filter((block) =>
-        isAnthropicTextBlock(block),
-      );
-      const toolUseBlocks = responseContent.filter((block) =>
-        isAnthropicToolUseBlock(block),
-      );
-
-      const stopReason = response.stop_reason;
-      const hasNoToolCalls = toolUseBlocks.length === 0;
-      const isCompleteTextResponse =
-        hasNoToolCalls &&
-        (stopReason === 'end_turn' || stopReason === 'stop_sequence');
-
-      if (isCompleteTextResponse) {
-        const text = textBlocks.map((block) => block.text).join('');
-        if (!text) {
-          throw new APIRequestError('Empty response from Anthropic API');
-        }
-        return extractCommitMessage(text);
-      }
-
-      if (hasNoToolCalls && stopReason === 'max_tokens') {
-        throw new APIRequestError(
-          'Anthropic response was truncated (stop_reason=max_tokens)',
-        );
-      }
-
-      messages.push({ role: 'assistant', content: response.content });
-
-      const toolResults: ToolResultBlockParam[] = [];
-      if (onProgress && toolUseBlocks.length > 0) {
-        const calls = toolUseBlocks.map((block) => ({
-          name: block.name,
-          args: block.input,
-        }));
-        onProgress(formatBatchProgressMessage(step + 1, calls, language));
-      }
-
-      for (const block of toolUseBlocks) {
-        throwIfCancellationRequested(cancellationToken);
-        const result = await executeToolCall(
-          { name: block.name, arguments: block.input },
-          repoRoot,
-          diff,
-          isStaged,
-          gitOps,
-        );
-
-        toolResults.push({
-          type: 'tool_result',
-          tool_use_id: block.id,
-          content: result.content,
-        });
-      }
-
-      messages.push({ role: 'user', content: toolResults });
-      step++;
+    const loopResult = await executeAnthropicInvestigationLoop({
+      messages,
+      stepLimit: resolveStepLimit(maxAgentSteps),
+      requestResponse,
+      onProgress,
+      language,
+      repoRoot,
+      diff,
+      isStaged,
+      gitOps,
+      cancellationToken,
+    });
+    if (loopResult) {
+      return loopResult;
     }
 
     messages.push({
@@ -307,18 +395,7 @@ async function runAnthropicAgentLoop(
     ) {
       throw error;
     }
-    const message = getAnthropicErrorMessage(error);
-    const status = getAnthropicErrorStatus(error);
-    if (
-      status === 401 ||
-      status === 403 ||
-      message.includes('invalid_api_key')
-    ) {
-      throw new APIKeyInvalidError(message);
-    } else if (status === 429 || message.includes('rate_limit')) {
-      throw new APIQuotaExceededError(message);
-    }
-    throw new APIRequestError(message);
+    throwMappedAnthropicError(error);
   }
 }
 

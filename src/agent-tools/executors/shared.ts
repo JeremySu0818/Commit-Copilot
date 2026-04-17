@@ -37,9 +37,11 @@ function parseBooleanArg(value: unknown): boolean | null {
 }
 
 function truncateSnippet(text: string, maxLength: number): string {
+  const ellipsis = '...';
+  const ellipsisLength = ellipsis.length;
   const trimmed = text.trim();
   if (trimmed.length <= maxLength) return trimmed;
-  return `${trimmed.slice(0, Math.max(0, maxLength - 3))}...`;
+  return `${trimmed.slice(0, Math.max(0, maxLength - ellipsisLength))}${ellipsis}`;
 }
 
 async function isBinaryContent(content: Uint8Array): Promise<boolean> {

@@ -9,7 +9,9 @@ import {
 } from '../../agent-tools/definitions';
 
 void test('AGENT_TOOLS includes all expected tool names', () => {
-  const names = AGENT_TOOLS.map((tool) => tool.name).sort();
+  const names = AGENT_TOOLS.map((tool) => tool.name).sort((a, b) =>
+    a.localeCompare(b),
+  );
   assert.deepEqual(names, [
     'find_references',
     'get_diff',
