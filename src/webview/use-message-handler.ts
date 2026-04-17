@@ -158,6 +158,25 @@ function normalizeCommitOutputOptions(
   };
 }
 
+function getForcePushStatusText(
+  status: string,
+  message: string | undefined,
+): string {
+  if (message && message.length > 0) {
+    return message;
+  }
+  if (status === 'running') {
+    return 'Pushing with lease...';
+  }
+  if (status === 'success') {
+    return 'Force push with lease completed.';
+  }
+  if (status === 'error') {
+    return 'Force push with lease failed.';
+  }
+  return '';
+}
+
 export function useMessageHandler(
   vscode: VSCodeWebviewApi,
   bootstrap: WebviewBootstrapData,
@@ -473,6 +492,44 @@ export function useMessageHandler(
             value: toBoolean(message.isGenerating) ?? false,
           });
           dispatch({ type: 'SET_PENDING_STATUS_CHECK', value: false });
+        },
+        forcePushStatus: (message) => {
+          const status = toString(message.status) ?? 'idle';
+          if (status === 'running') {
+            dispatch({ type: 'SET_IS_FORCE_PUSHING', value: true });
+            dispatch({
+              type: 'SET_FORCE_PUSH_STATUS_HTML',
+              html: renderStatusHtml(
+                'warning',
+                getForcePushStatusText(status, toString(message.message)),
+              ),
+            });
+            return;
+          }
+
+          dispatch({ type: 'SET_IS_FORCE_PUSHING', value: false });
+          if (status === 'success') {
+            dispatch({
+              type: 'SET_FORCE_PUSH_STATUS_HTML',
+              html: renderStatusHtml(
+                'success',
+                getForcePushStatusText(status, toString(message.message)),
+              ),
+            });
+            return;
+          }
+          if (status === 'error') {
+            dispatch({
+              type: 'SET_FORCE_PUSH_STATUS_HTML',
+              html: renderStatusHtml(
+                'error',
+                getForcePushStatusText(status, toString(message.message)),
+              ),
+            });
+            return;
+          }
+
+          dispatch({ type: 'SET_FORCE_PUSH_STATUS_HTML', html: '' });
         },
         validationStatusUpdate: (message) => {
           const isValidating = toBoolean(message.isValidating) ?? false;

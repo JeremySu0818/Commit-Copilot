@@ -40,6 +40,7 @@ export interface SidePanelState {
   currentGenerateMode: GenerateMode;
   preferredGenerateMode: GenerateMode;
   isGenerating: boolean;
+  isForcePushing: boolean;
   pendingStatusCheck: boolean;
   hasChanges: boolean;
   commitOutputOptions: CommitOutputOptions;
@@ -53,6 +54,7 @@ export interface SidePanelState {
   currentMaxAgentSteps: number;
   addProviderDraft: AddProviderDraft;
   keyStatusHtml: string;
+  forcePushStatusHtml: string;
   languageStatusHtml: string;
   saveBtnDisabled: boolean;
   saveBtnText: string;
@@ -66,6 +68,7 @@ export type SidePanelAction =
   | { type: 'SET_GENERATE_MODE'; mode: GenerateMode }
   | { type: 'SET_PREFERRED_GENERATE_MODE'; mode: GenerateMode }
   | { type: 'SET_IS_GENERATING'; value: boolean }
+  | { type: 'SET_IS_FORCE_PUSHING'; value: boolean }
   | { type: 'SET_PENDING_STATUS_CHECK'; value: boolean }
   | { type: 'SET_HAS_CHANGES'; value: boolean }
   | { type: 'SET_COMMIT_OUTPUT_OPTIONS'; options: CommitOutputOptions }
@@ -84,6 +87,7 @@ export type SidePanelAction =
   | { type: 'SET_ADD_PROVIDER_DRAFT'; draft: AddProviderDraft }
   | { type: 'UPDATE_ADD_PROVIDER_DRAFT'; partial: Partial<AddProviderDraft> }
   | { type: 'SET_KEY_STATUS_HTML'; html: string }
+  | { type: 'SET_FORCE_PUSH_STATUS_HTML'; html: string }
   | { type: 'SET_LANGUAGE_STATUS_HTML'; html: string }
   | { type: 'SET_SAVE_BTN'; disabled: boolean; text: string }
   | { type: 'SET_API_KEY_VALUE'; value: string }
@@ -100,6 +104,7 @@ export function createInitialState(
     currentGenerateMode: bootstrap.defaultGenerateMode,
     preferredGenerateMode: bootstrap.defaultGenerateMode,
     isGenerating: false,
+    isForcePushing: false,
     pendingStatusCheck: true,
     hasChanges: false,
     commitOutputOptions: bootstrap.defaultCommitOutputOptions,
@@ -127,6 +132,7 @@ export function createInitialState(
       statusHtml: '',
     },
     keyStatusHtml: '',
+    forcePushStatusHtml: '',
     languageStatusHtml: '',
     saveBtnDisabled: true,
     saveBtnText: pack.buttons.save,
@@ -150,6 +156,8 @@ export function sidePanelReducer(
       return { ...state, preferredGenerateMode: action.mode };
     case 'SET_IS_GENERATING':
       return { ...state, isGenerating: action.value };
+    case 'SET_IS_FORCE_PUSHING':
+      return { ...state, isForcePushing: action.value };
     case 'SET_PENDING_STATUS_CHECK':
       return { ...state, pendingStatusCheck: action.value };
     case 'SET_HAS_CHANGES':
@@ -190,6 +198,8 @@ export function sidePanelReducer(
       };
     case 'SET_KEY_STATUS_HTML':
       return { ...state, keyStatusHtml: action.html };
+    case 'SET_FORCE_PUSH_STATUS_HTML':
+      return { ...state, forcePushStatusHtml: action.html };
     case 'SET_LANGUAGE_STATUS_HTML':
       return { ...state, languageStatusHtml: action.html };
     case 'SET_SAVE_BTN':

@@ -49,15 +49,30 @@ const unauthorizedStatus = 401;
 const forbiddenStatus = 403;
 const tooManyRequestsStatus = 429;
 const nonceByteLength = 16;
+const pushWithLeaseCommandId = 'git.pushForceWithLease';
+const pushWithLeaseConfirmAction = 'Push with Lease';
+const pushWithLeaseProgressMessage = 'Pushing with lease...';
 
 interface IncomingMessage extends UnknownRecord {
   type: string;
+}
+
+interface GitUpstreamRef {
+  remote?: string;
+  name?: string;
+}
+
+interface GitHeadState {
+  name?: string;
+  detached?: boolean;
+  upstream?: GitUpstreamRef;
 }
 
 interface GitRepositoryState {
   workingTreeChanges: unknown[];
   indexChanges: unknown[];
   untrackedChanges: unknown[];
+  HEAD?: GitHeadState;
   onDidChange(listener: () => void): vscode.Disposable;
 }
 
@@ -520,6 +535,98 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
       }
     };
 
+    const getSelectedRepository = (): GitRepository | null => {
+      const git = getActiveGitApi();
+      if (!git) {
+        return null;
+      }
+      return selectTargetRepository(git);
+    };
+
+    const getPushTargetLabel = (repository: GitRepository): string => {
+      const head = repository.state.HEAD;
+      const branchName = asString(head?.name);
+      const upstreamRemote = asString(head?.upstream?.remote);
+      const upstreamName = asString(head?.upstream?.name);
+      if (upstreamRemote && upstreamName) {
+        return `${upstreamRemote}/${upstreamName}`;
+      }
+      if (branchName) {
+        return branchName;
+      }
+      return repository.rootUri.fsPath;
+    };
+
+    const postForcePushStatus = (
+      status: 'idle' | 'running' | 'success' | 'error',
+      message?: string,
+    ) => {
+      this._view?.webview.postMessage({
+        type: 'forcePushStatus',
+        status,
+        message,
+      });
+    };
+
+    const handleForcePushWithLease = async (): Promise<void> => {
+      const repository = getSelectedRepository();
+      if (!repository) {
+        const errorMessage =
+          'Unable to determine the active Git repository for push.';
+        postForcePushStatus('error', errorMessage);
+        vscode.window.showErrorMessage(errorMessage);
+        return;
+      }
+
+      if (repository.state.HEAD?.detached) {
+        const errorMessage =
+          'Force push with lease is unavailable in detached HEAD state.';
+        postForcePushStatus('error', errorMessage);
+        vscode.window.showErrorMessage(errorMessage);
+        return;
+      }
+
+      const pushTargetLabel = getPushTargetLabel(repository);
+      const selection = await vscode.window.showWarningMessage(
+        `Force push with lease to ${pushTargetLabel}?`,
+        { modal: true },
+        pushWithLeaseConfirmAction,
+      );
+      if (selection !== pushWithLeaseConfirmAction) {
+        postForcePushStatus('idle');
+        return;
+      }
+
+      const getCommands =
+        typeof vscode.commands.getCommands === 'function'
+          ? vscode.commands.getCommands.bind(vscode.commands)
+          : null;
+      if (getCommands) {
+        const commands = await getCommands(true);
+        if (!commands.includes(pushWithLeaseCommandId)) {
+          const errorMessage =
+            'VS Code Git command "git.pushForceWithLease" is unavailable.';
+          postForcePushStatus('error', errorMessage);
+          vscode.window.showErrorMessage(errorMessage);
+          return;
+        }
+      }
+
+      try {
+        postForcePushStatus('running', pushWithLeaseProgressMessage);
+        await vscode.commands.executeCommand(pushWithLeaseCommandId, repository);
+        const successMessage = `Force push with lease completed: ${pushTargetLabel}.`;
+        postForcePushStatus('success', successMessage);
+        vscode.window.showInformationMessage(successMessage);
+      } catch (error) {
+        const rawErrorMessage =
+          error instanceof Error ? error.message : String(error);
+        const errorMessage = `Force push with lease failed: ${rawErrorMessage}`;
+        postForcePushStatus('error', errorMessage);
+        vscode.window.showErrorMessage(errorMessage);
+      }
+    };
+
     const attachRepoStateListener = (repo: GitRepository) => {
       if (observedRepos.has(repo)) {
         return;
@@ -881,6 +988,11 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
       cancelGenerate: async () => {
         await vscode.commands.executeCommand('commit-copilot.cancelGeneration');
       },
+      rewriteCommitMessage: async () => {
+        await vscode.commands.executeCommand(
+          'commit-copilot.rewriteCommitMessage',
+        );
+      },
       checkKey: async (message) => {
         const provider = toProvider(message.provider);
         let key: string | undefined;
@@ -902,6 +1014,9 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
       },
       checkGit: () => {
         checkGitStatus();
+      },
+      forcePushWithLease: async () => {
+        await handleForcePushWithLease();
       },
       getModels: async (message) => {
         const provider = toProvider(message.provider);

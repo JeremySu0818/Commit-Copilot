@@ -261,6 +261,10 @@ export function MainView() {
     vscode,
   ]);
 
+  const handleRewriteCommitMessage = useCallback(() => {
+    vscode.postMessage({ type: 'rewriteCommitMessage' });
+  }, [vscode]);
+
   const handleModelChange = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
       vscode.postMessage({
@@ -504,6 +508,14 @@ export function MainView() {
           onClick={handleGenerate}
         >
           {generateBtnText}
+        </button>
+        <button
+          id="rewriteCommitMessageBtn"
+          className="secondary"
+          disabled={isGenerating}
+          onClick={handleRewriteCommitMessage}
+        >
+          Rewrite Commit Message
         </button>
       </div>
     </div>

@@ -1,10 +1,15 @@
 import * as vscode from 'vscode';
 
 import {
+  forcePushWithLease,
   generateCommitMessage,
+  generateHistoricalCommitMessage,
+  listRecentCommitsForRewrite,
+  rewriteHistoricalCommitMessage,
   EXIT_CODES,
   CommitCopilotError,
   GitRepository,
+  RewriteCommitEntry,
 } from './commit-copilot';
 import {
   DISPLAY_LANGUAGE_STATE_KEY,
@@ -53,6 +58,10 @@ interface GitExtensionExports {
 }
 
 const generationLogSeparatorWidth = 50;
+const rewriteCommitParentHashDisplayLength = 7;
+const rewriteCommitPickLimit = 100;
+const pushWithLeaseCommandId = 'git.pushForceWithLease';
+const pushWithLeaseConfirmAction = 'Push with Lease';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
@@ -77,6 +86,24 @@ function parseGenerateMode(value: unknown): GenerateMode | undefined {
   return undefined;
 }
 
+function asString(value: unknown): string | undefined {
+  return typeof value === 'string' ? value : undefined;
+}
+
+function isCommandUnavailableError(error: unknown, commandId: string): boolean {
+  const message = (error instanceof Error ? error.message : String(error))
+    .trim()
+    .toLowerCase();
+  const normalizedCommandId = commandId.toLowerCase();
+  return (
+    message.includes(normalizedCommandId) &&
+    (message.includes('not found') ||
+      message.includes('not available') ||
+      message.includes('command') ||
+      message.includes('unknown'))
+  );
+}
+
 function parseCommitOutputOptions(
   value: unknown,
 ): CommitOutputOptions | undefined {
@@ -96,6 +123,10 @@ function getCurrentLanguage(context: vscode.ExtensionContext) {
 type ExtensionText = ReturnType<typeof getExtensionText>;
 type GenerateCommitMessageOptions = Parameters<typeof generateCommitMessage>[0];
 type GenerateResult = Awaited<ReturnType<typeof generateCommitMessage>>;
+type RewriteGenerateResult = Awaited<
+  ReturnType<typeof generateHistoricalCommitMessage>
+>;
+type RewriteApplyResult = Awaited<ReturnType<typeof rewriteHistoricalCommitMessage>>;
 type GenerateRetryOverrides = Partial<
   Pick<
     GenerateCommitMessageOptions,
@@ -254,6 +285,51 @@ function resolveTargetRepository(
     outputChannel.appendLine(text.output.noActiveEditorForRepoSelection);
   }
   return selectFallbackRepository(api, outputChannel, text);
+}
+
+function toRewriteCommitItemLabel(entry: RewriteCommitEntry): string {
+  const subject = entry.subject.trim();
+  const renderedSubject = subject.length > 0 ? subject : '(no subject)';
+  return `${entry.shortHash} ${renderedSubject}`;
+}
+
+function toRewriteCommitDescription(entry: RewriteCommitEntry): string {
+  if (entry.parentHashes.length === 0) {
+    return 'root commit';
+  }
+  if (entry.parentHashes.length > 1) {
+    return 'merge commit';
+  }
+  return `parent ${entry.parentHashes[0].slice(0, rewriteCommitParentHashDisplayLength)}`;
+}
+
+async function selectRewriteCommit(
+  repository: GitRepository,
+): Promise<RewriteCommitEntry | null> {
+  const commits = await listRecentCommitsForRewrite(
+    repository,
+    rewriteCommitPickLimit,
+  );
+  const candidates = commits.filter((entry) => entry.parentHashes.length <= 1);
+  if (candidates.length === 0) {
+    vscode.window.showWarningMessage(
+      'No non-merge commits found in current branch history.',
+    );
+    return null;
+  }
+
+  const pickItems = candidates.map((entry) => ({
+    label: toRewriteCommitItemLabel(entry),
+    description: toRewriteCommitDescription(entry),
+    entry,
+  }));
+
+  const selection = await vscode.window.showQuickPick(pickItems, {
+    title: 'Select Commit to Rewrite',
+    placeHolder: 'Choose a commit from current branch history',
+    matchOnDescription: true,
+  });
+  return selection?.entry ?? null;
 }
 
 function resolveProviderContext(
@@ -642,6 +718,26 @@ async function applyGenerationResult(args: {
   });
 }
 
+async function resolveRewriteGeneratedMessage(args: {
+  result: RewriteGenerateResult;
+  outputChannel: vscode.OutputChannel;
+  text: ExtensionText;
+  language: ReturnType<typeof getCurrentLanguage>;
+  providerContext: ResolvedProviderContext;
+}): Promise<string | null> {
+  if (args.result.success && args.result.message) {
+    return args.result.message;
+  }
+  await handleGenerationError({
+    result: args.result,
+    outputChannel: args.outputChannel,
+    text: args.text,
+    language: args.language,
+    providerContext: args.providerContext,
+  });
+  return null;
+}
+
 async function runGenerationProgress(args: {
   progress: vscode.Progress<{ message?: string; increment?: number }>;
   progressToken: vscode.CancellationToken;
@@ -701,6 +797,321 @@ async function runGenerationProgress(args: {
   } finally {
     cancelSubscription.dispose();
   }
+}
+
+async function executeRewriteCommand(
+  context: vscode.ExtensionContext,
+  outputChannel: vscode.OutputChannel,
+): Promise<void> {
+  const language = getCurrentLanguage(context);
+  const text = getExtensionText(language);
+  if (GenerationStateManager.isGenerating) {
+    outputChannel.appendLine(text.output.generationIgnored);
+    return;
+  }
+
+  const cancellationSource = new vscode.CancellationTokenSource();
+  currentGenerationCancellationSource = cancellationSource;
+  GenerationStateManager.setGenerating(true);
+  await vscode.commands.executeCommand(
+    'setContext',
+    'commit-copilot.isGenerating',
+    true,
+  );
+
+  try {
+    outputChannel.appendLine('='.repeat(generationLogSeparatorWidth));
+    outputChannel.appendLine(
+      `[${new Date().toISOString()}] Starting commit-copilot rewrite generation...`,
+    );
+
+    const api = getGitApi(outputChannel, text);
+    if (!api) {
+      return;
+    }
+
+    const repositoryResult = resolveTargetRepository(
+      api,
+      undefined,
+      outputChannel,
+      text,
+    );
+    if (repositoryResult.status === 'abort') {
+      return;
+    }
+    if (repositoryResult.status === 'missing') {
+      vscode.window.showErrorMessage(text.notification.repoNotFound);
+      return;
+    }
+
+    const targetCommit = await selectRewriteCommit(repositoryResult.repository);
+    if (!targetCommit) {
+      return;
+    }
+
+    const providerContext = resolveProviderContext(context);
+    const currentGenerateMode = resolveGenerateMode(
+      context,
+      providerContext.currentProvider,
+      'agentic',
+    );
+    const currentCommitOutputOptions = resolveCommitOutputOptions(
+      context,
+      undefined,
+    );
+    const maxAgentSteps = resolveMaxAgentSteps(context);
+    const apiKey = await resolveProviderApiKey(context, providerContext);
+    const providerDisplayName = getProviderDisplayName(providerContext);
+
+    logGenerationConfig(
+      outputChannel,
+      text,
+      providerDisplayName,
+      currentGenerateMode,
+      currentCommitOutputOptions,
+    );
+
+    const hasApiKey = await ensureProviderApiKey(
+      apiKey,
+      providerContext,
+      providerDisplayName,
+      text,
+      outputChannel,
+    );
+    if (!hasApiKey) {
+      return;
+    }
+
+    const savedModel = resolveSavedModel(context, providerContext);
+    const hasCustomModel = await ensureCustomModelSelection(
+      providerContext,
+      savedModel,
+      language,
+    );
+    if (!hasCustomModel) {
+      return;
+    }
+
+    let generatedMessage = '';
+    await vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: `Rewrite (${providerDisplayName})`,
+        cancellable: true,
+      },
+      async (progress, progressToken) => {
+        const cancelSubscription = progressToken.onCancellationRequested(() => {
+          outputChannel.appendLine(
+            '[Rewrite] Cancellation requested from progress UI.',
+          );
+          cancellationSource.cancel();
+        });
+        try {
+          progress.report({
+            message: `Analyzing commit ${targetCommit.shortHash}...`,
+          });
+          const rewriteGenerationResult = await generateHistoricalCommitMessage({
+            repository: repositoryResult.repository,
+            commitHash: targetCommit.hash,
+            provider: providerContext.currentProvider,
+            apiKey: apiKey ?? '',
+            baseUrl: providerContext.customProviderConfig?.baseUrl,
+            model: savedModel,
+            generateMode: currentGenerateMode,
+            commitOutputOptions: currentCommitOutputOptions,
+            maxAgentSteps,
+            language,
+            cancellationToken: cancellationSource.token,
+            onProgress: (message, increment) => {
+              outputChannel.appendLine(`[Rewrite] ${message}`);
+              progress.report({ message, increment });
+            },
+          });
+          if (
+            rewriteGenerationResult.error?.exitCode === EXIT_CODES.CANCELLED ||
+            cancellationSource.token.isCancellationRequested
+          ) {
+            return;
+          }
+
+          const resolvedMessage = await resolveRewriteGeneratedMessage({
+            result: rewriteGenerationResult,
+            outputChannel,
+            text,
+            language,
+            providerContext,
+          });
+          if (resolvedMessage) {
+            generatedMessage = resolvedMessage;
+          }
+        } finally {
+          cancelSubscription.dispose();
+        }
+      },
+    );
+
+    if (cancellationSource.token.isCancellationRequested) {
+      vscode.window.showInformationMessage(text.notification.generationCanceled);
+      return;
+    }
+    if (generatedMessage.trim().length === 0) {
+      return;
+    }
+
+    const rewrittenMessage = await vscode.window.showInputBox({
+      title: `Rewrite ${targetCommit.shortHash}`,
+      prompt: 'Review and confirm the new commit message.',
+      value: generatedMessage,
+      ignoreFocusOut: true,
+      validateInput: (value) => {
+        return value.trim().length === 0
+          ? 'Commit message cannot be empty.'
+          : undefined;
+      },
+    });
+    if (typeof rewrittenMessage !== 'string') {
+      return;
+    }
+
+    const rewriteApplyResult = await vscode.window.withProgress<RewriteApplyResult>(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: `Rewriting ${targetCommit.shortHash}`,
+        cancellable: false,
+      },
+      async (progress) => {
+        progress.report({ message: 'Rewriting commit history...' });
+        return rewriteHistoricalCommitMessage({
+          repository: repositoryResult.repository,
+          commitHash: targetCommit.hash,
+          newMessage: rewrittenMessage,
+        });
+      },
+    );
+
+    if (!rewriteApplyResult.success) {
+      const message =
+        rewriteApplyResult.error?.message ??
+        'Failed to rewrite commit history.';
+      outputChannel.appendLine(`[Rewrite] ${message}`);
+      vscode.window.showErrorMessage(message);
+      return;
+    }
+
+    outputChannel.appendLine(
+      `[Rewrite] Commit rewritten: ${targetCommit.hash} -> ${rewriteApplyResult.replacementCommitHash ?? 'updated'}`,
+    );
+    vscode.window.showInformationMessage(
+      `Commit ${targetCommit.shortHash} message rewritten.`,
+    );
+
+    await promptAndForcePushWithLease(repositoryResult.repository, outputChannel);
+  } catch (error) {
+    handleUnexpectedGenerationError({
+      error,
+      cancellationSource,
+      text,
+      outputChannel,
+    });
+  } finally {
+    await finalizeGeneration(cancellationSource);
+  }
+}
+
+function getPushTargetLabel(repository: GitRepository): string {
+  const stateRecord = repository.state as unknown;
+  const state = isRecord(stateRecord) ? stateRecord : {};
+  const headValue = state.HEAD;
+  const head = isRecord(headValue) ? headValue : {};
+  const upstreamValue = head.upstream;
+  const upstream = isRecord(upstreamValue) ? upstreamValue : {};
+  const branchName = asString(head.name) ?? '';
+  const upstreamRemote = asString(upstream.remote) ?? '';
+  const upstreamName = asString(upstream.name) ?? '';
+  if (upstreamRemote && upstreamName) {
+    return `${upstreamRemote}/${upstreamName}`;
+  }
+  if (branchName) {
+    return branchName;
+  }
+  return repository.rootUri.fsPath;
+}
+
+async function promptAndForcePushWithLease(
+  repository: GitRepository,
+  outputChannel: vscode.OutputChannel,
+): Promise<void> {
+  const stateRecord = repository.state as unknown;
+  const state = isRecord(stateRecord) ? stateRecord : {};
+  const headValue = state.HEAD;
+  const head = isRecord(headValue) ? headValue : {};
+  if (head.detached === true) {
+    vscode.window.showWarningMessage(
+      'Commit history was rewritten, but force push with lease is unavailable in detached HEAD state.',
+    );
+    return;
+  }
+
+  const pushTargetLabel = getPushTargetLabel(repository);
+  const selection = await vscode.window.showWarningMessage(
+    `History rewritten. Force push with lease to ${pushTargetLabel}?`,
+    { modal: true },
+    pushWithLeaseConfirmAction,
+  );
+  if (selection !== pushWithLeaseConfirmAction) {
+    return;
+  }
+
+  try {
+    try {
+      await runForcePushWithLeaseCommand(repository);
+    } catch (error) {
+      if (!isCommandUnavailableError(error, pushWithLeaseCommandId)) {
+        throw error;
+      }
+      await runForcePushWithLeaseCli(repository);
+    }
+
+    const successMessage = `Force push with lease completed: ${pushTargetLabel}.`;
+    outputChannel.appendLine(`[Rewrite] ${successMessage}`);
+    vscode.window.showInformationMessage(successMessage);
+  } catch (error) {
+    const rawErrorMessage =
+      error instanceof Error ? error.message : String(error);
+    const message = `Force push with lease failed: ${rawErrorMessage}`;
+    outputChannel.appendLine(`[Rewrite] ${message}`);
+    vscode.window.showErrorMessage(message);
+  }
+}
+
+async function runForcePushWithLeaseCommand(
+  repository: GitRepository,
+): Promise<void> {
+  await vscode.window.withProgress(
+    {
+      location: vscode.ProgressLocation.Notification,
+      title: 'Pushing with lease',
+      cancellable: false,
+    },
+    async () => {
+      await vscode.commands.executeCommand(pushWithLeaseCommandId, repository);
+    },
+  );
+}
+
+async function runForcePushWithLeaseCli(
+  repository: GitRepository,
+): Promise<void> {
+  await vscode.window.withProgress(
+    {
+      location: vscode.ProgressLocation.Notification,
+      title: 'Pushing with lease',
+      cancellable: false,
+    },
+    async () => {
+      await forcePushWithLease(repository.rootUri.fsPath);
+    },
+  );
 }
 
 function handleUnexpectedGenerationError(args: {
@@ -907,6 +1318,13 @@ export function activate(context: vscode.ExtensionContext) {
     },
   );
 
+  const rewriteDisposable = vscode.commands.registerCommand(
+    'commit-copilot.rewriteCommitMessage',
+    async () => {
+      await executeRewriteCommand(context, outputChannel);
+    },
+  );
+
   const cancelDisposable = vscode.commands.registerCommand(
     'commit-copilot.cancelGeneration',
     () => {
@@ -918,6 +1336,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(openLanguageSettingsDisposable);
   context.subscriptions.push(generateDisposable);
+  context.subscriptions.push(rewriteDisposable);
   context.subscriptions.push(cancelDisposable);
 }
 

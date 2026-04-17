@@ -52,7 +52,71 @@ const bytesPerKiB = 1024;
 const bytesPerMiB = bytesPerKiB * bytesPerKiB;
 const gitLsFilesMaxBufferMiB = 20;
 const GIT_LS_FILES_MAX_BUFFER = gitLsFilesMaxBufferMiB * bytesPerMiB;
+const GIT_SHOW_TIMEOUT_MS = 30000;
+const GIT_LOG_TIMEOUT_MS = 30000;
+const GIT_DIFF_TIMEOUT_MS = 30000;
+const GIT_COMMIT_TREE_TIMEOUT_MS = 30000;
+const GIT_PUSH_TIMEOUT_MS = 120000;
+const rewriteTempDirPrefix = 'rewrite-';
+const commitRecordSeparator = '\x1e';
+const commitFieldSeparator = '\x1f';
+const rewriteCommitListLimitDefault = 50;
+const rewriteCommitListLimitMax = 200;
+const gitShowMaxBufferMiB = 20;
+const gitDiffMaxBufferMiB = 60;
+const gitLogMaxBufferMiB = 20;
+const GIT_SHOW_MAX_BUFFER = gitShowMaxBufferMiB * bytesPerMiB;
+const GIT_DIFF_MAX_BUFFER = gitDiffMaxBufferMiB * bytesPerMiB;
+const GIT_LOG_MAX_BUFFER = gitLogMaxBufferMiB * bytesPerMiB;
+const GIT_COMMIT_TREE_MAX_BUFFER = bytesPerMiB;
+const rewriteCommitLineFieldCount = 4;
+const rewriteCommitHashFieldIndex = 0;
+const rewriteCommitShortHashFieldIndex = 1;
+const rewriteCommitSubjectFieldIndex = 2;
+const rewriteCommitParentsFieldIndex = 3;
+const rewriteSnapshotHashLength = 12;
+const rewriteSnapshotTimestampRadix = 36;
+const gitCommandEnvPathKey = 'COMMIT_COPILOT_GIT_PATH';
 const execFileAsync = promisify(execFile);
+
+function resolveGitExecutablePath(): string {
+  const explicitPath = process.env[gitCommandEnvPathKey];
+  if (explicitPath && explicitPath.trim().length > 0) {
+    return explicitPath.trim();
+  }
+
+  if (process.platform === 'win32') {
+    const roots = [
+      process.env.ProgramFiles,
+      process.env['ProgramFiles(x86)'],
+      process.env.LocalAppData,
+    ].filter((root): root is string => typeof root === 'string');
+    const relativeCandidates = [
+      ['Git', 'cmd', 'git.exe'],
+      ['Git', 'bin', 'git.exe'],
+      ['Programs', 'Git', 'cmd', 'git.exe'],
+      ['Programs', 'Git', 'bin', 'git.exe'],
+    ];
+
+    for (const root of roots) {
+      for (const relativePath of relativeCandidates) {
+        const candidate = path.join(root, ...relativePath);
+        if (fs.existsSync(candidate)) {
+          return candidate;
+        }
+      }
+    }
+  }
+
+  const unixCandidate = '/usr/bin/git';
+  if (fs.existsSync(unixCandidate)) {
+    return unixCandidate;
+  }
+
+  return 'git';
+}
+
+const gitExecutablePath = resolveGitExecutablePath();
 
 function isNoCommitsError(message: string): boolean {
   return (
@@ -84,6 +148,24 @@ interface GitChange {
 
 interface GitCommit {
   readonly message: string;
+}
+
+export interface RewriteCommitEntry {
+  hash: string;
+  shortHash: string;
+  subject: string;
+  parentHashes: string[];
+}
+
+interface ResolvedRewriteCommit {
+  hash: string;
+  parentHash: string | null;
+  parentHashes: string[];
+}
+
+interface RewriteCommitSnapshot {
+  workspaceRoot: string;
+  files: string[];
 }
 
 function normalizeGitPathCandidate(
@@ -140,6 +222,418 @@ function normalizeGitFileList(
     }
   }
   return normalizedFiles;
+}
+
+function splitLines(value: string): string[] {
+  return value
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+}
+
+function parseRewriteCommitLine(line: string): RewriteCommitEntry | null {
+  const fields = line.split(commitFieldSeparator);
+  if (fields.length < rewriteCommitLineFieldCount) {
+    return null;
+  }
+  const hash = fields[rewriteCommitHashFieldIndex].trim();
+  const shortHash = fields[rewriteCommitShortHashFieldIndex].trim();
+  const subject = fields[rewriteCommitSubjectFieldIndex].trim();
+  const parentsRaw = fields[rewriteCommitParentsFieldIndex].trim();
+  if (!hash || !shortHash) {
+    return null;
+  }
+  const parentHashes = parentsRaw
+    .split(/\s+/)
+    .map((parent) => parent.trim())
+    .filter((parent) => parent.length > 0);
+  return {
+    hash,
+    shortHash,
+    subject,
+    parentHashes,
+  };
+}
+
+function parseRevisionParents(value: string): ResolvedRewriteCommit | null {
+  const parts = splitLines(value)[0]?.split(/\s+/) ?? [];
+  if (parts.length === 0) {
+    return null;
+  }
+  const [hash, ...parentHashes] = parts;
+  if (!hash) {
+    return null;
+  }
+  return {
+    hash,
+    parentHash: parentHashes[0] ?? null,
+    parentHashes,
+  };
+}
+
+function parseCommitMessages(value: string): string[] {
+  return value
+    .split(commitRecordSeparator)
+    .map((entry) => entry.replace(/\r/g, '').trim())
+    .filter((entry) => entry.length > 0);
+}
+
+function toCommitLimit(value: number | undefined): number {
+  if (!value || !Number.isFinite(value)) {
+    return rewriteCommitListLimitDefault;
+  }
+  const rounded = Math.floor(value);
+  if (rounded <= 0) {
+    return rewriteCommitListLimitDefault;
+  }
+  return Math.min(rounded, rewriteCommitListLimitMax);
+}
+
+async function runGitTextCommand(params: {
+  repoRoot: string;
+  args: string[];
+  timeout: number;
+  maxBuffer: number;
+  env?: NodeJS.ProcessEnv;
+}): Promise<string> {
+  const { stdout } = await execFileAsync(gitExecutablePath, params.args, {
+    cwd: params.repoRoot,
+    windowsHide: true,
+    timeout: params.timeout,
+    maxBuffer: params.maxBuffer,
+    ...(params.env ? { env: params.env } : {}),
+  });
+  return stdout;
+}
+
+async function runGitBufferCommand(params: {
+  repoRoot: string;
+  args: string[];
+  timeout: number;
+  maxBuffer: number;
+}): Promise<Buffer> {
+  return new Promise<Buffer>((resolve, reject) => {
+    execFile(
+      gitExecutablePath,
+      params.args,
+      {
+        cwd: params.repoRoot,
+        windowsHide: true,
+        timeout: params.timeout,
+        maxBuffer: params.maxBuffer,
+        encoding: 'buffer',
+      },
+      (error, stdout) => {
+        if (error) {
+          const message =
+            error instanceof Error
+              ? error.message
+              : getStringProperty(error, 'message') || 'Unknown git error';
+          reject(new Error(message));
+          return;
+        }
+        if (Buffer.isBuffer(stdout)) {
+          resolve(stdout);
+          return;
+        }
+        resolve(Buffer.from(stdout));
+      },
+    );
+  });
+}
+
+async function resolveRewriteCommit(
+  repoRoot: string,
+  commitHash: string,
+): Promise<ResolvedRewriteCommit | null> {
+  const output = await runGitTextCommand({
+    repoRoot,
+    args: ['rev-list', '--parents', '-n', '1', commitHash],
+    timeout: GIT_LOG_TIMEOUT_MS,
+    maxBuffer: GIT_LOG_MAX_BUFFER,
+  });
+  return parseRevisionParents(output);
+}
+
+async function readCommitDiff(
+  repoRoot: string,
+  resolvedCommit: ResolvedRewriteCommit,
+): Promise<string> {
+  const args =
+    resolvedCommit.parentHash !== null
+      ? [
+          'diff',
+          '--no-ext-diff',
+          '--binary',
+          resolvedCommit.parentHash,
+          resolvedCommit.hash,
+        ]
+      : ['show', '--format=', '--no-ext-diff', '--binary', resolvedCommit.hash];
+  return runGitTextCommand({
+    repoRoot,
+    args,
+    timeout: GIT_DIFF_TIMEOUT_MS,
+    maxBuffer: GIT_DIFF_MAX_BUFFER,
+  });
+}
+
+async function listRevisionFiles(
+  repoRoot: string,
+  revision: string,
+): Promise<string[]> {
+  const output = await runGitTextCommand({
+    repoRoot,
+    args: ['ls-tree', '-r', '--name-only', revision],
+    timeout: GIT_LOG_TIMEOUT_MS,
+    maxBuffer: GIT_LOG_MAX_BUFFER,
+  });
+  return output
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+}
+
+function removeRewriteSnapshot(workspaceRoot: string): void {
+  try {
+    fs.rmSync(workspaceRoot, { recursive: true, force: true });
+  } catch (error) {
+    console.error('Error cleaning rewrite snapshot:', error);
+  }
+}
+
+async function createRewriteCommitSnapshot(params: {
+  repoRoot: string;
+  revision: string;
+}): Promise<RewriteCommitSnapshot> {
+  const baseTempRoot = path.join(params.repoRoot, 'commit-copilot-temp');
+  const suffix = `${params.revision.slice(0, rewriteSnapshotHashLength)}-${Date.now().toString(rewriteSnapshotTimestampRadix)}`;
+  const workspaceRoot = path.join(baseTempRoot, `${rewriteTempDirPrefix}${suffix}`);
+
+  fs.mkdirSync(workspaceRoot, { recursive: true });
+  try {
+    const files = await listRevisionFiles(params.repoRoot, params.revision);
+    for (const relPath of files) {
+      const absPath = path.resolve(workspaceRoot, relPath);
+      if (!isPathWithinDirectory(workspaceRoot, absPath)) {
+        continue;
+      }
+
+      const fileBuffer = await runGitBufferCommand({
+        repoRoot: params.repoRoot,
+        args: ['show', `${params.revision}:${relPath}`],
+        timeout: GIT_SHOW_TIMEOUT_MS,
+        maxBuffer: GIT_SHOW_MAX_BUFFER,
+      });
+      fs.mkdirSync(path.dirname(absPath), { recursive: true });
+      fs.writeFileSync(absPath, fileBuffer);
+    }
+
+    return { workspaceRoot, files };
+  } catch (error) {
+    removeRewriteSnapshot(workspaceRoot);
+    throw error;
+  }
+}
+
+function isPathWithinDirectory(rootPath: string, targetPath: string): boolean {
+  const resolvedRoot = path.resolve(rootPath);
+  const resolvedTarget = path.resolve(targetPath);
+  const relative = path.relative(resolvedRoot, resolvedTarget);
+  if (relative === '') {
+    return true;
+  }
+  if (relative === '..' || relative.startsWith(`..${path.sep}`)) {
+    return false;
+  }
+  return !path.isAbsolute(relative);
+}
+
+async function readRecentCommitMessagesBefore(params: {
+  repoRoot: string;
+  beforeRevision: string | null;
+  count: number;
+}): Promise<string[]> {
+  if (!params.beforeRevision || params.count <= 0) {
+    return [];
+  }
+
+  const output = await runGitTextCommand({
+    repoRoot: params.repoRoot,
+    args: [
+      'log',
+      '-n',
+      String(params.count),
+      '--format=%B%x1e',
+      params.beforeRevision,
+    ],
+    timeout: GIT_LOG_TIMEOUT_MS,
+    maxBuffer: GIT_LOG_MAX_BUFFER,
+  });
+  return parseCommitMessages(output);
+}
+
+async function readCommitCountAtRevision(
+  repoRoot: string,
+  revision: string,
+): Promise<number | null> {
+  try {
+    const output = await runGitTextCommand({
+      repoRoot,
+      args: ['rev-list', '--count', revision],
+      timeout: GIT_COMMIT_COUNT_TIMEOUT_MS,
+      maxBuffer: bytesPerMiB,
+    });
+    const parsed = Number.parseInt(output.trim(), 10);
+    return Number.isSafeInteger(parsed) && parsed >= 0 ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+async function readCommitTreeHash(
+  repoRoot: string,
+  commitHash: string,
+): Promise<string> {
+  const output = await runGitTextCommand({
+    repoRoot,
+    args: ['show', '-s', '--format=%T', commitHash],
+    timeout: GIT_SHOW_TIMEOUT_MS,
+    maxBuffer: bytesPerMiB,
+  });
+  return output.trim();
+}
+
+interface CommitAuthorInfo {
+  name: string;
+  email: string;
+  dateIso: string;
+}
+
+async function readCommitAuthorInfo(
+  repoRoot: string,
+  commitHash: string,
+): Promise<CommitAuthorInfo | null> {
+  try {
+    const output = await runGitTextCommand({
+      repoRoot,
+      args: ['show', '-s', '--format=%an%x1f%ae%x1f%aI', commitHash],
+      timeout: GIT_SHOW_TIMEOUT_MS,
+      maxBuffer: bytesPerMiB,
+    });
+    const [name, email, dateIso] = output.trim().split(commitFieldSeparator);
+    if (!name || !email || !dateIso) {
+      return null;
+    }
+    return { name, email, dateIso };
+  } catch {
+    return null;
+  }
+}
+
+async function createReplacementCommit(params: {
+  repoRoot: string;
+  originalCommit: ResolvedRewriteCommit;
+  newMessage: string;
+}): Promise<string> {
+  const treeHash = await readCommitTreeHash(
+    params.repoRoot,
+    params.originalCommit.hash,
+  );
+  const authorInfo = await readCommitAuthorInfo(
+    params.repoRoot,
+    params.originalCommit.hash,
+  );
+  const args = ['commit-tree', treeHash];
+  if (params.originalCommit.parentHash) {
+    args.push('-p', params.originalCommit.parentHash);
+  }
+  args.push('-m', params.newMessage);
+
+  const env = authorInfo
+    ? {
+        ...process.env,
+        GIT_AUTHOR_NAME: authorInfo.name,
+        GIT_AUTHOR_EMAIL: authorInfo.email,
+        GIT_AUTHOR_DATE: authorInfo.dateIso,
+      }
+    : process.env;
+  const output = await runGitTextCommand({
+    repoRoot: params.repoRoot,
+    args,
+    timeout: GIT_COMMIT_TREE_TIMEOUT_MS,
+    maxBuffer: GIT_COMMIT_TREE_MAX_BUFFER,
+    env,
+  });
+  return output.trim();
+}
+
+async function readCurrentHeadHash(repoRoot: string): Promise<string> {
+  const output = await runGitTextCommand({
+    repoRoot,
+    args: ['rev-parse', 'HEAD'],
+    timeout: GIT_SHOW_TIMEOUT_MS,
+    maxBuffer: bytesPerMiB,
+  });
+  return output.trim();
+}
+
+async function readCurrentBranchName(repoRoot: string): Promise<string> {
+  const output = await runGitTextCommand({
+    repoRoot,
+    args: ['rev-parse', '--abbrev-ref', 'HEAD'],
+    timeout: GIT_SHOW_TIMEOUT_MS,
+    maxBuffer: bytesPerMiB,
+  });
+  return output.trim();
+}
+
+async function isAncestorCommit(
+  repoRoot: string,
+  ancestor: string,
+  descendant: string,
+): Promise<boolean> {
+  try {
+    await runGitTextCommand({
+      repoRoot,
+      args: ['merge-base', '--is-ancestor', ancestor, descendant],
+      timeout: GIT_SHOW_TIMEOUT_MS,
+      maxBuffer: bytesPerMiB,
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function rewriteBranchFromReplacement(params: {
+  repoRoot: string;
+  originalCommit: ResolvedRewriteCommit;
+  replacementCommitHash: string;
+  branchName: string;
+}): Promise<void> {
+  const headHash = await readCurrentHeadHash(params.repoRoot);
+  if (headHash === params.originalCommit.hash) {
+    await runGitTextCommand({
+      repoRoot: params.repoRoot,
+      args: ['reset', '--hard', params.replacementCommitHash],
+      timeout: GIT_DIFF_TIMEOUT_MS,
+      maxBuffer: GIT_DIFF_MAX_BUFFER,
+    });
+    return;
+  }
+
+  await runGitTextCommand({
+    repoRoot: params.repoRoot,
+    args: [
+      'rebase',
+      '--onto',
+      params.replacementCommitHash,
+      params.originalCommit.hash,
+      params.branchName,
+    ],
+    timeout: GIT_DIFF_TIMEOUT_MS,
+    maxBuffer: GIT_DIFF_MAX_BUFFER,
+  });
 }
 
 export interface GitRepository {
@@ -263,7 +757,7 @@ export class GitOperations {
 
     try {
       const { stdout } = await execFileAsync(
-        'git',
+        gitExecutablePath,
         ['ls-files', '--cached', '--others', '--exclude-standard'],
         {
           cwd: repoRoot,
@@ -326,7 +820,7 @@ export class GitOperations {
   ): Promise<number | null> {
     try {
       const { stdout } = await execFileAsync(
-        'git',
+        gitExecutablePath,
         ['rev-list', '--count', 'HEAD'],
         {
           cwd: repoRoot,
@@ -448,6 +942,61 @@ export class GitOperations {
       return false;
     }
   }
+}
+
+class HistoricalGitOperations extends GitOperations {
+  constructor(
+    repository: GitRepository,
+    private readonly repoRoot: string,
+    private readonly snapshotFiles: string[],
+    private readonly targetCommitHash: string,
+    private readonly beforeRevision: string | null,
+  ) {
+    super(repository);
+  }
+
+  override listFilesFromGitApi(): Promise<string[] | null> {
+    return Promise.resolve(this.snapshotFiles);
+  }
+
+  override async getRecentCommitMessages(count: number): Promise<string[]> {
+    return readRecentCommitMessagesBefore({
+      repoRoot: this.repoRoot,
+      beforeRevision: this.beforeRevision,
+      count,
+    });
+  }
+
+  override async getCommitCount(): Promise<number | null> {
+    return readCommitCountAtRevision(this.repoRoot, this.targetCommitHash);
+  }
+}
+
+export interface GenerateHistoricalCommitMessageOptions {
+  repository: GitRepository;
+  commitHash: string;
+  provider: APIProvider;
+  apiKey: string;
+  baseUrl?: string;
+  cancellationToken?: CancellationSignal;
+  model?: string;
+  generateMode?: GenerateMode;
+  commitOutputOptions?: CommitOutputOptions;
+  onProgress?: ProgressCallback;
+  maxAgentSteps?: number;
+  language: EffectiveDisplayLanguage;
+}
+
+export interface RewriteHistoricalCommitMessageOptions {
+  repository: GitRepository;
+  commitHash: string;
+  newMessage: string;
+}
+
+export interface RewriteHistoricalCommitMessageResult {
+  success: boolean;
+  replacementCommitHash?: string;
+  error?: CommitCopilotError;
 }
 
 export interface GenerateCommitMessageOptions {
@@ -580,6 +1129,268 @@ async function generateMessageWithProvider(params: {
     params.onProgress,
     params.cancellationToken,
   );
+}
+
+async function resolveRewriteCommitOrThrow(
+  repoRoot: string,
+  commitHash: string,
+): Promise<ResolvedRewriteCommit> {
+  const resolved = await resolveRewriteCommit(repoRoot, commitHash);
+  if (!resolved) {
+    throw new CommitCopilotError(
+      `Commit "${commitHash}" was not found.`,
+      'REWRITE_COMMIT_NOT_FOUND',
+      EXIT_CODES.UNKNOWN_ERROR,
+    );
+  }
+  if (resolved.parentHashes.length > 1) {
+    throw new CommitCopilotError(
+      `Commit "${commitHash}" is a merge commit and cannot be rewritten by this workflow.`,
+      'REWRITE_MERGE_COMMIT_UNSUPPORTED',
+      EXIT_CODES.UNKNOWN_ERROR,
+    );
+  }
+  return resolved;
+}
+
+function toCommitCopilotError(
+  error: unknown,
+  code: string,
+): CommitCopilotError {
+  if (error instanceof CommitCopilotError) {
+    return error;
+  }
+  return new CommitCopilotError(
+    error instanceof Error ? error.message : String(error),
+    code,
+    EXIT_CODES.UNKNOWN_ERROR,
+  );
+}
+
+export async function listRecentCommitsForRewrite(
+  repository: GitRepository,
+  limit?: number,
+): Promise<RewriteCommitEntry[]> {
+  const repoRoot = repository.rootUri.fsPath;
+  if (!repoRoot) {
+    return [];
+  }
+
+  const gitOps = new GitOperations(repository);
+  if (!(await gitOps.isGitRepo())) {
+    return [];
+  }
+
+  const resolvedLimit = toCommitLimit(limit);
+  const output = await runGitTextCommand({
+    repoRoot,
+    args: [
+      'log',
+      '-n',
+      String(resolvedLimit),
+      '--format=%H%x1f%h%x1f%s%x1f%P%x1e',
+      'HEAD',
+    ],
+    timeout: GIT_LOG_TIMEOUT_MS,
+    maxBuffer: GIT_LOG_MAX_BUFFER,
+  });
+
+  return output
+    .split(commitRecordSeparator)
+    .map((record) => parseRewriteCommitLine(record.trim()))
+    .filter((entry): entry is RewriteCommitEntry => entry !== null);
+}
+
+export async function generateHistoricalCommitMessage(
+  options: GenerateHistoricalCommitMessageOptions,
+): Promise<GenerateCommitMessageResult> {
+  const {
+    repository,
+    commitHash,
+    provider,
+    apiKey,
+    baseUrl,
+    cancellationToken,
+    model,
+    generateMode = DEFAULT_GENERATE_MODE,
+    commitOutputOptions = DEFAULT_COMMIT_OUTPUT_OPTIONS,
+    onProgress,
+    maxAgentSteps,
+    language,
+  } = options;
+  const repoRoot = repository.rootUri.fsPath;
+
+  try {
+    throwIfCancellationRequested(cancellationToken);
+    const gitOps = new GitOperations(repository);
+    if (!(await gitOps.isGitRepo())) {
+      throw new CommitCopilotError(
+        'Not a git repository. Please run this command inside a git repository.',
+        'NOT_GIT_REPO',
+        EXIT_CODES.NOT_GIT_REPO,
+      );
+    }
+
+    if (!commitHash.trim()) {
+      throw new CommitCopilotError(
+        'A commit hash is required.',
+        'REWRITE_COMMIT_NOT_FOUND',
+        EXIT_CODES.UNKNOWN_ERROR,
+      );
+    }
+
+    const resolvedCommit = await resolveRewriteCommitOrThrow(
+      repoRoot,
+      commitHash.trim(),
+    );
+    const diff = await readCommitDiff(repoRoot, resolvedCommit);
+    throwIfCancellationRequested(cancellationToken);
+    if (!diff.trim()) {
+      throw new NoChangesError();
+    }
+
+    const snapshot = await createRewriteCommitSnapshot({
+      repoRoot,
+      revision: resolvedCommit.hash,
+    });
+    try {
+      const historicalGitOps = new HistoricalGitOperations(
+        repository,
+        repoRoot,
+        snapshot.files,
+        resolvedCommit.hash,
+        resolvedCommit.parentHash,
+      );
+      const resolvedCommitOutputOptions = normalizeCommitOutputOptions(
+        commitOutputOptions,
+      );
+      const resolvedGenerateMode: GenerateMode =
+        provider === 'ollama' ? 'direct-diff' : generateMode;
+      const resolvedModel =
+        model && model.length > 0 ? model : DEFAULT_MODELS[provider];
+
+      const message =
+        resolvedGenerateMode === 'agentic'
+          ? await runAgentLoop({
+              provider,
+              apiKey,
+              baseUrl,
+              model: resolvedModel,
+              diff,
+              repoRoot: snapshot.workspaceRoot,
+              onProgress,
+              isStaged: false,
+              gitOps: historicalGitOps,
+              commitOutputOptions: resolvedCommitOutputOptions,
+              cancellationToken,
+              maxAgentSteps,
+              language,
+            })
+          : await createLLMClient({
+              provider,
+              apiKey,
+              baseUrl,
+              ollamaHost: provider === 'ollama' ? apiKey : undefined,
+              model: resolvedModel,
+              commitOutputOptions: resolvedCommitOutputOptions,
+            }).generateCommitMessage(diff, onProgress, cancellationToken);
+
+      throwIfCancellationRequested(cancellationToken);
+      return {
+        success: true,
+        message,
+      };
+    } finally {
+      removeRewriteSnapshot(snapshot.workspaceRoot);
+    }
+  } catch (error) {
+    return {
+      success: false,
+      error: toCommitCopilotError(error, 'REWRITE_GENERATION_FAILED'),
+    };
+  }
+}
+
+export async function rewriteHistoricalCommitMessage(
+  options: RewriteHistoricalCommitMessageOptions,
+): Promise<RewriteHistoricalCommitMessageResult> {
+  const repoRoot = options.repository.rootUri.fsPath;
+  const trimmedMessage = options.newMessage.trim();
+
+  try {
+    const gitOps = new GitOperations(options.repository);
+    if (!(await gitOps.isGitRepo())) {
+      throw new CommitCopilotError(
+        'Not a git repository. Please run this command inside a git repository.',
+        'NOT_GIT_REPO',
+        EXIT_CODES.NOT_GIT_REPO,
+      );
+    }
+    if (!trimmedMessage) {
+      throw new CommitCopilotError(
+        'A non-empty commit message is required.',
+        'REWRITE_EMPTY_MESSAGE',
+        EXIT_CODES.UNKNOWN_ERROR,
+      );
+    }
+
+    const resolvedCommit = await resolveRewriteCommitOrThrow(
+      repoRoot,
+      options.commitHash.trim(),
+    );
+    const branchName = await readCurrentBranchName(repoRoot);
+    if (!branchName || branchName === 'HEAD') {
+      throw new CommitCopilotError(
+        'Cannot rewrite commits from detached HEAD.',
+        'REWRITE_DETACHED_HEAD',
+        EXIT_CODES.UNKNOWN_ERROR,
+      );
+    }
+
+    const isAncestor = await isAncestorCommit(
+      repoRoot,
+      resolvedCommit.hash,
+      'HEAD',
+    );
+    if (!isAncestor) {
+      throw new CommitCopilotError(
+        `Commit "${resolvedCommit.hash}" is not an ancestor of HEAD.`,
+        'REWRITE_COMMIT_NOT_REACHABLE',
+        EXIT_CODES.UNKNOWN_ERROR,
+      );
+    }
+
+    const replacementCommitHash = await createReplacementCommit({
+      repoRoot,
+      originalCommit: resolvedCommit,
+      newMessage: trimmedMessage,
+    });
+
+    await rewriteBranchFromReplacement({
+      repoRoot,
+      originalCommit: resolvedCommit,
+      replacementCommitHash,
+      branchName,
+    });
+    return {
+      success: true,
+      replacementCommitHash,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: toCommitCopilotError(error, 'REWRITE_FAILED'),
+    };
+  }
+}
+
+export async function forcePushWithLease(repoRoot: string): Promise<void> {
+  await runGitTextCommand({
+    repoRoot,
+    args: ['push', '--force-with-lease'],
+    timeout: GIT_PUSH_TIMEOUT_MS,
+    maxBuffer: GIT_COMMIT_TREE_MAX_BUFFER,
+  });
 }
 
 export async function generateCommitMessage(

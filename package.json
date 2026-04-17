@@ -29,6 +29,13 @@
         "enablement": "!commit-copilot.isGenerating"
       },
       {
+        "command": "commit-copilot.rewriteCommitMessage",
+        "title": "Rewrite Historical Commit Message",
+        "category": "Commit-Copilot",
+        "icon": "$(history)",
+        "enablement": "!commit-copilot.isGenerating"
+      },
+      {
         "command": "commit-copilot.cancelGeneration",
         "title": "%command.cancelGeneration.title%",
         "category": "Commit-Copilot",

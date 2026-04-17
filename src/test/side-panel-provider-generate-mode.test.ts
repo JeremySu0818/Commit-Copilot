@@ -302,6 +302,22 @@ void test('generate forwards normalized generateMode to command payload', async 
   }
 });
 
+void test('rewriteCommitMessage forwards to extension command', async () => {
+  const harness = await createHarness();
+
+  try {
+    await harness.sendMessage({ type: 'rewriteCommitMessage' });
+
+    const rewriteCalls = harness.commandCalls.filter(
+      (call) => call[0] === 'commit-copilot.rewriteCommitMessage',
+    );
+    assert.equal(rewriteCalls.length, 1);
+    assert.deepEqual(rewriteCalls[0], ['commit-copilot.rewriteCommitMessage']);
+  } finally {
+    harness.dispose();
+  }
+});
+
 void test('getCommitOutputOptions returns defaults when unset', async () => {
   const harness = await createHarness();
 
