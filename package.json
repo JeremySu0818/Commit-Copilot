@@ -2,7 +2,7 @@
   "name": "commit-copilot",
   "displayName": "%extension.displayName%",
   "description": "%extension.description%",
-  "version": "1.9.1",
+  "version": "1.10.0",
   "publisher": "JeremySu0818",
   "icon": "assets/icon.png",
   "repository": {
