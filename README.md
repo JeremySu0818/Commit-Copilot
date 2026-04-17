@@ -21,9 +21,11 @@ Commit-Copilot is an **agentic** VS Code extension that uses a multi-step AI age
 - **Git Index-Aware Analysis**: When analyzing staged changes, the agent reads file contents from the Git index (`git show :path`) rather than from disk, ensuring the analysis matches exactly what will be committed. For LSP-based `find_references`, a temporary workspace snapshot is created from the index so that on-disk references align with the staged state.
 - **Real-Time API Validation**: Each provider's API key is validated against its actual endpoint before saving. Invalid keys, quota limits, and connection failures are caught immediately with provider-specific error messages.
 - **Ollama Pull (Always)**: Always runs `ollama pull` for the selected model before generation, with real-time download progress reporting in the notification area. This can re-download layers even if the model already exists.
-- **Seamless VS Code Integration**: Access Commit-Copilot from the Activity Bar, Source Control navigation bar (sparkle icon), or Command Palette — three entry points integrated into your existing workflow.
+Seamless VS Code Integration: Access Commit-Copilot from the Activity Bar, Source Control navigation bar (wand icon), or Command Palette — three entry points integrated into your existing workflow.
 - **Real-Time Git Monitoring**: The side panel dynamically reflects your repository state. The Generate button automatically enables when changes are detected and disables when the working tree is clean.
 - **Detailed Error Handling**: Provides specific, actionable error messages for every failure scenario — API key issues link to the settings panel, quota errors open the provider console, and staging failures suggest corrective actions.
+- **Cancellable Agent Loop**: Stop the agent at any point during its investigation loop directly from the UI. Perfect for when you change your mind or notice the agent is taking an unexpected path.
+- **Automatic Retries**: Automatically retries failed API requests due to temporary network issues or rate limits, making the generation process more resilient.
 - **Secure Key Storage**: API keys are stored securely using VS Code's Secret Storage.
 - **Flexible Commit Output Structure**: Individually toggle whether the generated message includes a **Scope**, a **Body**, and a **Footer**. All three are optional — defaults are scope on, body on, footer off.
 - **Model Selection**: Customize which model you want to use for each provider.
@@ -101,7 +103,7 @@ The custom provider will appear in the provider list alongside the built-in ones
 #### Method B: Source Control Navigation
 
 1. Open the **Source Control** view (`Ctrl+Shift+G`).
-2. Click the **Commit-Copilot** icon (sparkle) in the navigation bar.
+2. Click the **Commit-Copilot** icon (wand) in the navigation bar.
 
 #### Method C: Command Palette
 
