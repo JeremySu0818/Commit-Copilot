@@ -108,14 +108,17 @@ async function resolveLanguageId(absPath: string): Promise<string | undefined> {
     return diskDoc.languageId;
   }
 
+  let untitledLanguageId: string | undefined;
   try {
     const untitledUri = vscode.Uri.file(absPath).with({ scheme: 'untitled' });
     const untitledDoc = await vscode.workspace.openTextDocument(untitledUri);
-    return untitledDoc.languageId;
-  } catch (error: unknown) {
-    if (error) {
-      // Fall through to extension/filename-based language inference.
-    }
+    untitledLanguageId = untitledDoc.languageId;
+  } catch {
+    untitledLanguageId = undefined;
+  }
+
+  if (untitledLanguageId) {
+    return untitledLanguageId;
   }
 
   const baseName = path.basename(absPath).toLowerCase();

@@ -147,10 +147,8 @@ function copyTrackedFilesSnapshot(
 function createIgnoreMatcher(repoRoot: string): ReturnType<typeof ignore> {
   const matcher = ignore().add('.git');
   const gitignorePath = path.join(repoRoot, '.gitignore');
-  try {
+  if (fs.existsSync(gitignorePath)) {
     matcher.add(fs.readFileSync(gitignorePath, 'utf-8'));
-  } catch {
-    // No .gitignore found; only .git is excluded.
   }
   return matcher;
 }

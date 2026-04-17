@@ -244,11 +244,9 @@ export async function getProjectStructure(
 
   const ig = ignore().add('.git');
   const gitignorePath = path.join(repoRoot, '.gitignore');
-  try {
+  if (fs.existsSync(gitignorePath)) {
     const gitignoreContent = fs.readFileSync(gitignorePath, 'utf-8');
     ig.add(gitignoreContent);
-  } catch {
-    // No .gitignore found; only .git is excluded
   }
 
   let fileCount = 0;
