@@ -1,5 +1,6 @@
 import { execFile } from 'child_process';
 import * as fs from 'fs';
+import * as os from 'os';
 import * as path from 'path';
 import { promisify } from 'util';
 
@@ -405,7 +406,7 @@ async function createRewriteCommitSnapshot(params: {
   repoRoot: string;
   revision: string;
 }): Promise<RewriteCommitSnapshot> {
-  const baseTempRoot = path.join(params.repoRoot, 'commit-copilot-temp');
+  const baseTempRoot = path.join(os.tmpdir(), 'commit-copilot-temp');
   const suffix = `${params.revision.slice(0, rewriteSnapshotHashLength)}-${Date.now().toString(rewriteSnapshotTimestampRadix)}`;
   const workspaceRoot = path.join(baseTempRoot, `${rewriteTempDirPrefix}${suffix}`);
 

@@ -17,8 +17,10 @@ export function MainView() {
     commitOutputOptions,
     modelState,
     isGenerating,
+    isForcePushing,
     pendingStatusCheck,
     hasChanges,
+    forcePushStatusHtml,
   } = state;
 
   const isCustom = currentProvider.startsWith(bootstrap.customProviderPrefix);
@@ -74,8 +76,8 @@ export function MainView() {
   }, [isOllama, isCustom, currentProvider, pack, bootstrap.ollamaDefaultHost]);
 
   const generateBtnDisabled = isGenerating
-    ? false
-    : pendingStatusCheck || !hasChanges;
+    ? isForcePushing
+    : isForcePushing || pendingStatusCheck || !hasChanges;
   const generateBtnText = isGenerating
     ? pack.buttons.cancelGenerating
     : pack.buttons.generateCommitMessage;
@@ -512,11 +514,16 @@ export function MainView() {
         <button
           id="rewriteCommitMessageBtn"
           className="secondary"
-          disabled={isGenerating}
+          disabled={isGenerating || isForcePushing}
           onClick={handleRewriteCommitMessage}
         >
           Rewrite Commit Message
         </button>
+        <span
+          id="forcePushStatus"
+          className={`status${!forcePushStatusHtml ? ' hidden' : ''}`}
+          dangerouslySetInnerHTML={{ __html: forcePushStatusHtml }}
+        />
       </div>
     </div>
   );

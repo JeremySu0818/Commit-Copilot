@@ -213,6 +213,12 @@ void test('generateHistoricalCommitMessage uses history before target commit', a
     assert.match(capturedDiff, /\+export const value = 2;/);
     assert.equal(capturedRecentMessages.length, 1);
     assert.match(capturedRecentMessages[0] ?? '', /feat\(core\): init/);
+    const relativeSnapshotPath = path.relative(fixture.repoRoot, capturedRepoRoot);
+    const snapshotInsideRepo =
+      relativeSnapshotPath === '' ||
+      (!relativeSnapshotPath.startsWith('..') &&
+        !path.isAbsolute(relativeSnapshotPath));
+    assert.equal(snapshotInsideRepo, false);
     assert.equal(capturedRepoRoot.includes('commit-copilot-temp'), true);
     assert.equal(fs.existsSync(capturedRepoRoot), false);
   } finally {
