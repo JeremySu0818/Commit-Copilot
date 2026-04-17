@@ -267,6 +267,10 @@ export function MainView() {
     vscode.postMessage({ type: 'rewriteCommitMessage' });
   }, [vscode]);
 
+  const handleForcePushWithLease = useCallback(() => {
+    vscode.postMessage({ type: 'forcePushWithLease' });
+  }, [vscode]);
+
   const handleModelChange = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
       vscode.postMessage({
@@ -518,6 +522,14 @@ export function MainView() {
           onClick={handleRewriteCommitMessage}
         >
           Rewrite Commit Message
+        </button>
+        <button
+          id="forcePushWithLeaseBtn"
+          className="secondary"
+          disabled={isGenerating || isForcePushing}
+          onClick={handleForcePushWithLease}
+        >
+          Force Push with Lease
         </button>
         <span
           id="forcePushStatus"
