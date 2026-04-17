@@ -71,10 +71,58 @@ function pickNonEmpty(primary: string | undefined, fallback: string): string {
   return primary && primary.length > 0 ? primary : fallback;
 }
 
-const GEMINI_AUTH_STATUS_PATTERN =
-  /\b(?:status(?:\s*code)?|http(?:\s*status)?|response(?:\s*status)?)\s*[:=]?\s*(401|403)\b/i;
-const GEMINI_QUOTA_STATUS_PATTERN =
-  /\b(?:status(?:\s*code)?|http(?:\s*status)?|response(?:\s*status)?)\s*[:=]?\s*429\b/i;
+const unauthorizedStatus = 401;
+const forbiddenStatus = 403;
+const tooManyRequestsStatus = 429;
+const millisecondsPerSecond = 1000;
+const geminiAuthMessagePatterns = [
+  'unauthorized',
+  'forbidden',
+  'api key invalid',
+  'invalid api key',
+  'unauthenticated',
+  'permission denied',
+];
+const geminiQuotaMessagePatterns = [
+  'too many requests',
+  'resource exhausted',
+  'rate limit',
+  'rate_limited',
+  'quota exceeded',
+  'quota exhausted',
+  'quota reached',
+  'quota limited',
+];
+const statusPrefixes = [
+  'status',
+  'status code',
+  'http status',
+  'response status',
+];
+
+function hasStatusToken(message: string, status: number): boolean {
+  const normalized = message.toLowerCase();
+  const statusText = String(status);
+
+  for (const prefix of statusPrefixes) {
+    if (
+      normalized.includes(`${prefix} ${statusText}`) ||
+      normalized.includes(`${prefix}: ${statusText}`) ||
+      normalized.includes(`${prefix}:${statusText}`) ||
+      normalized.includes(`${prefix}=${statusText}`) ||
+      normalized.includes(`${prefix} = ${statusText}`)
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function includesAnyPattern(message: string, patterns: string[]): boolean {
+  const normalized = message.toLowerCase();
+  return patterns.some((pattern) => normalized.includes(pattern));
+}
 
 function getErrorMessage(error: unknown): string {
   if (error instanceof Error) {
@@ -118,7 +166,7 @@ function getErrorCode(error: unknown): string {
 
 function isGeminiAuthError(error: unknown, message: string): boolean {
   const status = getErrorStatus(error);
-  if (status === 401 || status === 403) {
+  if (status === unauthorizedStatus || status === forbiddenStatus) {
     return true;
   }
 
@@ -134,16 +182,15 @@ function isGeminiAuthError(error: unknown, message: string): boolean {
   }
 
   return (
-    GEMINI_AUTH_STATUS_PATTERN.test(message) ||
-    /\b(?:401\s+unauthorized|403\s+forbidden|api[_\s-]?key[_\s-]?invalid|invalid[_\s-]?api[_\s-]?key|unauthenticated|permission denied)\b/i.test(
-      message,
-    )
+    hasStatusToken(message, unauthorizedStatus) ||
+    hasStatusToken(message, forbiddenStatus) ||
+    includesAnyPattern(message, geminiAuthMessagePatterns)
   );
 }
 
 function isGeminiQuotaError(error: unknown, message: string): boolean {
   const status = getErrorStatus(error);
-  if (status === 429) {
+  if (status === tooManyRequestsStatus) {
     return true;
   }
 
@@ -158,10 +205,8 @@ function isGeminiQuotaError(error: unknown, message: string): boolean {
   }
 
   return (
-    GEMINI_QUOTA_STATUS_PATTERN.test(message) ||
-    /\b(?:429\s+too many requests|resource[_\s-]?exhausted|rate[\s_-]?limit(?:ed)?|quota(?:\s+(?:exceeded|exhausted|reached|limit(?:ed)?)))\b/i.test(
-      message,
-    )
+    hasStatusToken(message, tooManyRequestsStatus) ||
+    includesAnyPattern(message, geminiQuotaMessagePatterns)
   );
 }
 
@@ -240,6 +285,128 @@ function normalizeGeminiFunctionCalls(response: unknown): GeminiFunctionCall[] {
     .filter((call): call is GeminiFunctionCall => call !== null);
 }
 
+function resolveStepLimit(maxAgentSteps: number | undefined): number {
+  return maxAgentSteps && maxAgentSteps > 0
+    ? maxAgentSteps
+    : Number.POSITIVE_INFINITY;
+}
+
+function toGeminiModelResponsePart(
+  functionCalls: GeminiFunctionCall[],
+): UnknownRecord {
+  return {
+    role: 'model',
+    parts: functionCalls.map((functionCall) => ({
+      functionCall: {
+        id: functionCall.id,
+        name: functionCall.name,
+        args: functionCall.args,
+      },
+    })),
+  };
+}
+
+async function buildToolResultParts(params: {
+  functionCalls: GeminiFunctionCall[];
+  repoRoot: string;
+  diff: string;
+  isStaged: boolean;
+  gitOps?: GitOperations;
+  cancellationToken?: CancellationSignal;
+}): Promise<UnknownRecord[]> {
+  const toolResults: UnknownRecord[] = [];
+  for (const functionCall of params.functionCalls) {
+    throwIfCancellationRequested(params.cancellationToken);
+    const result = await executeToolCall(
+      { name: functionCall.name, arguments: functionCall.args },
+      params.repoRoot,
+      params.diff,
+      params.isStaged,
+      params.gitOps,
+    );
+    toolResults.push({
+      functionResponse: {
+        name: functionCall.name,
+        response: { content: result.content },
+      },
+    });
+  }
+  return toolResults;
+}
+
+async function executeGeminiInvestigationLoop(params: {
+  history: UnknownRecord[];
+  stepLimit: number;
+  requestGeminiResponse: (
+    contents: UnknownRecord[],
+    config?: UnknownRecord,
+  ) => Promise<unknown>;
+  onProgress?: ProgressCallback;
+  language: EffectiveDisplayLanguage;
+  repoRoot: string;
+  diff: string;
+  isStaged: boolean;
+  gitOps?: GitOperations;
+  cancellationToken?: CancellationSignal;
+}): Promise<string | null> {
+  let step = 0;
+  while (step < params.stepLimit) {
+    throwIfCancellationRequested(params.cancellationToken);
+    const response = await params.requestGeminiResponse(params.history);
+    if (!getGeminiFirstCandidate(response)) {
+      throw new APIRequestError('Empty response from Gemini API');
+    }
+
+    const functionCalls = normalizeGeminiFunctionCalls(response);
+    if (functionCalls.length === 0) {
+      const text = getGeminiResponseText(response);
+      if (!text) {
+        throw new APIRequestError('Empty text response from Gemini API');
+      }
+      return extractCommitMessage(text);
+    }
+
+    params.history.push(
+      getGeminiCandidateContent(response) ??
+        toGeminiModelResponsePart(functionCalls),
+    );
+
+    if (params.onProgress) {
+      params.onProgress(
+        formatBatchProgressMessage(
+          step + 1,
+          functionCalls.map((call) => ({ name: call.name, args: call.args })),
+          params.language,
+        ),
+      );
+    }
+
+    const toolResults = await buildToolResultParts({
+      functionCalls,
+      repoRoot: params.repoRoot,
+      diff: params.diff,
+      isStaged: params.isStaged,
+      gitOps: params.gitOps,
+      cancellationToken: params.cancellationToken,
+    });
+    params.history.push({ role: 'user', parts: toolResults });
+    step += 1;
+  }
+
+  return null;
+}
+
+function throwMappedGeminiError(error: unknown): never {
+  const message = getErrorMessage(error);
+  if (isGeminiAuthError(error, message)) {
+    throw new APIKeyInvalidError(message);
+  }
+  if (isGeminiQuotaError(error, message)) {
+    throw new APIQuotaExceededError(message);
+  }
+  throw new APIRequestError(message);
+}
+
 async function runGeminiAgentLoop(
   apiKey: string,
   model: string | undefined,
@@ -262,8 +429,9 @@ async function runGeminiAgentLoop(
   }
 
   try {
-    const { GoogleGenAI } = await import('@google/genai');
-    const client = new GoogleGenAI({ apiKey });
+    const { GoogleGenAI: googleGenAIClientClass } =
+      await import('@google/genai');
+    const client = new googleGenAIClientClass({ apiKey });
     const modelName = pickNonEmpty(model, DEFAULT_MODELS.google).replace(
       /^models\//,
       '',
@@ -321,7 +489,7 @@ async function runGeminiAgentLoop(
             LOCALES[language].progressMessages.transientApiError(
               nextAttempt,
               maxAttempts,
-              Math.ceil(delayMs / 1000),
+              Math.ceil(delayMs / millisecondsPerSecond),
             ),
           );
         }
@@ -354,74 +522,20 @@ async function runGeminiAgentLoop(
       return result;
     };
 
-    let step = 0;
-    const stepLimit =
-      maxAgentSteps && maxAgentSteps > 0
-        ? maxAgentSteps
-        : Number.POSITIVE_INFINITY;
-
-    while (step < stepLimit) {
-      throwIfCancellationRequested(cancellationToken);
-      const response = await requestGeminiResponse(history);
-      const candidate = getGeminiFirstCandidate(response);
-      if (!candidate) {
-        throw new APIRequestError('Empty response from Gemini API');
-      }
-
-      const functionCalls = normalizeGeminiFunctionCalls(response);
-
-      if (functionCalls.length === 0) {
-        const text = getGeminiResponseText(response);
-        if (!text) {
-          throw new APIRequestError('Empty text response from Gemini API');
-        }
-        return extractCommitMessage(text);
-      }
-
-      const candidateContent = getGeminiCandidateContent(response);
-      history.push(
-        candidateContent ?? {
-          role: 'model',
-          parts: functionCalls.map((fc) => ({
-            functionCall: {
-              id: fc.id,
-              name: fc.name,
-              args: fc.args,
-            },
-          })),
-        },
-      );
-
-      const toolResults: UnknownRecord[] = [];
-      if (onProgress && functionCalls.length > 0) {
-        const calls = functionCalls.map((call) => ({
-          name: call.name,
-          args: call.args,
-        }));
-        onProgress(formatBatchProgressMessage(step + 1, calls, language));
-      }
-
-      for (const fc of functionCalls) {
-        throwIfCancellationRequested(cancellationToken);
-        const result = await executeToolCall(
-          { name: fc.name, arguments: fc.args },
-          repoRoot,
-          diff,
-          isStaged,
-          gitOps,
-        );
-
-        toolResults.push({
-          functionResponse: {
-            name: fc.name,
-            response: { content: result.content },
-          },
-        });
-      }
-
-      history.push({ role: 'user', parts: toolResults });
-
-      step++;
+    const loopResult = await executeGeminiInvestigationLoop({
+      history,
+      stepLimit: resolveStepLimit(maxAgentSteps),
+      requestGeminiResponse,
+      onProgress,
+      language,
+      repoRoot,
+      diff,
+      isStaged,
+      gitOps,
+      cancellationToken,
+    });
+    if (loopResult) {
+      return loopResult;
     }
 
     const finalResponse = await requestGeminiResponse(
@@ -446,13 +560,7 @@ async function runGeminiAgentLoop(
     ) {
       throw error;
     }
-    const message = getErrorMessage(error);
-    if (isGeminiAuthError(error, message)) {
-      throw new APIKeyInvalidError(message);
-    } else if (isGeminiQuotaError(error, message)) {
-      throw new APIQuotaExceededError(message);
-    }
-    throw new APIRequestError(message);
+    throwMappedGeminiError(error);
   }
 }
 

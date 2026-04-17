@@ -8,12 +8,14 @@ import type * as vscode from 'vscode';
 import { clearRequireCache, withModuleMock } from './helpers/module-mock';
 
 const MODULE_PATH = path.resolve(__dirname, '..', 'side-panel-provider');
+const lineSeparatorCodePoint = 0x2028;
+const paragraphSeparatorCodePoint = 0x2029;
 
 void test('inline script serialization escapes html terminators and unicode separators', async () => {
   clearRequireCache(MODULE_PATH);
 
-  const lineSeparator = String.fromCharCode(0x2028);
-  const paragraphSeparator = String.fromCharCode(0x2029);
+  const lineSeparator = String.fromCharCode(lineSeparatorCodePoint);
+  const paragraphSeparator = String.fromCharCode(paragraphSeparatorCodePoint);
 
   const vscodeMock = {
     Uri: {

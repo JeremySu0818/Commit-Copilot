@@ -4,6 +4,11 @@ import test from 'node:test';
 import { GenerationCancelledError } from '../errors';
 import { withRetry } from '../retry';
 
+const successfulAttemptIndex = 3;
+const expectedRetryAttempts = [1, successfulAttemptIndex - 1];
+const maxDelayMs = 5;
+const maxAttempts = 4;
+
 function createImmediateSetTimeout(
   scheduledDelays: number[],
 ): typeof setTimeout {
@@ -31,7 +36,7 @@ void test('withRetry retries retryable errors and then succeeds', async () => {
   const result = await withRetry(
     () => {
       attempts++;
-      if (attempts < 3) {
+      if (attempts < successfulAttemptIndex) {
         const err = new Error('rate limit exceeded') as Error & {
           status?: number;
         };
@@ -43,15 +48,15 @@ void test('withRetry retries retryable errors and then succeeds', async () => {
     {
       maxAttempts: 4,
       baseDelayMs: 1,
-      maxDelayMs: 5,
+      maxDelayMs,
       jitterMs: 0,
       onRetry: (info) => retryAttempts.push(info.attempt),
     },
   );
 
   assert.equal(result, 'ok');
-  assert.equal(attempts, 3);
-  assert.deepEqual(retryAttempts, [1, 2]);
+  assert.equal(attempts, successfulAttemptIndex);
+  assert.deepEqual(retryAttempts, expectedRetryAttempts);
 });
 
 void test('withRetry does not retry auth errors', async () => {
@@ -66,9 +71,9 @@ void test('withRetry does not retry auth errors', async () => {
         return Promise.reject(err);
       },
       {
-        maxAttempts: 4,
+        maxAttempts,
         baseDelayMs: 1,
-        maxDelayMs: 5,
+        maxDelayMs,
         jitterMs: 0,
       },
     ),
@@ -96,15 +101,15 @@ void test('withRetry clamps retry-after delay by maxDelayMs', async () => {
           return Promise.reject(err);
         },
         {
-          maxAttempts: 2,
+          maxAttempts: expectedRetryAttempts.length,
           baseDelayMs: 1,
-          maxDelayMs: 5,
+          maxDelayMs,
           jitterMs: 0,
         },
       ),
     );
 
-    assert.deepEqual(scheduledDelays, [5]);
+    assert.deepEqual(scheduledDelays, [maxDelayMs]);
   } finally {
     globalThis.setTimeout = originalSetTimeout;
   }
@@ -120,9 +125,9 @@ void test('withRetry does not retry generation cancellation errors', async () =>
         return Promise.reject(new GenerationCancelledError());
       },
       {
-        maxAttempts: 4,
+        maxAttempts,
         baseDelayMs: 1,
-        maxDelayMs: 5,
+        maxDelayMs,
         jitterMs: 0,
       },
     ),
@@ -151,7 +156,7 @@ void test('withRetry aborts before scheduling retry delay when cancellation is r
           return Promise.reject(err);
         },
         {
-          maxAttempts: 4,
+          maxAttempts,
           baseDelayMs: 10,
           maxDelayMs: 10,
           jitterMs: 0,

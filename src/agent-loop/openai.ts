@@ -47,6 +47,11 @@ interface ErrorLike {
   status?: unknown;
 }
 
+const millisecondsPerSecond = 1000;
+const unauthorizedStatus = 401;
+const forbiddenStatus = 403;
+const tooManyRequestsStatus = 429;
+
 function toErrorLike(error: unknown): ErrorLike {
   return typeof error === 'object' && error !== null
     ? (error as ErrorLike)
@@ -122,6 +127,147 @@ function parseToolArguments(rawArguments: unknown): {
   }
 }
 
+function resolveStepLimit(maxAgentSteps: number | undefined): number {
+  return maxAgentSteps && maxAgentSteps > 0
+    ? maxAgentSteps
+    : Number.POSITIVE_INFINITY;
+}
+
+function getFunctionToolCalls(
+  assistantMessage: UnknownRecord,
+): OpenAIFunctionToolCall[] {
+  const toolCalls = Array.isArray(assistantMessage.tool_calls)
+    ? assistantMessage.tool_calls
+    : [];
+  return toolCalls.filter((toolCall) => isFunctionToolCall(toolCall));
+}
+
+async function appendToolCallMessages(
+  parsedToolCalls: {
+    toolCall: OpenAIFunctionToolCall;
+    name: string;
+    args: Record<string, unknown>;
+    parseError?: string;
+  }[],
+  params: {
+    messages: ChatCompletionMessageParam[];
+    repoRoot: string;
+    diff: string;
+    isStaged: boolean;
+    gitOps?: GitOperations;
+    cancellationToken?: CancellationSignal;
+  },
+): Promise<void> {
+  for (const parsedToolCall of parsedToolCalls) {
+    throwIfCancellationRequested(params.cancellationToken);
+    const { toolCall, name, args, parseError } = parsedToolCall;
+    const content = parseError
+      ? `Tool execution error: Invalid JSON arguments for ${name}: ${parseError}`
+      : (
+          await executeToolCall(
+            { name, arguments: args },
+            params.repoRoot,
+            params.diff,
+            params.isStaged,
+            params.gitOps,
+          )
+        ).content;
+
+    const toolMessage: ChatCompletionToolMessageParam = {
+      role: 'tool',
+      tool_call_id: toolCall.id,
+      content,
+    };
+    params.messages.push(toolMessage);
+  }
+}
+
+async function executeOpenAIInvestigationLoop(params: {
+  messages: ChatCompletionMessageParam[];
+  stepLimit: number;
+  requestCompletionWithTools: (
+    messages: ChatCompletionMessageParam[],
+  ) => Promise<unknown>;
+  onProgress?: ProgressCallback;
+  language: EffectiveDisplayLanguage;
+  repoRoot: string;
+  diff: string;
+  isStaged: boolean;
+  gitOps?: GitOperations;
+  cancellationToken?: CancellationSignal;
+}): Promise<string | null> {
+  let step = 0;
+  while (step < params.stepLimit) {
+    throwIfCancellationRequested(params.cancellationToken);
+    const completion = await params.requestCompletionWithTools(params.messages);
+    const assistantMessage = getAssistantMessage(completion);
+    if (!assistantMessage) {
+      throw new APIRequestError('Empty response from OpenAI API');
+    }
+
+    params.messages.push(
+      assistantMessage as unknown as ChatCompletionMessageParam,
+    );
+    const functionToolCalls = getFunctionToolCalls(assistantMessage);
+    if (functionToolCalls.length === 0) {
+      const text = getOpenAIMessageText(assistantMessage.content);
+      if (!text) {
+        throw new APIRequestError('Empty text response from OpenAI API');
+      }
+      return extractCommitMessage(text);
+    }
+
+    const parsedToolCalls = functionToolCalls.map((toolCall) => {
+      const parsed = parseToolArguments(toolCall.function.arguments);
+      return {
+        toolCall,
+        name: toolCall.function.name,
+        args: parsed.args,
+        parseError: parsed.error,
+      };
+    });
+    params.onProgress?.(
+      formatBatchProgressMessage(
+        step + 1,
+        parsedToolCalls.map(({ name, args }) => ({ name, args })),
+        params.language,
+      ),
+    );
+
+    await appendToolCallMessages(parsedToolCalls, {
+      messages: params.messages,
+      repoRoot: params.repoRoot,
+      diff: params.diff,
+      isStaged: params.isStaged,
+      gitOps: params.gitOps,
+      cancellationToken: params.cancellationToken,
+    });
+    step += 1;
+  }
+
+  return null;
+}
+
+function throwMappedOpenAIError(error: unknown): never {
+  const message =
+    typeof toErrorLike(error).message === 'string'
+      ? (toErrorLike(error).message as string)
+      : String(error);
+  const status = toErrorLike(error).status;
+
+  if (
+    status === unauthorizedStatus ||
+    status === forbiddenStatus ||
+    message.includes('Invalid API Key')
+  ) {
+    throw new APIKeyInvalidError(message);
+  }
+  if (status === tooManyRequestsStatus || message.includes('rate limit')) {
+    throw new APIQuotaExceededError(message);
+  }
+  throw new APIRequestError(message);
+}
+
 async function runOpenAIAgentLoop(
   apiKey: string,
   model: string | undefined,
@@ -146,8 +292,8 @@ async function runOpenAIAgentLoop(
 
   try {
     const openaiModule: typeof import('openai') = await import('openai');
-    const OpenAIClient = openaiModule.default;
-    const client = new OpenAIClient({
+    const openAIClientClass = openaiModule.default;
+    const client = new openAIClientClass({
       apiKey,
       ...(baseUrl ? { baseURL: baseUrl } : {}),
     });
@@ -190,97 +336,41 @@ async function runOpenAIAgentLoop(
             LOCALES[language].progressMessages.transientApiError(
               nextAttempt,
               maxAttempts,
-              Math.ceil(delayMs / 1000),
+              Math.ceil(delayMs / millisecondsPerSecond),
             ),
           );
         }
       },
     };
 
-    let step = 0;
-    const stepLimit =
-      maxAgentSteps && maxAgentSteps > 0
-        ? maxAgentSteps
-        : Number.POSITIVE_INFINITY;
-
-    while (step < stepLimit) {
-      throwIfCancellationRequested(cancellationToken);
-      const completion = await withRetry(
+    const requestCompletionWithTools = (
+      currentMessages: ChatCompletionMessageParam[],
+    ) =>
+      withRetry(
         () =>
           client.chat.completions.create({
             model: modelName,
-            messages,
+            messages: currentMessages,
             tools: toOpenAITools(isStaged) as unknown as ChatCompletionTool[],
             tool_choice: 'auto',
           }),
         retryOptions,
       );
-
-      const assistantMessage = getAssistantMessage(completion);
-      if (!assistantMessage) {
-        throw new APIRequestError('Empty response from OpenAI API');
-      }
-
-      messages.push(assistantMessage as unknown as ChatCompletionMessageParam);
-      const toolCalls = Array.isArray(assistantMessage.tool_calls)
-        ? assistantMessage.tool_calls
-        : [];
-      const functionToolCalls = toolCalls.filter((toolCall) =>
-        isFunctionToolCall(toolCall),
-      );
-
-      if (functionToolCalls.length > 0) {
-        const parsedToolCalls = functionToolCalls.map((toolCall) => {
-          const parsed = parseToolArguments(toolCall.function.arguments);
-          return {
-            toolCall,
-            name: toolCall.function.name,
-            args: parsed.args,
-            parseError: parsed.error,
-          };
-        });
-
-        if (onProgress) {
-          const calls = parsedToolCalls.map(({ name, args }) => ({
-            name,
-            args,
-          }));
-          onProgress(formatBatchProgressMessage(step + 1, calls, language));
-        }
-
-        for (const parsedToolCall of parsedToolCalls) {
-          throwIfCancellationRequested(cancellationToken);
-          const { toolCall, name, args, parseError } = parsedToolCall;
-          let content: string;
-
-          if (parseError) {
-            content = `Tool execution error: Invalid JSON arguments for ${name}: ${parseError}`;
-          } else {
-            const result = await executeToolCall(
-              { name, arguments: args },
-              repoRoot,
-              diff,
-              isStaged,
-              gitOps,
-            );
-            content = result.content;
-          }
-
-          const toolMessage: ChatCompletionToolMessageParam = {
-            role: 'tool',
-            tool_call_id: toolCall.id,
-            content,
-          };
-          messages.push(toolMessage);
-        }
-        step++;
-      } else {
-        const text = getOpenAIMessageText(assistantMessage.content);
-        if (!text) {
-          throw new APIRequestError('Empty text response from OpenAI API');
-        }
-        return extractCommitMessage(text);
-      }
+    const stepLimit = resolveStepLimit(maxAgentSteps);
+    const loopResult = await executeOpenAIInvestigationLoop({
+      messages,
+      stepLimit,
+      requestCompletionWithTools,
+      onProgress,
+      language,
+      repoRoot,
+      diff,
+      isStaged,
+      gitOps,
+      cancellationToken,
+    });
+    if (loopResult) {
+      return loopResult;
     }
 
     messages.push({
@@ -307,21 +397,7 @@ async function runOpenAIAgentLoop(
     ) {
       throw error;
     }
-    const message =
-      typeof toErrorLike(error).message === 'string'
-        ? (toErrorLike(error).message as string)
-        : String(error);
-    const status = toErrorLike(error).status;
-    if (
-      status === 401 ||
-      status === 403 ||
-      message.includes('Invalid API Key')
-    ) {
-      throw new APIKeyInvalidError(message);
-    } else if (status === 429 || message.includes('rate limit')) {
-      throw new APIQuotaExceededError(message);
-    }
-    throw new APIRequestError(message);
+    throwMappedOpenAIError(error);
   }
 }
 

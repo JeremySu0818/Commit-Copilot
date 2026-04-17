@@ -112,8 +112,10 @@ async function resolveLanguageId(absPath: string): Promise<string | undefined> {
     const untitledUri = vscode.Uri.file(absPath).with({ scheme: 'untitled' });
     const untitledDoc = await vscode.workspace.openTextDocument(untitledUri);
     return untitledDoc.languageId;
-  } catch (err) {
-    void err;
+  } catch (error: unknown) {
+    if (error) {
+      // Fall through to extension/filename-based language inference.
+    }
   }
 
   const baseName = path.basename(absPath).toLowerCase();
@@ -184,6 +186,73 @@ function collectOutlineFromSymbolInformation(
   }
 }
 
+async function resolveOutlineContent(
+  relPath: string,
+  absPath: string,
+  isStaged: boolean,
+  gitOps?: GitOperations,
+): Promise<{ content?: string; error?: string }> {
+  if (isStaged && gitOps) {
+    const { content: indexContent, found } =
+      await gitOps.showIndexFile(relPath);
+    if (found) {
+      return { content: indexContent };
+    }
+    if (!fs.existsSync(absPath)) {
+      return {
+        error: `Error: file '${relPath}' does not exist in index or disk.`,
+      };
+    }
+    return { content: fs.readFileSync(absPath, 'utf-8') };
+  }
+
+  if (!fs.existsSync(absPath)) {
+    return { error: `Error: file '${relPath}' does not exist.` };
+  }
+
+  return { content: fs.readFileSync(absPath, 'utf-8') };
+}
+
+async function openOutlineDocument(
+  absPath: string,
+  content: string,
+  isStaged: boolean,
+): Promise<vscode.TextDocument> {
+  if (isStaged) {
+    const languageId = await resolveLanguageId(absPath);
+    return vscode.workspace.openTextDocument({
+      content,
+      language: languageId,
+    });
+  }
+
+  return vscode.workspace.openTextDocument(vscode.Uri.file(absPath));
+}
+
+function appendOutlineFromSymbols(
+  symbolResult: vscode.DocumentSymbol[] | vscode.SymbolInformation[],
+  outlineLines: string[],
+): void {
+  if (symbolResult[0] instanceof vscode.DocumentSymbol) {
+    const completed = collectOutlineFromDocumentSymbols(
+      symbolResult as vscode.DocumentSymbol[],
+      outlineLines,
+      0,
+      MAX_OUTLINE_LINES,
+    );
+    if (!completed) {
+      outlineLines.push('... (outline truncated)');
+    }
+    return;
+  }
+
+  collectOutlineFromSymbolInformation(
+    symbolResult as vscode.SymbolInformation[],
+    outlineLines,
+    MAX_OUTLINE_LINES,
+  );
+}
+
 async function executeGetFileOutline(
   repoRoot: string,
   args: Record<string, unknown>,
@@ -202,24 +271,16 @@ async function executeGetFileOutline(
   }
 
   try {
-    let content: string;
-    if (isStaged && gitOps) {
-      const { content: indexContent, found } =
-        await gitOps.showIndexFile(relPath);
-      if (found) {
-        content = indexContent;
-      } else {
-        if (!fs.existsSync(absPath)) {
-          return `Error: file '${relPath}' does not exist in index or disk.`;
-        }
-        content = fs.readFileSync(absPath, 'utf-8');
-      }
-    } else {
-      if (!fs.existsSync(absPath)) {
-        return `Error: file '${relPath}' does not exist.`;
-      }
-      content = fs.readFileSync(absPath, 'utf-8');
+    const contentResult = await resolveOutlineContent(
+      relPath,
+      absPath,
+      isStaged,
+      gitOps,
+    );
+    if (contentResult.error) {
+      return contentResult.error;
     }
+    const content = contentResult.content ?? '';
 
     const lines = content.split(/\r?\n/);
     const outlineLines: string[] = [];
@@ -227,18 +288,7 @@ async function executeGetFileOutline(
     outlineLines.push(`File: ${relPath} (${String(lines.length)} total lines)`);
     outlineLines.push('');
 
-    let document: vscode.TextDocument;
-    if (isStaged) {
-      const languageId = await resolveLanguageId(absPath);
-      document = await vscode.workspace.openTextDocument({
-        content,
-        language: languageId,
-      });
-    } else {
-      document = await vscode.workspace.openTextDocument(
-        vscode.Uri.file(absPath),
-      );
-    }
+    const document = await openOutlineDocument(absPath, content, isStaged);
 
     const symbolResult = await vscode.commands.executeCommand<
       vscode.DocumentSymbol[] | vscode.SymbolInformation[] | undefined
@@ -252,23 +302,7 @@ async function executeGetFileOutline(
       return outlineLines.join('\n');
     }
 
-    if (symbolResult[0] instanceof vscode.DocumentSymbol) {
-      const completed = collectOutlineFromDocumentSymbols(
-        symbolResult as vscode.DocumentSymbol[],
-        outlineLines,
-        0,
-        MAX_OUTLINE_LINES,
-      );
-      if (!completed) {
-        outlineLines.push('... (outline truncated)');
-      }
-    } else {
-      collectOutlineFromSymbolInformation(
-        symbolResult as vscode.SymbolInformation[],
-        outlineLines,
-        MAX_OUTLINE_LINES,
-      );
-    }
+    appendOutlineFromSymbols(symbolResult, outlineLines);
 
     return outlineLines.join('\n');
   } catch (err: unknown) {

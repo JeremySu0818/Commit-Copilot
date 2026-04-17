@@ -129,82 +129,38 @@ export function resolveEffectiveDisplayLanguage(
   displayLanguage: DisplayLanguage,
   vscodeLanguage?: string,
 ): EffectiveDisplayLanguage {
-  if (
-    displayLanguage === 'ar' ||
-    displayLanguage === 'cs' ||
-    displayLanguage === 'de' ||
-    displayLanguage === 'en' ||
-    displayLanguage === 'es' ||
-    displayLanguage === 'fr' ||
-    displayLanguage === 'hi' ||
-    displayLanguage === 'hu' ||
-    displayLanguage === 'id' ||
-    displayLanguage === 'it' ||
-    displayLanguage === 'ja' ||
-    displayLanguage === 'ko' ||
-    displayLanguage === 'nl' ||
-    displayLanguage === 'pl' ||
-    displayLanguage === 'pt-br' ||
-    displayLanguage === 'ru' ||
-    displayLanguage === 'tr' ||
-    displayLanguage === 'vi' ||
-    displayLanguage === 'zh-CN' ||
-    displayLanguage === 'zh-TW'
-  ) {
+  if (displayLanguage !== 'auto') {
     return displayLanguage;
   }
-  const normalized = (vscodeLanguage ?? '').trim().toLowerCase();
 
-  if (normalized.startsWith('ar')) {
-    return 'ar';
-  }
-  if (normalized.startsWith('cs')) {
-    return 'cs';
-  }
-  if (normalized.startsWith('de')) {
-    return 'de';
-  }
-  if (normalized.startsWith('es')) {
-    return 'es';
-  }
-  if (normalized.startsWith('fr')) {
-    return 'fr';
-  }
-  if (normalized.startsWith('hi')) {
-    return 'hi';
-  }
-  if (normalized.startsWith('hu')) {
-    return 'hu';
-  }
-  if (normalized.startsWith('id')) {
-    return 'id';
-  }
-  if (normalized.startsWith('it')) {
-    return 'it';
-  }
-  if (normalized.startsWith('ja')) {
-    return 'ja';
-  }
-  if (normalized.startsWith('ko')) {
-    return 'ko';
-  }
-  if (normalized.startsWith('nl')) {
-    return 'nl';
-  }
-  if (normalized.startsWith('pl')) {
-    return 'pl';
-  }
-  if (normalized.startsWith('pt-br')) {
-    return 'pt-br';
-  }
-  if (normalized.startsWith('ru')) {
-    return 'ru';
-  }
-  if (normalized.startsWith('tr')) {
-    return 'tr';
-  }
-  if (normalized.startsWith('vi')) {
-    return 'vi';
+  const normalized = (vscodeLanguage ?? '').trim().toLowerCase();
+  const normalizedPrefixMap: [
+    prefix: string,
+    language: EffectiveDisplayLanguage,
+  ][] = [
+    ['ar', 'ar'],
+    ['cs', 'cs'],
+    ['de', 'de'],
+    ['es', 'es'],
+    ['fr', 'fr'],
+    ['hi', 'hi'],
+    ['hu', 'hu'],
+    ['id', 'id'],
+    ['it', 'it'],
+    ['ja', 'ja'],
+    ['ko', 'ko'],
+    ['nl', 'nl'],
+    ['pl', 'pl'],
+    ['pt-br', 'pt-br'],
+    ['ru', 'ru'],
+    ['tr', 'tr'],
+    ['vi', 'vi'],
+  ];
+
+  for (const [prefix, language] of normalizedPrefixMap) {
+    if (normalized.startsWith(prefix)) {
+      return language;
+    }
   }
   if (normalized.startsWith('zh-cn') || normalized.startsWith('zh-hans')) {
     return 'zh-CN';
@@ -259,7 +215,7 @@ function replacePlaceholders(
   template: string,
   values: Record<string, string>,
 ): string {
-  return template.replace(/\{([a-zA-Z0-9_]+)\}/g, (_match, key: string) => {
+  return template.replace(/\{(\w+)\}/g, (_match, key: string) => {
     return Object.prototype.hasOwnProperty.call(values, key) ? values[key] : '';
   });
 }

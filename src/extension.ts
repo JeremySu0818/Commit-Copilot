@@ -52,6 +52,8 @@ interface GitExtensionExports {
   getAPI(version: 1): GitApi;
 }
 
+const generationLogSeparatorWidth = 50;
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }
@@ -91,6 +93,791 @@ function getCurrentLanguage(context: vscode.ExtensionContext) {
   return resolveEffectiveDisplayLanguage(displayLanguage, vscode.env.language);
 }
 
+type ExtensionText = ReturnType<typeof getExtensionText>;
+type GenerateCommitMessageOptions = Parameters<typeof generateCommitMessage>[0];
+type GenerateResult = Awaited<ReturnType<typeof generateCommitMessage>>;
+type GenerateRetryOverrides = Partial<
+  Pick<
+    GenerateCommitMessageOptions,
+    'stageChanges' | 'proceedWithStagedOnly' | 'ignoreUntracked'
+  >
+>;
+type GenerateRequest = (
+  overrides: GenerateRetryOverrides,
+) => Promise<GenerateResult>;
+
+interface ParsedGenerateCommandArg {
+  scm?: vscode.SourceControl;
+  requestedGenerateMode?: GenerateMode;
+  requestedCommitOutputOptions?: CommitOutputOptions;
+}
+
+type RepositorySelectionResult =
+  | { status: 'selected'; repository: GitRepository }
+  | { status: 'missing' }
+  | { status: 'abort' };
+
+interface ResolvedProviderContext {
+  currentProviderRaw: string;
+  currentProvider: APIProvider;
+  isCustom: boolean;
+  customProviderConfig?: CustomProviderConfig;
+  customProviderId?: string;
+}
+
+const providerConsoleUrls: Record<APIProvider, string> = {
+  google: 'https://aistudio.google.com/',
+  openai: 'https://platform.openai.com/usage',
+  anthropic: 'https://console.anthropic.com/',
+  ollama: 'http://127.0.0.1:11434',
+};
+
+function parseGenerateCommandArg(
+  arg?: GenerateCommandArg,
+): ParsedGenerateCommandArg {
+  if (isSourceControl(arg)) {
+    return { scm: arg };
+  }
+  if (!arg || typeof arg !== 'object') {
+    return {};
+  }
+  return {
+    scm: isSourceControl(arg.sourceControl) ? arg.sourceControl : undefined,
+    requestedGenerateMode: parseGenerateMode(arg.generateMode),
+    requestedCommitOutputOptions: parseCommitOutputOptions(
+      arg.commitOutputOptions,
+    ),
+  };
+}
+
+function getGitApi(
+  outputChannel: vscode.OutputChannel,
+  text: ExtensionText,
+): GitApi | null {
+  const gitExtensionExports =
+    vscode.extensions.getExtension<unknown>('vscode.git')?.exports;
+  if (!isGitExtensionExports(gitExtensionExports)) {
+    outputChannel.appendLine(text.output.gitExtensionMissing);
+    vscode.window.showErrorMessage(text.notification.gitExtensionMissing);
+    return null;
+  }
+  return gitExtensionExports.getAPI(1);
+}
+
+function findRepositoryFromScm(
+  api: GitApi,
+  scm: vscode.SourceControl,
+): GitRepository | null {
+  const scmUri = scm.rootUri?.toString();
+  if (!scmUri) {
+    return null;
+  }
+  return (
+    api.repositories.find((repo) => repo.rootUri.toString() === scmUri) ?? null
+  );
+}
+
+function findRepositoryFromActiveEditor(api: GitApi): {
+  repository: GitRepository | null;
+  hasActiveEditor: boolean;
+} {
+  const activeUri = vscode.window.activeTextEditor?.document.uri;
+  if (!activeUri) {
+    return { repository: null, hasActiveEditor: false };
+  }
+  if (typeof api.getRepository === 'function') {
+    const repository = api.getRepository(activeUri);
+    if (repository) {
+      return { repository, hasActiveEditor: true };
+    }
+  }
+
+  const activeUriString = activeUri.toString();
+  const repository =
+    api.repositories.find((repo) =>
+      activeUriString.startsWith(repo.rootUri.toString()),
+    ) ?? null;
+  return { repository, hasActiveEditor: true };
+}
+
+function selectFallbackRepository(
+  api: GitApi,
+  outputChannel: vscode.OutputChannel,
+  text: ExtensionText,
+): RepositorySelectionResult {
+  if (api.repositories.length === 1) {
+    const repository = api.repositories[0];
+    outputChannel.appendLine(
+      text.output.selectedOnlyRepo(repository.rootUri.fsPath),
+    );
+    return { status: 'selected', repository };
+  }
+  if (api.repositories.length > 1) {
+    outputChannel.appendLine(
+      text.output.multiRepoNotDetermined(api.repositories.length),
+    );
+    vscode.window.showWarningMessage(text.notification.multiRepoWarning);
+    return { status: 'abort' };
+  }
+  outputChannel.appendLine(text.output.noRepoInApi);
+  return { status: 'missing' };
+}
+
+function resolveTargetRepository(
+  api: GitApi,
+  scm: vscode.SourceControl | undefined,
+  outputChannel: vscode.OutputChannel,
+  text: ExtensionText,
+): RepositorySelectionResult {
+  if (scm) {
+    const repository = findRepositoryFromScm(api, scm);
+    if (repository) {
+      outputChannel.appendLine(
+        text.output.selectedRepoFromScm(repository.rootUri.fsPath),
+      );
+      return { status: 'selected', repository };
+    }
+  }
+
+  const fromActiveEditor = findRepositoryFromActiveEditor(api);
+  if (fromActiveEditor.repository) {
+    outputChannel.appendLine(
+      text.output.selectedRepoFromEditor(
+        fromActiveEditor.repository.rootUri.fsPath,
+      ),
+    );
+    return { status: 'selected', repository: fromActiveEditor.repository };
+  }
+  if (fromActiveEditor.hasActiveEditor) {
+    outputChannel.appendLine(text.output.noRepoMatchedActiveEditor);
+  } else {
+    outputChannel.appendLine(text.output.noActiveEditorForRepoSelection);
+  }
+  return selectFallbackRepository(api, outputChannel, text);
+}
+
+function resolveProviderContext(
+  context: vscode.ExtensionContext,
+): ResolvedProviderContext {
+  const currentProviderRaw =
+    context.globalState.get<string>('CURRENT_PROVIDER') ?? DEFAULT_PROVIDER;
+  if (!isCustomProvider(currentProviderRaw)) {
+    return {
+      currentProviderRaw,
+      currentProvider: currentProviderRaw as APIProvider,
+      isCustom: false,
+    };
+  }
+
+  const customProviderId = getCustomProviderId(currentProviderRaw);
+  const customProviders =
+    context.globalState.get<CustomProviderConfig[]>(
+      CUSTOM_PROVIDERS_STATE_KEY,
+    ) ?? [];
+  const customProviderConfig = customProviders.find(
+    (provider) => provider.id === customProviderId,
+  );
+  return {
+    currentProviderRaw,
+    currentProvider: 'openai',
+    isCustom: true,
+    customProviderConfig,
+    customProviderId,
+  };
+}
+
+function resolveGenerateMode(
+  context: vscode.ExtensionContext,
+  currentProvider: APIProvider,
+  requestedGenerateMode: GenerateMode | undefined,
+): GenerateMode {
+  const savedGenerateMode =
+    context.globalState.get<GenerateMode>('GENERATE_MODE') ??
+    DEFAULT_GENERATE_MODE;
+  if (currentProvider === 'ollama') {
+    return 'direct-diff';
+  }
+  return requestedGenerateMode ?? savedGenerateMode;
+}
+
+function resolveCommitOutputOptions(
+  context: vscode.ExtensionContext,
+  requestedCommitOutputOptions: CommitOutputOptions | undefined,
+): CommitOutputOptions {
+  const savedCommitOutputOptions = normalizeCommitOutputOptions(
+    context.globalState.get<CommitOutputOptions>('COMMIT_OUTPUT_OPTIONS') ??
+      DEFAULT_COMMIT_OUTPUT_OPTIONS,
+  );
+  return requestedCommitOutputOptions ?? savedCommitOutputOptions;
+}
+
+function resolveMaxAgentSteps(
+  context: vscode.ExtensionContext,
+): number | undefined {
+  const savedMaxAgentSteps = normalizeMaxAgentStepsValue(
+    context.globalState.get<number | string | null>(MAX_AGENT_STEPS_STATE_KEY),
+  );
+  return savedMaxAgentSteps > 0 ? savedMaxAgentSteps : undefined;
+}
+
+async function resolveProviderApiKey(
+  context: vscode.ExtensionContext,
+  providerContext: ResolvedProviderContext,
+): Promise<string | undefined> {
+  if (providerContext.isCustom && providerContext.customProviderId) {
+    return context.secrets.get(
+      getCustomProviderStorageKey(providerContext.customProviderId),
+    );
+  }
+  return context.secrets.get(
+    API_KEY_STORAGE_KEYS[providerContext.currentProvider],
+  );
+}
+
+function getProviderDisplayName(
+  providerContext: ResolvedProviderContext,
+): string {
+  if (providerContext.isCustom && providerContext.customProviderConfig) {
+    return providerContext.customProviderConfig.name;
+  }
+  return PROVIDER_DISPLAY_NAMES[providerContext.currentProvider];
+}
+
+function resolveSavedModel(
+  context: vscode.ExtensionContext,
+  providerContext: ResolvedProviderContext,
+): string | undefined {
+  if (providerContext.isCustom && providerContext.customProviderId) {
+    return context.globalState.get<string>(
+      `CUSTOM_${providerContext.customProviderId}_MODEL`,
+    );
+  }
+  return context.globalState.get<string>(
+    `${providerContext.currentProvider.toUpperCase()}_MODEL`,
+  );
+}
+
+function logGenerationConfig(
+  outputChannel: vscode.OutputChannel,
+  text: ExtensionText,
+  providerDisplayName: string,
+  currentGenerateMode: GenerateMode,
+  currentCommitOutputOptions: CommitOutputOptions,
+): void {
+  outputChannel.appendLine(text.output.usingProvider(providerDisplayName));
+  outputChannel.appendLine(text.output.usingGenerateMode(currentGenerateMode));
+  outputChannel.appendLine(
+    text.output.usingCommitOutputOptions(
+      JSON.stringify(currentCommitOutputOptions),
+    ),
+  );
+}
+
+async function ensureProviderApiKey(
+  apiKey: string | undefined,
+  providerContext: ResolvedProviderContext,
+  providerDisplayName: string,
+  text: ExtensionText,
+  outputChannel: vscode.OutputChannel,
+): Promise<boolean> {
+  if (apiKey || providerContext.currentProvider === 'ollama') {
+    return true;
+  }
+
+  outputChannel.appendLine(
+    text.output.missingApiKeyWarning(providerContext.currentProvider),
+  );
+  const setKeyAction = text.notification.configureApiKeyAction;
+  const result = await vscode.window.showWarningMessage(
+    text.notification.apiKeyMissing(providerDisplayName),
+    setKeyAction,
+  );
+  if (result === setKeyAction) {
+    await vscode.commands.executeCommand('commit-copilot.view.focus');
+  }
+  return false;
+}
+
+async function ensureCustomModelSelection(
+  providerContext: ResolvedProviderContext,
+  savedModel: string | undefined,
+  language: ReturnType<typeof getCurrentLanguage>,
+): Promise<boolean> {
+  if (!providerContext.isCustom || savedModel) {
+    return true;
+  }
+  vscode.window.showWarningMessage(getModelNameRequiredText(language));
+  await vscode.commands.executeCommand('commit-copilot.view.focus');
+  return false;
+}
+
+function createBaseGenerateOptions(args: {
+  repository: GitRepository;
+  providerContext: ResolvedProviderContext;
+  apiKey: string | undefined;
+  currentGenerateMode: GenerateMode;
+  currentCommitOutputOptions: CommitOutputOptions;
+  maxAgentSteps: number | undefined;
+  savedModel: string | undefined;
+  cancellationSource: vscode.CancellationTokenSource;
+  language: ReturnType<typeof getCurrentLanguage>;
+  outputChannel: vscode.OutputChannel;
+  progress: vscode.Progress<{ message?: string; increment?: number }>;
+}): GenerateCommitMessageOptions {
+  const reportProgress = (message: string, increment?: number) => {
+    args.outputChannel.appendLine(message);
+    args.progress.report({ message, increment });
+  };
+  return {
+    repository: args.repository,
+    provider: args.providerContext.currentProvider,
+    apiKey: args.apiKey ?? '',
+    baseUrl: args.providerContext.customProviderConfig?.baseUrl,
+    generateMode: args.currentGenerateMode,
+    commitOutputOptions: args.currentCommitOutputOptions,
+    maxAgentSteps: args.maxAgentSteps,
+    model: args.savedModel,
+    onProgress: reportProgress,
+    cancellationToken: args.cancellationSource.token,
+    language: args.language,
+  };
+}
+
+function createGenerateRequest(
+  baseOptions: GenerateCommitMessageOptions,
+): GenerateRequest {
+  return (overrides: GenerateRetryOverrides) =>
+    generateCommitMessage({ ...baseOptions, ...overrides });
+}
+
+async function resolveMixedChangesResult(
+  result: GenerateResult,
+  requestGeneration: GenerateRequest,
+  text: ExtensionText,
+): Promise<GenerateResult | null> {
+  if (result.error?.exitCode !== EXIT_CODES.MIXED_CHANGES) {
+    return result;
+  }
+  const selection = await vscode.window.showInformationMessage(
+    text.notification.mixedChangesQuestion,
+    text.notification.stageAllAndGenerate,
+    text.notification.proceedStagedOnly,
+    text.notification.cancel,
+  );
+  if (selection === text.notification.stageAllAndGenerate) {
+    return requestGeneration({ stageChanges: true });
+  }
+  if (selection === text.notification.proceedStagedOnly) {
+    return requestGeneration({
+      stageChanges: false,
+      proceedWithStagedOnly: true,
+    });
+  }
+  return null;
+}
+
+async function resolveUntrackedChangesResult(
+  result: GenerateResult,
+  requestGeneration: GenerateRequest,
+  text: ExtensionText,
+): Promise<GenerateResult | null> {
+  if (result.error?.exitCode === EXIT_CODES.NO_CHANGES_BUT_UNTRACKED) {
+    const selection = await vscode.window.showInformationMessage(
+      text.notification.noStagedButUntrackedQuestion,
+      text.notification.stageAndGenerateAll,
+      text.notification.generateTrackedOnly,
+    );
+    if (selection === text.notification.stageAndGenerateAll) {
+      return requestGeneration({ stageChanges: true });
+    }
+    if (selection === text.notification.generateTrackedOnly) {
+      return requestGeneration({ stageChanges: false, ignoreUntracked: true });
+    }
+    return result;
+  }
+
+  if (result.error?.exitCode !== EXIT_CODES.NO_TRACKED_CHANGES_BUT_UNTRACKED) {
+    return result;
+  }
+  const selection = await vscode.window.showInformationMessage(
+    text.notification.onlyUntrackedQuestion,
+    text.notification.stageAndTrack,
+    text.notification.cancel,
+  );
+  if (selection === text.notification.stageAndTrack) {
+    return requestGeneration({ stageChanges: true });
+  }
+  return null;
+}
+
+async function generateWithRetryPrompts(
+  requestGeneration: GenerateRequest,
+  text: ExtensionText,
+): Promise<GenerateResult | null> {
+  const initialResult = await requestGeneration({ stageChanges: false });
+  const mixedResolved = await resolveMixedChangesResult(
+    initialResult,
+    requestGeneration,
+    text,
+  );
+  if (!mixedResolved) {
+    return null;
+  }
+  return resolveUntrackedChangesResult(mixedResolved, requestGeneration, text);
+}
+
+async function handleApiKeyError(
+  errorInfo: ReturnType<typeof getLocalizedErrorInfo>,
+  errorMessage: string,
+  text: ExtensionText,
+): Promise<void> {
+  const action = await vscode.window.showErrorMessage(
+    `${errorInfo.title}: ${errorMessage}`,
+    text.notification.configureApiKeyAction,
+  );
+  if (action === text.notification.configureApiKeyAction) {
+    await vscode.commands.executeCommand('commit-copilot.view.focus');
+  }
+}
+
+async function handleQuotaExceededError(args: {
+  errorInfo: ReturnType<typeof getLocalizedErrorInfo>;
+  errorMessage: string;
+  text: ExtensionText;
+  providerContext: ResolvedProviderContext;
+}): Promise<void> {
+  const action = await vscode.window.showErrorMessage(
+    `${args.errorInfo.title}: ${args.errorMessage}`,
+    args.text.notification.viewProviderConsoleAction,
+  );
+  if (action !== args.text.notification.viewProviderConsoleAction) {
+    return;
+  }
+  const url =
+    args.providerContext.isCustom && args.providerContext.customProviderConfig
+      ? args.providerContext.customProviderConfig.baseUrl
+      : providerConsoleUrls[args.providerContext.currentProvider];
+  await vscode.env.openExternal(vscode.Uri.parse(url));
+}
+
+function isApiKeyExitCode(exitCode: number): boolean {
+  return (
+    exitCode === EXIT_CODES.API_KEY_MISSING ||
+    exitCode === EXIT_CODES.API_KEY_INVALID
+  );
+}
+
+function isIgnoredNoChangeExitCode(exitCode: number): boolean {
+  return (
+    exitCode === EXIT_CODES.NO_CHANGES_BUT_UNTRACKED ||
+    exitCode === EXIT_CODES.NO_TRACKED_CHANGES_BUT_UNTRACKED
+  );
+}
+
+async function handleGenerationError(args: {
+  result: GenerateResult;
+  outputChannel: vscode.OutputChannel;
+  text: ExtensionText;
+  language: ReturnType<typeof getCurrentLanguage>;
+  providerContext: ResolvedProviderContext;
+}): Promise<void> {
+  if (!args.result.error) {
+    return;
+  }
+  const { error } = args.result;
+  args.outputChannel.appendLine(
+    args.text.output.generationError(error.errorCode, error.message),
+  );
+  const errorInfo = getLocalizedErrorInfo(args.language, error.exitCode);
+  if (isApiKeyExitCode(error.exitCode)) {
+    await handleApiKeyError(errorInfo, error.message, args.text);
+    return;
+  }
+  if (error.exitCode === EXIT_CODES.QUOTA_EXCEEDED) {
+    await handleQuotaExceededError({
+      errorInfo,
+      errorMessage: error.message,
+      text: args.text,
+      providerContext: args.providerContext,
+    });
+    return;
+  }
+  if (error.exitCode === EXIT_CODES.NO_CHANGES) {
+    vscode.window.showInformationMessage(args.text.notification.noChanges);
+    return;
+  }
+  if (isIgnoredNoChangeExitCode(error.exitCode)) {
+    return;
+  }
+  vscode.window.showErrorMessage(
+    `${errorInfo.title}: ${error.message}. ${errorInfo.action ?? ''}`,
+  );
+}
+
+async function applyGenerationResult(args: {
+  result: GenerateResult;
+  repository: GitRepository;
+  outputChannel: vscode.OutputChannel;
+  text: ExtensionText;
+  language: ReturnType<typeof getCurrentLanguage>;
+  providerContext: ResolvedProviderContext;
+}): Promise<void> {
+  if (args.result.success && args.result.message) {
+    args.outputChannel.appendLine(
+      args.text.output.generatedMessage(args.result.message),
+    );
+    args.repository.inputBox.value = args.result.message;
+    await vscode.commands.executeCommand('workbench.view.scm');
+    vscode.window.showInformationMessage(
+      args.text.notification.commitGenerated,
+    );
+    return;
+  }
+  await handleGenerationError({
+    result: args.result,
+    outputChannel: args.outputChannel,
+    text: args.text,
+    language: args.language,
+    providerContext: args.providerContext,
+  });
+}
+
+async function runGenerationProgress(args: {
+  progress: vscode.Progress<{ message?: string; increment?: number }>;
+  progressToken: vscode.CancellationToken;
+  outputChannel: vscode.OutputChannel;
+  text: ExtensionText;
+  repository: GitRepository;
+  savedModel: string | undefined;
+  providerContext: ResolvedProviderContext;
+  apiKey: string | undefined;
+  currentGenerateMode: GenerateMode;
+  currentCommitOutputOptions: CommitOutputOptions;
+  maxAgentSteps: number | undefined;
+  cancellationSource: vscode.CancellationTokenSource;
+  language: ReturnType<typeof getCurrentLanguage>;
+}): Promise<void> {
+  const cancelSubscription = args.progressToken.onCancellationRequested(() => {
+    args.outputChannel.appendLine(args.text.output.cancelRequestedFromProgress);
+    args.cancellationSource.cancel();
+  });
+
+  args.outputChannel.appendLine(args.text.output.callingGenerateCommitMessage);
+  args.outputChannel.appendLine(
+    args.text.output.repositoryPath(args.repository.rootUri.fsPath),
+  );
+  if (args.savedModel) {
+    args.outputChannel.appendLine(args.text.output.usingModel(args.savedModel));
+  }
+
+  const baseOptions = createBaseGenerateOptions({
+    repository: args.repository,
+    providerContext: args.providerContext,
+    apiKey: args.apiKey,
+    currentGenerateMode: args.currentGenerateMode,
+    currentCommitOutputOptions: args.currentCommitOutputOptions,
+    maxAgentSteps: args.maxAgentSteps,
+    savedModel: args.savedModel,
+    cancellationSource: args.cancellationSource,
+    language: args.language,
+    outputChannel: args.outputChannel,
+    progress: args.progress,
+  });
+  const requestGeneration = createGenerateRequest(baseOptions);
+
+  try {
+    const result = await generateWithRetryPrompts(requestGeneration, args.text);
+    if (!result || result.error?.exitCode === EXIT_CODES.CANCELLED) {
+      return;
+    }
+    await applyGenerationResult({
+      result,
+      repository: args.repository,
+      outputChannel: args.outputChannel,
+      text: args.text,
+      language: args.language,
+      providerContext: args.providerContext,
+    });
+  } finally {
+    cancelSubscription.dispose();
+  }
+}
+
+function handleUnexpectedGenerationError(args: {
+  error: unknown;
+  cancellationSource: vscode.CancellationTokenSource;
+  text: ExtensionText;
+  outputChannel: vscode.OutputChannel;
+}): void {
+  const isCancellationError =
+    args.error instanceof CommitCopilotError &&
+    args.error.exitCode === EXIT_CODES.CANCELLED;
+  if (
+    isCancellationError ||
+    args.cancellationSource.token.isCancellationRequested
+  ) {
+    vscode.window.showInformationMessage(
+      args.text.notification.generationCanceled,
+    );
+    return;
+  }
+  const errorMessage =
+    args.error instanceof Error ? args.error.message : String(args.error);
+  args.outputChannel.appendLine(args.text.output.unexpectedError(errorMessage));
+  vscode.window.showErrorMessage(
+    `${args.text.notification.failedPrefix}: ${errorMessage}`,
+  );
+}
+
+async function finalizeGeneration(
+  cancellationSource: vscode.CancellationTokenSource,
+): Promise<void> {
+  if (currentGenerationCancellationSource === cancellationSource) {
+    currentGenerationCancellationSource = null;
+  }
+  cancellationSource.dispose();
+  GenerationStateManager.setGenerating(false);
+  await vscode.commands.executeCommand(
+    'setContext',
+    'commit-copilot.isGenerating',
+    false,
+  );
+}
+
+async function executeGenerateCommand(
+  arg: GenerateCommandArg | undefined,
+  context: vscode.ExtensionContext,
+  outputChannel: vscode.OutputChannel,
+): Promise<void> {
+  const language = getCurrentLanguage(context);
+  const text = getExtensionText(language);
+  if (GenerationStateManager.isGenerating) {
+    outputChannel.appendLine(text.output.generationIgnored);
+    return;
+  }
+
+  const cancellationSource = new vscode.CancellationTokenSource();
+  currentGenerationCancellationSource = cancellationSource;
+  GenerationStateManager.setGenerating(true);
+  await vscode.commands.executeCommand(
+    'setContext',
+    'commit-copilot.isGenerating',
+    true,
+  );
+
+  try {
+    outputChannel.appendLine('='.repeat(generationLogSeparatorWidth));
+    outputChannel.appendLine(
+      text.output.generationStart(new Date().toISOString()),
+    );
+
+    const parsedArg = parseGenerateCommandArg(arg);
+    const api = getGitApi(outputChannel, text);
+    if (!api) {
+      return;
+    }
+
+    const repositoryResult = resolveTargetRepository(
+      api,
+      parsedArg.scm,
+      outputChannel,
+      text,
+    );
+    if (repositoryResult.status === 'abort') {
+      return;
+    }
+    if (repositoryResult.status === 'missing') {
+      vscode.window.showErrorMessage(text.notification.repoNotFound);
+      return;
+    }
+
+    const providerContext = resolveProviderContext(context);
+    const currentGenerateMode = resolveGenerateMode(
+      context,
+      providerContext.currentProvider,
+      parsedArg.requestedGenerateMode,
+    );
+    const currentCommitOutputOptions = resolveCommitOutputOptions(
+      context,
+      parsedArg.requestedCommitOutputOptions,
+    );
+    const maxAgentSteps = resolveMaxAgentSteps(context);
+    const apiKey = await resolveProviderApiKey(context, providerContext);
+    const providerDisplayName = getProviderDisplayName(providerContext);
+
+    logGenerationConfig(
+      outputChannel,
+      text,
+      providerDisplayName,
+      currentGenerateMode,
+      currentCommitOutputOptions,
+    );
+
+    const hasApiKey = await ensureProviderApiKey(
+      apiKey,
+      providerContext,
+      providerDisplayName,
+      text,
+      outputChannel,
+    );
+    if (!hasApiKey) {
+      return;
+    }
+
+    const savedModel = resolveSavedModel(context, providerContext);
+    const hasCustomModel = await ensureCustomModelSelection(
+      providerContext,
+      savedModel,
+      language,
+    );
+    if (!hasCustomModel) {
+      return;
+    }
+
+    const progressTitle =
+      providerContext.currentProvider === 'ollama'
+        ? 'Ollama'
+        : providerDisplayName;
+    await vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: progressTitle,
+        cancellable: true,
+      },
+      (progress, progressToken) =>
+        runGenerationProgress({
+          progress,
+          progressToken,
+          outputChannel,
+          text,
+          repository: repositoryResult.repository,
+          savedModel,
+          providerContext,
+          apiKey,
+          currentGenerateMode,
+          currentCommitOutputOptions,
+          maxAgentSteps,
+          cancellationSource,
+          language,
+        }),
+    );
+    if (cancellationSource.token.isCancellationRequested) {
+      vscode.window.showInformationMessage(
+        text.notification.generationCanceled,
+      );
+    }
+  } catch (error) {
+    handleUnexpectedGenerationError({
+      error,
+      cancellationSource,
+      text,
+      outputChannel,
+    });
+  } finally {
+    await finalizeGeneration(cancellationSource);
+  }
+}
+
 export function activate(context: vscode.ExtensionContext) {
   const outputChannel = vscode.window.createOutputChannel(
     'Commit-Copilot Debug',
@@ -116,449 +903,7 @@ export function activate(context: vscode.ExtensionContext) {
   const generateDisposable = vscode.commands.registerCommand(
     'commit-copilot.generate',
     async (arg?: GenerateCommandArg) => {
-      const language = getCurrentLanguage(context);
-      const text = getExtensionText(language);
-
-      if (GenerationStateManager.isGenerating) {
-        outputChannel.appendLine(text.output.generationIgnored);
-        return;
-      }
-
-      const cancellationSource = new vscode.CancellationTokenSource();
-      currentGenerationCancellationSource = cancellationSource;
-      GenerationStateManager.setGenerating(true);
-      await vscode.commands.executeCommand(
-        'setContext',
-        'commit-copilot.isGenerating',
-        true,
-      );
-
-      try {
-        outputChannel.appendLine('='.repeat(50));
-        outputChannel.appendLine(
-          text.output.generationStart(new Date().toISOString()),
-        );
-
-        let scm: vscode.SourceControl | undefined;
-        let requestedGenerateMode: GenerateMode | undefined;
-        let requestedCommitOutputOptions: CommitOutputOptions | undefined;
-        if (isSourceControl(arg)) {
-          scm = arg;
-        } else if (arg && typeof arg === 'object') {
-          if (isSourceControl(arg.sourceControl)) {
-            scm = arg.sourceControl;
-          }
-          requestedGenerateMode = parseGenerateMode(arg.generateMode);
-          requestedCommitOutputOptions = parseCommitOutputOptions(
-            arg.commitOutputOptions,
-          );
-        }
-
-        const gitExtensionExports =
-          vscode.extensions.getExtension<unknown>('vscode.git')?.exports;
-        if (!isGitExtensionExports(gitExtensionExports)) {
-          outputChannel.appendLine(text.output.gitExtensionMissing);
-          vscode.window.showErrorMessage(text.notification.gitExtensionMissing);
-          return;
-        }
-
-        const api = gitExtensionExports.getAPI(1);
-
-        let repository: GitRepository | null = null;
-        if (scm) {
-          const scmRef = scm;
-          repository =
-            api.repositories.find(
-              (r) => r.rootUri.toString() === scmRef.rootUri?.toString(),
-            ) ?? null;
-          if (repository) {
-            outputChannel.appendLine(
-              text.output.selectedRepoFromScm(repository.rootUri.fsPath),
-            );
-          }
-        }
-
-        if (!repository) {
-          const activeEditor = vscode.window.activeTextEditor;
-          const activeUri = activeEditor?.document.uri;
-          if (activeUri) {
-            if (typeof api.getRepository === 'function') {
-              repository = api.getRepository(activeUri);
-            }
-            if (!repository) {
-              const activeUriString = activeUri.toString();
-              repository =
-                api.repositories.find((r) =>
-                  activeUriString.startsWith(r.rootUri.toString()),
-                ) ?? null;
-            }
-            if (repository) {
-              outputChannel.appendLine(
-                text.output.selectedRepoFromEditor(repository.rootUri.fsPath),
-              );
-            } else {
-              outputChannel.appendLine(text.output.noRepoMatchedActiveEditor);
-            }
-          } else {
-            outputChannel.appendLine(
-              text.output.noActiveEditorForRepoSelection,
-            );
-          }
-        }
-
-        if (!repository) {
-          if (api.repositories.length === 1) {
-            repository = api.repositories[0];
-            outputChannel.appendLine(
-              text.output.selectedOnlyRepo(repository.rootUri.fsPath),
-            );
-          } else if (api.repositories.length > 1) {
-            outputChannel.appendLine(
-              text.output.multiRepoNotDetermined(api.repositories.length),
-            );
-            vscode.window.showWarningMessage(
-              text.notification.multiRepoWarning,
-            );
-            return;
-          } else {
-            outputChannel.appendLine(text.output.noRepoInApi);
-          }
-        }
-
-        if (!repository) {
-          vscode.window.showErrorMessage(text.notification.repoNotFound);
-          return;
-        }
-
-        const currentProviderRaw =
-          context.globalState.get<string>('CURRENT_PROVIDER') ??
-          DEFAULT_PROVIDER;
-        const isCustom = isCustomProvider(currentProviderRaw);
-        let customProviderConfig: CustomProviderConfig | undefined;
-        let currentProvider: APIProvider;
-        if (isCustom) {
-          const customId = getCustomProviderId(currentProviderRaw);
-          const customProviders =
-            context.globalState.get<CustomProviderConfig[]>(
-              CUSTOM_PROVIDERS_STATE_KEY,
-            ) ?? [];
-          customProviderConfig = customProviders.find(
-            (cp) => cp.id === customId,
-          );
-          currentProvider = 'openai';
-        } else {
-          currentProvider = currentProviderRaw as APIProvider;
-        }
-        const savedGenerateMode =
-          context.globalState.get<GenerateMode>('GENERATE_MODE') ??
-          DEFAULT_GENERATE_MODE;
-        const savedCommitOutputOptions = normalizeCommitOutputOptions(
-          context.globalState.get<CommitOutputOptions>(
-            'COMMIT_OUTPUT_OPTIONS',
-          ) ?? DEFAULT_COMMIT_OUTPUT_OPTIONS,
-        );
-        const currentGenerateMode: GenerateMode =
-          currentProvider === 'ollama'
-            ? 'direct-diff'
-            : (requestedGenerateMode ?? savedGenerateMode);
-        const currentCommitOutputOptions =
-          requestedCommitOutputOptions ?? savedCommitOutputOptions;
-        const savedMaxAgentSteps = normalizeMaxAgentStepsValue(
-          context.globalState.get<number | string | null>(
-            MAX_AGENT_STEPS_STATE_KEY,
-          ),
-        );
-        const maxAgentSteps =
-          savedMaxAgentSteps > 0 ? savedMaxAgentSteps : undefined;
-
-        let apiKey: string | undefined;
-        if (isCustom) {
-          const customId = getCustomProviderId(currentProviderRaw);
-          apiKey = await context.secrets.get(
-            getCustomProviderStorageKey(customId),
-          );
-        } else {
-          const storageKey = API_KEY_STORAGE_KEYS[currentProvider];
-          apiKey = await context.secrets.get(storageKey);
-        }
-
-        const providerDisplayName =
-          isCustom && customProviderConfig
-            ? customProviderConfig.name
-            : PROVIDER_DISPLAY_NAMES[currentProvider];
-
-        outputChannel.appendLine(
-          text.output.usingProvider(providerDisplayName),
-        );
-        outputChannel.appendLine(
-          text.output.usingGenerateMode(currentGenerateMode),
-        );
-        outputChannel.appendLine(
-          text.output.usingCommitOutputOptions(
-            JSON.stringify(currentCommitOutputOptions),
-          ),
-        );
-
-        if (!apiKey && currentProvider !== 'ollama') {
-          outputChannel.appendLine(
-            text.output.missingApiKeyWarning(currentProvider),
-          );
-          const setKeyAction = text.notification.configureApiKeyAction;
-          const result = await vscode.window.showWarningMessage(
-            text.notification.apiKeyMissing(providerDisplayName),
-            setKeyAction,
-          );
-
-          if (result === setKeyAction) {
-            await vscode.commands.executeCommand('commit-copilot.view.focus');
-          }
-          return;
-        }
-
-        let savedModel: string | undefined;
-        if (isCustom) {
-          const customId = getCustomProviderId(currentProviderRaw);
-          savedModel = context.globalState.get<string>(
-            `CUSTOM_${customId}_MODEL`,
-          );
-        } else {
-          savedModel = context.globalState.get<string>(
-            `${currentProvider.toUpperCase()}_MODEL`,
-          );
-        }
-
-        if (isCustom && !savedModel) {
-          vscode.window.showWarningMessage(getModelNameRequiredText(language));
-          await vscode.commands.executeCommand('commit-copilot.view.focus');
-          return;
-        }
-
-        const progressTitle =
-          currentProvider === 'ollama' ? 'Ollama' : providerDisplayName;
-
-        await vscode.window.withProgress(
-          {
-            location: vscode.ProgressLocation.Notification,
-            title: progressTitle,
-            cancellable: true,
-          },
-          async (progress, progressToken) => {
-            const cancelSubscription = progressToken.onCancellationRequested(
-              () => {
-                outputChannel.appendLine(
-                  text.output.cancelRequestedFromProgress,
-                );
-                cancellationSource.cancel();
-              },
-            );
-            outputChannel.appendLine(text.output.callingGenerateCommitMessage);
-            outputChannel.appendLine(
-              text.output.repositoryPath(repository.rootUri.fsPath),
-            );
-
-            if (savedModel) {
-              outputChannel.appendLine(text.output.usingModel(savedModel));
-            }
-            const reportProgress = (message: string, increment?: number) => {
-              outputChannel.appendLine(message);
-              progress.report({ message, increment });
-            };
-            const baseGenerateOptions = {
-              repository,
-              provider: currentProvider,
-              apiKey: apiKey ?? '',
-              baseUrl: customProviderConfig?.baseUrl,
-              generateMode: currentGenerateMode,
-              commitOutputOptions: currentCommitOutputOptions,
-              maxAgentSteps,
-              model: savedModel,
-              onProgress: reportProgress,
-              cancellationToken: cancellationSource.token,
-              language,
-            };
-
-            try {
-              let result = await generateCommitMessage({
-                ...baseGenerateOptions,
-                stageChanges: false,
-              });
-
-              if (result.error?.exitCode === EXIT_CODES.MIXED_CHANGES) {
-                const selection = await vscode.window.showInformationMessage(
-                  text.notification.mixedChangesQuestion,
-                  text.notification.stageAllAndGenerate,
-                  text.notification.proceedStagedOnly,
-                  text.notification.cancel,
-                );
-
-                if (selection === text.notification.stageAllAndGenerate) {
-                  result = await generateCommitMessage({
-                    ...baseGenerateOptions,
-                    stageChanges: true,
-                  });
-                } else if (selection === text.notification.proceedStagedOnly) {
-                  result = await generateCommitMessage({
-                    ...baseGenerateOptions,
-                    stageChanges: false,
-                    proceedWithStagedOnly: true,
-                  });
-                } else {
-                  return;
-                }
-              }
-
-              if (
-                result.error?.exitCode === EXIT_CODES.NO_CHANGES_BUT_UNTRACKED
-              ) {
-                const selection = await vscode.window.showInformationMessage(
-                  text.notification.noStagedButUntrackedQuestion,
-                  text.notification.stageAndGenerateAll,
-                  text.notification.generateTrackedOnly,
-                );
-
-                if (selection === text.notification.stageAndGenerateAll) {
-                  result = await generateCommitMessage({
-                    ...baseGenerateOptions,
-                    stageChanges: true,
-                  });
-                } else if (
-                  selection === text.notification.generateTrackedOnly
-                ) {
-                  result = await generateCommitMessage({
-                    ...baseGenerateOptions,
-                    stageChanges: false,
-                    ignoreUntracked: true,
-                  });
-                }
-              } else if (
-                result.error?.exitCode ===
-                EXIT_CODES.NO_TRACKED_CHANGES_BUT_UNTRACKED
-              ) {
-                const selection = await vscode.window.showInformationMessage(
-                  text.notification.onlyUntrackedQuestion,
-                  text.notification.stageAndTrack,
-                  text.notification.cancel,
-                );
-
-                if (selection === text.notification.stageAndTrack) {
-                  result = await generateCommitMessage({
-                    ...baseGenerateOptions,
-                    stageChanges: true,
-                  });
-                } else {
-                  return;
-                }
-              }
-
-              if (result.error?.exitCode === EXIT_CODES.CANCELLED) {
-                return;
-              }
-
-              if (result.success && result.message) {
-                outputChannel.appendLine(
-                  text.output.generatedMessage(result.message),
-                );
-                repository.inputBox.value = result.message;
-                await vscode.commands.executeCommand('workbench.view.scm');
-                vscode.window.showInformationMessage(
-                  text.notification.commitGenerated,
-                );
-              } else if (result.error) {
-                const error = result.error;
-                outputChannel.appendLine(
-                  text.output.generationError(error.errorCode, error.message),
-                );
-
-                const errorInfo = getLocalizedErrorInfo(
-                  language,
-                  error.exitCode,
-                );
-
-                if (
-                  error.exitCode === EXIT_CODES.API_KEY_MISSING ||
-                  error.exitCode === EXIT_CODES.API_KEY_INVALID
-                ) {
-                  const action = await vscode.window.showErrorMessage(
-                    `${errorInfo.title}: ${error.message}`,
-                    text.notification.configureApiKeyAction,
-                  );
-                  if (action === text.notification.configureApiKeyAction) {
-                    void vscode.commands.executeCommand(
-                      'commit-copilot.view.focus',
-                    );
-                  }
-                } else if (error.exitCode === EXIT_CODES.QUOTA_EXCEEDED) {
-                  const action = await vscode.window.showErrorMessage(
-                    `${errorInfo.title}: ${error.message}`,
-                    text.notification.viewProviderConsoleAction,
-                  );
-                  if (action === text.notification.viewProviderConsoleAction) {
-                    const providerUrls: Record<APIProvider, string> = {
-                      google: 'https://aistudio.google.com/',
-                      openai: 'https://platform.openai.com/usage',
-                      anthropic: 'https://console.anthropic.com/',
-                      ollama: 'http://127.0.0.1:11434',
-                    };
-                    const url =
-                      isCustom && customProviderConfig
-                        ? customProviderConfig.baseUrl
-                        : providerUrls[currentProvider];
-                    vscode.env.openExternal(vscode.Uri.parse(url));
-                  }
-                } else if (error.exitCode === EXIT_CODES.NO_CHANGES) {
-                  vscode.window.showInformationMessage(
-                    text.notification.noChanges,
-                  );
-                } else if (
-                  error.exitCode !== EXIT_CODES.NO_CHANGES_BUT_UNTRACKED &&
-                  error.exitCode !== EXIT_CODES.NO_TRACKED_CHANGES_BUT_UNTRACKED
-                ) {
-                  vscode.window.showErrorMessage(
-                    `${errorInfo.title}: ${error.message}. ${errorInfo.action ?? ''}`,
-                  );
-                }
-              }
-            } finally {
-              cancelSubscription.dispose();
-            }
-          },
-        );
-        if (cancellationSource.token.isCancellationRequested) {
-          vscode.window.showInformationMessage(
-            text.notification.generationCanceled,
-          );
-        }
-      } catch (error) {
-        const isCancellationError =
-          error instanceof CommitCopilotError &&
-          error.exitCode === EXIT_CODES.CANCELLED;
-        if (
-          isCancellationError ||
-          cancellationSource.token.isCancellationRequested
-        ) {
-          vscode.window.showInformationMessage(
-            text.notification.generationCanceled,
-          );
-        } else {
-          const errorMessage =
-            error instanceof Error ? error.message : String(error);
-          outputChannel.appendLine(text.output.unexpectedError(errorMessage));
-          vscode.window.showErrorMessage(
-            `${text.notification.failedPrefix}: ${errorMessage}`,
-          );
-        }
-      } finally {
-        if (currentGenerationCancellationSource === cancellationSource) {
-          currentGenerationCancellationSource = null;
-        }
-        cancellationSource.dispose();
-        GenerationStateManager.setGenerating(false);
-        await vscode.commands.executeCommand(
-          'setContext',
-          'commit-copilot.isGenerating',
-          false,
-        );
-      }
+      await executeGenerateCommand(arg, context, outputChannel);
     },
   );
 

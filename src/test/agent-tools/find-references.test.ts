@@ -13,6 +13,9 @@ import {
 } from '../helpers/vscode-mock';
 
 const MODULE_PATH = '../../agent-tools/executors/find-references';
+const symbolEndCharacter = 3;
+const referenceStartCharacter = 5;
+const referenceEndCharacter = 8;
 
 async function loadModule(
   vscodeMock: unknown,
@@ -117,21 +120,21 @@ void test('executeFindReferences formats grouped references with snippets', asyn
             uri: vscodeMock.Uri.file(absA),
             range: new vscodeMock.Range(
               new vscodeMock.Position(0, 0),
-              new vscodeMock.Position(0, 3),
+              new vscodeMock.Position(0, symbolEndCharacter),
             ),
           },
           {
             uri: vscodeMock.Uri.file(absB),
             range: new vscodeMock.Range(
-              new vscodeMock.Position(0, 5),
-              new vscodeMock.Position(0, 8),
+              new vscodeMock.Position(0, referenceStartCharacter),
+              new vscodeMock.Position(0, referenceEndCharacter),
             ),
           },
           {
             uri: vscodeMock.Uri.file(absB),
             range: new vscodeMock.Range(
-              new vscodeMock.Position(0, 5),
-              new vscodeMock.Position(0, 8),
+              new vscodeMock.Position(0, referenceStartCharacter),
+              new vscodeMock.Position(0, referenceEndCharacter),
             ),
           },
         ]);

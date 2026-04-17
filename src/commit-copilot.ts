@@ -48,7 +48,10 @@ const STATUS_UNTRACKED = 7;
 const MAX_COMMIT_LOG_ENTRIES_FALLBACK = 1000;
 const GIT_COMMIT_COUNT_TIMEOUT_MS = 15000;
 const GIT_LS_FILES_TIMEOUT_MS = 15000;
-const GIT_LS_FILES_MAX_BUFFER = 20 * 1024 * 1024;
+const bytesPerKiB = 1024;
+const bytesPerMiB = bytesPerKiB * bytesPerKiB;
+const gitLsFilesMaxBufferMiB = 20;
+const GIT_LS_FILES_MAX_BUFFER = gitLsFilesMaxBufferMiB * bytesPerMiB;
 const execFileAsync = promisify(execFile);
 
 function isNoCommitsError(message: string): boolean {
@@ -62,6 +65,18 @@ function isNoCommitsError(message: string): boolean {
   );
 }
 
+function getStringProperty(value: unknown, key: string): string {
+  if (
+    typeof value === 'object' &&
+    value !== null &&
+    key in value &&
+    typeof (value as Record<string, unknown>)[key] === 'string'
+  ) {
+    return String((value as Record<string, unknown>)[key]);
+  }
+  return '';
+}
+
 interface GitChange {
   readonly uri: { fsPath: string };
   readonly status: number;
@@ -69,6 +84,62 @@ interface GitChange {
 
 interface GitCommit {
   readonly message: string;
+}
+
+function normalizeGitPathCandidate(
+  filePath: string,
+  repoRoot: string,
+): string | null {
+  const trimmed = filePath.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  let candidate = trimmed;
+  if (path.isAbsolute(candidate)) {
+    const relPath = path.relative(repoRoot, candidate);
+    if (!relPath || relPath.startsWith('..') || path.isAbsolute(relPath)) {
+      return null;
+    }
+    candidate = relPath;
+  }
+
+  const normalized = candidate.replace(/\\/g, '/');
+  if (
+    !normalized ||
+    normalized.startsWith('../') ||
+    path.isAbsolute(normalized)
+  ) {
+    return null;
+  }
+
+  return normalized;
+}
+
+function normalizeGitFileList(
+  files: unknown,
+  repoRoot: string | undefined,
+): string[] | null {
+  if (!Array.isArray(files)) {
+    return null;
+  }
+
+  const normalizedFiles: string[] = [];
+  for (const filePath of files) {
+    if (typeof filePath !== 'string') {
+      continue;
+    }
+
+    if (path.isAbsolute(filePath) && !repoRoot) {
+      continue;
+    }
+
+    const normalized = normalizeGitPathCandidate(filePath, repoRoot ?? '');
+    if (normalized) {
+      normalizedFiles.push(normalized);
+    }
+  }
+  return normalizedFiles;
 }
 
 export interface GitRepository {
@@ -166,61 +237,18 @@ export class GitOperations {
 
   async listFilesFromGitApi(): Promise<string[] | null> {
     const repoRoot = this.repository.rootUri.fsPath;
-    const normalizePaths = (files: unknown): string[] | null => {
-      if (!Array.isArray(files)) {
-        return null;
-      }
-
-      const normalizedFiles: string[] = [];
-      for (const filePath of files) {
-        if (typeof filePath !== 'string') {
-          continue;
-        }
-        const trimmed = filePath.trim();
-        if (!trimmed) {
-          continue;
-        }
-
-        let candidate = trimmed;
-        if (path.isAbsolute(candidate)) {
-          if (!repoRoot) {
-            continue;
-          }
-          const relPath = path.relative(repoRoot, candidate);
-          if (
-            !relPath ||
-            relPath.startsWith('..') ||
-            path.isAbsolute(relPath)
-          ) {
-            continue;
-          }
-          candidate = relPath;
-        }
-
-        const normalized = candidate.replace(/\\/g, '/');
-        if (
-          !normalized ||
-          normalized.startsWith('../') ||
-          path.isAbsolute(normalized)
-        ) {
-          continue;
-        }
-        normalizedFiles.push(normalized);
-      }
-      return normalizedFiles;
-    };
 
     try {
       if (typeof this.repository.lsFiles === 'function') {
         try {
           const apiFiles = await this.repository.lsFiles('');
-          const normalized = normalizePaths(apiFiles);
+          const normalized = normalizeGitFileList(apiFiles, repoRoot);
           if (normalized !== null) {
             return normalized;
           }
         } catch {
           const apiFiles = await this.repository.lsFiles();
-          const normalized = normalizePaths(apiFiles);
+          const normalized = normalizeGitFileList(apiFiles, repoRoot);
           if (normalized !== null) {
             return normalized;
           }
@@ -246,7 +274,7 @@ export class GitOperations {
         },
       );
       const cliFiles = stdout.split(/\r?\n/).filter(Boolean);
-      const normalized = normalizePaths(cliFiles);
+      const normalized = normalizeGitFileList(cliFiles, repoRoot);
       return normalized ?? null;
     } catch (error) {
       console.error('Error listing files via git ls-files:', error);
@@ -304,7 +332,7 @@ export class GitOperations {
         {
           cwd: repoRoot,
           windowsHide: true,
-          maxBuffer: 1024 * 1024,
+          maxBuffer: bytesPerMiB,
           timeout: GIT_COMMIT_COUNT_TIMEOUT_MS,
         },
       );
@@ -315,22 +343,11 @@ export class GitOperations {
       const parsed = Number.parseInt(trimmed, 10);
       return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
     } catch (error: unknown) {
-      const stderr =
-        typeof error === 'object' &&
-        error !== null &&
-        'stderr' in error &&
-        typeof (error as { stderr?: unknown }).stderr === 'string'
-          ? ((error as { stderr?: string }).stderr ?? '')
-          : '';
+      const stderr = getStringProperty(error, 'stderr');
       const errorMessage =
         error instanceof Error
           ? error.message
-          : typeof error === 'object' &&
-              error !== null &&
-              'message' in error &&
-              typeof (error as { message?: unknown }).message === 'string'
-            ? ((error as { message?: string }).message ?? '')
-            : '';
+          : getStringProperty(error, 'message');
       const message = [stderr, errorMessage]
         .filter((segment): segment is string => segment.length > 0)
         .join(' ');
@@ -457,6 +474,115 @@ export interface GenerateCommitMessageResult {
   error?: CommitCopilotError;
 }
 
+async function prepareRepositoryForGeneration(params: {
+  gitOps: GitOperations;
+  cancellationToken?: CancellationSignal;
+  stageChanges: boolean;
+  proceedWithStagedOnly: boolean;
+}): Promise<void> {
+  if (params.stageChanges) {
+    throwIfCancellationRequested(params.cancellationToken);
+    const staged = await params.gitOps.stageAllChanges();
+    if (!staged) {
+      throw new StageFailedError();
+    }
+    return;
+  }
+
+  if (!params.proceedWithStagedOnly && params.gitOps.hasMixedChanges()) {
+    throw new MixedChangesError();
+  }
+}
+
+async function resolveGenerationDiff(params: {
+  gitOps: GitOperations;
+  stageChanges: boolean;
+  ignoreUntracked: boolean;
+  cancellationToken?: CancellationSignal;
+}): Promise<{ diff: string; isStaged: boolean }> {
+  let isStaged = true;
+  let diff = await params.gitOps.getDiff(true);
+  throwIfCancellationRequested(params.cancellationToken);
+
+  if (!diff.trim() && !params.stageChanges) {
+    const unstagedDiff = await params.gitOps.getDiff(false);
+    throwIfCancellationRequested(params.cancellationToken);
+    if (!params.ignoreUntracked && params.gitOps.hasUntrackedFiles()) {
+      if (!unstagedDiff.trim()) {
+        throw new NoTrackedChangesButUntrackedError();
+      }
+      throw new NoChangesButUntrackedError();
+    }
+    diff = unstagedDiff;
+    isStaged = false;
+  }
+
+  if (!diff.trim()) {
+    throw new NoChangesError();
+  }
+
+  return { diff, isStaged };
+}
+
+async function generateMessageWithProvider(params: {
+  repository: GitRepository;
+  provider: APIProvider;
+  apiKey: string;
+  baseUrl?: string;
+  model?: string;
+  generateMode: GenerateMode;
+  commitOutputOptions: CommitOutputOptions;
+  onProgress?: ProgressCallback;
+  cancellationToken?: CancellationSignal;
+  maxAgentSteps?: number;
+  language: EffectiveDisplayLanguage;
+  diff: string;
+  isStaged: boolean;
+  gitOps: GitOperations;
+}): Promise<string> {
+  const resolvedGenerateMode: GenerateMode =
+    params.provider === 'ollama' ? 'direct-diff' : params.generateMode;
+  const resolvedModel =
+    params.model && params.model.length > 0
+      ? params.model
+      : DEFAULT_MODELS[params.provider];
+  const resolvedCommitOutputOptions = normalizeCommitOutputOptions(
+    params.commitOutputOptions,
+  );
+  const repoRoot = params.repository.rootUri.fsPath;
+
+  if (resolvedGenerateMode === 'agentic') {
+    return runAgentLoop({
+      provider: params.provider,
+      apiKey: params.apiKey,
+      baseUrl: params.baseUrl,
+      model: resolvedModel,
+      diff: params.diff,
+      repoRoot,
+      onProgress: params.onProgress,
+      isStaged: params.isStaged,
+      gitOps: params.gitOps,
+      commitOutputOptions: resolvedCommitOutputOptions,
+      cancellationToken: params.cancellationToken,
+      maxAgentSteps: params.maxAgentSteps,
+      language: params.language,
+    });
+  }
+
+  return createLLMClient({
+    provider: params.provider,
+    apiKey: params.apiKey,
+    baseUrl: params.baseUrl,
+    ollamaHost: params.provider === 'ollama' ? params.apiKey : undefined,
+    model: resolvedModel,
+    commitOutputOptions: resolvedCommitOutputOptions,
+  }).generateCommitMessage(
+    params.diff,
+    params.onProgress,
+    params.cancellationToken,
+  );
+}
+
 export async function generateCommitMessage(
   options: GenerateCommitMessageOptions,
 ): Promise<GenerateCommitMessageResult> {
@@ -487,70 +613,34 @@ export async function generateCommitMessage(
       );
     }
 
-    if (stageChanges) {
-      throwIfCancellationRequested(cancellationToken);
-      const staged = await gitOps.stageAllChanges();
-      if (!staged) {
-        throw new StageFailedError();
-      }
-    } else if (!proceedWithStagedOnly && gitOps.hasMixedChanges()) {
-      throw new MixedChangesError();
-    }
-
-    let isStaged = true;
-    let diff = await gitOps.getDiff(true);
-    throwIfCancellationRequested(cancellationToken);
-
-    if (!diff.trim() && !stageChanges) {
-      const unstagedDiff = await gitOps.getDiff(false);
-      throwIfCancellationRequested(cancellationToken);
-      if (!ignoreUntracked && gitOps.hasUntrackedFiles()) {
-        if (!unstagedDiff.trim()) {
-          throw new NoTrackedChangesButUntrackedError();
-        } else {
-          throw new NoChangesButUntrackedError();
-        }
-      }
-      diff = unstagedDiff;
-      isStaged = false;
-    }
-
-    if (!diff.trim()) {
-      throw new NoChangesError();
-    }
-    const resolvedGenerateMode: GenerateMode =
-      provider === 'ollama' ? 'direct-diff' : generateMode;
-    const resolvedCommitOutputOptions =
-      normalizeCommitOutputOptions(commitOutputOptions);
-    const resolvedModel =
-      model && model.length > 0 ? model : DEFAULT_MODELS[provider];
-
-    const repoRoot = repository.rootUri.fsPath;
-    const commitMessage =
-      resolvedGenerateMode === 'agentic'
-        ? await runAgentLoop({
-            provider,
-            apiKey,
-            baseUrl,
-            model: resolvedModel,
-            diff,
-            repoRoot,
-            onProgress,
-            isStaged,
-            gitOps,
-            commitOutputOptions: resolvedCommitOutputOptions,
-            cancellationToken,
-            maxAgentSteps,
-            language,
-          })
-        : await createLLMClient({
-            provider,
-            apiKey,
-            baseUrl,
-            ollamaHost: provider === 'ollama' ? apiKey : undefined,
-            model: resolvedModel,
-            commitOutputOptions: resolvedCommitOutputOptions,
-          }).generateCommitMessage(diff, onProgress, cancellationToken);
+    await prepareRepositoryForGeneration({
+      gitOps,
+      cancellationToken,
+      stageChanges,
+      proceedWithStagedOnly,
+    });
+    const { diff, isStaged } = await resolveGenerationDiff({
+      gitOps,
+      stageChanges,
+      ignoreUntracked,
+      cancellationToken,
+    });
+    const commitMessage = await generateMessageWithProvider({
+      repository,
+      provider,
+      apiKey,
+      baseUrl,
+      model,
+      generateMode,
+      commitOutputOptions,
+      onProgress,
+      cancellationToken,
+      maxAgentSteps,
+      language,
+      diff,
+      isStaged,
+      gitOps,
+    });
     throwIfCancellationRequested(cancellationToken);
     return {
       success: true,

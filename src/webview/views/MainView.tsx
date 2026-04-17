@@ -79,13 +79,12 @@ export function MainView() {
   const generateBtnText = isGenerating
     ? pack.buttons.cancelGenerating
     : pack.buttons.generateCommitMessage;
-  const generateBtnTitle = isGenerating
-    ? pack.statuses.cancelCurrentGeneration
-    : pendingStatusCheck
-      ? ''
-      : !hasChanges
-        ? pack.statuses.noChangesDetected
-        : '';
+  let generateBtnTitle = '';
+  if (isGenerating) {
+    generateBtnTitle = pack.statuses.cancelCurrentGeneration;
+  } else if (!pendingStatusCheck && !hasChanges) {
+    generateBtnTitle = pack.statuses.noChangesDetected;
+  }
 
   const handleProviderChange = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -109,15 +108,16 @@ export function MainView() {
         return;
       }
       dispatch({ type: 'SET_PROVIDER', provider });
+      const nextApiValue =
+        provider === 'ollama'
+          ? normalizeOllamaHostValue(
+              state.ollamaStoredHost,
+              bootstrap.ollamaDefaultHost,
+            )
+          : '';
       dispatch({
         type: 'SET_API_KEY_VALUE',
-        value:
-          provider === 'ollama'
-            ? normalizeOllamaHostValue(
-                state.ollamaStoredHost,
-                bootstrap.ollamaDefaultHost,
-              )
-            : '',
+        value: nextApiValue,
       });
       dispatch({
         type: 'SET_API_KEY_TYPE',
@@ -179,12 +179,12 @@ export function MainView() {
   );
 
   const handleSave = useCallback(() => {
-    const key =
-      state.apiKeyValue.length > 0
-        ? state.apiKeyValue
-        : isOllama
-          ? bootstrap.ollamaDefaultHost
-          : '';
+    let key = '';
+    if (state.apiKeyValue.length > 0) {
+      key = state.apiKeyValue;
+    } else if (isOllama) {
+      key = bootstrap.ollamaDefaultHost;
+    }
     if (isOllama) {
       dispatch({
         type: 'SET_OLLAMA_HOST',

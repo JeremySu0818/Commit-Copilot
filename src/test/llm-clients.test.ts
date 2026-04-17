@@ -23,22 +23,22 @@ function hasExitCode(value: unknown, code: number): boolean {
 void test('createLLMClient uses explicit ollamaHost when provided', () => {
   const client = createLLMClient({
     provider: 'ollama',
-    apiKey: 'http://legacy-host:11434',
-    ollamaHost: 'http://custom-host:11434',
+    apiKey: 'https://legacy-host:11434',
+    ollamaHost: 'https://custom-host:11434',
     model: 'qwen2.5:latest',
   });
 
-  assert.equal(getOllamaHost(client), 'http://custom-host:11434');
+  assert.equal(getOllamaHost(client), 'https://custom-host:11434');
 });
 
 void test('createLLMClient keeps backward compatibility for ollama apiKey host', () => {
   const client = createLLMClient({
     provider: 'ollama',
-    apiKey: 'http://legacy-host:11434',
+    apiKey: 'https://legacy-host:11434',
     model: 'qwen2.5:latest',
   });
 
-  assert.equal(getOllamaHost(client), 'http://legacy-host:11434');
+  assert.equal(getOllamaHost(client), 'https://legacy-host:11434');
 });
 
 void test('createLLMClient falls back to default ollama host when host is empty', () => {

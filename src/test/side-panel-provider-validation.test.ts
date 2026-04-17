@@ -45,6 +45,19 @@ interface ValidationResultMessage extends PostedMessage {
   error?: string;
 }
 
+function toRequestUrl(input: unknown): string {
+  if (typeof input === 'string') {
+    return input;
+  }
+  if (input instanceof URL) {
+    return input.toString();
+  }
+  if (input instanceof Request) {
+    return input.url;
+  }
+  return '';
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }
@@ -99,7 +112,7 @@ async function createHarness(): Promise<Harness> {
   const infoMessages: string[] = [];
   const storedSecrets: { key: string; value: string }[] = [];
 
-  let messageHandler: MessageHandler = () => Promise.resolve();
+  let messageHandler: MessageHandler = (_data: unknown) => Promise.resolve();
   let disposeHandler: (() => void) | null = null;
 
   const noop = (): void => {
@@ -178,8 +191,9 @@ async function createHarness(): Promise<Harness> {
     {} as vscode.CancellationToken,
   );
 
-  const sendMessage = (message: unknown): Promise<void> =>
-    Promise.resolve(messageHandler(message));
+  const sendMessage = async (message: unknown): Promise<void> => {
+    await messageHandler(message);
+  };
 
   return {
     sendMessage,
@@ -382,15 +396,7 @@ void test('Anthropic API key validation uses SDK models.list and avoids fetch to
 
     assert.equal(fetchCalls.length, 1);
     const firstFetchCall = fetchCalls[0];
-    const requestInput = firstFetchCall.input;
-    const requestUrl =
-      typeof requestInput === 'string'
-        ? requestInput
-        : requestInput instanceof URL
-          ? requestInput.toString()
-          : requestInput instanceof Request
-            ? requestInput.url
-            : '';
+    const requestUrl = toRequestUrl(firstFetchCall.input);
     assert.match(requestUrl, /\/v1\/models/);
     assert.doesNotMatch(requestUrl, /\/v1\/messages/);
     assert.match(requestUrl, /limit=1/);

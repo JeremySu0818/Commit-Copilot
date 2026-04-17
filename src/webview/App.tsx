@@ -13,8 +13,8 @@ import { MainView } from './views/MainView';
 import { SettingsView } from './views/SettingsView';
 
 interface AppProps {
-  bootstrap: WebviewBootstrapData;
-  vscode: VSCodeWebviewApi;
+  readonly bootstrap: WebviewBootstrapData;
+  readonly vscode: VSCodeWebviewApi;
 }
 
 export function App({ bootstrap, vscode }: AppProps) {

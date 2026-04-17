@@ -11,6 +11,9 @@ import {
 import type { GitOperations } from '../../commit-copilot';
 import { cleanupTempDir, createTempDir } from '../helpers/temp-dir';
 
+const expectedSummaryFileCount = 4;
+const expectedCommitCount = 3;
+
 void test('parseDiffSummary parses modified, added, deleted, and renamed files', () => {
   const diff = [
     'diff --git a/src/a.ts b/src/a.ts',
@@ -34,7 +37,7 @@ void test('parseDiffSummary parses modified, added, deleted, and renamed files',
   ].join('\n');
 
   const summary = parseDiffSummary(diff);
-  assert.equal(summary.length, 4);
+  assert.equal(summary.length, expectedSummaryFileCount);
   assert.deepEqual(
     summary.map((f) => f.type),
     ['modified', 'added', 'deleted', 'renamed'],
@@ -75,7 +78,7 @@ void test('buildInitialContext includes tool guidance when tools are enabled', a
     fs.writeFileSync(path.join(repoRoot, 'src', 'index.ts'), 'const x = 1;\n');
     const gitOps = {
       listFilesFromGitApi: () => Promise.resolve(['src/index.ts']),
-      getCommitCount: () => Promise.resolve(3),
+      getCommitCount: () => Promise.resolve(expectedCommitCount),
     } as unknown as GitOperations;
     const context = await buildInitialContext(
       'diff --git a/src/index.ts b/src/index.ts',
@@ -90,7 +93,12 @@ void test('buildInitialContext includes tool guidance when tools are enabled', a
       context,
       /`get_diff`, `read_file`, `get_file_outline`, `find_references`, and `search_code`/,
     );
-    assert.match(context, /This repository has 3 commits\./);
+    assert.match(
+      context,
+      new RegExp(
+        `This repository has ${String(expectedCommitCount)} commits\\.`,
+      ),
+    );
   } finally {
     cleanupTempDir(repoRoot);
   }
