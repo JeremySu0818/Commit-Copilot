@@ -762,7 +762,12 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
       apiKey: string,
       text: ReturnType<typeof getSidePanelText>,
     ): Promise<void> => {
-      const builtIn = isAPIProvider(provider) ? provider : DEFAULT_PROVIDER;
+      if (!isAPIProvider(provider)) {
+        postValidationResult(provider, false, { error: text.unknownProvider });
+        return;
+      }
+
+      const builtIn = provider;
       const resolvedApiValue = apiKey.length > 0 ? apiKey : OLLAMA_DEFAULT_HOST;
       const validationResult = await this.validateApiKey(
         builtIn,
