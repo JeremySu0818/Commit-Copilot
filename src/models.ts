@@ -148,17 +148,7 @@ export function getAnthropicModelMaxTokens(
 ): number | undefined {
   const resolvedModelId =
     modelId && modelId.length > 0 ? modelId : DEFAULT_MODELS.anthropic;
-  const selectedModel = ANTHROPIC_MODELS.find(
-    ({ id }) => id === resolvedModelId,
-  );
-  if (selectedModel?.max_tokens !== undefined) {
-    return selectedModel.max_tokens;
-  }
-  if (resolvedModelId === DEFAULT_MODELS.anthropic) {
-    return undefined;
-  }
-  return ANTHROPIC_MODELS.find(({ id }) => id === DEFAULT_MODELS.anthropic)
-    ?.max_tokens;
+  return ANTHROPIC_MODELS.find(({ id }) => id === resolvedModelId)?.max_tokens;
 }
 export const DEFAULT_PROVIDER: APIProvider = 'google';
 export const DEFAULT_MODEL = DEFAULT_MODELS[DEFAULT_PROVIDER];

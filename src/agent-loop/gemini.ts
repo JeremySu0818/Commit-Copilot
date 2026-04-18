@@ -551,7 +551,10 @@ async function runGeminiAgentLoop(
       finalGenerationConfig,
     );
     const text = getGeminiResponseText(finalResponse);
-    return text ? extractCommitMessage(text) : 'chore(project): update files';
+    if (!text) {
+      throw new APIRequestError('Empty final response from Gemini API');
+    }
+    return extractCommitMessage(text);
   } catch (error: unknown) {
     if (
       error instanceof NoChangesError ||

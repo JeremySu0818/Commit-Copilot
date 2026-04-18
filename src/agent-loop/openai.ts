@@ -388,7 +388,10 @@ async function runOpenAIAgentLoop(
     );
     const finalMessage = getAssistantMessage(finalCompletion);
     const text = getOpenAIMessageText(finalMessage?.content);
-    return text ? extractCommitMessage(text) : 'chore(project): update files';
+    if (!text) {
+      throw new APIRequestError('Empty final response from OpenAI API');
+    }
+    return extractCommitMessage(text);
   } catch (error: unknown) {
     if (
       error instanceof NoChangesError ||

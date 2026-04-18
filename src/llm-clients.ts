@@ -37,7 +37,6 @@ const unauthorizedStatus = 401;
 const forbiddenStatus = 403;
 const tooManyRequestsStatus = 429;
 const progressPercentageScale = 100;
-const defaultAnthropicMaxTokens = 65536;
 const geminiAuthMessagePatterns = [
   'unauthorized',
   'forbidden',
@@ -482,8 +481,13 @@ export class AnthropicClient implements ILLMClient {
     }
     this.apiKey = apiKey;
     this.model = pickNonEmpty(model, DEFAULT_MODELS.anthropic);
-    this.maxTokens =
-      getAnthropicModelMaxTokens(this.model) ?? defaultAnthropicMaxTokens;
+    const maxTokens = getAnthropicModelMaxTokens(this.model);
+    if (maxTokens === undefined) {
+      throw new APIRequestError(
+        `Unknown Anthropic model "${this.model}". Add it to ANTHROPIC_MODELS with max_tokens.`,
+      );
+    }
+    this.maxTokens = maxTokens;
     this.systemPrompt = buildAgentSystemPrompt({
       includeFindReferences: false,
       enableTools: false,
