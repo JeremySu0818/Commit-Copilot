@@ -50,7 +50,6 @@ const unauthorizedStatus = 401;
 const forbiddenStatus = 403;
 const tooManyRequestsStatus = 429;
 const nonceByteLength = 16;
-const webviewWarningMessageMaxLength = 300;
 
 interface IncomingMessage extends UnknownRecord {
   type: string;
@@ -1236,9 +1235,10 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
           return;
         }
 
-        const warningMessage = WEBVIEW_LANGUAGE_PACKS[
-          this.getEffectiveDisplayLanguage()
-        ].statuses[warningKey].slice(0, webviewWarningMessageMaxLength);
+        const warningMessage =
+          WEBVIEW_LANGUAGE_PACKS[this.getEffectiveDisplayLanguage()].statuses[
+            warningKey
+          ];
         if (warningMessage.length > 0) {
           vscode.window.showWarningMessage(warningMessage);
         }
