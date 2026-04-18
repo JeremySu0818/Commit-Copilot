@@ -152,7 +152,7 @@ type RepositorySelectionResult =
 
 interface ResolvedProviderContext {
   currentProviderRaw: string;
-  currentProvider: APIProvider;
+  llmProvider: APIProvider;
   isCustom: boolean;
   customProviderConfig?: CustomProviderConfig;
   customProviderId?: string;
@@ -342,7 +342,7 @@ function resolveProviderContext(
   if (!isCustomProvider(currentProviderRaw)) {
     return {
       currentProviderRaw,
-      currentProvider: currentProviderRaw as APIProvider,
+      llmProvider: currentProviderRaw as APIProvider,
       isCustom: false,
     };
   }
@@ -357,7 +357,7 @@ function resolveProviderContext(
   );
   return {
     currentProviderRaw,
-    currentProvider: 'openai',
+    llmProvider: 'openai',
     isCustom: true,
     customProviderConfig,
     customProviderId,
@@ -366,13 +366,13 @@ function resolveProviderContext(
 
 function resolveGenerateMode(
   context: vscode.ExtensionContext,
-  currentProvider: APIProvider,
+  llmProvider: APIProvider,
   requestedGenerateMode: GenerateMode | undefined,
 ): GenerateMode {
   const savedGenerateMode =
     context.globalState.get<GenerateMode>('GENERATE_MODE') ??
     DEFAULT_GENERATE_MODE;
-  if (currentProvider === 'ollama') {
+  if (llmProvider === 'ollama') {
     return 'direct-diff';
   }
   return requestedGenerateMode ?? savedGenerateMode;
@@ -407,9 +407,7 @@ async function resolveProviderApiKey(
       getCustomProviderStorageKey(providerContext.customProviderId),
     );
   }
-  return context.secrets.get(
-    API_KEY_STORAGE_KEYS[providerContext.currentProvider],
-  );
+  return context.secrets.get(API_KEY_STORAGE_KEYS[providerContext.llmProvider]);
 }
 
 function getProviderDisplayName(
@@ -418,7 +416,7 @@ function getProviderDisplayName(
   if (providerContext.isCustom && providerContext.customProviderConfig) {
     return providerContext.customProviderConfig.name;
   }
-  return PROVIDER_DISPLAY_NAMES[providerContext.currentProvider];
+  return PROVIDER_DISPLAY_NAMES[providerContext.llmProvider];
 }
 
 function resolveSavedModel(
@@ -431,7 +429,7 @@ function resolveSavedModel(
     );
   }
   return context.globalState.get<string>(
-    `${providerContext.currentProvider.toUpperCase()}_MODEL`,
+    `${providerContext.llmProvider.toUpperCase()}_MODEL`,
   );
 }
 
@@ -458,12 +456,12 @@ async function ensureProviderApiKey(
   text: ExtensionText,
   outputChannel: vscode.OutputChannel,
 ): Promise<boolean> {
-  if (apiKey || providerContext.currentProvider === 'ollama') {
+  if (apiKey || providerContext.llmProvider === 'ollama') {
     return true;
   }
 
   outputChannel.appendLine(
-    text.output.missingApiKeyWarning(providerContext.currentProvider),
+    text.output.missingApiKeyWarning(providerDisplayName),
   );
   const setKeyAction = text.notification.configureApiKeyAction;
   const result = await vscode.window.showWarningMessage(
@@ -508,7 +506,7 @@ function createBaseGenerateOptions(args: {
   };
   return {
     repository: args.repository,
-    provider: args.providerContext.currentProvider,
+    provider: args.providerContext.llmProvider,
     apiKey: args.apiKey ?? '',
     baseUrl: args.providerContext.customProviderConfig?.baseUrl,
     generateMode: args.currentGenerateMode,
@@ -634,7 +632,7 @@ async function handleQuotaExceededError(args: {
   const url =
     args.providerContext.isCustom && args.providerContext.customProviderConfig
       ? args.providerContext.customProviderConfig.baseUrl
-      : providerConsoleUrls[args.providerContext.currentProvider];
+      : providerConsoleUrls[args.providerContext.llmProvider];
   await vscode.env.openExternal(vscode.Uri.parse(url));
 }
 
@@ -902,7 +900,7 @@ async function executeRewriteCommand(
     const providerContext = resolveProviderContext(context);
     const currentGenerateMode = resolveGenerateMode(
       context,
-      providerContext.currentProvider,
+      providerContext.llmProvider,
       'agentic',
     );
     const currentCommitOutputOptions = resolveCommitOutputOptions(
@@ -964,7 +962,7 @@ async function executeRewriteCommand(
             {
               repository,
               commitHash: targetCommit.hash,
-              provider: providerContext.currentProvider,
+              provider: providerContext.llmProvider,
               apiKey: apiKey ?? '',
               baseUrl: providerContext.customProviderConfig?.baseUrl,
               model: savedModel,
@@ -1264,7 +1262,7 @@ async function executeGenerateCommand(
     const providerContext = resolveProviderContext(context);
     const currentGenerateMode = resolveGenerateMode(
       context,
-      providerContext.currentProvider,
+      providerContext.llmProvider,
       parsedArg.requestedGenerateMode,
     );
     const currentCommitOutputOptions = resolveCommitOutputOptions(
@@ -1305,7 +1303,7 @@ async function executeGenerateCommand(
     }
 
     const progressTitle =
-      providerContext.currentProvider === 'ollama'
+      providerContext.llmProvider === 'ollama'
         ? 'Ollama'
         : providerDisplayName;
     await vscode.window.withProgress(
