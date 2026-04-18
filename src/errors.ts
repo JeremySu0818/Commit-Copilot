@@ -85,14 +85,37 @@ function appendDetails(prefix: string, details?: string): string {
   return `${prefix}: ${details}`;
 }
 
+export type CommitCopilotErrorMessageKey =
+  | 'git.notRepository'
+  | 'rewrite.commitHashRequired'
+  | 'rewrite.commitNotFound'
+  | 'rewrite.mergeCommitUnsupported'
+  | 'rewrite.workspaceNotCleanBoth'
+  | 'rewrite.workspaceNotCleanStaged'
+  | 'rewrite.workspaceNotCleanUnstaged'
+  | 'rewrite.emptyMessage'
+  | 'rewrite.detachedHead'
+  | 'rewrite.commitNotReachable';
+
+export interface CommitCopilotErrorOptions {
+  messageKey?: CommitCopilotErrorMessageKey;
+  messageArgs?: Partial<Record<string, string>>;
+}
+
 export class CommitCopilotError extends Error {
+  public readonly messageKey?: CommitCopilotErrorMessageKey;
+  public readonly messageArgs?: Partial<Record<string, string>>;
+
   constructor(
     message: string,
     public readonly errorCode = 'UNKNOWN',
     public readonly exitCode: number = EXIT_CODES.UNKNOWN_ERROR,
+    options: CommitCopilotErrorOptions = {},
   ) {
     super(message);
     this.name = 'CommitCopilotError';
+    this.messageKey = options.messageKey;
+    this.messageArgs = options.messageArgs;
   }
 }
 

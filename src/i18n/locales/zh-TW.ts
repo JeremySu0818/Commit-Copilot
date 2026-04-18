@@ -2,6 +2,25 @@ import { EXIT_CODES } from '../../errors';
 import type { LocaleTextBundle } from '../types';
 
 export const zhTWLocale: LocaleTextBundle = {
+  commitCopilotErrorMessages: {
+    'rewrite.commitHashRequired': () => '需要提供 commit hash。',
+    'rewrite.commitNotFound': (args) =>
+      '找不到 commit "{commitHash}"。'.replace(
+        '{commitHash}',
+        args.commitHash ?? '',
+      ),
+    'rewrite.mergeCommitUnsupported': (args) =>
+      'Commit "{commitHash}" 是 merge commit，無法透過此流程重寫。'.replace(
+        '{commitHash}',
+        args.commitHash ?? '',
+      ),
+    'rewrite.detachedHead': () => '無法在 detached HEAD 狀態下重寫 commit。',
+    'rewrite.commitNotReachable': (args) =>
+      'Commit "{commitHash}" 不是 HEAD 的祖先。'.replace(
+        '{commitHash}',
+        args.commitHash ?? '',
+      ),
+  },
   errorMessages: {
     [EXIT_CODES.NOT_GIT_REPO]: {
       title: '不是 Git 儲存庫',

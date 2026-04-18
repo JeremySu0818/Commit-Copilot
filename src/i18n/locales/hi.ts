@@ -2,6 +2,26 @@ import { EXIT_CODES } from '../../errors';
 import type { LocaleTextBundle } from '../types';
 
 export const hiLocale: LocaleTextBundle = {
+  commitCopilotErrorMessages: {
+    'rewrite.commitHashRequired': () => 'Commit hash आवश्यक है।',
+    'rewrite.commitNotFound': (args) =>
+      'Commit "{commitHash}" नहीं मिला।'.replace(
+        '{commitHash}',
+        args.commitHash ?? '',
+      ),
+    'rewrite.mergeCommitUnsupported': (args) =>
+      'Commit "{commitHash}" merge commit है और इस workflow से फिर से नहीं लिखा जा सकता।'.replace(
+        '{commitHash}',
+        args.commitHash ?? '',
+      ),
+    'rewrite.detachedHead': () =>
+      'Detached HEAD में commits फिर से नहीं लिखे जा सकते।',
+    'rewrite.commitNotReachable': (args) =>
+      'Commit "{commitHash}" HEAD का ancestor नहीं है।'.replace(
+        '{commitHash}',
+        args.commitHash ?? '',
+      ),
+  },
   errorMessages: {
     [EXIT_CODES.NOT_GIT_REPO]: {
       title: 'गिट रिपॉजिटरी नहीं है',

@@ -1367,6 +1367,10 @@ async function resolveRewriteCommitOrThrow(
       `Commit "${commitHash}" was not found.`,
       'REWRITE_COMMIT_NOT_FOUND',
       EXIT_CODES.UNKNOWN_ERROR,
+      {
+        messageKey: 'rewrite.commitNotFound',
+        messageArgs: { commitHash },
+      },
     );
   }
   if (resolved.parentHashes.length > 1) {
@@ -1374,6 +1378,10 @@ async function resolveRewriteCommitOrThrow(
       `Commit "${commitHash}" is a merge commit and cannot be rewritten by this workflow.`,
       'REWRITE_MERGE_COMMIT_UNSUPPORTED',
       EXIT_CODES.UNKNOWN_ERROR,
+      {
+        messageKey: 'rewrite.mergeCommitUnsupported',
+        messageArgs: { commitHash },
+      },
     );
   }
   return resolved;
@@ -1389,18 +1397,23 @@ async function ensureRewriteWorkspaceCleanOrThrow(
     return;
   }
   let details = '';
+  let messageKey: CommitCopilotError['messageKey'];
   if (hasStagedChanges && hasUnstagedChanges) {
     details =
       'both staged (not committed) and modified (unstaged) changes are present';
+    messageKey = 'rewrite.workspaceNotCleanBoth';
   } else if (hasStagedChanges) {
     details = 'staged (not committed) changes are present';
+    messageKey = 'rewrite.workspaceNotCleanStaged';
   } else {
     details = 'modified (unstaged) changes are present';
+    messageKey = 'rewrite.workspaceNotCleanUnstaged';
   }
   throw new CommitCopilotError(
     `Cannot rewrite commit history while ${details}. Please commit or stash them first.`,
     'REWRITE_WORKSPACE_NOT_CLEAN',
     EXIT_CODES.UNKNOWN_ERROR,
+    { messageKey },
   );
 }
 
@@ -1436,11 +1449,7 @@ export async function listRecentCommitsForRewrite(
 
   const output = await runGitTextCommand({
     repoRoot,
-    args: [
-      'log',
-      '--format=%H%x1f%h%x1f%s%x1f%P%x1e',
-      'HEAD',
-    ],
+    args: ['log', '--format=%H%x1f%h%x1f%s%x1f%P%x1e', 'HEAD'],
     timeout: GIT_LOG_TIMEOUT_MS,
     maxBuffer: GIT_LOG_MAX_BUFFER,
   });
@@ -1478,6 +1487,7 @@ export async function generateHistoricalCommitMessage(
         'Not a git repository. Please run this command inside a git repository.',
         'NOT_GIT_REPO',
         EXIT_CODES.NOT_GIT_REPO,
+        { messageKey: 'git.notRepository' },
       );
     }
 
@@ -1486,6 +1496,7 @@ export async function generateHistoricalCommitMessage(
         'A commit hash is required.',
         'REWRITE_COMMIT_NOT_FOUND',
         EXIT_CODES.UNKNOWN_ERROR,
+        { messageKey: 'rewrite.commitHashRequired' },
       );
     }
 
@@ -1573,6 +1584,7 @@ export async function rewriteHistoricalCommitMessage(
         'Not a git repository. Please run this command inside a git repository.',
         'NOT_GIT_REPO',
         EXIT_CODES.NOT_GIT_REPO,
+        { messageKey: 'git.notRepository' },
       );
     }
     if (!trimmedMessage) {
@@ -1580,6 +1592,7 @@ export async function rewriteHistoricalCommitMessage(
         'A non-empty commit message is required.',
         'REWRITE_EMPTY_MESSAGE',
         EXIT_CODES.UNKNOWN_ERROR,
+        { messageKey: 'rewrite.emptyMessage' },
       );
     }
     await ensureRewriteWorkspaceCleanOrThrow(options.repository);
@@ -1594,6 +1607,7 @@ export async function rewriteHistoricalCommitMessage(
         'Cannot rewrite commits from detached HEAD.',
         'REWRITE_DETACHED_HEAD',
         EXIT_CODES.UNKNOWN_ERROR,
+        { messageKey: 'rewrite.detachedHead' },
       );
     }
 
@@ -1607,6 +1621,10 @@ export async function rewriteHistoricalCommitMessage(
         `Commit "${resolvedCommit.hash}" is not an ancestor of HEAD.`,
         'REWRITE_COMMIT_NOT_REACHABLE',
         EXIT_CODES.UNKNOWN_ERROR,
+        {
+          messageKey: 'rewrite.commitNotReachable',
+          messageArgs: { commitHash: resolvedCommit.hash },
+        },
       );
     }
 
@@ -1670,6 +1688,7 @@ export async function generateCommitMessage(
         'Not a git repository. Please run this command inside a git repository.',
         'NOT_GIT_REPO',
         EXIT_CODES.NOT_GIT_REPO,
+        { messageKey: 'git.notRepository' },
       );
     }
 

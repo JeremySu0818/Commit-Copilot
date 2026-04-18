@@ -2,6 +2,26 @@ import { EXIT_CODES } from '../../errors';
 import type { LocaleTextBundle } from '../types';
 
 export const koLocale: LocaleTextBundle = {
+  commitCopilotErrorMessages: {
+    'rewrite.commitHashRequired': () => '커밋 해시가 필요합니다.',
+    'rewrite.commitNotFound': (args) =>
+      '커밋 "{commitHash}"을 찾을 수 없습니다.'.replace(
+        '{commitHash}',
+        args.commitHash ?? '',
+      ),
+    'rewrite.mergeCommitUnsupported': (args) =>
+      '커밋 "{commitHash}"은 병합 커밋이므로 이 워크플로에서 다시 작성할 수 없습니다.'.replace(
+        '{commitHash}',
+        args.commitHash ?? '',
+      ),
+    'rewrite.detachedHead': () =>
+      'detached HEAD 상태에서는 커밋을 다시 작성할 수 없습니다.',
+    'rewrite.commitNotReachable': (args) =>
+      '커밋 "{commitHash}"은 HEAD의 조상이 아닙니다.'.replace(
+        '{commitHash}',
+        args.commitHash ?? '',
+      ),
+  },
   errorMessages: {
     [EXIT_CODES.NOT_GIT_REPO]: {
       title: 'Git 리포지토리가 아닙니다',

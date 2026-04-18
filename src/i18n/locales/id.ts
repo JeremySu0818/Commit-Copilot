@@ -2,6 +2,26 @@ import { EXIT_CODES } from '../../errors';
 import type { LocaleTextBundle } from '../types';
 
 export const idLocale: LocaleTextBundle = {
+  commitCopilotErrorMessages: {
+    'rewrite.commitHashRequired': () => 'Hash commit diperlukan.',
+    'rewrite.commitNotFound': (args) =>
+      'Commit "{commitHash}" tidak ditemukan.'.replace(
+        '{commitHash}',
+        args.commitHash ?? '',
+      ),
+    'rewrite.mergeCommitUnsupported': (args) =>
+      'Commit "{commitHash}" adalah merge commit dan tidak dapat ditulis ulang oleh workflow ini.'.replace(
+        '{commitHash}',
+        args.commitHash ?? '',
+      ),
+    'rewrite.detachedHead': () =>
+      'Tidak dapat menulis ulang commit dari detached HEAD.',
+    'rewrite.commitNotReachable': (args) =>
+      'Commit "{commitHash}" bukan ancestor dari HEAD.'.replace(
+        '{commitHash}',
+        args.commitHash ?? '',
+      ),
+  },
   errorMessages: {
     [EXIT_CODES.NOT_GIT_REPO]: {
       title: 'Bukan repositori Git',

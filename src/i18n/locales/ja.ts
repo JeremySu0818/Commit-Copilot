@@ -2,6 +2,26 @@ import { EXIT_CODES } from '../../errors';
 import type { LocaleTextBundle } from '../types';
 
 export const jaLocale: LocaleTextBundle = {
+  commitCopilotErrorMessages: {
+    'rewrite.commitHashRequired': () => 'コミットハッシュが必要です。',
+    'rewrite.commitNotFound': (args) =>
+      'コミット "{commitHash}" が見つかりません。'.replace(
+        '{commitHash}',
+        args.commitHash ?? '',
+      ),
+    'rewrite.mergeCommitUnsupported': (args) =>
+      'コミット "{commitHash}" はマージコミットのため、このワークフローでは書き換えられません。'.replace(
+        '{commitHash}',
+        args.commitHash ?? '',
+      ),
+    'rewrite.detachedHead': () =>
+      'detached HEAD ではコミットを書き換えられません。',
+    'rewrite.commitNotReachable': (args) =>
+      'コミット "{commitHash}" は HEAD の祖先ではありません。'.replace(
+        '{commitHash}',
+        args.commitHash ?? '',
+      ),
+  },
   errorMessages: {
     [EXIT_CODES.NOT_GIT_REPO]: {
       title: 'Git リポジトリではありません',

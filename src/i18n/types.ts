@@ -1,3 +1,5 @@
+import type { CommitCopilotErrorMessageKey } from '../errors';
+
 export type DisplayLanguage =
   | 'auto'
   | 'ar'
@@ -52,6 +54,20 @@ export interface ErrorInfo {
   title: string;
   action?: string;
 }
+
+export type LocaleCommitCopilotErrorMessageKey = Exclude<
+  CommitCopilotErrorMessageKey,
+  | 'git.notRepository'
+  | 'rewrite.workspaceNotCleanBoth'
+  | 'rewrite.workspaceNotCleanStaged'
+  | 'rewrite.workspaceNotCleanUnstaged'
+  | 'rewrite.emptyMessage'
+>;
+
+export type CommitCopilotErrorMessages = Record<
+  LocaleCommitCopilotErrorMessageKey,
+  (args: Partial<Record<string, string>>) => string
+>;
 
 export interface ExtensionText {
   output: {
@@ -270,6 +286,7 @@ export interface ProgressMessages {
 
 export interface LocaleTextBundle {
   errorMessages: Record<number, ErrorInfo>;
+  commitCopilotErrorMessages: CommitCopilotErrorMessages;
   extensionText: ExtensionText;
   sidePanelText: SidePanelText;
   webviewLanguagePack: WebviewLanguagePack;

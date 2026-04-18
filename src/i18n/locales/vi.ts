@@ -2,6 +2,26 @@ import { EXIT_CODES } from '../../errors';
 import type { LocaleTextBundle } from '../types';
 
 export const viLocale: LocaleTextBundle = {
+  commitCopilotErrorMessages: {
+    'rewrite.commitHashRequired': () => 'Cần có hash của commit.',
+    'rewrite.commitNotFound': (args) =>
+      'Không tìm thấy commit "{commitHash}".'.replace(
+        '{commitHash}',
+        args.commitHash ?? '',
+      ),
+    'rewrite.mergeCommitUnsupported': (args) =>
+      'Commit "{commitHash}" là merge commit và workflow này không thể viết lại.'.replace(
+        '{commitHash}',
+        args.commitHash ?? '',
+      ),
+    'rewrite.detachedHead': () =>
+      'Không thể viết lại commit khi đang ở detached HEAD.',
+    'rewrite.commitNotReachable': (args) =>
+      'Commit "{commitHash}" không phải ancestor của HEAD.'.replace(
+        '{commitHash}',
+        args.commitHash ?? '',
+      ),
+  },
   errorMessages: {
     [EXIT_CODES.NOT_GIT_REPO]: {
       title: 'Không phải là kho lưu trữ Git',

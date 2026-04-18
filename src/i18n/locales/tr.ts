@@ -2,6 +2,26 @@ import { EXIT_CODES } from '../../errors';
 import type { LocaleTextBundle } from '../types';
 
 export const trLocale: LocaleTextBundle = {
+  commitCopilotErrorMessages: {
+    'rewrite.commitHashRequired': () => 'Commit hash gerekiyor.',
+    'rewrite.commitNotFound': (args) =>
+      'Commit "{commitHash}" bulunamadı.'.replace(
+        '{commitHash}',
+        args.commitHash ?? '',
+      ),
+    'rewrite.mergeCommitUnsupported': (args) =>
+      'Commit "{commitHash}" bir merge commit ve bu workflow tarafından yeniden yazılamaz.'.replace(
+        '{commitHash}',
+        args.commitHash ?? '',
+      ),
+    'rewrite.detachedHead': () =>
+      'Detached HEAD durumunda commitler yeniden yazılamaz.',
+    'rewrite.commitNotReachable': (args) =>
+      'Commit "{commitHash}" HEAD\'in ancestor\'ı değil.'.replace(
+        '{commitHash}',
+        args.commitHash ?? '',
+      ),
+  },
   errorMessages: {
     [EXIT_CODES.NOT_GIT_REPO]: {
       title: 'Git deposu değil',

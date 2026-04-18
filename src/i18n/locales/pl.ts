@@ -2,6 +2,26 @@ import { EXIT_CODES } from '../../errors';
 import type { LocaleTextBundle } from '../types';
 
 export const plLocale: LocaleTextBundle = {
+  commitCopilotErrorMessages: {
+    'rewrite.commitHashRequired': () => 'Wymagany jest hash commita.',
+    'rewrite.commitNotFound': (args) =>
+      'Nie znaleziono commita "{commitHash}".'.replace(
+        '{commitHash}',
+        args.commitHash ?? '',
+      ),
+    'rewrite.mergeCommitUnsupported': (args) =>
+      'Commit "{commitHash}" jest merge commitem i ten workflow nie może go przepisać.'.replace(
+        '{commitHash}',
+        args.commitHash ?? '',
+      ),
+    'rewrite.detachedHead': () =>
+      'Nie można przepisywać commitów w stanie detached HEAD.',
+    'rewrite.commitNotReachable': (args) =>
+      'Commit "{commitHash}" nie jest przodkiem HEAD.'.replace(
+        '{commitHash}',
+        args.commitHash ?? '',
+      ),
+  },
   errorMessages: {
     [EXIT_CODES.NOT_GIT_REPO]: {
       title: 'Brak repozytorium Git',

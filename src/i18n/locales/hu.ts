@@ -2,6 +2,26 @@ import { EXIT_CODES } from '../../errors';
 import type { LocaleTextBundle } from '../types';
 
 export const huLocale: LocaleTextBundle = {
+  commitCopilotErrorMessages: {
+    'rewrite.commitHashRequired': () => 'Commit hash megadása szükséges.',
+    'rewrite.commitNotFound': (args) =>
+      'A(z) "{commitHash}" commit nem található.'.replace(
+        '{commitHash}',
+        args.commitHash ?? '',
+      ),
+    'rewrite.mergeCommitUnsupported': (args) =>
+      'A(z) "{commitHash}" commit merge commit, és ez a folyamat nem tudja átírni.'.replace(
+        '{commitHash}',
+        args.commitHash ?? '',
+      ),
+    'rewrite.detachedHead': () =>
+      'Detached HEAD állapotban nem lehet commitokat átírni.',
+    'rewrite.commitNotReachable': (args) =>
+      'A(z) "{commitHash}" commit nem a HEAD őse.'.replace(
+        '{commitHash}',
+        args.commitHash ?? '',
+      ),
+  },
   errorMessages: {
     [EXIT_CODES.NOT_GIT_REPO]: {
       title: 'Nem Git adattár',

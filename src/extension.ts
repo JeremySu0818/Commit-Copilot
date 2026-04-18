@@ -14,6 +14,7 @@ import {
 import {
   DISPLAY_LANGUAGE_STATE_KEY,
   getExtensionText,
+  getLocalizedCommitCopilotErrorMessage,
   getLocalizedErrorInfo,
   getModelNameRequiredText,
   normalizeDisplayLanguage,
@@ -655,6 +656,32 @@ function isIgnoredNoChangeExitCode(exitCode: number): boolean {
   );
 }
 
+function getUserFacingErrorMessage(
+  language: ReturnType<typeof getCurrentLanguage>,
+  error: CommitCopilotError,
+): string {
+  return (
+    getLocalizedCommitCopilotErrorMessage(language, error) ?? error.message
+  );
+}
+
+function getUserFacingErrorNotification(args: {
+  language: ReturnType<typeof getCurrentLanguage>;
+  error: CommitCopilotError;
+  errorInfo: ReturnType<typeof getLocalizedErrorInfo>;
+}): string {
+  const localizedMessage = getLocalizedCommitCopilotErrorMessage(
+    args.language,
+    args.error,
+  );
+  if (localizedMessage) {
+    return localizedMessage;
+  }
+  return `${args.errorInfo.title}: ${args.error.message}. ${
+    args.errorInfo.action ?? ''
+  }`;
+}
+
 async function handleGenerationError(args: {
   result: GenerateResult;
   outputChannel: vscode.OutputChannel;
@@ -670,14 +697,18 @@ async function handleGenerationError(args: {
     args.text.output.generationError(error.errorCode, error.message),
   );
   const errorInfo = getLocalizedErrorInfo(args.language, error.exitCode);
+  const userFacingErrorMessage = getUserFacingErrorMessage(
+    args.language,
+    error,
+  );
   if (isApiKeyExitCode(error.exitCode)) {
-    await handleApiKeyError(errorInfo, error.message, args.text);
+    await handleApiKeyError(errorInfo, userFacingErrorMessage, args.text);
     return;
   }
   if (error.exitCode === EXIT_CODES.QUOTA_EXCEEDED) {
     await handleQuotaExceededError({
       errorInfo,
-      errorMessage: error.message,
+      errorMessage: userFacingErrorMessage,
       text: args.text,
       providerContext: args.providerContext,
     });
@@ -691,7 +722,11 @@ async function handleGenerationError(args: {
     return;
   }
   vscode.window.showErrorMessage(
-    `${errorInfo.title}: ${error.message}. ${errorInfo.action ?? ''}`,
+    getUserFacingErrorNotification({
+      language: args.language,
+      error,
+      errorInfo,
+    }),
   );
 }
 
@@ -1056,10 +1091,16 @@ async function executeRewriteCommand(
       );
 
     if (!rewriteApplyResult.success) {
-      const message =
+      const rawMessage =
         rewriteApplyResult.error?.message ??
         text.notification.rewriteFailedHistory;
-      outputChannel.appendLine(`[Rewrite] ${message}`);
+      const message = rewriteApplyResult.error
+        ? (getLocalizedCommitCopilotErrorMessage(
+            language,
+            rewriteApplyResult.error,
+          ) ?? text.notification.rewriteFailedHistory)
+        : text.notification.rewriteFailedHistory;
+      outputChannel.appendLine(`[Rewrite] ${rawMessage}`);
       vscode.window.showErrorMessage(message);
       return;
     }

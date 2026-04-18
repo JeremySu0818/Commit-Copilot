@@ -2,6 +2,26 @@ import { EXIT_CODES } from '../../errors';
 import type { LocaleTextBundle } from '../types';
 
 export const csLocale: LocaleTextBundle = {
+  commitCopilotErrorMessages: {
+    'rewrite.commitHashRequired': () => 'Je vyžadován hash commitu.',
+    'rewrite.commitNotFound': (args) =>
+      'Commit "{commitHash}" nebyl nalezen.'.replace(
+        '{commitHash}',
+        args.commitHash ?? '',
+      ),
+    'rewrite.mergeCommitUnsupported': (args) =>
+      'Commit "{commitHash}" je merge commit a tento postup ho neumí přepsat.'.replace(
+        '{commitHash}',
+        args.commitHash ?? '',
+      ),
+    'rewrite.detachedHead': () =>
+      'Commity nelze přepisovat ve stavu detached HEAD.',
+    'rewrite.commitNotReachable': (args) =>
+      'Commit "{commitHash}" není předkem HEAD.'.replace(
+        '{commitHash}',
+        args.commitHash ?? '',
+      ),
+  },
   errorMessages: {
     [EXIT_CODES.NOT_GIT_REPO]: {
       title: 'Není repozitář Git',

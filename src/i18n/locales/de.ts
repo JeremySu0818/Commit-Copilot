@@ -2,6 +2,26 @@ import { EXIT_CODES } from '../../errors';
 import type { LocaleTextBundle } from '../types';
 
 export const deLocale: LocaleTextBundle = {
+  commitCopilotErrorMessages: {
+    'rewrite.commitHashRequired': () => 'Ein Commit-Hash ist erforderlich.',
+    'rewrite.commitNotFound': (args) =>
+      'Commit "{commitHash}" wurde nicht gefunden.'.replace(
+        '{commitHash}',
+        args.commitHash ?? '',
+      ),
+    'rewrite.mergeCommitUnsupported': (args) =>
+      'Commit "{commitHash}" ist ein Merge-Commit und kann mit diesem Ablauf nicht umgeschrieben werden.'.replace(
+        '{commitHash}',
+        args.commitHash ?? '',
+      ),
+    'rewrite.detachedHead': () =>
+      'Commits können im detached HEAD-Zustand nicht umgeschrieben werden.',
+    'rewrite.commitNotReachable': (args) =>
+      'Commit "{commitHash}" ist kein Vorfahr von HEAD.'.replace(
+        '{commitHash}',
+        args.commitHash ?? '',
+      ),
+  },
   errorMessages: {
     [EXIT_CODES.NOT_GIT_REPO]: {
       title: 'Kein Git-Repository',

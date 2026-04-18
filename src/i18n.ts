@@ -1,4 +1,4 @@
-import { EXIT_CODES } from './errors';
+import { EXIT_CODES, type CommitCopilotError } from './errors';
 import { LOCALES } from './i18n/locales';
 import type {
   DisplayLanguage,
@@ -180,6 +180,34 @@ export function getLocalizedErrorInfo(
     return messages[exitCode];
   }
   return messages[EXIT_CODES.UNKNOWN_ERROR];
+}
+
+export function getLocalizedCommitCopilotErrorMessage(
+  language: EffectiveDisplayLanguage,
+  error: CommitCopilotError,
+): string | undefined {
+  const key = error.messageKey;
+  if (!key) {
+    return undefined;
+  }
+
+  const text = LOCALES[language].extensionText;
+  switch (key) {
+    case 'git.notRepository':
+      return text.notification.repoNotFound;
+    case 'rewrite.workspaceNotCleanBoth':
+      return text.notification.rewriteWorkspaceDirtyBoth;
+    case 'rewrite.workspaceNotCleanStaged':
+      return text.notification.rewriteWorkspaceDirtyStaged;
+    case 'rewrite.workspaceNotCleanUnstaged':
+      return text.notification.rewriteWorkspaceDirtyUnstaged;
+    case 'rewrite.emptyMessage':
+      return text.notification.commitMessageCannotBeEmpty;
+    default:
+      return LOCALES[language].commitCopilotErrorMessages[key](
+        error.messageArgs ?? {},
+      );
+  }
 }
 
 export function getExtensionText(

@@ -2,6 +2,26 @@ import { EXIT_CODES } from '../../errors';
 import type { LocaleTextBundle } from '../types';
 
 export const ruLocale: LocaleTextBundle = {
+  commitCopilotErrorMessages: {
+    'rewrite.commitHashRequired': () => 'Требуется hash коммита.',
+    'rewrite.commitNotFound': (args) =>
+      'Коммит "{commitHash}" не найден.'.replace(
+        '{commitHash}',
+        args.commitHash ?? '',
+      ),
+    'rewrite.mergeCommitUnsupported': (args) =>
+      'Коммит "{commitHash}" является merge-коммитом, и этот workflow не может его переписать.'.replace(
+        '{commitHash}',
+        args.commitHash ?? '',
+      ),
+    'rewrite.detachedHead': () =>
+      'Нельзя переписывать коммиты в состоянии detached HEAD.',
+    'rewrite.commitNotReachable': (args) =>
+      'Коммит "{commitHash}" не является предком HEAD.'.replace(
+        '{commitHash}',
+        args.commitHash ?? '',
+      ),
+  },
   errorMessages: {
     [EXIT_CODES.NOT_GIT_REPO]: {
       title: 'Не Git-репозиторий',

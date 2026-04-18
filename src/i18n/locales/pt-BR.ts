@@ -2,6 +2,26 @@ import { EXIT_CODES } from '../../errors';
 import type { LocaleTextBundle } from '../types';
 
 export const ptBRLocale: LocaleTextBundle = {
+  commitCopilotErrorMessages: {
+    'rewrite.commitHashRequired': () => 'Um hash de commit é obrigatório.',
+    'rewrite.commitNotFound': (args) =>
+      'O commit "{commitHash}" não foi encontrado.'.replace(
+        '{commitHash}',
+        args.commitHash ?? '',
+      ),
+    'rewrite.mergeCommitUnsupported': (args) =>
+      'O commit "{commitHash}" é um merge commit e não pode ser reescrito por este fluxo.'.replace(
+        '{commitHash}',
+        args.commitHash ?? '',
+      ),
+    'rewrite.detachedHead': () =>
+      'Não é possível reescrever commits em detached HEAD.',
+    'rewrite.commitNotReachable': (args) =>
+      'O commit "{commitHash}" não é ancestral de HEAD.'.replace(
+        '{commitHash}',
+        args.commitHash ?? '',
+      ),
+  },
   errorMessages: {
     [EXIT_CODES.NOT_GIT_REPO]: {
       title: 'Não é um repositório Git',

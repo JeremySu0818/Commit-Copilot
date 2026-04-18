@@ -2,6 +2,26 @@ import { EXIT_CODES } from '../../errors';
 import type { LocaleTextBundle } from '../types';
 
 export const arLocale: LocaleTextBundle = {
+  commitCopilotErrorMessages: {
+    'rewrite.commitHashRequired': () => 'مطلوب hash للـ commit.',
+    'rewrite.commitNotFound': (args) =>
+      'لم يتم العثور على commit "{commitHash}".'.replace(
+        '{commitHash}',
+        args.commitHash ?? '',
+      ),
+    'rewrite.mergeCommitUnsupported': (args) =>
+      'commit "{commitHash}" هو commit دمج ولا يمكن إعادة كتابته بواسطة هذا المسار.'.replace(
+        '{commitHash}',
+        args.commitHash ?? '',
+      ),
+    'rewrite.detachedHead': () =>
+      'لا يمكن إعادة كتابة commits من detached HEAD.',
+    'rewrite.commitNotReachable': (args) =>
+      'commit "{commitHash}" ليس ضمن أسلاف HEAD.'.replace(
+        '{commitHash}',
+        args.commitHash ?? '',
+      ),
+  },
   errorMessages: {
     [EXIT_CODES.NOT_GIT_REPO]: {
       title: 'ليس مستودع Git',
