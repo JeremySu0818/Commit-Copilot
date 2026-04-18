@@ -12,7 +12,6 @@ import { clearRequireCache, withModuleMock } from './helpers/module-mock';
 import { cleanupTempDir, createTempDir } from './helpers/temp-dir';
 
 const MODULE_PATH = path.resolve(__dirname, '..', 'commit-copilot');
-const rewriteListLimit = 10;
 const expectedCommitCountInHistory = 3;
 const uncappedRewriteCommitCount = 60;
 const latestCommitIndex = 0;
@@ -207,10 +206,7 @@ void test('listRecentCommitsForRewrite returns branch history entries', async ()
   const fixture = initTestRepo();
   try {
     const mod = await loadCommitCopilotWithMocks();
-    const commits = await mod.listRecentCommitsForRewrite(
-      fixture.repository,
-      rewriteListLimit,
-    );
+    const commits = await mod.listRecentCommitsForRewrite(fixture.repository);
     assert.equal(commits.length >= expectedCommitCountInHistory, true);
     assert.equal(commits[latestCommitIndex]?.hash, fixture.commits.third);
     assert.equal(commits[middleCommitIndex]?.hash, fixture.commits.second);

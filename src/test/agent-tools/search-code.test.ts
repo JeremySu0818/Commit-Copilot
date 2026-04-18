@@ -8,6 +8,7 @@ import { clearRequireCache, withModuleMock } from '../helpers/module-mock';
 import { MockUri, createVscodeMock } from '../helpers/vscode-mock';
 
 const MODULE_PATH = '../../agent-tools/executors/search-code';
+const uncappedSearchFileCount = 60;
 
 async function loadModule(
   vscodeMock: unknown,
@@ -102,4 +103,25 @@ void test('executeSearchCode prefers Git file list when available', async () => 
 
   assert.match(output, /src\/a\.ts/);
   assert.doesNotMatch(output, /node_modules\/pkg\/index\.js/);
+});
+
+void test('executeSearchCode does not cap default matching files', async () => {
+  const repoRoot = path.resolve('repo');
+  const files = Array.from({ length: uncappedSearchFileCount }, (_, index) =>
+    MockUri.file(path.join(repoRoot, 'src', `file-${String(index)}.ts`)),
+  );
+
+  const vscodeMock = createVscodeMock({
+    findFiles: () => Promise.resolve(files),
+    readFile: () => Promise.resolve(Buffer.from('const needle = true;\n')),
+  });
+
+  const { executeSearchCode } = await loadModule(vscodeMock);
+  const output = await executeSearchCode(repoRoot, { query: 'needle' });
+
+  assert.match(
+    output,
+    new RegExp(`matches in ${String(uncappedSearchFileCount)} files`),
+  );
+  assert.doesNotMatch(output, /results capped/);
 });

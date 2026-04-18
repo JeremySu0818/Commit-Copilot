@@ -141,7 +141,7 @@ export const AGENT_TOOLS: ToolDefinition[] = [
         maxResults: {
           type: 'number',
           description:
-            'Optional. Maximum number of matching files to return. Defaults to 20.',
+            'Optional. Maximum number of matching files to return. Defaults to no limit.',
         },
       },
       required: ['query'],

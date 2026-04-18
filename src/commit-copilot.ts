@@ -47,7 +47,6 @@ export {
 } from './errors';
 
 const STATUS_UNTRACKED = 7;
-const MAX_COMMIT_LOG_ENTRIES_FALLBACK = 1000;
 const GIT_COMMIT_COUNT_TIMEOUT_MS = 15000;
 const GIT_LS_FILES_TIMEOUT_MS = 15000;
 const bytesPerKiB = 1024;
@@ -417,17 +416,6 @@ function parseCommitMessages(value: string): string[] {
     .split(commitRecordSeparator)
     .map((entry) => entry.replace(/\r/g, '').trim())
     .filter((entry) => entry.length > 0);
-}
-
-function toCommitLimitArgs(value: number | undefined): string[] {
-  if (typeof value !== 'number' || !Number.isFinite(value)) {
-    return [];
-  }
-  const rounded = Math.floor(value);
-  if (rounded <= 0) {
-    return [];
-  }
-  return ['-n', String(rounded)];
 }
 
 async function runGitTextCommand(params: {
@@ -1042,16 +1030,11 @@ export class GitOperations {
         console.error('Git log API not available on repository');
         return null;
       }
-      const commits = await repoAny.log({
-        maxEntries: MAX_COMMIT_LOG_ENTRIES_FALLBACK,
-      });
+      const commits = await repoAny.log();
       if (!Array.isArray(commits)) {
         return null;
       }
-      if (commits.length < MAX_COMMIT_LOG_ENTRIES_FALLBACK) {
-        return commits.length;
-      }
-      return null;
+      return commits.length;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       if (isNoCommitsError(message)) {
@@ -1444,7 +1427,6 @@ function toCommitCopilotError(
 
 export async function listRecentCommitsForRewrite(
   repository: GitRepository,
-  limit?: number,
 ): Promise<RewriteCommitEntry[]> {
   const repoRoot = repository.rootUri.fsPath;
   if (!repoRoot) {
@@ -1460,7 +1442,6 @@ export async function listRecentCommitsForRewrite(
     repoRoot,
     args: [
       'log',
-      ...toCommitLimitArgs(limit),
       '--format=%H%x1f%h%x1f%s%x1f%P%x1e',
       'HEAD',
     ],

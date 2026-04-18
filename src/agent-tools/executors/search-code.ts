@@ -211,7 +211,6 @@ async function executeSearchCode(
   gitOps?: GitOperations,
   isStaged = false,
 ): Promise<string> {
-  const maxSearchFileCap = 50;
   const query = asString(args.query);
   if (!query) {
     return "Error: 'query' is required. Provide a keyword or text pattern to search for.";
@@ -219,7 +218,7 @@ async function executeSearchCode(
 
   const caseSensitive = parseBooleanArg(args.caseSensitive) ?? false;
   const maxResults = parseIntegerArg(args.maxResults) ?? MAX_SEARCH_FILES;
-  const effectiveMaxFiles = Math.min(Math.max(1, maxResults), maxSearchFileCap);
+  const effectiveMaxFiles = Math.max(1, maxResults);
 
   let files: vscode.Uri[];
   try {
