@@ -20,6 +20,13 @@ const oldestCommitIndex = 2;
 const parentCountSingle = 1;
 const recentMessageSampleSize = 2;
 const recentLogCount = 3;
+const bytesPerKiB = 1024;
+const bytesPerMiB = bytesPerKiB * bytesPerKiB;
+const largeSnapshotFileSizeMiB = 21;
+const largeSnapshotFileSizeBytes = largeSnapshotFileSizeMiB * bytesPerMiB;
+const largeSnapshotBinaryFillByte = 0x61;
+const snapshotSymlinkProbeTargetFile = '__symlink_probe_target__.txt';
+const snapshotSymlinkProbeFile = '__symlink_probe__.txt';
 
 function resolveGitExecutablePath(): string {
   const envPath = process.env.COMMIT_COPILOT_GIT_PATH;
@@ -111,6 +118,21 @@ function createRepositoryWithDirtyState(
       untrackedChanges: [],
     },
   };
+}
+
+function supportsSymlinkCreation(baseDir: string): boolean {
+  const targetPath = path.join(baseDir, snapshotSymlinkProbeTargetFile);
+  const symlinkPath = path.join(baseDir, snapshotSymlinkProbeFile);
+  try {
+    fs.writeFileSync(targetPath, 'probe');
+    fs.symlinkSync(snapshotSymlinkProbeTargetFile, symlinkPath);
+    return fs.lstatSync(symlinkPath).isSymbolicLink();
+  } catch {
+    return false;
+  } finally {
+    fs.rmSync(symlinkPath, { force: true });
+    fs.rmSync(targetPath, { force: true });
+  }
 }
 
 function initTestRepo(): TestRepo {
@@ -335,6 +357,151 @@ void test('generateHistoricalCommitMessage supports non-ASCII file paths in rewr
       result.message,
       'fix(core): rewrite\n\nnormalize non-ascii snapshot',
     );
+  } finally {
+    cleanupTempDir(repoRoot);
+  }
+});
+
+void test('generateHistoricalCommitMessage restores symlink files in rewrite snapshot', async (context) => {
+  const repoRoot = createTempDir();
+  if (!supportsSymlinkCreation(repoRoot)) {
+    cleanupTempDir(repoRoot);
+    context.skip('Symlink creation is not available in this environment.');
+    return;
+  }
+
+  const repository = createRepository(repoRoot);
+  const symlinkTargetRelativePath = 'src/target.ts';
+  const symlinkRelativePath = 'src/link.ts';
+  const appRelativePath = 'app.ts';
+  const symlinkTargetFileName = 'target.ts';
+  let capturedSymlinkIsLink = false;
+  let capturedSymlinkTarget = '';
+  let capturedSnapshotFiles: string[] = [];
+
+  try {
+    git(repoRoot, ['init']);
+    git(repoRoot, ['config', 'user.email', 'test@example.com']);
+    git(repoRoot, ['config', 'user.name', 'Commit Copilot Test']);
+
+    const appPath = path.join(repoRoot, appRelativePath);
+    fs.writeFileSync(appPath, 'export const value = 1;\n');
+
+    const symlinkTargetAbs = path.join(
+      repoRoot,
+      ...symlinkTargetRelativePath.split('/'),
+    );
+    const symlinkAbs = path.join(repoRoot, ...symlinkRelativePath.split('/'));
+    fs.mkdirSync(path.dirname(symlinkTargetAbs), { recursive: true });
+    fs.writeFileSync(symlinkTargetAbs, 'export const target = true;\n');
+    fs.symlinkSync(symlinkTargetFileName, symlinkAbs);
+
+    git(repoRoot, ['add', appRelativePath, symlinkTargetRelativePath, symlinkRelativePath]);
+    git(repoRoot, ['commit', '-m', 'feat(core): add symlink']);
+
+    fs.writeFileSync(appPath, 'export const value = 2;\n');
+    git(repoRoot, ['add', appRelativePath]);
+    git(repoRoot, ['commit', '-m', 'bad commit message']);
+
+    const targetCommitHash = git(repoRoot, ['rev-parse', 'HEAD']);
+    const mod = await loadCommitCopilotWithMocks({
+      runAgentLoop: async (input) => {
+        const snapshotRoot = asString(input.repoRoot);
+        const symlinkSnapshotAbs = path.join(
+          snapshotRoot,
+          ...symlinkRelativePath.split('/'),
+        );
+        capturedSymlinkIsLink = fs.lstatSync(symlinkSnapshotAbs).isSymbolicLink();
+        capturedSymlinkTarget = fs.readlinkSync(symlinkSnapshotAbs);
+        const gitOps = input.gitOps as {
+          listFilesFromGitApi: () => Promise<string[] | null>;
+        };
+        capturedSnapshotFiles = (await gitOps.listFilesFromGitApi()) ?? [];
+        return 'fix(core): rewrite\n\nrestore symlink snapshot';
+      },
+    });
+
+    const result = await mod.generateHistoricalCommitMessage({
+      repository,
+      commitHash: targetCommitHash,
+      provider: 'openai',
+      apiKey: 'token',
+      generateMode: 'agentic',
+      language: 'en',
+    });
+
+    assert.equal(result.success, true);
+    assert.equal(capturedSymlinkIsLink, true);
+    assert.equal(capturedSymlinkTarget, symlinkTargetFileName);
+    assert.equal(capturedSnapshotFiles.includes(symlinkRelativePath), true);
+  } finally {
+    cleanupTempDir(repoRoot);
+  }
+});
+
+void test('generateHistoricalCommitMessage skips oversized files in rewrite snapshot without failing', async () => {
+  const repoRoot = createTempDir();
+  const repository = createRepository(repoRoot);
+  const appRelativePath = 'app.ts';
+  const largeFileRelativePath = 'assets/large.bin';
+  let capturedSnapshotFiles: string[] = [];
+  let capturedLargeFileExists = true;
+
+  try {
+    git(repoRoot, ['init']);
+    git(repoRoot, ['config', 'user.email', 'test@example.com']);
+    git(repoRoot, ['config', 'user.name', 'Commit Copilot Test']);
+
+    const appPath = path.join(repoRoot, appRelativePath);
+    fs.writeFileSync(appPath, 'export const value = 1;\n');
+
+    const largeFileAbsPath = path.join(
+      repoRoot,
+      ...largeFileRelativePath.split('/'),
+    );
+    fs.mkdirSync(path.dirname(largeFileAbsPath), { recursive: true });
+    fs.writeFileSync(
+      largeFileAbsPath,
+      Buffer.alloc(largeSnapshotFileSizeBytes, largeSnapshotBinaryFillByte),
+    );
+
+    git(repoRoot, ['add', appRelativePath, largeFileRelativePath]);
+    git(repoRoot, ['commit', '-m', 'feat(core): add large binary']);
+
+    fs.writeFileSync(appPath, 'export const value = 2;\n');
+    git(repoRoot, ['add', appRelativePath]);
+    git(repoRoot, ['commit', '-m', 'bad commit message']);
+
+    const targetCommitHash = git(repoRoot, ['rev-parse', 'HEAD']);
+    const mod = await loadCommitCopilotWithMocks({
+      runAgentLoop: async (input) => {
+        const snapshotRoot = asString(input.repoRoot);
+        const largeSnapshotAbsPath = path.join(
+          snapshotRoot,
+          ...largeFileRelativePath.split('/'),
+        );
+        capturedLargeFileExists = fs.existsSync(largeSnapshotAbsPath);
+        const gitOps = input.gitOps as {
+          listFilesFromGitApi: () => Promise<string[] | null>;
+        };
+        capturedSnapshotFiles = (await gitOps.listFilesFromGitApi()) ?? [];
+        return 'fix(core): rewrite\n\nskip oversized snapshot file';
+      },
+    });
+
+    const result = await mod.generateHistoricalCommitMessage({
+      repository,
+      commitHash: targetCommitHash,
+      provider: 'openai',
+      apiKey: 'token',
+      generateMode: 'agentic',
+      language: 'en',
+    });
+
+    assert.equal(result.success, true);
+    assert.equal(capturedSnapshotFiles.includes(appRelativePath), true);
+    assert.equal(capturedSnapshotFiles.includes(largeFileRelativePath), false);
+    assert.equal(capturedLargeFileExists, false);
   } finally {
     cleanupTempDir(repoRoot);
   }

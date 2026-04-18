@@ -79,6 +79,11 @@ const rewriteCommitParentsFieldIndex = 3;
 const rewriteSnapshotHashLength = 12;
 const rewriteSnapshotTimestampRadix = 36;
 const gitCommandEnvPathKey = 'COMMIT_COPILOT_GIT_PATH';
+const gitTreeRecordSeparator = '\0';
+const gitTreeMetadataPathSeparator = '\t';
+const gitTreeMetadataFieldCountMin = 2;
+const gitTreeBlobType = 'blob';
+const gitTreeSymlinkMode = '120000';
 const byteMask = 0xff;
 const gitPathOctalMaxDigits = 3;
 const gitEscapeSequenceLength = 2;
@@ -223,6 +228,12 @@ interface ResolvedRewriteCommit {
 interface RewriteCommitSnapshot {
   workspaceRoot: string;
   files: string[];
+}
+
+interface RevisionTreeEntry {
+  path: string;
+  mode: string;
+  type: string;
 }
 
 const gitQuotedPathEscapeToByte: Readonly<Record<string, number>> = {
@@ -512,17 +523,105 @@ async function readCommitDiff(
 async function listRevisionFiles(
   repoRoot: string,
   revision: string,
-): Promise<string[]> {
+): Promise<RevisionTreeEntry[]> {
   const output = await runGitTextCommand({
     repoRoot,
-    args: ['-c', 'core.quotepath=false', 'ls-tree', '-r', '--name-only', revision],
+    args: ['-c', 'core.quotepath=false', 'ls-tree', '-rz', revision],
     timeout: GIT_LOG_TIMEOUT_MS,
     maxBuffer: GIT_LOG_MAX_BUFFER,
   });
-  return output
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter((line) => line.length > 0);
+  return parseRevisionTreeEntries(output, repoRoot);
+}
+
+function parseRevisionTreeEntries(
+  value: string,
+  repoRoot: string,
+): RevisionTreeEntry[] {
+  const entries: RevisionTreeEntry[] = [];
+  const records = value.split(gitTreeRecordSeparator);
+  for (const record of records) {
+    if (!record) {
+      continue;
+    }
+
+    const separatorIndex = record.indexOf(gitTreeMetadataPathSeparator);
+    if (separatorIndex <= 0) {
+      continue;
+    }
+
+    const metadata = record.slice(0, separatorIndex).trim();
+    const rawPath = record.slice(separatorIndex + 1);
+    const metadataParts = metadata.split(/\s+/);
+    if (metadataParts.length < gitTreeMetadataFieldCountMin) {
+      continue;
+    }
+
+    const mode = metadataParts[0];
+    const type = metadataParts[1];
+    const normalizedPath = normalizeGitPathCandidate(rawPath, repoRoot);
+    if (!mode || !type || !normalizedPath) {
+      continue;
+    }
+
+    entries.push({ path: normalizedPath, mode, type });
+  }
+  return entries;
+}
+
+function isGitShowMaxBufferExceeded(error: unknown): boolean {
+  const message = getStringProperty(error, 'message').toLowerCase();
+  return message.includes('maxbuffer') && message.includes('exceeded');
+}
+
+function isSymlinkTreeEntry(entry: RevisionTreeEntry): boolean {
+  return entry.type === gitTreeBlobType && entry.mode === gitTreeSymlinkMode;
+}
+
+function shouldSkipTreeEntry(entry: RevisionTreeEntry): boolean {
+  return entry.type !== gitTreeBlobType;
+}
+
+async function readSnapshotBlob(params: {
+  repoRoot: string;
+  revision: string;
+  relPath: string;
+}): Promise<Buffer | null> {
+  try {
+    return await runGitBufferCommand({
+      repoRoot: params.repoRoot,
+      args: ['show', `${params.revision}:${params.relPath}`],
+      timeout: GIT_SHOW_TIMEOUT_MS,
+      maxBuffer: GIT_SHOW_MAX_BUFFER,
+    });
+  } catch (error) {
+    if (isGitShowMaxBufferExceeded(error)) {
+      console.warn(
+        `[Commit-Copilot] Skipping rewrite snapshot file '${params.relPath}' at revision '${params.revision}' because it exceeds ${String(gitShowMaxBufferMiB)} MiB.`,
+      );
+      return null;
+    }
+    throw error;
+  }
+}
+
+function restoreSnapshotSymlink(
+  absPath: string,
+  relPath: string,
+  symlinkTargetBuffer: Buffer,
+): boolean {
+  try {
+    fs.symlinkSync(symlinkTargetBuffer.toString('utf8'), absPath);
+    return true;
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : getStringProperty(error, 'message') || 'Unknown symlink error';
+    console.warn(
+      `[Commit-Copilot] Failed to restore symlink '${relPath}' in rewrite snapshot: ${message}. Skipping file.`,
+    );
+    return false;
+  }
 }
 
 function removeRewriteSnapshot(workspaceRoot: string): void {
@@ -546,24 +645,40 @@ async function createRewriteCommitSnapshot(params: {
 
   fs.mkdirSync(workspaceRoot, { recursive: true });
   try {
-    const files = await listRevisionFiles(params.repoRoot, params.revision);
-    for (const relPath of files) {
+    const entries = await listRevisionFiles(params.repoRoot, params.revision);
+    const restoredFiles: string[] = [];
+    for (const entry of entries) {
+      if (shouldSkipTreeEntry(entry)) {
+        continue;
+      }
+
+      const relPath = entry.path;
       const absPath = path.resolve(workspaceRoot, relPath);
       if (!isPathWithinDirectory(workspaceRoot, absPath)) {
         continue;
       }
 
-      const fileBuffer = await runGitBufferCommand({
+      const fileBuffer = await readSnapshotBlob({
         repoRoot: params.repoRoot,
-        args: ['show', `${params.revision}:${relPath}`],
-        timeout: GIT_SHOW_TIMEOUT_MS,
-        maxBuffer: GIT_SHOW_MAX_BUFFER,
+        revision: params.revision,
+        relPath,
       });
+      if (fileBuffer === null) {
+        continue;
+      }
+
       fs.mkdirSync(path.dirname(absPath), { recursive: true });
-      fs.writeFileSync(absPath, fileBuffer);
+      if (isSymlinkTreeEntry(entry)) {
+        if (!restoreSnapshotSymlink(absPath, relPath, fileBuffer)) {
+          continue;
+        }
+      } else {
+        fs.writeFileSync(absPath, fileBuffer);
+      }
+      restoredFiles.push(relPath);
     }
 
-    return { workspaceRoot, files };
+    return { workspaceRoot, files: restoredFiles };
   } catch (error) {
     removeRewriteSnapshot(workspaceRoot);
     throw error;
