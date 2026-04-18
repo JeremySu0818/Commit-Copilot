@@ -102,7 +102,7 @@
     "check-types": "tsc --noEmit --project tsconfig.json && tsc --noEmit --project tsconfig.webview.json",
     "lint": "eslint src --ext ts,tsx",
     "test:build": "tsc --project tsconfig.test.json",
-    "test:unit": "npm run test:build && node --test --test-concurrency=1 out/test/**/*.test.js",
+    "test:unit": "npm run test:build && node --test --test-concurrency=1 \"out/test/**/*.test.js\"",
     "test": "npm run test:unit",
     "format": "prettier --write .",
     "check-format": "prettier --check ."

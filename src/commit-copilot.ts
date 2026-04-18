@@ -657,8 +657,15 @@ async function isAncestorCommit(
       maxBuffer: bytesPerMiB,
     });
     return true;
-  } catch {
-    return false;
+  } catch (error: unknown) {
+    const rawCode =
+      typeof error === 'object' && error !== null
+        ? (error as Record<string, unknown>).code
+        : null;
+    if (rawCode === 1 || rawCode === '1') {
+      return false;
+    }
+    throw error;
   }
 }
 
