@@ -24,6 +24,7 @@ interface Harness {
   sendMessage: (message: unknown) => Promise<void>;
   postedMessages: PostedMessage[];
   commandCalls: CommandCall[];
+  warningMessages: string[];
   state: Map<string, unknown>;
   dispose: () => void;
 }
@@ -99,6 +100,7 @@ async function createHarness(
 
   const postedMessages: PostedMessage[] = [];
   const commandCalls: CommandCall[] = [];
+  const warningMessages: string[] = [];
   const state = new Map<string, unknown>(Object.entries(initialState ?? {}));
   const secrets = new Map<string, string>(Object.entries(initialSecrets ?? {}));
 
@@ -153,7 +155,10 @@ async function createHarness(
       },
     },
     window: {
-      showWarningMessage: () => Promise.resolve(undefined),
+      showWarningMessage: (message: string) => {
+        warningMessages.push(message);
+        return Promise.resolve(undefined);
+      },
       showInformationMessage: () => Promise.resolve(undefined),
       showErrorMessage: () => Promise.resolve(undefined),
     },
@@ -201,6 +206,7 @@ async function createHarness(
     sendMessage,
     postedMessages,
     commandCalls,
+    warningMessages,
     state,
     dispose: () => {
       disposeHandler?.();
@@ -313,6 +319,32 @@ void test('rewriteCommitMessage forwards to extension command', async () => {
     );
     assert.equal(rewriteCalls.length, 1);
     assert.deepEqual(rewriteCalls[0], ['commit-copilot.rewriteCommitMessage']);
+  } finally {
+    harness.dispose();
+  }
+});
+
+void test('showWarning displays only allowlisted warning keys', async () => {
+  const harness = await createHarness();
+
+  try {
+    await harness.sendMessage({
+      type: 'showWarning',
+      message: 'Untrusted warning text',
+    });
+    await harness.sendMessage({
+      type: 'showWarning',
+      key: 'unknownWarning',
+    });
+    assert.deepEqual(harness.warningMessages, []);
+
+    await harness.sendMessage({
+      type: 'showWarning',
+      key: 'modelNameRequired',
+    });
+    assert.deepEqual(harness.warningMessages, [
+      'Please enter a model name before generating.',
+    ]);
   } finally {
     harness.dispose();
   }

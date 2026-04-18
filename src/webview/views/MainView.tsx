@@ -240,7 +240,7 @@ export function MainView() {
     if (modelState.allowCustomModel && !modelState.customModelValue.trim()) {
       vscode.postMessage({
         type: 'showWarning',
-        message: pack.statuses.modelNameRequired,
+        key: 'modelNameRequired',
       });
       return;
     }
@@ -255,7 +255,6 @@ export function MainView() {
     modelState,
     effectiveGenerateMode,
     commitOutputOptions,
-    pack,
     dispatch,
     vscode,
   ]);

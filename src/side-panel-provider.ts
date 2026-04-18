@@ -44,11 +44,13 @@ import { GenerationStateManager, ValidationStateManager } from './state';
 
 type UnknownRecord = Record<string, unknown>;
 type MessageHandler = (message: IncomingMessage) => void | Promise<void>;
+type WebviewWarningMessageKey = 'modelNameRequired';
 const badRequestStatus = 400;
 const unauthorizedStatus = 401;
 const forbiddenStatus = 403;
 const tooManyRequestsStatus = 429;
 const nonceByteLength = 16;
+const webviewWarningMessageMaxLength = 300;
 
 interface IncomingMessage extends UnknownRecord {
   type: string;
@@ -127,6 +129,12 @@ function toProvider(value: unknown): string {
 
 function toStoredModel(value: unknown): string {
   return asString(value) ?? '';
+}
+
+function isWebviewWarningMessageKey(
+  value: string | undefined,
+): value is WebviewWarningMessageKey {
+  return value === 'modelNameRequired';
 }
 
 export class SidePanelProvider implements vscode.WebviewViewProvider {
@@ -1223,8 +1231,15 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
         });
       },
       showWarning: (message) => {
-        const warningMessage = asString(message.message) ?? '';
-        if (warningMessage) {
+        const warningKey = asString(message.key);
+        if (!isWebviewWarningMessageKey(warningKey)) {
+          return;
+        }
+
+        const warningMessage = WEBVIEW_LANGUAGE_PACKS[
+          this.getEffectiveDisplayLanguage()
+        ].statuses[warningKey].slice(0, webviewWarningMessageMaxLength);
+        if (warningMessage.length > 0) {
           vscode.window.showWarningMessage(warningMessage);
         }
       },
