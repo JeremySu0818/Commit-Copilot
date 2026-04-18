@@ -87,6 +87,7 @@ export function RewriteEditorView() {
             id="rewriteEditorTextarea"
             className="rewrite-editor-textarea"
             value={rewriteEditorDraft.message}
+            wrap="soft"
             onChange={(event) => {
               dispatch({
                 type: 'UPDATE_REWRITE_EDITOR_DRAFT',
