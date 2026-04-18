@@ -530,12 +530,8 @@ export class AnthropicClient implements ILLMClient {
       );
 
       const text = message.content
-        .map((block: unknown) =>
-          isAnthropicTextBlock(block) ? block.text : null,
-        )
-        .find(
-          (blockText): blockText is string => typeof blockText === 'string',
-        );
+        .map((block: unknown) => (isAnthropicTextBlock(block) ? block.text : ''))
+        .join('');
       throwIfCancellationRequested(cancellationToken);
 
       if (!text) {

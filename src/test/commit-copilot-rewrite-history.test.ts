@@ -439,7 +439,7 @@ void test('generateHistoricalCommitMessage restores symlink files in rewrite sna
   }
 });
 
-void test('generateHistoricalCommitMessage skips oversized files in rewrite snapshot without failing', async () => {
+void test('generateHistoricalCommitMessage includes large files in rewrite snapshot', async () => {
   const repoRoot = createTempDir();
   const repository = createRepository(repoRoot);
   const appRelativePath = 'app.ts';
@@ -485,7 +485,7 @@ void test('generateHistoricalCommitMessage skips oversized files in rewrite snap
           listFilesFromGitApi: () => Promise<string[] | null>;
         };
         capturedSnapshotFiles = (await gitOps.listFilesFromGitApi()) ?? [];
-        return 'fix(core): rewrite\n\nskip oversized snapshot file';
+        return 'fix(core): rewrite\n\ninclude large snapshot file';
       },
     });
 
@@ -500,8 +500,8 @@ void test('generateHistoricalCommitMessage skips oversized files in rewrite snap
 
     assert.equal(result.success, true);
     assert.equal(capturedSnapshotFiles.includes(appRelativePath), true);
-    assert.equal(capturedSnapshotFiles.includes(largeFileRelativePath), false);
-    assert.equal(capturedLargeFileExists, false);
+    assert.equal(capturedSnapshotFiles.includes(largeFileRelativePath), true);
+    assert.equal(capturedLargeFileExists, true);
   } finally {
     cleanupTempDir(repoRoot);
   }

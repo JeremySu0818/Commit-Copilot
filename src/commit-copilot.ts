@@ -64,7 +64,7 @@ const commitRecordSeparator = '\x1e';
 const commitFieldSeparator = '\x1f';
 const rewriteCommitListLimitDefault = 50;
 const rewriteCommitListLimitMax = 200;
-const gitShowMaxBufferMiB = 20;
+const gitShowMaxBufferMiB = Number.POSITIVE_INFINITY;
 const gitDiffMaxBufferMiB = 60;
 const gitLogMaxBufferMiB = 20;
 const GIT_SHOW_MAX_BUFFER = gitShowMaxBufferMiB * bytesPerMiB;
@@ -568,11 +568,6 @@ function parseRevisionTreeEntries(
   return entries;
 }
 
-function isGitShowMaxBufferExceeded(error: unknown): boolean {
-  const message = getStringProperty(error, 'message').toLowerCase();
-  return message.includes('maxbuffer') && message.includes('exceeded');
-}
-
 function isSymlinkTreeEntry(entry: RevisionTreeEntry): boolean {
   return entry.type === gitTreeBlobType && entry.mode === gitTreeSymlinkMode;
 }
@@ -586,22 +581,12 @@ async function readSnapshotBlob(params: {
   revision: string;
   relPath: string;
 }): Promise<Buffer | null> {
-  try {
-    return await runGitBufferCommand({
-      repoRoot: params.repoRoot,
-      args: ['show', `${params.revision}:${params.relPath}`],
-      timeout: GIT_SHOW_TIMEOUT_MS,
-      maxBuffer: GIT_SHOW_MAX_BUFFER,
-    });
-  } catch (error) {
-    if (isGitShowMaxBufferExceeded(error)) {
-      console.warn(
-        `[Commit-Copilot] Skipping rewrite snapshot file '${params.relPath}' at revision '${params.revision}' because it exceeds ${String(gitShowMaxBufferMiB)} MiB.`,
-      );
-      return null;
-    }
-    throw error;
-  }
+  return runGitBufferCommand({
+    repoRoot: params.repoRoot,
+    args: ['show', `${params.revision}:${params.relPath}`],
+    timeout: GIT_SHOW_TIMEOUT_MS,
+    maxBuffer: GIT_SHOW_MAX_BUFFER,
+  });
 }
 
 function restoreSnapshotSymlink(

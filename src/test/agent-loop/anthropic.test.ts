@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import test from 'node:test';
 
+import { DEFAULT_MODELS } from '../../models';
 import { clearRequireCache, withModuleMock } from '../helpers/module-mock';
 
 const MODULE_PATH = '../../agent-loop/anthropic';
@@ -122,7 +123,7 @@ void test('runAnthropicAgentLoop executes tool_use blocks and sends tool_result 
       async ({ runAnthropicAgentLoop }) =>
         runAnthropicAgentLoop(
           'anthropic-test-key',
-          'claude-test',
+          DEFAULT_MODELS.anthropic,
           'diff --git a/a.ts b/a.ts\n+line',
           process.cwd(),
         ),
@@ -182,7 +183,7 @@ void test('runAnthropicAgentLoop maps 401 errors to APIKeyInvalidError', async (
           () =>
             runAnthropicAgentLoop(
               'anthropic-test-key',
-              'claude-test',
+              DEFAULT_MODELS.anthropic,
               'diff --git a/a.ts b/a.ts\n+line',
               process.cwd(),
             ),
