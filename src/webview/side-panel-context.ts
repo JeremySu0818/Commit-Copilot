@@ -14,7 +14,7 @@ import type {
 } from '../models';
 import type { WebviewBootstrapData } from '../side-panel-webview-bootstrap';
 
-export type Screen = 'main' | 'settings' | 'addProvider';
+export type Screen = 'main' | 'settings' | 'addProvider' | 'rewriteEditor';
 
 export interface ModelState {
   models: ModelConfig[];
@@ -31,6 +31,13 @@ export interface AddProviderDraft {
   name: string;
   baseUrl: string;
   apiKey: string;
+  statusHtml: string;
+}
+
+export interface RewriteEditorDraft {
+  requestId: string | null;
+  targetCommitShortHash: string;
+  message: string;
   statusHtml: string;
 }
 
@@ -53,6 +60,7 @@ export interface SidePanelState {
   customProviders: CustomProviderConfig[];
   currentMaxAgentSteps: number;
   addProviderDraft: AddProviderDraft;
+  rewriteEditorDraft: RewriteEditorDraft;
   keyStatusHtml: string;
   forcePushStatusHtml: string;
   languageStatusHtml: string;
@@ -86,6 +94,12 @@ export type SidePanelAction =
   | { type: 'SET_MAX_AGENT_STEPS'; value: number }
   | { type: 'SET_ADD_PROVIDER_DRAFT'; draft: AddProviderDraft }
   | { type: 'UPDATE_ADD_PROVIDER_DRAFT'; partial: Partial<AddProviderDraft> }
+  | { type: 'SET_REWRITE_EDITOR_DRAFT'; draft: RewriteEditorDraft }
+  | {
+      type: 'UPDATE_REWRITE_EDITOR_DRAFT';
+      partial: Partial<RewriteEditorDraft>;
+    }
+  | { type: 'RESET_REWRITE_EDITOR_DRAFT' }
   | { type: 'SET_KEY_STATUS_HTML'; html: string }
   | { type: 'SET_FORCE_PUSH_STATUS_HTML'; html: string }
   | { type: 'SET_LANGUAGE_STATUS_HTML'; html: string }
@@ -98,8 +112,14 @@ export function createInitialState(
 ): SidePanelState {
   const effectiveLang = bootstrap.initialEffectiveLanguage;
   const pack = bootstrap.languagePacks[effectiveLang];
+  const initialScreen: Screen =
+    bootstrap.initialScreen === 'settings' ||
+    bootstrap.initialScreen === 'addProvider' ||
+    bootstrap.initialScreen === 'rewriteEditor'
+      ? bootstrap.initialScreen
+      : 'main';
   return {
-    screen: bootstrap.initialScreen === 'settings' ? 'settings' : 'main',
+    screen: initialScreen,
     currentProvider: bootstrap.defaultProvider,
     currentGenerateMode: bootstrap.defaultGenerateMode,
     preferredGenerateMode: bootstrap.defaultGenerateMode,
@@ -129,6 +149,12 @@ export function createInitialState(
       name: '',
       baseUrl: '',
       apiKey: '',
+      statusHtml: '',
+    },
+    rewriteEditorDraft: {
+      requestId: null,
+      targetCommitShortHash: '',
+      message: '',
       statusHtml: '',
     },
     keyStatusHtml: '',
@@ -195,6 +221,26 @@ export function sidePanelReducer(
       return {
         ...state,
         addProviderDraft: { ...state.addProviderDraft, ...action.partial },
+      };
+    case 'SET_REWRITE_EDITOR_DRAFT':
+      return { ...state, rewriteEditorDraft: action.draft };
+    case 'UPDATE_REWRITE_EDITOR_DRAFT':
+      return {
+        ...state,
+        rewriteEditorDraft: {
+          ...state.rewriteEditorDraft,
+          ...action.partial,
+        },
+      };
+    case 'RESET_REWRITE_EDITOR_DRAFT':
+      return {
+        ...state,
+        rewriteEditorDraft: {
+          requestId: null,
+          targetCommitShortHash: '',
+          message: '',
+          statusHtml: '',
+        },
       };
     case 'SET_KEY_STATUS_HTML':
       return { ...state, keyStatusHtml: action.html };

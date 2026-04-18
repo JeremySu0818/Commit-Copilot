@@ -49,12 +49,15 @@ const unauthorizedStatus = 401;
 const forbiddenStatus = 403;
 const tooManyRequestsStatus = 429;
 const nonceByteLength = 16;
-const pushWithLeaseCommandId = 'git.pushForceWithLease';
-const pushWithLeaseConfirmAction = 'Push with Lease';
-const pushWithLeaseProgressMessage = 'Pushing with lease...';
 
 interface IncomingMessage extends UnknownRecord {
   type: string;
+}
+
+interface PendingRewriteEditorRequest {
+  requestId: string;
+  resolve: (value: string | undefined) => void;
+  cancellationSubscription?: vscode.Disposable;
 }
 
 interface GitUpstreamRef {
@@ -130,6 +133,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = 'commit-copilot.view';
   private _view?: vscode.WebviewView;
   private _currentScreen: SidePanelScreen = 'main';
+  private _pendingRewriteEditorRequest?: PendingRewriteEditorRequest;
 
   constructor(
     private readonly _extensionUri: vscode.Uri,
@@ -140,7 +144,14 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
 
   private updateCurrentScreen(screen: unknown): void {
     const normalizedScreen: SidePanelScreen =
-      screen === 'settings' || screen === 'addProvider' ? screen : 'main';
+      screen === 'settings' ||
+      screen === 'addProvider' ||
+      screen === 'rewriteEditor'
+        ? screen
+        : 'main';
+    if (normalizedScreen !== 'rewriteEditor') {
+      this.clearPendingRewriteEditorRequest(undefined);
+    }
     this._currentScreen = normalizedScreen;
     void vscode.commands.executeCommand(
       'setContext',
@@ -155,6 +166,83 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
       this._view.show(true);
       this._view.webview.postMessage({ type: 'openSettingsView' });
     }
+  }
+
+  private clearPendingRewriteEditorRequest(
+    value: string | undefined,
+    requestId?: string,
+  ): boolean {
+    const pending = this._pendingRewriteEditorRequest;
+    if (!pending) {
+      return false;
+    }
+    if (requestId && pending.requestId !== requestId) {
+      return false;
+    }
+    this._pendingRewriteEditorRequest = undefined;
+    pending.cancellationSubscription?.dispose();
+    pending.resolve(value);
+    return true;
+  }
+
+  private clearAllPendingRewriteEditorRequests(): void {
+    this.clearPendingRewriteEditorRequest(undefined);
+  }
+
+  public async requestRewriteEditorMessage(args: {
+    targetCommitShortHash: string;
+    generatedMessage: string;
+    cancellationToken?: vscode.CancellationToken;
+  }): Promise<string | undefined> {
+    this.clearAllPendingRewriteEditorRequests();
+    this.updateCurrentScreen('rewriteEditor');
+    await vscode.commands.executeCommand('commit-copilot.view.focus');
+
+    if (!this._view) {
+      this.updateCurrentScreen('main');
+      return undefined;
+    }
+
+    this._view.show(true);
+    const requestId = randomBytes(nonceByteLength).toString('hex');
+
+    const result = await new Promise<string | undefined>((resolve) => {
+      const cancellationSubscription =
+        args.cancellationToken?.onCancellationRequested(() => {
+          this.clearPendingRewriteEditorRequest(undefined, requestId);
+          this.updateCurrentScreen('main');
+          void this._view?.webview.postMessage({
+            type: 'cancelRewriteEditorFromHost',
+            requestId,
+          });
+        });
+
+      this._pendingRewriteEditorRequest = {
+        requestId,
+        resolve,
+        cancellationSubscription,
+      };
+
+      void (async () => {
+        try {
+          const posted = await this._view?.webview.postMessage({
+            type: 'openRewriteEditor',
+            requestId,
+            targetCommitShortHash: args.targetCommitShortHash,
+            message: args.generatedMessage,
+          });
+          if (!posted) {
+            this.clearPendingRewriteEditorRequest(undefined, requestId);
+            this.updateCurrentScreen('main');
+          }
+        } catch {
+          this.clearPendingRewriteEditorRequest(undefined, requestId);
+          this.updateCurrentScreen('main');
+        }
+      })();
+    });
+
+    return result;
   }
 
   private getCustomProviders(): CustomProviderConfig[] {
@@ -460,6 +548,8 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
       GenerationStateManager.removeListener(onGenerationStateChange);
       ValidationStateManager.removeListener(onValidationStateChange);
       disposeGitDisposables();
+      this.clearAllPendingRewriteEditorRequests();
+      this.updateCurrentScreen('main');
       if (this._view === webviewView) {
         this._view = undefined;
       }
@@ -532,98 +622,6 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
         });
       } catch (error) {
         console.error('[Commit-Copilot] Error checking git status:', error);
-      }
-    };
-
-    const getSelectedRepository = (): GitRepository | null => {
-      const git = getActiveGitApi();
-      if (!git) {
-        return null;
-      }
-      return selectTargetRepository(git);
-    };
-
-    const getPushTargetLabel = (repository: GitRepository): string => {
-      const head = repository.state.HEAD;
-      const branchName = asString(head?.name);
-      const upstreamRemote = asString(head?.upstream?.remote);
-      const upstreamName = asString(head?.upstream?.name);
-      if (upstreamRemote && upstreamName) {
-        return `${upstreamRemote}/${upstreamName}`;
-      }
-      if (branchName) {
-        return branchName;
-      }
-      return repository.rootUri.fsPath;
-    };
-
-    const postForcePushStatus = (
-      status: 'idle' | 'running' | 'success' | 'error',
-      message?: string,
-    ) => {
-      this._view?.webview.postMessage({
-        type: 'forcePushStatus',
-        status,
-        message,
-      });
-    };
-
-    const handleForcePushWithLease = async (): Promise<void> => {
-      const repository = getSelectedRepository();
-      if (!repository) {
-        const errorMessage =
-          'Unable to determine the active Git repository for push.';
-        postForcePushStatus('error', errorMessage);
-        vscode.window.showErrorMessage(errorMessage);
-        return;
-      }
-
-      if (repository.state.HEAD?.detached) {
-        const errorMessage =
-          'Force push with lease is unavailable in detached HEAD state.';
-        postForcePushStatus('error', errorMessage);
-        vscode.window.showErrorMessage(errorMessage);
-        return;
-      }
-
-      const pushTargetLabel = getPushTargetLabel(repository);
-      const selection = await vscode.window.showWarningMessage(
-        `Force push with lease to ${pushTargetLabel}?`,
-        { modal: true },
-        pushWithLeaseConfirmAction,
-      );
-      if (selection !== pushWithLeaseConfirmAction) {
-        postForcePushStatus('idle');
-        return;
-      }
-
-      const getCommands =
-        typeof vscode.commands.getCommands === 'function'
-          ? vscode.commands.getCommands.bind(vscode.commands)
-          : null;
-      if (getCommands) {
-        const commands = await getCommands(true);
-        if (!commands.includes(pushWithLeaseCommandId)) {
-          const errorMessage =
-            'VS Code Git command "git.pushForceWithLease" is unavailable.';
-          postForcePushStatus('error', errorMessage);
-          vscode.window.showErrorMessage(errorMessage);
-          return;
-        }
-      }
-
-      try {
-        postForcePushStatus('running', pushWithLeaseProgressMessage);
-        await vscode.commands.executeCommand(pushWithLeaseCommandId, repository);
-        const successMessage = `Force push with lease completed: ${pushTargetLabel}.`;
-        postForcePushStatus('success', successMessage);
-        vscode.window.showInformationMessage(successMessage);
-      } catch (error) {
-        const rawErrorMessage =
-          error instanceof Error ? error.message : String(error);
-        const errorMessage = `Force push with lease failed: ${rawErrorMessage}`;
-        postForcePushStatus('error', errorMessage);
-        vscode.window.showErrorMessage(errorMessage);
       }
     };
 
@@ -993,6 +991,24 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
           'commit-copilot.rewriteCommitMessage',
         );
       },
+      submitRewriteEditor: (message) => {
+        const requestId = asString(message.requestId) ?? '';
+        const value = asString(message.value) ?? '';
+        const settled = this.clearPendingRewriteEditorRequest(value, requestId);
+        if (settled) {
+          this.updateCurrentScreen('main');
+        }
+      },
+      cancelRewriteEditor: (message) => {
+        const requestId = asString(message.requestId) ?? '';
+        const settled = this.clearPendingRewriteEditorRequest(
+          undefined,
+          requestId,
+        );
+        if (settled) {
+          this.updateCurrentScreen('main');
+        }
+      },
       checkKey: async (message) => {
         const provider = toProvider(message.provider);
         let key: string | undefined;
@@ -1014,9 +1030,6 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
       },
       checkGit: () => {
         checkGitStatus();
-      },
-      forcePushWithLease: async () => {
-        await handleForcePushWithLease();
       },
       getModels: async (message) => {
         const provider = toProvider(message.provider);

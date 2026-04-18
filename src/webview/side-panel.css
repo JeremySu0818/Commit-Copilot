@@ -26,7 +26,8 @@ label {
 }
 input[type='password'],
 input[type='text'],
-input[type='number'] {
+input[type='number'],
+textarea {
   padding: 8px 10px;
   background: var(--vscode-input-background);
   color: var(--vscode-input-foreground);
@@ -36,9 +37,19 @@ input[type='number'] {
 }
 input[type='password']:focus,
 input[type='text']:focus,
-input[type='number']:focus {
+input[type='number']:focus,
+textarea:focus {
   outline: none;
   border-color: var(--vscode-focusBorder);
+}
+textarea {
+  resize: vertical;
+}
+.rewrite-editor-textarea {
+  min-height: 210px;
+  font-family: var(--vscode-editor-font-family, var(--vscode-font-family));
+  line-height: 1.45;
+  white-space: pre;
 }
 button {
   padding: 10px 14px;

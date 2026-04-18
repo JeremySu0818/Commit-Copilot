@@ -158,6 +158,17 @@ function normalizeCommitOutputOptions(
   };
 }
 
+function normalizeScreen(value: unknown): SidePanelState['screen'] {
+  if (
+    value === 'settings' ||
+    value === 'addProvider' ||
+    value === 'rewriteEditor'
+  ) {
+    return value;
+  }
+  return 'main';
+}
+
 function getForcePushStatusText(
   status: string,
   message: string | undefined,
@@ -194,8 +205,7 @@ export function useMessageHandler(
     vscode.postMessage({ type: 'checkGenerationStatus' });
     vscode.postMessage({ type: 'checkValidationStatus' });
     vscode.postMessage({ type: 'getDisplayLanguage' });
-    const effectiveScreen =
-      bootstrap.initialScreen === 'settings' ? 'settings' : 'main';
+    const effectiveScreen = normalizeScreen(bootstrap.initialScreen);
     vscode.postMessage({ type: 'setCurrentScreen', value: effectiveScreen });
   }, [vscode, bootstrap]);
 
@@ -659,6 +669,36 @@ export function useMessageHandler(
             value: 'addProvider',
           });
         },
+        openRewriteEditor: (message) => {
+          const requestId = toString(message.requestId) ?? '';
+          if (!requestId) {
+            return;
+          }
+          dispatch({
+            type: 'SET_REWRITE_EDITOR_DRAFT',
+            draft: {
+              requestId,
+              targetCommitShortHash:
+                toString(message.targetCommitShortHash) ?? '',
+              message: toString(message.message) ?? '',
+              statusHtml: '',
+            },
+          });
+          dispatch({ type: 'SET_SCREEN', screen: 'rewriteEditor' });
+          vscode.postMessage({
+            type: 'setCurrentScreen',
+            value: 'rewriteEditor',
+          });
+        },
+        cancelRewriteEditorFromHost: (message) => {
+          const requestId = toString(message.requestId) ?? '';
+          if (requestId && requestId !== state.rewriteEditorDraft.requestId) {
+            return;
+          }
+          dispatch({ type: 'RESET_REWRITE_EDITOR_DRAFT' });
+          dispatch({ type: 'SET_SCREEN', screen: 'main' });
+          vscode.postMessage({ type: 'setCurrentScreen', value: 'main' });
+        },
       };
 
     const handler = (event: MessageEvent<unknown>) => {
@@ -686,6 +726,7 @@ export function useMessageHandler(
     state.apiKeyValue,
     state.ollamaStoredHost,
     state.displayLanguage,
+    state.rewriteEditorDraft.requestId,
     dispatch,
   ]);
 }

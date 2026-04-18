@@ -12,7 +12,11 @@ import type {
   ModelConfig,
 } from './models';
 
-export type SidePanelScreen = 'main' | 'settings' | 'addProvider';
+export type SidePanelScreen =
+  | 'main'
+  | 'settings'
+  | 'addProvider'
+  | 'rewriteEditor';
 
 export interface WebviewBootstrapData {
   providers: Record<APIProvider, string>;

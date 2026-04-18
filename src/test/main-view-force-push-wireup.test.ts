@@ -11,8 +11,8 @@ const MAIN_VIEW_PATH = path.resolve(
   'MainView.tsx',
 );
 
-void test('MainView wires force push with lease button to webview message', () => {
+void test('MainView does not render force push with lease button', () => {
   const source = readFileSync(MAIN_VIEW_PATH, 'utf8');
-  assert.match(source, /id="forcePushWithLeaseBtn"/);
-  assert.match(source, /type:\s*'forcePushWithLease'/);
+  assert.doesNotMatch(source, /id="forcePushWithLeaseBtn"/);
+  assert.doesNotMatch(source, /type:\s*'forcePushWithLease'/);
 });

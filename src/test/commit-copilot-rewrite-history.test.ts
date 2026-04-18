@@ -6,6 +6,7 @@ import test from 'node:test';
 import * as path from 'path';
 
 import type { GitRepository } from '../commit-copilot';
+import { EXIT_CODES } from '../errors';
 
 import { clearRequireCache, withModuleMock } from './helpers/module-mock';
 import { cleanupTempDir, createTempDir } from './helpers/temp-dir';
@@ -245,6 +246,30 @@ void test('rewriteHistoricalCommitMessage rewrites selected commit message', asy
       fs.readFileSync(path.join(fixture.repoRoot, 'app.ts'), 'utf-8'),
       'export const value = 2;\n',
     );
+  } finally {
+    cleanupTempDir(fixture.repoRoot);
+  }
+});
+
+void test('generateHistoricalCommitMessage maps cancellation-like errors to CANCELLED exit code', async () => {
+  const fixture = initTestRepo();
+  try {
+    const mod = await loadCommitCopilotWithMocks({
+      runAgentLoop: async () => {
+        throw new Error('AbortError: request aborted');
+      },
+    });
+    const result = await mod.generateHistoricalCommitMessage({
+      repository: fixture.repository,
+      commitHash: fixture.commits.second,
+      provider: 'openai',
+      apiKey: 'token',
+      generateMode: 'agentic',
+      language: 'en',
+    });
+
+    assert.equal(result.success, false);
+    assert.equal(result.error?.exitCode, EXIT_CODES.CANCELLED);
   } finally {
     cleanupTempDir(fixture.repoRoot);
   }

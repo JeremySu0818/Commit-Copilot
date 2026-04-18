@@ -126,7 +126,9 @@ type GenerateResult = Awaited<ReturnType<typeof generateCommitMessage>>;
 type RewriteGenerateResult = Awaited<
   ReturnType<typeof generateHistoricalCommitMessage>
 >;
-type RewriteApplyResult = Awaited<ReturnType<typeof rewriteHistoricalCommitMessage>>;
+type RewriteApplyResult = Awaited<
+  ReturnType<typeof rewriteHistoricalCommitMessage>
+>;
 type GenerateRetryOverrides = Partial<
   Pick<
     GenerateCommitMessageOptions,
@@ -802,6 +804,7 @@ async function runGenerationProgress(args: {
 async function executeRewriteCommand(
   context: vscode.ExtensionContext,
   outputChannel: vscode.OutputChannel,
+  sidePanelProvider: SidePanelProvider,
 ): Promise<void> {
   const language = getCurrentLanguage(context);
   const text = getExtensionText(language);
@@ -910,23 +913,25 @@ async function executeRewriteCommand(
           progress.report({
             message: `Analyzing commit ${targetCommit.shortHash}...`,
           });
-          const rewriteGenerationResult = await generateHistoricalCommitMessage({
-            repository: repositoryResult.repository,
-            commitHash: targetCommit.hash,
-            provider: providerContext.currentProvider,
-            apiKey: apiKey ?? '',
-            baseUrl: providerContext.customProviderConfig?.baseUrl,
-            model: savedModel,
-            generateMode: currentGenerateMode,
-            commitOutputOptions: currentCommitOutputOptions,
-            maxAgentSteps,
-            language,
-            cancellationToken: cancellationSource.token,
-            onProgress: (message, increment) => {
-              outputChannel.appendLine(`[Rewrite] ${message}`);
-              progress.report({ message, increment });
+          const rewriteGenerationResult = await generateHistoricalCommitMessage(
+            {
+              repository: repositoryResult.repository,
+              commitHash: targetCommit.hash,
+              provider: providerContext.currentProvider,
+              apiKey: apiKey ?? '',
+              baseUrl: providerContext.customProviderConfig?.baseUrl,
+              model: savedModel,
+              generateMode: currentGenerateMode,
+              commitOutputOptions: currentCommitOutputOptions,
+              maxAgentSteps,
+              language,
+              cancellationToken: cancellationSource.token,
+              onProgress: (message, increment) => {
+                outputChannel.appendLine(`[Rewrite] ${message}`);
+                progress.report({ message, increment });
+              },
             },
-          });
+          );
           if (
             rewriteGenerationResult.error?.exitCode === EXIT_CODES.CANCELLED ||
             cancellationSource.token.isCancellationRequested
@@ -951,43 +956,46 @@ async function executeRewriteCommand(
     );
 
     if (cancellationSource.token.isCancellationRequested) {
-      vscode.window.showInformationMessage(text.notification.generationCanceled);
+      vscode.window.showInformationMessage(
+        text.notification.generationCanceled,
+      );
       return;
     }
     if (generatedMessage.trim().length === 0) {
       return;
     }
 
-    const rewrittenMessage = await vscode.window.showInputBox({
-      title: `Rewrite ${targetCommit.shortHash}`,
-      prompt: 'Review and confirm the new commit message.',
-      value: generatedMessage,
-      ignoreFocusOut: true,
-      validateInput: (value) => {
-        return value.trim().length === 0
-          ? 'Commit message cannot be empty.'
-          : undefined;
-      },
-    });
+    const rewrittenMessage =
+      await sidePanelProvider.requestRewriteEditorMessage({
+        targetCommitShortHash: targetCommit.shortHash,
+        generatedMessage,
+        cancellationToken: cancellationSource.token,
+      });
     if (typeof rewrittenMessage !== 'string') {
       return;
     }
+    if (rewrittenMessage.trim().length === 0) {
+      vscode.window.showErrorMessage('Commit message cannot be empty.');
+      return;
+    }
 
-    const rewriteApplyResult = await vscode.window.withProgress<RewriteApplyResult>(
-      {
-        location: vscode.ProgressLocation.Notification,
-        title: `Rewriting ${targetCommit.shortHash}`,
-        cancellable: false,
-      },
-      async (progress) => {
-        progress.report({ message: 'Rewriting commit history...' });
-        return rewriteHistoricalCommitMessage({
-          repository: repositoryResult.repository,
-          commitHash: targetCommit.hash,
-          newMessage: rewrittenMessage,
-        });
-      },
-    );
+    const normalizedRewrittenMessage = rewrittenMessage.replace(/\r\n/g, '\n');
+    const rewriteApplyResult: RewriteApplyResult =
+      await vscode.window.withProgress(
+        {
+          location: vscode.ProgressLocation.Notification,
+          title: `Rewriting ${targetCommit.shortHash}`,
+          cancellable: false,
+        },
+        async (progress) => {
+          progress.report({ message: 'Rewriting commit history...' });
+          return rewriteHistoricalCommitMessage({
+            repository: repositoryResult.repository,
+            commitHash: targetCommit.hash,
+            newMessage: normalizedRewrittenMessage,
+          });
+        },
+      );
 
     if (!rewriteApplyResult.success) {
       const message =
@@ -1005,7 +1013,10 @@ async function executeRewriteCommand(
       `Commit ${targetCommit.shortHash} message rewritten.`,
     );
 
-    await promptAndForcePushWithLease(repositoryResult.repository, outputChannel);
+    await promptAndForcePushWithLease(
+      repositoryResult.repository,
+      outputChannel,
+    );
   } catch (error) {
     handleUnexpectedGenerationError({
       error,
@@ -1321,7 +1332,7 @@ export function activate(context: vscode.ExtensionContext) {
   const rewriteDisposable = vscode.commands.registerCommand(
     'commit-copilot.rewriteCommitMessage',
     async () => {
-      await executeRewriteCommand(context, outputChannel);
+      await executeRewriteCommand(context, outputChannel, provider);
     },
   );
 

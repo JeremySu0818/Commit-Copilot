@@ -12,6 +12,7 @@ import {
 import {
   EXIT_CODES,
   CommitCopilotError,
+  GenerationCancelledError,
   NoChangesError,
   NoChangesButUntrackedError,
   NoTrackedChangesButUntrackedError,
@@ -140,6 +141,54 @@ function getStringProperty(value: unknown, key: string): string {
     return String((value as Record<string, unknown>)[key]);
   }
   return '';
+}
+
+function isCancellationLikeError(error: unknown): boolean {
+  if (error instanceof GenerationCancelledError) {
+    return true;
+  }
+
+  if (
+    error instanceof CommitCopilotError &&
+    error.exitCode === EXIT_CODES.CANCELLED
+  ) {
+    return true;
+  }
+
+  if (typeof error !== 'object' || error === null) {
+    return false;
+  }
+
+  const maybeError = error as Record<string, unknown>;
+  const name = getStringProperty(maybeError, 'name').toLowerCase();
+  const message = getStringProperty(maybeError, 'message').toLowerCase();
+  const code = String(maybeError.code ?? '').toUpperCase();
+
+  if (
+    name === 'aborterror' ||
+    name === 'cancellationerror' ||
+    name === 'cancellederror' ||
+    name === 'cancelederror'
+  ) {
+    return true;
+  }
+
+  if (
+    code === 'ABORT_ERR' ||
+    code === 'ERR_CANCELED' ||
+    code === 'ERR_CANCELLED' ||
+    code === 'CANCELED' ||
+    code === 'CANCELLED'
+  ) {
+    return true;
+  }
+
+  return (
+    message.includes('cancelled') ||
+    message.includes('canceled') ||
+    message.includes('operation aborted') ||
+    message.includes('request aborted')
+  );
 }
 
 interface GitChange {
@@ -1160,6 +1209,9 @@ function toCommitCopilotError(
 ): CommitCopilotError {
   if (error instanceof CommitCopilotError) {
     return error;
+  }
+  if (isCancellationLikeError(error)) {
+    return new GenerationCancelledError();
   }
   return new CommitCopilotError(
     error instanceof Error ? error.message : String(error),

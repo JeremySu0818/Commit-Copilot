@@ -17,10 +17,8 @@ export function MainView() {
     commitOutputOptions,
     modelState,
     isGenerating,
-    isForcePushing,
     pendingStatusCheck,
     hasChanges,
-    forcePushStatusHtml,
   } = state;
 
   const isCustom = currentProvider.startsWith(bootstrap.customProviderPrefix);
@@ -75,9 +73,7 @@ export function MainView() {
     return '';
   }, [isOllama, isCustom, currentProvider, pack, bootstrap.ollamaDefaultHost]);
 
-  const generateBtnDisabled = isGenerating
-    ? isForcePushing
-    : isForcePushing || pendingStatusCheck || !hasChanges;
+  const generateBtnDisabled = !isGenerating && (pendingStatusCheck || !hasChanges);
   const generateBtnText = isGenerating
     ? pack.buttons.cancelGenerating
     : pack.buttons.generateCommitMessage;
@@ -265,10 +261,6 @@ export function MainView() {
 
   const handleRewriteCommitMessage = useCallback(() => {
     vscode.postMessage({ type: 'rewriteCommitMessage' });
-  }, [vscode]);
-
-  const handleForcePushWithLease = useCallback(() => {
-    vscode.postMessage({ type: 'forcePushWithLease' });
   }, [vscode]);
 
   const handleModelChange = useCallback(
@@ -518,24 +510,11 @@ export function MainView() {
         <button
           id="rewriteCommitMessageBtn"
           className="secondary"
-          disabled={isGenerating || isForcePushing}
+          disabled={isGenerating}
           onClick={handleRewriteCommitMessage}
         >
           Rewrite Commit Message
         </button>
-        <button
-          id="forcePushWithLeaseBtn"
-          className="secondary"
-          disabled={isGenerating || isForcePushing}
-          onClick={handleForcePushWithLease}
-        >
-          Force Push with Lease
-        </button>
-        <span
-          id="forcePushStatus"
-          className={`status${!forcePushStatusHtml ? ' hidden' : ''}`}
-          dangerouslySetInnerHTML={{ __html: forcePushStatusHtml }}
-        />
       </div>
     </div>
   );

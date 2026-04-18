@@ -10,6 +10,7 @@ import {
 import { useMessageHandler } from './use-message-handler';
 import { AddProviderView } from './views/AddProviderView';
 import { MainView } from './views/MainView';
+import { RewriteEditorView } from './views/RewriteEditorView';
 import { SettingsView } from './views/SettingsView';
 
 interface AppProps {
@@ -36,11 +37,22 @@ export function App({ bootstrap, vscode }: AppProps) {
     [state, dispatch, vscode, bootstrap],
   );
 
+  const activeView = (() => {
+    if (state.screen === 'settings') {
+      return <SettingsView />;
+    }
+    if (state.screen === 'addProvider') {
+      return <AddProviderView />;
+    }
+    if (state.screen === 'rewriteEditor') {
+      return <RewriteEditorView />;
+    }
+    return <MainView />;
+  })();
+
   return (
     <SidePanelContext.Provider value={contextValue}>
-      <MainView />
-      <SettingsView />
-      <AddProviderView />
+      {activeView}
     </SidePanelContext.Provider>
   );
 }
