@@ -95,6 +95,24 @@ function createRepository(repoRoot: string): GitRepository {
   };
 }
 
+function createRepositoryWithDirtyState(
+  repoRoot: string,
+  options: { staged: boolean; unstaged: boolean },
+): GitRepository {
+  const createChange = (fileName: string) => ({
+    uri: { fsPath: path.join(repoRoot, fileName) },
+    status: 0,
+  });
+  return {
+    ...createRepository(repoRoot),
+    state: {
+      workingTreeChanges: options.unstaged ? [createChange('app.ts')] : [],
+      indexChanges: options.staged ? [createChange('util.ts')] : [],
+      untrackedChanges: [],
+    },
+  };
+}
+
 function initTestRepo(): TestRepo {
   const repoRoot = createTempDir();
   git(repoRoot, ['init']);
@@ -111,7 +129,10 @@ function initTestRepo(): TestRepo {
   git(repoRoot, ['commit', '-m', 'bad commit message']);
   const second = git(repoRoot, ['rev-parse', 'HEAD']);
 
-  fs.writeFileSync(path.join(repoRoot, 'util.ts'), 'export const util = true;\n');
+  fs.writeFileSync(
+    path.join(repoRoot, 'util.ts'),
+    'export const util = true;\n',
+  );
   git(repoRoot, ['add', 'util.ts']);
   git(repoRoot, ['commit', '-m', 'chore(core): add util']);
   const third = git(repoRoot, ['rev-parse', 'HEAD']);
@@ -131,23 +152,20 @@ async function loadCommitCopilotWithMocks(options?: {
     options?.runAgentLoop ??
     (() => Promise.resolve('fix(core): rewrite\n\nupdated message'));
 
-  const loaded = await withModuleMock(
-    './agent-loop',
-    { runAgentLoop },
-    () =>
-      withModuleMock(
-        './llm-clients',
-        {
-          createLLMClient: () => ({
-            generateCommitMessage: () =>
-              Promise.resolve('fix(core): direct\n\ndirect mode'),
-          }),
-        },
-        () => {
-          const dynamicRequire = createRequire(__filename);
-          return dynamicRequire(MODULE_PATH) as CommitCopilotModule;
-        },
-      ),
+  const loaded = await withModuleMock('./agent-loop', { runAgentLoop }, () =>
+    withModuleMock(
+      './llm-clients',
+      {
+        createLLMClient: () => ({
+          generateCommitMessage: () =>
+            Promise.resolve('fix(core): direct\n\ndirect mode'),
+        }),
+      },
+      () => {
+        const dynamicRequire = createRequire(__filename);
+        return dynamicRequire(MODULE_PATH) as CommitCopilotModule;
+      },
+    ),
   );
 
   return loaded;
@@ -165,7 +183,10 @@ void test('listRecentCommitsForRewrite returns branch history entries', async ()
     assert.equal(commits[latestCommitIndex]?.hash, fixture.commits.third);
     assert.equal(commits[middleCommitIndex]?.hash, fixture.commits.second);
     assert.equal(commits[oldestCommitIndex]?.hash, fixture.commits.first);
-    assert.equal(commits[latestCommitIndex]?.parentHashes.length, parentCountSingle);
+    assert.equal(
+      commits[latestCommitIndex]?.parentHashes.length,
+      parentCountSingle,
+    );
   } finally {
     cleanupTempDir(fixture.repoRoot);
   }
@@ -214,7 +235,10 @@ void test('generateHistoricalCommitMessage uses history before target commit', a
     assert.match(capturedDiff, /\+export const value = 2;/);
     assert.equal(capturedRecentMessages.length, 1);
     assert.match(capturedRecentMessages[0] ?? '', /feat\(core\): init/);
-    const relativeSnapshotPath = path.relative(fixture.repoRoot, capturedRepoRoot);
+    const relativeSnapshotPath = path.relative(
+      fixture.repoRoot,
+      capturedRepoRoot,
+    );
     const snapshotInsideRepo =
       relativeSnapshotPath === '' ||
       (!relativeSnapshotPath.startsWith('..') &&
@@ -239,8 +263,17 @@ void test('rewriteHistoricalCommitMessage rewrites selected commit message', asy
 
     assert.equal(rewriteResult.success, true);
     assert.equal(
-      git(fixture.repoRoot, ['log', '--format=%s', '-n', String(recentLogCount)]),
-      ['chore(core): add util', 'fix(core): standardized message', 'feat(core): init'].join('\n'),
+      git(fixture.repoRoot, [
+        'log',
+        '--format=%s',
+        '-n',
+        String(recentLogCount),
+      ]),
+      [
+        'chore(core): add util',
+        'fix(core): standardized message',
+        'feat(core): init',
+      ].join('\n'),
     );
     assert.equal(
       fs.readFileSync(path.join(fixture.repoRoot, 'app.ts'), 'utf-8'),
@@ -255,7 +288,7 @@ void test('generateHistoricalCommitMessage maps cancellation-like errors to CANC
   const fixture = initTestRepo();
   try {
     const mod = await loadCommitCopilotWithMocks({
-      runAgentLoop: async () => {
+      runAgentLoop: () => {
         throw new Error('AbortError: request aborted');
       },
     });
@@ -270,6 +303,75 @@ void test('generateHistoricalCommitMessage maps cancellation-like errors to CANC
 
     assert.equal(result.success, false);
     assert.equal(result.error?.exitCode, EXIT_CODES.CANCELLED);
+  } finally {
+    cleanupTempDir(fixture.repoRoot);
+  }
+});
+
+void test('rewriteHistoricalCommitMessage rejects unstaged changes before rewriting', async () => {
+  const fixture = initTestRepo();
+  try {
+    const mod = await loadCommitCopilotWithMocks();
+    const result = await mod.rewriteHistoricalCommitMessage({
+      repository: createRepositoryWithDirtyState(fixture.repoRoot, {
+        staged: false,
+        unstaged: true,
+      }),
+      commitHash: fixture.commits.second,
+      newMessage: 'fix(core): standardized message',
+    });
+
+    assert.equal(result.success, false);
+    assert.equal(result.error?.errorCode, 'REWRITE_WORKSPACE_NOT_CLEAN');
+    assert.ok(result.error);
+    assert.match(result.error.message, /modified \(unstaged\) changes/i);
+  } finally {
+    cleanupTempDir(fixture.repoRoot);
+  }
+});
+
+void test('rewriteHistoricalCommitMessage rejects staged changes before rewriting', async () => {
+  const fixture = initTestRepo();
+  try {
+    const mod = await loadCommitCopilotWithMocks();
+    const result = await mod.rewriteHistoricalCommitMessage({
+      repository: createRepositoryWithDirtyState(fixture.repoRoot, {
+        staged: true,
+        unstaged: false,
+      }),
+      commitHash: fixture.commits.second,
+      newMessage: 'fix(core): standardized message',
+    });
+
+    assert.equal(result.success, false);
+    assert.equal(result.error?.errorCode, 'REWRITE_WORKSPACE_NOT_CLEAN');
+    assert.ok(result.error);
+    assert.match(result.error.message, /staged \(not committed\) changes/i);
+  } finally {
+    cleanupTempDir(fixture.repoRoot);
+  }
+});
+
+void test('rewriteHistoricalCommitMessage rejects mixed staged and unstaged changes before rewriting', async () => {
+  const fixture = initTestRepo();
+  try {
+    const mod = await loadCommitCopilotWithMocks();
+    const result = await mod.rewriteHistoricalCommitMessage({
+      repository: createRepositoryWithDirtyState(fixture.repoRoot, {
+        staged: true,
+        unstaged: true,
+      }),
+      commitHash: fixture.commits.second,
+      newMessage: 'fix(core): standardized message',
+    });
+
+    assert.equal(result.success, false);
+    assert.equal(result.error?.errorCode, 'REWRITE_WORKSPACE_NOT_CLEAN');
+    assert.ok(result.error);
+    assert.match(
+      result.error.message,
+      /both staged \(not committed\) and modified \(unstaged\) changes/i,
+    );
   } finally {
     cleanupTempDir(fixture.repoRoot);
   }

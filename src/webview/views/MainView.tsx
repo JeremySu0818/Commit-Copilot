@@ -73,7 +73,8 @@ export function MainView() {
     return '';
   }, [isOllama, isCustom, currentProvider, pack, bootstrap.ollamaDefaultHost]);
 
-  const generateBtnDisabled = !isGenerating && (pendingStatusCheck || !hasChanges);
+  const generateBtnDisabled =
+    !isGenerating && (pendingStatusCheck || !hasChanges);
   const generateBtnText = isGenerating
     ? pack.buttons.cancelGenerating
     : pack.buttons.generateCommitMessage;

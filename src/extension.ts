@@ -740,6 +740,61 @@ async function resolveRewriteGeneratedMessage(args: {
   return null;
 }
 
+async function getRewriteWorkspaceDirtyMessage(
+  repository: GitRepository,
+): Promise<string | null> {
+  await repository.status();
+  const hasUnstagedChanges = repository.state.workingTreeChanges.length > 0;
+  const hasStagedChanges = repository.state.indexChanges.length > 0;
+
+  if (!hasUnstagedChanges && !hasStagedChanges) {
+    return null;
+  }
+
+  if (hasStagedChanges && hasUnstagedChanges) {
+    return 'Cannot rewrite commit history while both staged (not committed) and modified (unstaged) changes are present. Please commit or stash them first.';
+  }
+  if (hasStagedChanges) {
+    return 'Cannot rewrite commit history while staged (not committed) changes are present. Please commit or stash them first.';
+  }
+  return 'Cannot rewrite commit history while modified (unstaged) changes are present. Please commit or stash them first.';
+}
+
+async function resolveRewriteRepositoryOrAbort(args: {
+  outputChannel: vscode.OutputChannel;
+  text: ExtensionText;
+}): Promise<GitRepository | null> {
+  const api = getGitApi(args.outputChannel, args.text);
+  if (!api) {
+    return null;
+  }
+
+  const repositoryResult = resolveTargetRepository(
+    api,
+    undefined,
+    args.outputChannel,
+    args.text,
+  );
+  if (repositoryResult.status === 'abort') {
+    return null;
+  }
+  if (repositoryResult.status === 'missing') {
+    vscode.window.showErrorMessage(args.text.notification.repoNotFound);
+    return null;
+  }
+
+  const dirtyWorkspaceMessage = await getRewriteWorkspaceDirtyMessage(
+    repositoryResult.repository,
+  );
+  if (dirtyWorkspaceMessage) {
+    args.outputChannel.appendLine(`[Rewrite] ${dirtyWorkspaceMessage}`);
+    vscode.window.showInformationMessage(dirtyWorkspaceMessage);
+    return null;
+  }
+
+  return repositoryResult.repository;
+}
+
 async function runGenerationProgress(args: {
   progress: vscode.Progress<{ message?: string; increment?: number }>;
   progressToken: vscode.CancellationToken;
@@ -814,40 +869,32 @@ async function executeRewriteCommand(
   }
 
   const cancellationSource = new vscode.CancellationTokenSource();
-  currentGenerationCancellationSource = cancellationSource;
-  GenerationStateManager.setGenerating(true);
-  await vscode.commands.executeCommand(
-    'setContext',
-    'commit-copilot.isGenerating',
-    true,
-  );
+  let generationStateStarted = false;
 
   try {
+    const repository = await resolveRewriteRepositoryOrAbort({
+      outputChannel,
+      text,
+    });
+    if (!repository) {
+      return;
+    }
+
+    currentGenerationCancellationSource = cancellationSource;
+    GenerationStateManager.setGenerating(true);
+    generationStateStarted = true;
+    await vscode.commands.executeCommand(
+      'setContext',
+      'commit-copilot.isGenerating',
+      true,
+    );
+
     outputChannel.appendLine('='.repeat(generationLogSeparatorWidth));
     outputChannel.appendLine(
       `[${new Date().toISOString()}] Starting commit-copilot rewrite generation...`,
     );
 
-    const api = getGitApi(outputChannel, text);
-    if (!api) {
-      return;
-    }
-
-    const repositoryResult = resolveTargetRepository(
-      api,
-      undefined,
-      outputChannel,
-      text,
-    );
-    if (repositoryResult.status === 'abort') {
-      return;
-    }
-    if (repositoryResult.status === 'missing') {
-      vscode.window.showErrorMessage(text.notification.repoNotFound);
-      return;
-    }
-
-    const targetCommit = await selectRewriteCommit(repositoryResult.repository);
+    const targetCommit = await selectRewriteCommit(repository);
     if (!targetCommit) {
       return;
     }
@@ -915,7 +962,7 @@ async function executeRewriteCommand(
           });
           const rewriteGenerationResult = await generateHistoricalCommitMessage(
             {
-              repository: repositoryResult.repository,
+              repository,
               commitHash: targetCommit.hash,
               provider: providerContext.currentProvider,
               apiKey: apiKey ?? '',
@@ -990,7 +1037,7 @@ async function executeRewriteCommand(
         async (progress) => {
           progress.report({ message: 'Rewriting commit history...' });
           return rewriteHistoricalCommitMessage({
-            repository: repositoryResult.repository,
+            repository,
             commitHash: targetCommit.hash,
             newMessage: normalizedRewrittenMessage,
           });
@@ -1013,10 +1060,7 @@ async function executeRewriteCommand(
       `Commit ${targetCommit.shortHash} message rewritten.`,
     );
 
-    await promptAndForcePushWithLease(
-      repositoryResult.repository,
-      outputChannel,
-    );
+    await promptAndForcePushWithLease(repository, outputChannel);
   } catch (error) {
     handleUnexpectedGenerationError({
       error,
@@ -1025,7 +1069,11 @@ async function executeRewriteCommand(
       outputChannel,
     });
   } finally {
-    await finalizeGeneration(cancellationSource);
+    if (generationStateStarted) {
+      await finalizeGeneration(cancellationSource);
+    } else {
+      cancellationSource.dispose();
+    }
   }
 }
 

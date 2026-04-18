@@ -162,7 +162,11 @@ function isCancellationLikeError(error: unknown): boolean {
   const maybeError = error as Record<string, unknown>;
   const name = getStringProperty(maybeError, 'name').toLowerCase();
   const message = getStringProperty(maybeError, 'message').toLowerCase();
-  const code = String(maybeError.code ?? '').toUpperCase();
+  const rawCode = maybeError.code;
+  const code =
+    typeof rawCode === 'string' || typeof rawCode === 'number'
+      ? String(rawCode).toUpperCase()
+      : '';
 
   if (
     name === 'aborterror' ||
@@ -457,7 +461,10 @@ async function createRewriteCommitSnapshot(params: {
 }): Promise<RewriteCommitSnapshot> {
   const baseTempRoot = path.join(os.tmpdir(), 'commit-copilot-temp');
   const suffix = `${params.revision.slice(0, rewriteSnapshotHashLength)}-${Date.now().toString(rewriteSnapshotTimestampRadix)}`;
-  const workspaceRoot = path.join(baseTempRoot, `${rewriteTempDirPrefix}${suffix}`);
+  const workspaceRoot = path.join(
+    baseTempRoot,
+    `${rewriteTempDirPrefix}${suffix}`,
+  );
 
   fs.mkdirSync(workspaceRoot, { recursive: true });
   try {
@@ -1203,6 +1210,31 @@ async function resolveRewriteCommitOrThrow(
   return resolved;
 }
 
+async function ensureRewriteWorkspaceCleanOrThrow(
+  repository: GitRepository,
+): Promise<void> {
+  await repository.status();
+  const hasUnstagedChanges = repository.state.workingTreeChanges.length > 0;
+  const hasStagedChanges = repository.state.indexChanges.length > 0;
+  if (!hasUnstagedChanges && !hasStagedChanges) {
+    return;
+  }
+  let details = '';
+  if (hasStagedChanges && hasUnstagedChanges) {
+    details =
+      'both staged (not committed) and modified (unstaged) changes are present';
+  } else if (hasStagedChanges) {
+    details = 'staged (not committed) changes are present';
+  } else {
+    details = 'modified (unstaged) changes are present';
+  }
+  throw new CommitCopilotError(
+    `Cannot rewrite commit history while ${details}. Please commit or stash them first.`,
+    'REWRITE_WORKSPACE_NOT_CLEAN',
+    EXIT_CODES.UNKNOWN_ERROR,
+  );
+}
+
 function toCommitCopilotError(
   error: unknown,
   code: string,
@@ -1314,9 +1346,8 @@ export async function generateHistoricalCommitMessage(
         resolvedCommit.hash,
         resolvedCommit.parentHash,
       );
-      const resolvedCommitOutputOptions = normalizeCommitOutputOptions(
-        commitOutputOptions,
-      );
+      const resolvedCommitOutputOptions =
+        normalizeCommitOutputOptions(commitOutputOptions);
       const resolvedGenerateMode: GenerateMode =
         provider === 'ollama' ? 'direct-diff' : generateMode;
       const resolvedModel =
@@ -1386,6 +1417,7 @@ export async function rewriteHistoricalCommitMessage(
         EXIT_CODES.UNKNOWN_ERROR,
       );
     }
+    await ensureRewriteWorkspaceCleanOrThrow(options.repository);
 
     const resolvedCommit = await resolveRewriteCommitOrThrow(
       repoRoot,
