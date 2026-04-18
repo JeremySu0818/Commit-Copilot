@@ -14,6 +14,7 @@ import { cleanupTempDir, createTempDir } from './helpers/temp-dir';
 const MODULE_PATH = path.resolve(__dirname, '..', 'commit-copilot');
 const rewriteListLimit = 10;
 const expectedCommitCountInHistory = 3;
+const uncappedRewriteCommitCount = 60;
 const latestCommitIndex = 0;
 const middleCommitIndex = 1;
 const oldestCommitIndex = 2;
@@ -166,6 +167,15 @@ function initTestRepo(): TestRepo {
   };
 }
 
+function appendCommits(repoRoot: string, count: number): void {
+  for (let index = 0; index < count; index += 1) {
+    const fileName = `extra-${String(index)}.txt`;
+    fs.writeFileSync(path.join(repoRoot, fileName), `${String(index)}\n`);
+    git(repoRoot, ['add', fileName]);
+    git(repoRoot, ['commit', '-m', `chore(test): extra ${String(index)}`]);
+  }
+}
+
 async function loadCommitCopilotWithMocks(options?: {
   runAgentLoop?: (input: Record<string, unknown>) => Promise<string> | string;
 }): Promise<CommitCopilotModule> {
@@ -209,6 +219,24 @@ void test('listRecentCommitsForRewrite returns branch history entries', async ()
       commits[latestCommitIndex]?.parentHashes.length,
       parentCountSingle,
     );
+  } finally {
+    cleanupTempDir(fixture.repoRoot);
+  }
+});
+
+void test('listRecentCommitsForRewrite returns full branch history by default', async () => {
+  const fixture = initTestRepo();
+  try {
+    appendCommits(fixture.repoRoot, uncappedRewriteCommitCount);
+
+    const mod = await loadCommitCopilotWithMocks();
+    const commits = await mod.listRecentCommitsForRewrite(fixture.repository);
+
+    assert.equal(
+      commits.length,
+      expectedCommitCountInHistory + uncappedRewriteCommitCount,
+    );
+    assert.equal(commits.at(-1)?.hash, fixture.commits.first);
   } finally {
     cleanupTempDir(fixture.repoRoot);
   }

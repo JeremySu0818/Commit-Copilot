@@ -62,8 +62,6 @@ const GIT_PUSH_TIMEOUT_MS = 120000;
 const rewriteTempDirPrefix = 'rewrite-';
 const commitRecordSeparator = '\x1e';
 const commitFieldSeparator = '\x1f';
-const rewriteCommitListLimitDefault = 50;
-const rewriteCommitListLimitMax = 200;
 const gitShowMaxBufferMiB = Number.POSITIVE_INFINITY;
 const gitDiffMaxBufferMiB = 60;
 const gitLogMaxBufferMiB = 20;
@@ -421,15 +419,15 @@ function parseCommitMessages(value: string): string[] {
     .filter((entry) => entry.length > 0);
 }
 
-function toCommitLimit(value: number | undefined): number {
-  if (!value || !Number.isFinite(value)) {
-    return rewriteCommitListLimitDefault;
+function toCommitLimitArgs(value: number | undefined): string[] {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    return [];
   }
   const rounded = Math.floor(value);
   if (rounded <= 0) {
-    return rewriteCommitListLimitDefault;
+    return [];
   }
-  return Math.min(rounded, rewriteCommitListLimitMax);
+  return ['-n', String(rounded)];
 }
 
 async function runGitTextCommand(params: {
@@ -1458,13 +1456,11 @@ export async function listRecentCommitsForRewrite(
     return [];
   }
 
-  const resolvedLimit = toCommitLimit(limit);
   const output = await runGitTextCommand({
     repoRoot,
     args: [
       'log',
-      '-n',
-      String(resolvedLimit),
+      ...toCommitLimitArgs(limit),
       '--format=%H%x1f%h%x1f%s%x1f%P%x1e',
       'HEAD',
     ],

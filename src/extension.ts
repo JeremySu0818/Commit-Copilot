@@ -59,7 +59,6 @@ interface GitExtensionExports {
 
 const generationLogSeparatorWidth = 50;
 const rewriteCommitParentHashDisplayLength = 7;
-const rewriteCommitPickLimit = 100;
 const pushWithLeaseCommandId = 'git.pushForceWithLease';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -317,10 +316,7 @@ async function selectRewriteCommit(
   repository: GitRepository,
   text: ExtensionText,
 ): Promise<RewriteCommitEntry | null> {
-  const commits = await listRecentCommitsForRewrite(
-    repository,
-    rewriteCommitPickLimit,
-  );
+  const commits = await listRecentCommitsForRewrite(repository);
   const candidates = commits.filter((entry) => entry.parentHashes.length <= 1);
   if (candidates.length === 0) {
     vscode.window.showWarningMessage(
