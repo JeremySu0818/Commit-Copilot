@@ -79,6 +79,9 @@ const rewriteCommitParentsFieldIndex = 3;
 const rewriteSnapshotHashLength = 12;
 const rewriteSnapshotTimestampRadix = 36;
 const gitCommandEnvPathKey = 'COMMIT_COPILOT_GIT_PATH';
+const byteMask = 0xff;
+const gitPathOctalMaxDigits = 3;
+const gitEscapeSequenceLength = 2;
 const execFileAsync = promisify(execFile);
 
 function resolveGitExecutablePath(): string {
@@ -222,11 +225,86 @@ interface RewriteCommitSnapshot {
   files: string[];
 }
 
+const gitQuotedPathEscapeToByte: Readonly<Record<string, number>> = {
+  '"': '"'.charCodeAt(0),
+  '\\': '\\'.charCodeAt(0),
+  a: 0x07,
+  b: 0x08,
+  f: 0x0c,
+  n: 0x0a,
+  r: 0x0d,
+  t: 0x09,
+  v: 0x0b,
+};
+
+function isOctalDigit(value: string): boolean {
+  return value >= '0' && value <= '7';
+}
+
+function readGitQuotedPathOctalEscape(
+  source: string,
+  startIndex: number,
+): { byte: number; nextIndex: number } {
+  let octalValue = source[startIndex];
+  let index = startIndex + 1;
+  while (octalValue.length < gitPathOctalMaxDigits && index < source.length) {
+    const nextChar = source[index];
+    if (!isOctalDigit(nextChar)) {
+      break;
+    }
+    octalValue += nextChar;
+    index += 1;
+  }
+  return { byte: Number.parseInt(octalValue, 8), nextIndex: index };
+}
+
+function decodeQuotedGitPath(candidate: string): string {
+  if (!(candidate.startsWith('"') && candidate.endsWith('"'))) {
+    return candidate;
+  }
+
+  const source = candidate.slice(1, -1);
+  const bytes: number[] = [];
+  let index = 0;
+  while (index < source.length) {
+    const current = source[index];
+    if (current !== '\\') {
+      bytes.push(source.charCodeAt(index) & byteMask);
+      index += 1;
+      continue;
+    }
+
+    const escaped = source[index + 1];
+    if (!escaped) {
+      bytes.push('\\'.charCodeAt(0));
+      index += 1;
+      continue;
+    }
+
+    if (isOctalDigit(escaped)) {
+      const parsed = readGitQuotedPathOctalEscape(source, index + 1);
+      bytes.push(parsed.byte);
+      index = parsed.nextIndex;
+      continue;
+    }
+
+    const escapedByte = gitQuotedPathEscapeToByte[escaped];
+    bytes.push(
+      typeof escapedByte === 'number'
+        ? escapedByte
+        : escaped.charCodeAt(0) & byteMask,
+    );
+    index += gitEscapeSequenceLength;
+  }
+
+  return Buffer.from(bytes).toString('utf8');
+}
+
 function normalizeGitPathCandidate(
   filePath: string,
   repoRoot: string,
 ): string | null {
-  const trimmed = filePath.trim();
+  const trimmed = decodeQuotedGitPath(filePath.trim());
   if (!trimmed) {
     return null;
   }
@@ -437,7 +515,7 @@ async function listRevisionFiles(
 ): Promise<string[]> {
   const output = await runGitTextCommand({
     repoRoot,
-    args: ['ls-tree', '-r', '--name-only', revision],
+    args: ['-c', 'core.quotepath=false', 'ls-tree', '-r', '--name-only', revision],
     timeout: GIT_LOG_TIMEOUT_MS,
     maxBuffer: GIT_LOG_MAX_BUFFER,
   });
@@ -822,7 +900,14 @@ export class GitOperations {
     try {
       const { stdout } = await execFileAsync(
         gitExecutablePath,
-        ['ls-files', '--cached', '--others', '--exclude-standard'],
+        [
+          '-c',
+          'core.quotepath=false',
+          'ls-files',
+          '--cached',
+          '--others',
+          '--exclude-standard',
+        ],
         {
           cwd: repoRoot,
           windowsHide: true,
@@ -1481,7 +1566,7 @@ export async function forcePushWithLease(repoRoot: string): Promise<void> {
     repoRoot,
     args: ['push', '--force-with-lease'],
     timeout: GIT_PUSH_TIMEOUT_MS,
-    maxBuffer: GIT_COMMIT_TREE_MAX_BUFFER,
+    maxBuffer: GIT_LOG_MAX_BUFFER,
   });
 }
 

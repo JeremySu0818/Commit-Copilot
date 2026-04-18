@@ -284,6 +284,62 @@ void test('rewriteHistoricalCommitMessage rewrites selected commit message', asy
   }
 });
 
+void test('generateHistoricalCommitMessage supports non-ASCII file paths in rewrite snapshot', async () => {
+  const repoRoot = createTempDir();
+  const repository = createRepository(repoRoot);
+  const nonAsciiRelativePath =
+    'static/md/\u5f35\u570b\u8a9e\u932f\u6587\u5b57\u7248.md';
+
+  try {
+    git(repoRoot, ['init']);
+    git(repoRoot, ['config', 'user.email', 'test@example.com']);
+    git(repoRoot, ['config', 'user.name', 'Commit Copilot Test']);
+
+    fs.writeFileSync(path.join(repoRoot, 'app.ts'), 'export const value = 1;\n');
+    git(repoRoot, ['add', 'app.ts']);
+    git(repoRoot, ['commit', '-m', 'feat(core): init']);
+
+    const nonAsciiAbsPath = path.join(
+      repoRoot,
+      ...nonAsciiRelativePath.split('/'),
+    );
+    fs.mkdirSync(path.dirname(nonAsciiAbsPath), { recursive: true });
+    fs.writeFileSync(nonAsciiAbsPath, '# law\n');
+    git(repoRoot, ['add', nonAsciiRelativePath]);
+    git(repoRoot, ['commit', '-m', 'bad commit message']);
+
+    const targetCommitHash = git(repoRoot, ['rev-parse', 'HEAD']);
+    const lsTreeOutput = git(repoRoot, [
+      'ls-tree',
+      '-r',
+      '--name-only',
+      targetCommitHash,
+    ]);
+    assert.match(lsTreeOutput, /\\[0-7]{3}/);
+
+    const mod = await loadCommitCopilotWithMocks({
+      runAgentLoop: () =>
+        Promise.resolve('fix(core): rewrite\n\nnormalize non-ascii snapshot'),
+    });
+    const result = await mod.generateHistoricalCommitMessage({
+      repository,
+      commitHash: targetCommitHash,
+      provider: 'openai',
+      apiKey: 'token',
+      generateMode: 'agentic',
+      language: 'en',
+    });
+
+    assert.equal(result.success, true);
+    assert.equal(
+      result.message,
+      'fix(core): rewrite\n\nnormalize non-ascii snapshot',
+    );
+  } finally {
+    cleanupTempDir(repoRoot);
+  }
+});
+
 void test('generateHistoricalCommitMessage maps cancellation-like errors to CANCELLED exit code', async () => {
   const fixture = initTestRepo();
   try {
