@@ -87,6 +87,12 @@ export const hiLocale: LocaleTextBundle = {
         `चेतावनी: ${provider} के लिए कोई एपीआई कुंजी नहीं मिली।`,
       cancelRequestedFromProgress:
         'प्रगति यूआई से रद्दीकरण का अनुरोध किया गया।',
+      rewriteStart: (timestamp) =>
+        `[${timestamp}] commit-copilot rewrite generation शुरू हो रहा है...`,
+      rewriteCancelRequestedFromProgress:
+        'Progress UI से रद्द करने का अनुरोध किया गया।',
+      rewriteCommitRewritten: (originalHash, replacementHash) =>
+        `Commit फिर से लिखा गया: ${originalHash} -> ${replacementHash}`,
       callingGenerateCommitMessage: 'generateCommitMessage को कॉल कर रहा है...',
       repositoryPath: (path) => `रिपॉजिटरी पथ: ${path}`,
       usingModel: (model) => `मॉडल का उपयोग: ${model}`,
@@ -124,6 +130,39 @@ export const hiLocale: LocaleTextBundle = {
         'कमिट करने के लिए कोई परिवर्तन है नहीं। पहले कुछ परिवर्तन करें!',
       generationCanceled: 'कमिट संदेश उत्पादन रद्द कर दिया गया।',
       failedPrefix: 'Commit-Copilot विफल रहा',
+      rewriteNoNonMergeCommits:
+        'वर्तमान branch history में कोई non-merge commit नहीं मिला।',
+      rewriteCommitNoSubject: '(कोई subject नहीं)',
+      rewriteCommitRootDescription: 'root commit',
+      rewriteCommitMergeDescription: 'merge commit',
+      rewriteCommitParentDescription: (parentHash) => `parent ${parentHash}`,
+      rewriteCommitSelectTitle: 'फिर से लिखने के लिए commit चुनें',
+      rewriteCommitSelectPlaceholder: 'वर्तमान branch history से commit चुनें',
+      rewriteWorkspaceDirtyBoth:
+        'staged (commit नहीं किए गए) और modified (unstaged) बदलाव मौजूद होने पर commit history फिर से नहीं लिखी जा सकती। कृपया पहले commit या stash करें।',
+      rewriteWorkspaceDirtyStaged:
+        'staged (commit नहीं किए गए) बदलाव मौजूद होने पर commit history फिर से नहीं लिखी जा सकती। कृपया पहले commit या stash करें।',
+      rewriteWorkspaceDirtyUnstaged:
+        'modified (unstaged) बदलाव मौजूद होने पर commit history फिर से नहीं लिखी जा सकती। कृपया पहले commit या stash करें।',
+      rewriteProgressTitle: (providerName) => `Rewrite (${providerName})`,
+      rewriteAnalyzingCommit: (shortHash) =>
+        `Commit ${shortHash} का विश्लेषण हो रहा है...`,
+      commitMessageCannotBeEmpty: 'Commit message खाली नहीं हो सकता।',
+      rewriteApplyingTitle: (shortHash) => `${shortHash} फिर से लिखा जा रहा है`,
+      rewriteApplyingProgress: 'Commit history फिर से लिखी जा रही है...',
+      rewriteFailedHistory: 'Commit history फिर से लिखने में विफल।',
+      rewriteCommitMessageRewritten: (shortHash) =>
+        `Commit ${shortHash} message फिर से लिखा गया।`,
+      rewriteDetachedHeadPushUnavailable:
+        'Commit history फिर से लिखी गई, लेकिन detached HEAD state में force push with lease उपलब्ध नहीं है।',
+      rewriteForcePushPrompt: (target) =>
+        `History फिर से लिखी गई। क्या ${target} पर force push with lease करें?`,
+      pushWithLeaseConfirmAction: 'Push with Lease',
+      rewriteForcePushCompleted: (target) =>
+        `Force push with lease पूरा हुआ: ${target}.`,
+      rewriteForcePushFailed: (message) =>
+        `Force push with lease विफल: ${message}`,
+      pushingWithLease: 'Lease के साथ push हो रहा है',
     },
   },
   sidePanelText: {
@@ -154,6 +193,7 @@ export const hiLocale: LocaleTextBundle = {
       settings: 'सेटिंग्स',
       addProvider: 'कस्टम प्रदाता जोड़ें',
       editProvider: 'कस्टम प्रदाता संपादित करें',
+      rewriteEditor: 'Rewrite',
     },
     labels: {
       provider: 'प्रदाता',
@@ -169,6 +209,8 @@ export const hiLocale: LocaleTextBundle = {
       maxAgentSteps: 'अधिकतम एजेंट कदम',
       providerName: 'प्रदाता का नाम',
       apiBaseUrl: 'एपीआई बेस URL',
+      commitMessage: 'Commit Message',
+      selectedCommitMessage: 'चुना गया Commit Message',
     },
     placeholders: {
       selectProvider: 'प्रदाता का चयन करें...',
@@ -189,6 +231,9 @@ export const hiLocale: LocaleTextBundle = {
       editProvider: 'प्रदाता संपादित करें',
       addProvider: '+ प्रदाता जोड़ें...',
       deleteProvider: 'प्रदाता हटाएं',
+      rewriteCommitMessage: 'Commit Message फिर से लिखें',
+      confirmRewrite: 'Rewrite की पुष्टि करें',
+      cancel: 'रद्द करें',
     },
     statuses: {
       checkingStatus: 'स्थिति की जांच कर रहा है...',
@@ -206,6 +251,10 @@ export const hiLocale: LocaleTextBundle = {
       providerSaved: 'कस्टम प्रदाता सहेजा गया!',
       providerDeleted: 'कस्टम प्रदाता हटा दिया गया।',
       modelNameRequired: 'कृपया उत्पन्न करने से पहले एक मॉडल नाम दर्ज करें।',
+      commitMessageCannotBeEmpty: 'Commit message खाली नहीं हो सकता।',
+      pushingWithLease: 'Lease के साथ push हो रहा है...',
+      forcePushWithLeaseCompleted: 'Force push with lease पूरा हुआ।',
+      forcePushWithLeaseFailed: 'Force push with lease विफल।',
     },
     descriptions: {
       ollamaFixedToDirectDiff: 'Ollama डायरेक्ट डिफ मोड पर निश्चित है',
@@ -224,6 +273,8 @@ export const hiLocale: LocaleTextBundle = {
         'प्रति उत्पादन एजेंटिक टूल कॉल को सीमित करें। 0 दर्ज करें या असीमित के लिए खाली छोड़ दें।',
       customProviderInfo:
         'कस्टम प्रदाता <strong>OpenAI-संगत</strong> होने चाहिए।<br>एपीआई बेस URL को एक सेवा को इंगित करना चाहिए जो OpenAI Chat Completions API को लागू करती है।',
+      rewriteEditorDescription:
+        'नए commit message की समीक्षा करें और पुष्टि करें।',
     },
     options: {
       agentic: 'एजेंटिक उत्पन्न करें',

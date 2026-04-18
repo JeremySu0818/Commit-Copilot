@@ -30,7 +30,7 @@
       },
       {
         "command": "commit-copilot.rewriteCommitMessage",
-        "title": "Rewrite Historical Commit Message",
+        "title": "%command.rewriteCommitMessage.title%",
         "category": "Commit-Copilot",
         "icon": "$(history)",
         "enablement": "!commit-copilot.isGenerating"

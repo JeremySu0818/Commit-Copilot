@@ -87,6 +87,12 @@ export const plLocale: LocaleTextBundle = {
       missingApiKeyWarning: (provider) =>
         `Ostrzeżenie: Nie znaleziono klucza API dla ${provider}.`,
       cancelRequestedFromProgress: 'Zażądano anulowania z interfejsu postępu.',
+      rewriteStart: (timestamp) =>
+        `[${timestamp}] Uruchamianie generowania przepisywania commit-copilot...`,
+      rewriteCancelRequestedFromProgress:
+        'Anulowanie zażądane z interfejsu postępu.',
+      rewriteCommitRewritten: (originalHash, replacementHash) =>
+        `Commit przepisany: ${originalHash} -> ${replacementHash}`,
       callingGenerateCommitMessage: 'Wywoływanie generateCommitMessage...',
       repositoryPath: (path) => `Ścieżka repozytorium: ${path}`,
       usingModel: (model) => `Używanie modelu: ${model}`,
@@ -125,6 +131,40 @@ export const plLocale: LocaleTextBundle = {
         'Brak zmian do zatwierdzenia. Najpierw wprowadź jakieś zmiany!',
       generationCanceled: 'Generowanie komunikatu commita anulowane.',
       failedPrefix: 'Commit-Copilot napotkał błąd',
+      rewriteNoNonMergeCommits:
+        'Nie znaleziono commitów niebędących merge w historii bieżącej gałęzi.',
+      rewriteCommitNoSubject: '(brak tematu)',
+      rewriteCommitRootDescription: 'commit główny',
+      rewriteCommitMergeDescription: 'commit merge',
+      rewriteCommitParentDescription: (parentHash) => `rodzic ${parentHash}`,
+      rewriteCommitSelectTitle: 'Wybierz commit do przepisania',
+      rewriteCommitSelectPlaceholder:
+        'Wybierz commit z historii bieżącej gałęzi',
+      rewriteWorkspaceDirtyBoth:
+        'Nie można przepisać historii commitów, gdy istnieją zmiany staged (niezacommitowane) i modified (unstaged). Najpierw je commitnij lub stashuj.',
+      rewriteWorkspaceDirtyStaged:
+        'Nie można przepisać historii commitów, gdy istnieją zmiany staged (niezacommitowane). Najpierw je commitnij lub stashuj.',
+      rewriteWorkspaceDirtyUnstaged:
+        'Nie można przepisać historii commitów, gdy istnieją zmiany modified (unstaged). Najpierw je commitnij lub stashuj.',
+      rewriteProgressTitle: (providerName) => `Przepisywanie (${providerName})`,
+      rewriteAnalyzingCommit: (shortHash) =>
+        `Analizowanie commita ${shortHash}...`,
+      commitMessageCannotBeEmpty: 'Wiadomość commita nie może być pusta.',
+      rewriteApplyingTitle: (shortHash) => `Przepisywanie ${shortHash}`,
+      rewriteApplyingProgress: 'Przepisywanie historii commitów...',
+      rewriteFailedHistory: 'Nie udało się przepisać historii commitów.',
+      rewriteCommitMessageRewritten: (shortHash) =>
+        `Wiadomość commita ${shortHash} została przepisana.`,
+      rewriteDetachedHeadPushUnavailable:
+        'Historia commitów została przepisana, ale force push with lease jest niedostępny w stanie detached HEAD.',
+      rewriteForcePushPrompt: (target) =>
+        `Historia przepisana. Wykonać force push with lease do ${target}?`,
+      pushWithLeaseConfirmAction: 'Push with Lease',
+      rewriteForcePushCompleted: (target) =>
+        `Force push with lease zakończony: ${target}.`,
+      rewriteForcePushFailed: (message) =>
+        `Force push with lease nie powiódł się: ${message}`,
+      pushingWithLease: 'Push with lease w toku',
     },
   },
   sidePanelText: {
@@ -155,6 +195,7 @@ export const plLocale: LocaleTextBundle = {
       settings: 'Ustawienia',
       addProvider: 'Dodaj niestandardowego dostawcę',
       editProvider: 'Edytuj niestandardowego dostawcę',
+      rewriteEditor: 'Przepisz',
     },
     labels: {
       provider: 'Dostawca',
@@ -170,6 +211,8 @@ export const plLocale: LocaleTextBundle = {
       maxAgentSteps: 'Maks. kroków agenta',
       providerName: 'Nazwa dostawcy',
       apiBaseUrl: 'Podstawowy adres URL API',
+      commitMessage: 'Wiadomość commita',
+      selectedCommitMessage: 'Wybrana wiadomość commita',
     },
     placeholders: {
       selectProvider: 'Wybierz dostawcę...',
@@ -190,6 +233,9 @@ export const plLocale: LocaleTextBundle = {
       editProvider: 'Edytuj dostawcę',
       addProvider: '+ Dodaj dostawcę...',
       deleteProvider: 'Usuń dostawcę',
+      rewriteCommitMessage: 'Przepisz wiadomość commita',
+      confirmRewrite: 'Potwierdź przepisanie',
+      cancel: 'Anuluj',
     },
     statuses: {
       checkingStatus: 'Sprawdzanie statusu...',
@@ -207,6 +253,10 @@ export const plLocale: LocaleTextBundle = {
       providerSaved: 'Niestandardowy dostawca został zapisany!',
       providerDeleted: 'Niestandardowy dostawca został usunięty.',
       modelNameRequired: 'Wprowadź nazwę modelu przed wygenerowaniem.',
+      commitMessageCannotBeEmpty: 'Wiadomość commita nie może być pusta.',
+      pushingWithLease: 'Push with lease w toku...',
+      forcePushWithLeaseCompleted: 'Force push with lease zakończony.',
+      forcePushWithLeaseFailed: 'Force push with lease nie powiódł się.',
     },
     descriptions: {
       ollamaFixedToDirectDiff:
@@ -227,6 +277,7 @@ export const plLocale: LocaleTextBundle = {
         'Ogranicz wywołania narzędzi agenta na generowanie. Wpisz 0 lub pozostaw puste, aby usunąć limit.',
       customProviderInfo:
         'Niestandardowi dostawcy muszą być <strong>zgodni z OpenAI</strong>.<br>Podstawowy adres URL API (API Base URL) powinien wskazywać na usługę implementującą funkcję OpenAI Chat Completions API.',
+      rewriteEditorDescription: 'Przejrzyj i potwierdź nową wiadomość commita.',
     },
     options: {
       agentic: 'Generowanie agentowe',

@@ -88,6 +88,11 @@ export const csLocale: LocaleTextBundle = {
         `Varování: Nebyl nalezen žádný API klíč pro ${provider}.`,
       cancelRequestedFromProgress:
         'Generování zrušeno z uživatelského rozhraní.',
+      rewriteStart: (timestamp) =>
+        `[${timestamp}] Spouštím generování přepsání commit-copilot...`,
+      rewriteCancelRequestedFromProgress: 'Zrušení vyžádáno z okna průběhu.',
+      rewriteCommitRewritten: (originalHash, replacementHash) =>
+        `Commit přepsán: ${originalHash} -> ${replacementHash}`,
       callingGenerateCommitMessage: 'Volání generateCommitMessage...',
       repositoryPath: (path) => `Cesta k repozitáři: ${path}`,
       usingModel: (model) => `Používání modelu: ${model}`,
@@ -126,6 +131,39 @@ export const csLocale: LocaleTextBundle = {
         'Žádné změny k potvrzení k dispozici. Nejprve proveďte nějaké změny!',
       generationCanceled: 'Generování zprávy k potvrzení bylo zrušeno.',
       failedPrefix: 'Commit-Copilot selhal',
+      rewriteNoNonMergeCommits:
+        'V historii aktuální větve nebyly nalezeny žádné nemerge commity.',
+      rewriteCommitNoSubject: '(bez předmětu)',
+      rewriteCommitRootDescription: 'kořenový commit',
+      rewriteCommitMergeDescription: 'merge commit',
+      rewriteCommitParentDescription: (parentHash) => `rodič ${parentHash}`,
+      rewriteCommitSelectTitle: 'Vyberte commit k přepsání',
+      rewriteCommitSelectPlaceholder:
+        'Vyberte commit z historie aktuální větve',
+      rewriteWorkspaceDirtyBoth:
+        'Nelze přepsat historii commitů, dokud existují staged (necommitnuté) i modified (unstaged) změny. Nejprve je commitněte nebo uložte do stash.',
+      rewriteWorkspaceDirtyStaged:
+        'Nelze přepsat historii commitů, dokud existují staged (necommitnuté) změny. Nejprve je commitněte nebo uložte do stash.',
+      rewriteWorkspaceDirtyUnstaged:
+        'Nelze přepsat historii commitů, dokud existují modified (unstaged) změny. Nejprve je commitněte nebo uložte do stash.',
+      rewriteProgressTitle: (providerName) => `Přepsání (${providerName})`,
+      rewriteAnalyzingCommit: (shortHash) => `Analyzuji commit ${shortHash}...`,
+      commitMessageCannotBeEmpty: 'Zpráva commitu nesmí být prázdná.',
+      rewriteApplyingTitle: (shortHash) => `Přepisuji ${shortHash}`,
+      rewriteApplyingProgress: 'Přepisuji historii commitů...',
+      rewriteFailedHistory: 'Přepsání historie commitů selhalo.',
+      rewriteCommitMessageRewritten: (shortHash) =>
+        `Zpráva commitu ${shortHash} byla přepsána.`,
+      rewriteDetachedHeadPushUnavailable:
+        'Historie commitů byla přepsána, ale force push with lease není ve stavu detached HEAD dostupný.',
+      rewriteForcePushPrompt: (target) =>
+        `Historie byla přepsána. Provést force push with lease do ${target}?`,
+      pushWithLeaseConfirmAction: 'Push with Lease',
+      rewriteForcePushCompleted: (target) =>
+        `Force push with lease dokončen: ${target}.`,
+      rewriteForcePushFailed: (message) =>
+        `Force push with lease selhal: ${message}`,
+      pushingWithLease: 'Push with lease probíhá',
     },
   },
   sidePanelText: {
@@ -155,6 +193,7 @@ export const csLocale: LocaleTextBundle = {
       settings: 'Nastavení',
       addProvider: 'Přidat vlastního poskytovatele',
       editProvider: 'Upravit vlastního poskytovatele',
+      rewriteEditor: 'Přepsat',
     },
     labels: {
       provider: 'Poskytovatel',
@@ -170,6 +209,8 @@ export const csLocale: LocaleTextBundle = {
       maxAgentSteps: 'Max. počet kroků agenta',
       providerName: 'Název poskytovatele',
       apiBaseUrl: 'Základní URL API',
+      commitMessage: 'Zpráva commitu',
+      selectedCommitMessage: 'Vybraná zpráva commitu',
     },
     placeholders: {
       selectProvider: 'Vyberte poskytovatele...',
@@ -190,6 +231,9 @@ export const csLocale: LocaleTextBundle = {
       editProvider: 'Upravit poskytovatele',
       addProvider: '+ Přidat poskytovatele...',
       deleteProvider: 'Smazat poskytovatele',
+      rewriteCommitMessage: 'Přepsat zprávu commitu',
+      confirmRewrite: 'Potvrdit přepsání',
+      cancel: 'Zrušit',
     },
     statuses: {
       checkingStatus: 'Kontrola stavu...',
@@ -207,6 +251,10 @@ export const csLocale: LocaleTextBundle = {
       providerSaved: 'Vlastní poskytovatel byl uložen!',
       providerDeleted: 'Vlastní poskytovatel byl smazán.',
       modelNameRequired: 'Před generováním zadejte prosím název modelu.',
+      commitMessageCannotBeEmpty: 'Zpráva commitu nesmí být prázdná.',
+      pushingWithLease: 'Push with lease probíhá...',
+      forcePushWithLeaseCompleted: 'Force push with lease dokončen.',
+      forcePushWithLeaseFailed: 'Force push with lease selhal.',
     },
     descriptions: {
       ollamaFixedToDirectDiff: 'Ollama je pevně nastavena na režim Direct Diff',
@@ -226,6 +274,7 @@ export const csLocale: LocaleTextBundle = {
         'Omezí volání nástrojů agenta za jedno generování. Zadejte 0 nebo nechte prázdné pro neomezený počet.',
       customProviderInfo:
         'Vlastní poskytovatelé musí být kompatibilní s <strong>OpenAI</strong>.<br>Základní adresa URL rozhraní API by měla ukazovat na službu, která implementuje rozhraní OpenAI Chat Completions API.',
+      rewriteEditorDescription: 'Zkontrolujte a potvrďte novou zprávu commitu.',
     },
     options: {
       agentic: 'Agentic generování',

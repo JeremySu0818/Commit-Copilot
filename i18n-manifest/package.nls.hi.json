@@ -2,6 +2,7 @@
   "extension.displayName": "Commit Copilot",
   "extension.description": "एलएलएम का उपयोग करके पारंपरिक कमिट संदेश उत्पन्न करें।",
   "command.generate.title": "कमिट संदेश उत्पन्न करें",
+  "command.rewriteCommitMessage.title": "ऐतिहासिक commit message फिर से लिखें",
   "command.cancelGeneration.title": "उत्पादन रद्द करें",
   "command.openLanguageSettings.title": "भाषा सेटिंग्स खोलें",
   "viewsContainer.title": "Commit Copilot",

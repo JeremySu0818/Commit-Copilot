@@ -88,6 +88,11 @@ export const idLocale: LocaleTextBundle = {
       missingApiKeyWarning: (provider) =>
         `Peringatan: Tidak ada API Key yang ditemukan untuk ${provider}.`,
       cancelRequestedFromProgress: 'Pembatalan diminta dari UI kemajuan.',
+      rewriteStart: (timestamp) =>
+        `[${timestamp}] Memulai pembuatan rewrite commit-copilot...`,
+      rewriteCancelRequestedFromProgress: 'Pembatalan diminta dari UI progres.',
+      rewriteCommitRewritten: (originalHash, replacementHash) =>
+        `Commit ditulis ulang: ${originalHash} -> ${replacementHash}`,
       callingGenerateCommitMessage: 'Memanggil generateCommitMessage...',
       repositoryPath: (path) => `Jalur repositori: ${path}`,
       usingModel: (model) => `Menggunakan model: ${model}`,
@@ -126,6 +131,40 @@ export const idLocale: LocaleTextBundle = {
         'Tidak ada perubahan untuk dikomit. Lakukan beberapa perubahan terlebih dahulu!',
       generationCanceled: 'Pembuatan pesan komit dibatalkan.',
       failedPrefix: 'Commit-Copilot gagal',
+      rewriteNoNonMergeCommits:
+        'Tidak ada commit non-merge di riwayat branch saat ini.',
+      rewriteCommitNoSubject: '(tanpa subjek)',
+      rewriteCommitRootDescription: 'commit root',
+      rewriteCommitMergeDescription: 'commit merge',
+      rewriteCommitParentDescription: (parentHash) => `parent ${parentHash}`,
+      rewriteCommitSelectTitle: 'Pilih Commit untuk Ditulis Ulang',
+      rewriteCommitSelectPlaceholder:
+        'Pilih commit dari riwayat branch saat ini',
+      rewriteWorkspaceDirtyBoth:
+        'Tidak dapat menulis ulang riwayat commit saat ada perubahan staged (belum di-commit) dan modified (unstaged). Commit atau stash terlebih dahulu.',
+      rewriteWorkspaceDirtyStaged:
+        'Tidak dapat menulis ulang riwayat commit saat ada perubahan staged (belum di-commit). Commit atau stash terlebih dahulu.',
+      rewriteWorkspaceDirtyUnstaged:
+        'Tidak dapat menulis ulang riwayat commit saat ada perubahan modified (unstaged). Commit atau stash terlebih dahulu.',
+      rewriteProgressTitle: (providerName) => `Rewrite (${providerName})`,
+      rewriteAnalyzingCommit: (shortHash) =>
+        `Menganalisis commit ${shortHash}...`,
+      commitMessageCannotBeEmpty: 'Pesan commit tidak boleh kosong.',
+      rewriteApplyingTitle: (shortHash) => `Menulis ulang ${shortHash}`,
+      rewriteApplyingProgress: 'Menulis ulang riwayat commit...',
+      rewriteFailedHistory: 'Gagal menulis ulang riwayat commit.',
+      rewriteCommitMessageRewritten: (shortHash) =>
+        `Pesan commit ${shortHash} telah ditulis ulang.`,
+      rewriteDetachedHeadPushUnavailable:
+        'Riwayat commit telah ditulis ulang, tetapi force push with lease tidak tersedia dalam status detached HEAD.',
+      rewriteForcePushPrompt: (target) =>
+        `Riwayat telah ditulis ulang. Force push with lease ke ${target}?`,
+      pushWithLeaseConfirmAction: 'Push with Lease',
+      rewriteForcePushCompleted: (target) =>
+        `Force push with lease selesai: ${target}.`,
+      rewriteForcePushFailed: (message) =>
+        `Force push with lease gagal: ${message}`,
+      pushingWithLease: 'Push with lease',
     },
   },
   sidePanelText: {
@@ -156,6 +195,7 @@ export const idLocale: LocaleTextBundle = {
       settings: 'Pengaturan',
       addProvider: 'Tambahkan Penyedia Kustom',
       editProvider: 'Edit Penyedia Kustom',
+      rewriteEditor: 'Rewrite',
     },
     labels: {
       provider: 'Penyedia',
@@ -171,6 +211,8 @@ export const idLocale: LocaleTextBundle = {
       maxAgentSteps: 'Maks. Langkah Agen',
       providerName: 'Nama Penyedia',
       apiBaseUrl: 'URL Dasar API',
+      commitMessage: 'Pesan Commit',
+      selectedCommitMessage: 'Pesan Commit Terpilih',
     },
     placeholders: {
       selectProvider: 'Pilih penyedia...',
@@ -191,6 +233,9 @@ export const idLocale: LocaleTextBundle = {
       editProvider: 'Edit Penyedia',
       addProvider: '+ Tambah Penyedia...',
       deleteProvider: 'Hapus Penyedia',
+      rewriteCommitMessage: 'Tulis Ulang Pesan Commit',
+      confirmRewrite: 'Konfirmasi Rewrite',
+      cancel: 'Batal',
     },
     statuses: {
       checkingStatus: 'Memeriksa status...',
@@ -208,6 +253,10 @@ export const idLocale: LocaleTextBundle = {
       providerSaved: 'Penyedia kustom disimpan!',
       providerDeleted: 'Penyedia kustom dihapus.',
       modelNameRequired: 'Silakan masukkan nama model sebelum menghasilkan.',
+      commitMessageCannotBeEmpty: 'Pesan commit tidak boleh kosong.',
+      pushingWithLease: 'Push with lease...',
+      forcePushWithLeaseCompleted: 'Force push with lease selesai.',
+      forcePushWithLeaseFailed: 'Force push with lease gagal.',
     },
     descriptions: {
       ollamaFixedToDirectDiff: 'Ollama ditetapkan ke mode Direct Diff',
@@ -227,6 +276,7 @@ export const idLocale: LocaleTextBundle = {
         'Batasi panggilan alat agenik per pembuatan. Masukkan 0 atau biarkan kosong untuk tidak terbatas.',
       customProviderInfo:
         'Penyedia kustom harus <strong>Kompatibel dengan OpenAI</strong>.<br>URL Dasar API harus mengarah ke layanan yang menerapkan API Chat Completions OpenAI.',
+      rewriteEditorDescription: 'Tinjau dan konfirmasi pesan commit baru.',
     },
     options: {
       agentic: 'Agentic Generate',

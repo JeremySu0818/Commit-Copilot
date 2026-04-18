@@ -2,6 +2,7 @@
   "extension.displayName": "Commit Copilot",
   "extension.description": "使用 LLM 生成符合约定的 Commit 信息。",
   "command.generate.title": "生成 Commit 信息",
+  "command.rewriteCommitMessage.title": "重写历史提交信息",
   "command.cancelGeneration.title": "取消生成",
   "command.openLanguageSettings.title": "打开语言设置",
   "viewsContainer.title": "Commit Copilot",

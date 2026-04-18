@@ -513,7 +513,7 @@ export function MainView() {
           disabled={isGenerating}
           onClick={handleRewriteCommitMessage}
         >
-          Rewrite Commit Message
+          {pack.buttons.rewriteCommitMessage}
         </button>
       </div>
     </div>

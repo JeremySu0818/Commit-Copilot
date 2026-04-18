@@ -2,6 +2,7 @@
   "extension.displayName": "Commit Copilot",
   "extension.description": "Генерация сообщений о коммитах в общепринятом формате (conventional commit) с помощью LLM.",
   "command.generate.title": "Сгенерировать сообщение коммита",
+  "command.rewriteCommitMessage.title": "Переписать сообщение исторического коммита",
   "command.cancelGeneration.title": "Отменить генерацию",
   "command.openLanguageSettings.title": "Открыть языковые настройки",
   "viewsContainer.title": "Commit Copilot",

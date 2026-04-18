@@ -77,6 +77,11 @@ export const zhTWLocale: LocaleTextBundle = {
       missingApiKeyWarning: (provider) =>
         `警告：${provider} 尚未設定 API Key。`,
       cancelRequestedFromProgress: '已從進度通知請求取消。',
+      rewriteStart: (timestamp) =>
+        `[${timestamp}] 開始執行 commit-copilot rewrite 產生流程...`,
+      rewriteCancelRequestedFromProgress: '已從進度通知請求取消。',
+      rewriteCommitRewritten: (originalHash, replacementHash) =>
+        `已重寫 commit：${originalHash} -> ${replacementHash}`,
       callingGenerateCommitMessage: '呼叫 generateCommitMessage...',
       repositoryPath: (path) => `儲存庫路徑：${path}`,
       usingModel: (model) => `使用模型：${model}`,
@@ -112,6 +117,37 @@ export const zhTWLocale: LocaleTextBundle = {
       noChanges: '目前沒有可提交的變更，請先修改檔案！',
       generationCanceled: '已取消 commit message 產生。',
       failedPrefix: 'Commit-Copilot 執行失敗',
+      rewriteNoNonMergeCommits: '目前分支歷史中沒有可重寫的非合併 commit。',
+      rewriteCommitNoSubject: '（無主旨）',
+      rewriteCommitRootDescription: '根 commit',
+      rewriteCommitMergeDescription: '合併 commit',
+      rewriteCommitParentDescription: (parentHash) => `父 commit ${parentHash}`,
+      rewriteCommitSelectTitle: '選擇要重寫的 Commit',
+      rewriteCommitSelectPlaceholder: '從目前分支歷史中選擇一個 commit',
+      rewriteWorkspaceDirtyBoth:
+        '同時存在 staged（未 commit）與 modified（unstaged）變更時，無法重寫 commit 歷史。請先 commit 或 stash。',
+      rewriteWorkspaceDirtyStaged:
+        '存在 staged（未 commit）變更時，無法重寫 commit 歷史。請先 commit 或 stash。',
+      rewriteWorkspaceDirtyUnstaged:
+        '存在 modified（unstaged）變更時，無法重寫 commit 歷史。請先 commit 或 stash。',
+      rewriteProgressTitle: (providerName) => `重寫（${providerName}）`,
+      rewriteAnalyzingCommit: (shortHash) => `正在分析 commit ${shortHash}...`,
+      commitMessageCannotBeEmpty: 'Commit 訊息不可為空。',
+      rewriteApplyingTitle: (shortHash) => `正在重寫 ${shortHash}`,
+      rewriteApplyingProgress: '正在重寫 commit 歷史...',
+      rewriteFailedHistory: '重寫 commit 歷史失敗。',
+      rewriteCommitMessageRewritten: (shortHash) =>
+        `Commit ${shortHash} 訊息已重寫。`,
+      rewriteDetachedHeadPushUnavailable:
+        'Commit 歷史已重寫，但 detached HEAD 狀態下無法使用 force push with lease。',
+      rewriteForcePushPrompt: (target) =>
+        `歷史已重寫。是否 force push with lease 到 ${target}？`,
+      pushWithLeaseConfirmAction: 'Push with Lease',
+      rewriteForcePushCompleted: (target) =>
+        `Force push with lease 已完成：${target}。`,
+      rewriteForcePushFailed: (message) =>
+        `Force push with lease 失敗：${message}`,
+      pushingWithLease: '正在 Push with lease',
     },
   },
   sidePanelText: {
@@ -140,6 +176,7 @@ export const zhTWLocale: LocaleTextBundle = {
       settings: '設定',
       addProvider: '新增自訂供應商',
       editProvider: '編輯自訂供應商',
+      rewriteEditor: '重寫',
     },
     labels: {
       provider: '供應商',
@@ -155,6 +192,8 @@ export const zhTWLocale: LocaleTextBundle = {
       maxAgentSteps: '最大 Agent 步數',
       providerName: '供應商名稱',
       apiBaseUrl: 'API Base URL',
+      commitMessage: 'Commit 訊息',
+      selectedCommitMessage: '已選擇的 Commit 訊息',
     },
     placeholders: {
       selectProvider: '請選擇供應商...',
@@ -175,6 +214,9 @@ export const zhTWLocale: LocaleTextBundle = {
       editProvider: '編輯 Provider',
       addProvider: '+ 新增 Provider...',
       deleteProvider: '刪除 Provider',
+      rewriteCommitMessage: '重寫 Commit 訊息',
+      confirmRewrite: '確認重寫',
+      cancel: '取消',
     },
     statuses: {
       checkingStatus: '檢查狀態中...',
@@ -192,6 +234,10 @@ export const zhTWLocale: LocaleTextBundle = {
       providerSaved: '已儲存自訂供應商！',
       providerDeleted: '已刪除自訂供應商。',
       modelNameRequired: '請先輸入模型名稱再進行產生。',
+      commitMessageCannotBeEmpty: 'Commit 訊息不可為空。',
+      pushingWithLease: '正在 Push with lease...',
+      forcePushWithLeaseCompleted: 'Force push with lease 已完成。',
+      forcePushWithLeaseFailed: 'Force push with lease 失敗。',
     },
     descriptions: {
       ollamaFixedToDirectDiff: 'Ollama 固定使用 Direct Diff 模式',
@@ -209,6 +255,7 @@ export const zhTWLocale: LocaleTextBundle = {
         '限制每次產生的 Agent 工具呼叫次數。輸入 0 或留空表示無限制。',
       customProviderInfo:
         '自訂供應商必須<strong>兼容 OpenAI</strong>。<br>API Base URL 需指向支援 OpenAI Chat Completions API 的服務。',
+      rewriteEditorDescription: '檢查並確認新的 commit 訊息。',
     },
     options: {
       agentic: 'Agentic 產生',

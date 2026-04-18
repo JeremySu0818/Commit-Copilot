@@ -82,6 +82,11 @@ export const arLocale: LocaleTextBundle = {
       missingApiKeyWarning: (provider) =>
         `تحذير: لم يتم العثور على مفتاح API لـ ${provider}.`,
       cancelRequestedFromProgress: 'تم طلب الإلغاء من واجهة مستخدم التقدم.',
+      rewriteStart: (timestamp) =>
+        `[${timestamp}] بدء إنشاء إعادة كتابة commit-copilot...`,
+      rewriteCancelRequestedFromProgress: 'تم طلب الإلغاء من واجهة التقدم.',
+      rewriteCommitRewritten: (originalHash, replacementHash) =>
+        `تمت إعادة كتابة الالتزام: ${originalHash} -> ${replacementHash}`,
       callingGenerateCommitMessage: 'جاري استدعاء generateCommitMessage...',
       repositoryPath: (path) => `مسار المستودع: ${path}`,
       usingModel: (model) => `استخدام النموذج: ${model}`,
@@ -116,6 +121,39 @@ export const arLocale: LocaleTextBundle = {
       noChanges: 'لا توجد تغييرات للالتزام بها. قم ببعض التغييرات أولاً!',
       generationCanceled: 'تم إلغاء توليد رسالة الالتزام.',
       failedPrefix: 'فشل Commit-Copilot',
+      rewriteNoNonMergeCommits:
+        'لم يتم العثور على أي commits غير دمج في سجل الفرع الحالي.',
+      rewriteCommitNoSubject: '(بدون موضوع)',
+      rewriteCommitRootDescription: 'commit جذري',
+      rewriteCommitMergeDescription: 'commit دمج',
+      rewriteCommitParentDescription: (parentHash) => `الأصل ${parentHash}`,
+      rewriteCommitSelectTitle: 'حدد commit لإعادة كتابته',
+      rewriteCommitSelectPlaceholder: 'اختر commit من سجل الفرع الحالي',
+      rewriteWorkspaceDirtyBoth:
+        'لا يمكن إعادة كتابة سجل commit أثناء وجود تغييرات staged (غير ملتزم بها) وتغييرات modified (unstaged). يرجى commit أو stash أولاً.',
+      rewriteWorkspaceDirtyStaged:
+        'لا يمكن إعادة كتابة سجل commit أثناء وجود تغييرات staged (غير ملتزم بها). يرجى commit أو stash أولاً.',
+      rewriteWorkspaceDirtyUnstaged:
+        'لا يمكن إعادة كتابة سجل commit أثناء وجود تغييرات modified (unstaged). يرجى commit أو stash أولاً.',
+      rewriteProgressTitle: (providerName) => `إعادة كتابة (${providerName})`,
+      rewriteAnalyzingCommit: (shortHash) =>
+        `جارٍ تحليل commit ${shortHash}...`,
+      commitMessageCannotBeEmpty: 'لا يمكن أن تكون رسالة commit فارغة.',
+      rewriteApplyingTitle: (shortHash) => `إعادة كتابة ${shortHash}`,
+      rewriteApplyingProgress: 'جارٍ إعادة كتابة سجل commit...',
+      rewriteFailedHistory: 'فشلت إعادة كتابة سجل commit.',
+      rewriteCommitMessageRewritten: (shortHash) =>
+        `تمت إعادة كتابة رسالة commit ${shortHash}.`,
+      rewriteDetachedHeadPushUnavailable:
+        'تمت إعادة كتابة سجل commit، لكن force push with lease غير متاح في حالة detached HEAD.',
+      rewriteForcePushPrompt: (target) =>
+        `تمت إعادة كتابة السجل. هل تريد force push with lease إلى ${target}؟`,
+      pushWithLeaseConfirmAction: 'Push with Lease',
+      rewriteForcePushCompleted: (target) =>
+        `اكتمل force push with lease: ${target}.`,
+      rewriteForcePushFailed: (message) =>
+        `فشل force push with lease: ${message}`,
+      pushingWithLease: 'جارٍ الدفع مع lease',
     },
   },
   sidePanelText: {
@@ -144,6 +182,7 @@ export const arLocale: LocaleTextBundle = {
       settings: 'الإعدادات',
       addProvider: 'إضافة مزود مخصص',
       editProvider: 'تعديل مزود مخصص',
+      rewriteEditor: 'إعادة كتابة',
     },
     labels: {
       provider: 'المزود',
@@ -159,6 +198,8 @@ export const arLocale: LocaleTextBundle = {
       maxAgentSteps: 'أقصى خطوات للوكيل',
       providerName: 'اسم المزود',
       apiBaseUrl: 'الرابط الأساسي لـ API',
+      commitMessage: 'رسالة Commit',
+      selectedCommitMessage: 'رسالة Commit المحددة',
     },
     placeholders: {
       selectProvider: 'حدد مزوداً...',
@@ -179,6 +220,9 @@ export const arLocale: LocaleTextBundle = {
       editProvider: 'تعديل المزود',
       addProvider: '+ إضافة مزود...',
       deleteProvider: 'حذف المزود',
+      rewriteCommitMessage: 'إعادة كتابة رسالة Commit',
+      confirmRewrite: 'تأكيد إعادة الكتابة',
+      cancel: 'إلغاء',
     },
     statuses: {
       checkingStatus: 'جاري التحقق من الحالة...',
@@ -196,6 +240,10 @@ export const arLocale: LocaleTextBundle = {
       providerSaved: 'تم حفظ المزود المخصص!',
       providerDeleted: 'تم حذف المزود المخصص.',
       modelNameRequired: 'يرجى إدخال اسم النموذج قبل التوليد.',
+      commitMessageCannotBeEmpty: 'لا يمكن أن تكون رسالة commit فارغة.',
+      pushingWithLease: 'جارٍ الدفع مع lease...',
+      forcePushWithLeaseCompleted: 'اكتمل force push with lease.',
+      forcePushWithLeaseFailed: 'فشل force push with lease.',
     },
     descriptions: {
       ollamaFixedToDirectDiff: 'Ollama مثبت على وضع Direct Diff',
@@ -213,6 +261,7 @@ export const arLocale: LocaleTextBundle = {
         'حد استدعاءات أداة الوكيل لكل عملية توليد. أدخل 0 أو اتركه فارغاً للحصول على عدد غير محدود.',
       customProviderInfo:
         'المزودات المخصصة يجب أن تكون <strong>متوافقة مع OpenAI</strong>.<br>الرابط الأساسي لـ API يجب أن يشير إلى خدمة تنفذ API الخاص بـ OpenAI Chat Completions.',
+      rewriteEditorDescription: 'راجع رسالة commit الجديدة وأكدها.',
     },
     options: {
       agentic: 'توليد وكيلي',

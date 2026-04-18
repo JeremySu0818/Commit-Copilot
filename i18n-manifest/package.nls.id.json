@@ -2,6 +2,7 @@
   "extension.displayName": "Commit Copilot",
   "extension.description": "Hasilkan pesan komit konvensional menggunakan LLMs.",
   "command.generate.title": "Hasilkan Pesan Komit",
+  "command.rewriteCommitMessage.title": "Tulis Ulang Pesan Commit Historis",
   "command.cancelGeneration.title": "Batalkan Pembuatan",
   "command.openLanguageSettings.title": "Buka Pengaturan Bahasa",
   "viewsContainer.title": "Commit Copilot",

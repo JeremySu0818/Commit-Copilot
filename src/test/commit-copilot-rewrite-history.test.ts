@@ -317,7 +317,10 @@ void test('generateHistoricalCommitMessage supports non-ASCII file paths in rewr
     git(repoRoot, ['config', 'user.email', 'test@example.com']);
     git(repoRoot, ['config', 'user.name', 'Commit Copilot Test']);
 
-    fs.writeFileSync(path.join(repoRoot, 'app.ts'), 'export const value = 1;\n');
+    fs.writeFileSync(
+      path.join(repoRoot, 'app.ts'),
+      'export const value = 1;\n',
+    );
     git(repoRoot, ['add', 'app.ts']);
     git(repoRoot, ['commit', '-m', 'feat(core): init']);
 
@@ -396,7 +399,12 @@ void test('generateHistoricalCommitMessage restores symlink files in rewrite sna
     fs.writeFileSync(symlinkTargetAbs, 'export const target = true;\n');
     fs.symlinkSync(symlinkTargetFileName, symlinkAbs);
 
-    git(repoRoot, ['add', appRelativePath, symlinkTargetRelativePath, symlinkRelativePath]);
+    git(repoRoot, [
+      'add',
+      appRelativePath,
+      symlinkTargetRelativePath,
+      symlinkRelativePath,
+    ]);
     git(repoRoot, ['commit', '-m', 'feat(core): add symlink']);
 
     fs.writeFileSync(appPath, 'export const value = 2;\n');
@@ -411,7 +419,9 @@ void test('generateHistoricalCommitMessage restores symlink files in rewrite sna
           snapshotRoot,
           ...symlinkRelativePath.split('/'),
         );
-        capturedSymlinkIsLink = fs.lstatSync(symlinkSnapshotAbs).isSymbolicLink();
+        capturedSymlinkIsLink = fs
+          .lstatSync(symlinkSnapshotAbs)
+          .isSymbolicLink();
         capturedSymlinkTarget = fs.readlinkSync(symlinkSnapshotAbs);
         const gitOps = input.gitOps as {
           listFilesFromGitApi: () => Promise<string[] | null>;

@@ -2,6 +2,7 @@
   "extension.displayName": "Commit Copilot",
   "extension.description": "توليد رسائل الالتزام باستخدام نماذج اللغة (LLMs).",
   "command.generate.title": "توليد رسالة الالتزام",
+  "command.rewriteCommitMessage.title": "إعادة كتابة رسالة commit التاريخية",
   "command.cancelGeneration.title": "إلغاء التوليد",
   "command.openLanguageSettings.title": "فتح إعدادات اللغة",
   "viewsContainer.title": "Commit Copilot",

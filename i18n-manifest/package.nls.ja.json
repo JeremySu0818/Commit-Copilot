@@ -2,6 +2,7 @@
   "extension.displayName": "Commit Copilot",
   "extension.description": "LLMを使用したConventional Commitメッセージの生成。",
   "command.generate.title": "コミットメッセージを生成",
+  "command.rewriteCommitMessage.title": "過去のコミットメッセージを書き換え",
   "command.cancelGeneration.title": "生成をキャンセル",
   "command.openLanguageSettings.title": "言語設定を開く",
   "viewsContainer.title": "Commit Copilot",

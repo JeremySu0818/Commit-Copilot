@@ -2,6 +2,7 @@
   "extension.displayName": "Commit Copilot",
   "extension.description": "Hagyományos commit üzenetek generálása LLM-ek segítségével.",
   "command.generate.title": "Commit üzenet generálása",
+  "command.rewriteCommitMessage.title": "Korábbi commit üzenet átírása",
   "command.cancelGeneration.title": "Generálás megszakítása",
   "command.openLanguageSettings.title": "Nyelvi beállítások megnyitása",
   "viewsContainer.title": "Commit Copilot",

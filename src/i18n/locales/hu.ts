@@ -89,6 +89,12 @@ export const huLocale: LocaleTextBundle = {
       missingApiKeyWarning: (provider) =>
         `Figyelmeztetés: Nem található API kulcs ehhez: ${provider}.`,
       cancelRequestedFromProgress: 'Megszakítás kérve a folyamatjelző UI-ról.',
+      rewriteStart: (timestamp) =>
+        `[${timestamp}] Commit-copilot átírási generálás indítása...`,
+      rewriteCancelRequestedFromProgress:
+        'Megszakítás kérve a folyamatjelző felületről.',
+      rewriteCommitRewritten: (originalHash, replacementHash) =>
+        `Commit átírva: ${originalHash} -> ${replacementHash}`,
       callingGenerateCommitMessage: 'generateCommitMessage hívása...',
       repositoryPath: (path) => `Adattár elérési útja: ${path}`,
       usingModel: (model) => `Használt modell: ${model}`,
@@ -127,6 +133,39 @@ export const huLocale: LocaleTextBundle = {
         'Nincsenek változtatások. Kérjük, először módosítson fájlokat!',
       generationCanceled: 'Commit üzenet generálása megszakítva.',
       failedPrefix: 'Commit-Copilot hiba',
+      rewriteNoNonMergeCommits:
+        'Nem található nem merge commit az aktuális ág előzményeiben.',
+      rewriteCommitNoSubject: '(nincs tárgy)',
+      rewriteCommitRootDescription: 'gyökér commit',
+      rewriteCommitMergeDescription: 'merge commit',
+      rewriteCommitParentDescription: (parentHash) => `szülő ${parentHash}`,
+      rewriteCommitSelectTitle: 'Válassza ki az átírandó commitot',
+      rewriteCommitSelectPlaceholder:
+        'Válasszon commitot az aktuális ág előzményeiből',
+      rewriteWorkspaceDirtyBoth:
+        'A commit előzmények nem írhatók át, amíg staged (nem commitolt) és modified (unstaged) módosítások is jelen vannak. Előbb commitolja vagy stash-elje őket.',
+      rewriteWorkspaceDirtyStaged:
+        'A commit előzmények nem írhatók át, amíg staged (nem commitolt) módosítások vannak jelen. Előbb commitolja vagy stash-elje őket.',
+      rewriteWorkspaceDirtyUnstaged:
+        'A commit előzmények nem írhatók át, amíg modified (unstaged) módosítások vannak jelen. Előbb commitolja vagy stash-elje őket.',
+      rewriteProgressTitle: (providerName) => `Átírás (${providerName})`,
+      rewriteAnalyzingCommit: (shortHash) => `Commit elemzése: ${shortHash}...`,
+      commitMessageCannotBeEmpty: 'A commit üzenet nem lehet üres.',
+      rewriteApplyingTitle: (shortHash) => `${shortHash} átírása`,
+      rewriteApplyingProgress: 'Commit előzmények átírása...',
+      rewriteFailedHistory: 'A commit előzmények átírása sikertelen.',
+      rewriteCommitMessageRewritten: (shortHash) =>
+        `A(z) ${shortHash} commit üzenete átírva.`,
+      rewriteDetachedHeadPushUnavailable:
+        'A commit előzmények át lettek írva, de detached HEAD állapotban a force push with lease nem érhető el.',
+      rewriteForcePushPrompt: (target) =>
+        `Az előzmények átírva. Force push with lease ide: ${target}?`,
+      pushWithLeaseConfirmAction: 'Push with Lease',
+      rewriteForcePushCompleted: (target) =>
+        `Force push with lease befejezve: ${target}.`,
+      rewriteForcePushFailed: (message) =>
+        `Force push with lease sikertelen: ${message}`,
+      pushingWithLease: 'Push with lease folyamatban',
     },
   },
   sidePanelText: {
@@ -157,6 +196,7 @@ export const huLocale: LocaleTextBundle = {
       settings: 'Beállítások',
       addProvider: 'Egyéni szolgáltató hozzáadása',
       editProvider: 'Egyéni szolgáltató szerkesztése',
+      rewriteEditor: 'Átírás',
     },
     labels: {
       provider: 'Szolgáltató',
@@ -172,6 +212,8 @@ export const huLocale: LocaleTextBundle = {
       maxAgentSteps: 'Max ügynök lépés',
       providerName: 'Szolgáltató neve',
       apiBaseUrl: 'API Base URL',
+      commitMessage: 'Commit üzenet',
+      selectedCommitMessage: 'Kiválasztott commit üzenet',
     },
     placeholders: {
       selectProvider: 'Válasszon szolgáltatót...',
@@ -192,6 +234,9 @@ export const huLocale: LocaleTextBundle = {
       editProvider: 'Szolgáltató szerkesztése',
       addProvider: '+ Szolgáltató hozzáadása...',
       deleteProvider: 'Szolgáltató törlése',
+      rewriteCommitMessage: 'Commit üzenet átírása',
+      confirmRewrite: 'Átírás megerősítése',
+      cancel: 'Mégse',
     },
     statuses: {
       checkingStatus: 'Állapot ellenőrzése...',
@@ -209,6 +254,10 @@ export const huLocale: LocaleTextBundle = {
       providerSaved: 'Egyéni szolgáltató mentve!',
       providerDeleted: 'Egyéni szolgáltató törölve.',
       modelNameRequired: 'Kérjük, adjon meg egy modellnevet a generálás előtt.',
+      commitMessageCannotBeEmpty: 'A commit üzenet nem lehet üres.',
+      pushingWithLease: 'Push with lease folyamatban...',
+      forcePushWithLeaseCompleted: 'Force push with lease befejezve.',
+      forcePushWithLeaseFailed: 'Force push with lease sikertelen.',
     },
     descriptions: {
       ollamaFixedToDirectDiff: 'Az Ollama rögzítve van a Direct Diff módhoz',
@@ -228,6 +277,8 @@ export const huLocale: LocaleTextBundle = {
         'Az ügynöki (Agentic) eszköz meghívásainak korlátozása generálásonként. Írjon be 0-t, vagy hagyja üresen a korlátlanhoz.',
       customProviderInfo:
         'Az egyéni szolgáltatóknak <strong>OpenAI-kompatibilisnek</strong> kell lenniük.<br>Az API Base URL-nek olyan szolgáltatásra kell mutatnia, amely megvalósítja az OpenAI Chat Completions API-t.',
+      rewriteEditorDescription:
+        'Tekintse át és erősítse meg az új commit üzenetet.',
     },
     options: {
       agentic: 'Ügynöki (Agentic) Generálás',

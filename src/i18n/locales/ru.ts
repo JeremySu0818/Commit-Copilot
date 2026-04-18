@@ -88,6 +88,12 @@ export const ruLocale: LocaleTextBundle = {
       missingApiKeyWarning: (provider) =>
         `Предупреждение: Не найден API-ключ для ${provider}.`,
       cancelRequestedFromProgress: 'Отмена запрошена из интерфейса прогресса.',
+      rewriteStart: (timestamp) =>
+        `[${timestamp}] Запуск генерации переписывания commit-copilot...`,
+      rewriteCancelRequestedFromProgress:
+        'Отмена запрошена из интерфейса прогресса.',
+      rewriteCommitRewritten: (originalHash, replacementHash) =>
+        `Коммит переписан: ${originalHash} -> ${replacementHash}`,
       callingGenerateCommitMessage: 'Вызов generateCommitMessage...',
       repositoryPath: (path) => `Путь к репозиторию: ${path}`,
       usingModel: (model) => `Используется модель: ${model}`,
@@ -125,6 +131,39 @@ export const ruLocale: LocaleTextBundle = {
       noChanges: 'Нет изменений для коммита. Сначала внесите изменения!',
       generationCanceled: 'Генерация сообщения коммита отменена.',
       failedPrefix: 'Ошибка Commit-Copilot',
+      rewriteNoNonMergeCommits:
+        'В истории текущей ветки не найдено коммитов, не являющихся merge.',
+      rewriteCommitNoSubject: '(без темы)',
+      rewriteCommitRootDescription: 'корневой коммит',
+      rewriteCommitMergeDescription: 'merge-коммит',
+      rewriteCommitParentDescription: (parentHash) => `родитель ${parentHash}`,
+      rewriteCommitSelectTitle: 'Выберите коммит для переписывания',
+      rewriteCommitSelectPlaceholder:
+        'Выберите коммит из истории текущей ветки',
+      rewriteWorkspaceDirtyBoth:
+        'Нельзя переписать историю коммитов, пока есть staged (не закоммиченные) и modified (unstaged) изменения. Сначала закоммитьте их или сохраните в stash.',
+      rewriteWorkspaceDirtyStaged:
+        'Нельзя переписать историю коммитов, пока есть staged (не закоммиченные) изменения. Сначала закоммитьте их или сохраните в stash.',
+      rewriteWorkspaceDirtyUnstaged:
+        'Нельзя переписать историю коммитов, пока есть modified (unstaged) изменения. Сначала закоммитьте их или сохраните в stash.',
+      rewriteProgressTitle: (providerName) => `Переписывание (${providerName})`,
+      rewriteAnalyzingCommit: (shortHash) => `Анализ коммита ${shortHash}...`,
+      commitMessageCannotBeEmpty: 'Сообщение коммита не может быть пустым.',
+      rewriteApplyingTitle: (shortHash) => `Переписывание ${shortHash}`,
+      rewriteApplyingProgress: 'Переписывание истории коммитов...',
+      rewriteFailedHistory: 'Не удалось переписать историю коммитов.',
+      rewriteCommitMessageRewritten: (shortHash) =>
+        `Сообщение коммита ${shortHash} переписано.`,
+      rewriteDetachedHeadPushUnavailable:
+        'История коммитов была переписана, но force push with lease недоступен в состоянии detached HEAD.',
+      rewriteForcePushPrompt: (target) =>
+        `История переписана. Выполнить force push with lease в ${target}?`,
+      pushWithLeaseConfirmAction: 'Push with Lease',
+      rewriteForcePushCompleted: (target) =>
+        `Force push with lease завершён: ${target}.`,
+      rewriteForcePushFailed: (message) =>
+        `Force push with lease не удался: ${message}`,
+      pushingWithLease: 'Push with lease выполняется',
     },
   },
   sidePanelText: {
@@ -155,6 +194,7 @@ export const ruLocale: LocaleTextBundle = {
       settings: 'Настройки',
       addProvider: 'Добавить кастомного провайдера',
       editProvider: 'Редактировать кастомного провайдера',
+      rewriteEditor: 'Переписать',
     },
     labels: {
       provider: 'Провайдер',
@@ -170,6 +210,8 @@ export const ruLocale: LocaleTextBundle = {
       maxAgentSteps: 'Макс. количество шагов агента',
       providerName: 'Имя провайдера',
       apiBaseUrl: 'Базовый URL-адрес API',
+      commitMessage: 'Сообщение коммита',
+      selectedCommitMessage: 'Выбранное сообщение коммита',
     },
     placeholders: {
       selectProvider: 'Выберите провайдера...',
@@ -190,6 +232,9 @@ export const ruLocale: LocaleTextBundle = {
       editProvider: 'Изменить провайдера',
       addProvider: '+ Добавить провайдера...',
       deleteProvider: 'Удалить провайдера',
+      rewriteCommitMessage: 'Переписать сообщение коммита',
+      confirmRewrite: 'Подтвердить переписывание',
+      cancel: 'Отмена',
     },
     statuses: {
       checkingStatus: 'Проверка статуса...',
@@ -207,6 +252,10 @@ export const ruLocale: LocaleTextBundle = {
       providerSaved: 'Кастомный провайдер сохранен!',
       providerDeleted: 'Кастомный провайдер удален.',
       modelNameRequired: 'Пожалуйста, введите имя модели перед генерацией.',
+      commitMessageCannotBeEmpty: 'Сообщение коммита не может быть пустым.',
+      pushingWithLease: 'Push with lease выполняется...',
+      forcePushWithLeaseCompleted: 'Force push with lease завершён.',
+      forcePushWithLeaseFailed: 'Force push with lease не удался.',
     },
     descriptions: {
       ollamaFixedToDirectDiff: 'Ollama зафиксирована в режиме Direct Diff',
@@ -226,6 +275,8 @@ export const ruLocale: LocaleTextBundle = {
         'Ограничить количество вызовов инструментов агентом за сеанс. Введите 0 или оставьте пустым для снятия ограничения.',
       customProviderInfo:
         'Кастомные провайдеры должны быть совместимы с <strong>OpenAI</strong>.<br>Базовый URL-адрес API должен указывать на сервис, который реализует API Chat Completions от OpenAI.',
+      rewriteEditorDescription:
+        'Проверьте и подтвердите новое сообщение коммита.',
     },
     options: {
       agentic: 'Агентная генерация',

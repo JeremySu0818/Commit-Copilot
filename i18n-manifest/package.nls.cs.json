@@ -2,6 +2,7 @@
   "extension.displayName": "Commit Copilot",
   "extension.description": "Generování konvenčních zpráv o potvrzení (commit) pomocí LLM.",
   "command.generate.title": "Generovat zprávu o potvrzení",
+  "command.rewriteCommitMessage.title": "Přepsat historickou zprávu commitu",
   "command.cancelGeneration.title": "Zrušit generování",
   "command.openLanguageSettings.title": "Otevřít nastavení jazyka",
   "viewsContainer.title": "Commit Copilot",

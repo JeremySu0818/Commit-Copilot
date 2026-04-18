@@ -2,6 +2,7 @@
   "extension.displayName": "Commit Copilot",
   "extension.description": "LLM kullanarak geleneksel (conventional) commit mesajları oluşturur.",
   "command.generate.title": "Commit Mesajı Oluştur",
+  "command.rewriteCommitMessage.title": "Geçmiş Commit Mesajını Yeniden Yaz",
   "command.cancelGeneration.title": "Oluşturmayı İptal Et",
   "command.openLanguageSettings.title": "Dil Ayarlarını Aç",
   "viewsContainer.title": "Commit Copilot",

@@ -61,7 +61,6 @@ const generationLogSeparatorWidth = 50;
 const rewriteCommitParentHashDisplayLength = 7;
 const rewriteCommitPickLimit = 100;
 const pushWithLeaseCommandId = 'git.pushForceWithLease';
-const pushWithLeaseConfirmAction = 'Push with Lease';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
@@ -289,24 +288,34 @@ function resolveTargetRepository(
   return selectFallbackRepository(api, outputChannel, text);
 }
 
-function toRewriteCommitItemLabel(entry: RewriteCommitEntry): string {
+function toRewriteCommitItemLabel(
+  entry: RewriteCommitEntry,
+  text: ExtensionText,
+): string {
   const subject = entry.subject.trim();
-  const renderedSubject = subject.length > 0 ? subject : '(no subject)';
+  const renderedSubject =
+    subject.length > 0 ? subject : text.notification.rewriteCommitNoSubject;
   return `${entry.shortHash} ${renderedSubject}`;
 }
 
-function toRewriteCommitDescription(entry: RewriteCommitEntry): string {
+function toRewriteCommitDescription(
+  entry: RewriteCommitEntry,
+  text: ExtensionText,
+): string {
   if (entry.parentHashes.length === 0) {
-    return 'root commit';
+    return text.notification.rewriteCommitRootDescription;
   }
   if (entry.parentHashes.length > 1) {
-    return 'merge commit';
+    return text.notification.rewriteCommitMergeDescription;
   }
-  return `parent ${entry.parentHashes[0].slice(0, rewriteCommitParentHashDisplayLength)}`;
+  return text.notification.rewriteCommitParentDescription(
+    entry.parentHashes[0].slice(0, rewriteCommitParentHashDisplayLength),
+  );
 }
 
 async function selectRewriteCommit(
   repository: GitRepository,
+  text: ExtensionText,
 ): Promise<RewriteCommitEntry | null> {
   const commits = await listRecentCommitsForRewrite(
     repository,
@@ -315,20 +324,20 @@ async function selectRewriteCommit(
   const candidates = commits.filter((entry) => entry.parentHashes.length <= 1);
   if (candidates.length === 0) {
     vscode.window.showWarningMessage(
-      'No non-merge commits found in current branch history.',
+      text.notification.rewriteNoNonMergeCommits,
     );
     return null;
   }
 
   const pickItems = candidates.map((entry) => ({
-    label: toRewriteCommitItemLabel(entry),
-    description: toRewriteCommitDescription(entry),
+    label: toRewriteCommitItemLabel(entry, text),
+    description: toRewriteCommitDescription(entry, text),
     entry,
   }));
 
   const selection = await vscode.window.showQuickPick(pickItems, {
-    title: 'Select Commit to Rewrite',
-    placeHolder: 'Choose a commit from current branch history',
+    title: text.notification.rewriteCommitSelectTitle,
+    placeHolder: text.notification.rewriteCommitSelectPlaceholder,
     matchOnDescription: true,
   });
   return selection?.entry ?? null;
@@ -740,6 +749,7 @@ async function resolveRewriteGeneratedMessage(args: {
 
 async function getRewriteWorkspaceDirtyMessage(
   repository: GitRepository,
+  text: ExtensionText,
 ): Promise<string | null> {
   await repository.status();
   const hasUnstagedChanges = repository.state.workingTreeChanges.length > 0;
@@ -750,12 +760,12 @@ async function getRewriteWorkspaceDirtyMessage(
   }
 
   if (hasStagedChanges && hasUnstagedChanges) {
-    return 'Cannot rewrite commit history while both staged (not committed) and modified (unstaged) changes are present. Please commit or stash them first.';
+    return text.notification.rewriteWorkspaceDirtyBoth;
   }
   if (hasStagedChanges) {
-    return 'Cannot rewrite commit history while staged (not committed) changes are present. Please commit or stash them first.';
+    return text.notification.rewriteWorkspaceDirtyStaged;
   }
-  return 'Cannot rewrite commit history while modified (unstaged) changes are present. Please commit or stash them first.';
+  return text.notification.rewriteWorkspaceDirtyUnstaged;
 }
 
 async function resolveRewriteRepositoryOrAbort(args: {
@@ -783,6 +793,7 @@ async function resolveRewriteRepositoryOrAbort(args: {
 
   const dirtyWorkspaceMessage = await getRewriteWorkspaceDirtyMessage(
     repositoryResult.repository,
+    args.text,
   );
   if (dirtyWorkspaceMessage) {
     args.outputChannel.appendLine(`[Rewrite] ${dirtyWorkspaceMessage}`);
@@ -889,10 +900,10 @@ async function executeRewriteCommand(
 
     outputChannel.appendLine('='.repeat(generationLogSeparatorWidth));
     outputChannel.appendLine(
-      `[${new Date().toISOString()}] Starting commit-copilot rewrite generation...`,
+      text.output.rewriteStart(new Date().toISOString()),
     );
 
-    const targetCommit = await selectRewriteCommit(repository);
+    const targetCommit = await selectRewriteCommit(repository, text);
     if (!targetCommit) {
       return;
     }
@@ -944,19 +955,21 @@ async function executeRewriteCommand(
     await vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
-        title: `Rewrite (${providerDisplayName})`,
+        title: text.notification.rewriteProgressTitle(providerDisplayName),
         cancellable: true,
       },
       async (progress, progressToken) => {
         const cancelSubscription = progressToken.onCancellationRequested(() => {
           outputChannel.appendLine(
-            '[Rewrite] Cancellation requested from progress UI.',
+            `[Rewrite] ${text.output.rewriteCancelRequestedFromProgress}`,
           );
           cancellationSource.cancel();
         });
         try {
           progress.report({
-            message: `Analyzing commit ${targetCommit.shortHash}...`,
+            message: text.notification.rewriteAnalyzingCommit(
+              targetCommit.shortHash,
+            ),
           });
           const rewriteGenerationResult = await generateHistoricalCommitMessage(
             {
@@ -1020,7 +1033,9 @@ async function executeRewriteCommand(
       return;
     }
     if (rewrittenMessage.trim().length === 0) {
-      vscode.window.showErrorMessage('Commit message cannot be empty.');
+      vscode.window.showErrorMessage(
+        text.notification.commitMessageCannotBeEmpty,
+      );
       return;
     }
 
@@ -1029,11 +1044,13 @@ async function executeRewriteCommand(
       await vscode.window.withProgress(
         {
           location: vscode.ProgressLocation.Notification,
-          title: `Rewriting ${targetCommit.shortHash}`,
+          title: text.notification.rewriteApplyingTitle(targetCommit.shortHash),
           cancellable: false,
         },
         async (progress) => {
-          progress.report({ message: 'Rewriting commit history...' });
+          progress.report({
+            message: text.notification.rewriteApplyingProgress,
+          });
           return rewriteHistoricalCommitMessage({
             repository,
             commitHash: targetCommit.hash,
@@ -1045,20 +1062,23 @@ async function executeRewriteCommand(
     if (!rewriteApplyResult.success) {
       const message =
         rewriteApplyResult.error?.message ??
-        'Failed to rewrite commit history.';
+        text.notification.rewriteFailedHistory;
       outputChannel.appendLine(`[Rewrite] ${message}`);
       vscode.window.showErrorMessage(message);
       return;
     }
 
     outputChannel.appendLine(
-      `[Rewrite] Commit rewritten: ${targetCommit.hash} -> ${rewriteApplyResult.replacementCommitHash ?? 'updated'}`,
+      `[Rewrite] ${text.output.rewriteCommitRewritten(
+        targetCommit.hash,
+        rewriteApplyResult.replacementCommitHash ?? 'updated',
+      )}`,
     );
     vscode.window.showInformationMessage(
-      `Commit ${targetCommit.shortHash} message rewritten.`,
+      text.notification.rewriteCommitMessageRewritten(targetCommit.shortHash),
     );
 
-    await promptAndForcePushWithLease(repository, outputChannel);
+    await promptAndForcePushWithLease(repository, outputChannel, text);
   } catch (error) {
     handleUnexpectedGenerationError({
       error,
@@ -1097,6 +1117,7 @@ function getPushTargetLabel(repository: GitRepository): string {
 async function promptAndForcePushWithLease(
   repository: GitRepository,
   outputChannel: vscode.OutputChannel,
+  text: ExtensionText,
 ): Promise<void> {
   const stateRecord = repository.state as unknown;
   const state = isRecord(stateRecord) ? stateRecord : {};
@@ -1104,38 +1125,39 @@ async function promptAndForcePushWithLease(
   const head = isRecord(headValue) ? headValue : {};
   if (head.detached === true) {
     vscode.window.showWarningMessage(
-      'Commit history was rewritten, but force push with lease is unavailable in detached HEAD state.',
+      text.notification.rewriteDetachedHeadPushUnavailable,
     );
     return;
   }
 
   const pushTargetLabel = getPushTargetLabel(repository);
   const selection = await vscode.window.showWarningMessage(
-    `History rewritten. Force push with lease to ${pushTargetLabel}?`,
+    text.notification.rewriteForcePushPrompt(pushTargetLabel),
     { modal: true },
-    pushWithLeaseConfirmAction,
+    text.notification.pushWithLeaseConfirmAction,
   );
-  if (selection !== pushWithLeaseConfirmAction) {
+  if (selection !== text.notification.pushWithLeaseConfirmAction) {
     return;
   }
 
   try {
     try {
-      await runForcePushWithLeaseCommand(repository);
+      await runForcePushWithLeaseCommand(repository, text);
     } catch (error) {
       if (!isCommandUnavailableError(error, pushWithLeaseCommandId)) {
         throw error;
       }
-      await runForcePushWithLeaseCli(repository);
+      await runForcePushWithLeaseCli(repository, text);
     }
 
-    const successMessage = `Force push with lease completed: ${pushTargetLabel}.`;
+    const successMessage =
+      text.notification.rewriteForcePushCompleted(pushTargetLabel);
     outputChannel.appendLine(`[Rewrite] ${successMessage}`);
     vscode.window.showInformationMessage(successMessage);
   } catch (error) {
     const rawErrorMessage =
       error instanceof Error ? error.message : String(error);
-    const message = `Force push with lease failed: ${rawErrorMessage}`;
+    const message = text.notification.rewriteForcePushFailed(rawErrorMessage);
     outputChannel.appendLine(`[Rewrite] ${message}`);
     vscode.window.showErrorMessage(message);
   }
@@ -1143,11 +1165,12 @@ async function promptAndForcePushWithLease(
 
 async function runForcePushWithLeaseCommand(
   repository: GitRepository,
+  text: ExtensionText,
 ): Promise<void> {
   await vscode.window.withProgress(
     {
       location: vscode.ProgressLocation.Notification,
-      title: 'Pushing with lease',
+      title: text.notification.pushingWithLease,
       cancellable: false,
     },
     async () => {
@@ -1158,11 +1181,12 @@ async function runForcePushWithLeaseCommand(
 
 async function runForcePushWithLeaseCli(
   repository: GitRepository,
+  text: ExtensionText,
 ): Promise<void> {
   await vscode.window.withProgress(
     {
       location: vscode.ProgressLocation.Notification,
-      title: 'Pushing with lease',
+      title: text.notification.pushingWithLease,
       cancellable: false,
     },
     async () => {
@@ -1303,9 +1327,7 @@ async function executeGenerateCommand(
     }
 
     const progressTitle =
-      providerContext.llmProvider === 'ollama'
-        ? 'Ollama'
-        : providerDisplayName;
+      providerContext.llmProvider === 'ollama' ? 'Ollama' : providerDisplayName;
     await vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,

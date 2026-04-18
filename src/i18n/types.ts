@@ -70,6 +70,12 @@ export interface ExtensionText {
     usingCommitOutputOptions: (optionsJson: string) => string;
     missingApiKeyWarning: (provider: string) => string;
     cancelRequestedFromProgress: string;
+    rewriteStart: (timestamp: string) => string;
+    rewriteCancelRequestedFromProgress: string;
+    rewriteCommitRewritten: (
+      originalHash: string,
+      replacementHash: string,
+    ) => string;
     callingGenerateCommitMessage: string;
     repositoryPath: (path: string) => string;
     usingModel: (model: string) => string;
@@ -98,6 +104,29 @@ export interface ExtensionText {
     noChanges: string;
     generationCanceled: string;
     failedPrefix: string;
+    rewriteNoNonMergeCommits: string;
+    rewriteCommitNoSubject: string;
+    rewriteCommitRootDescription: string;
+    rewriteCommitMergeDescription: string;
+    rewriteCommitParentDescription: (parentHash: string) => string;
+    rewriteCommitSelectTitle: string;
+    rewriteCommitSelectPlaceholder: string;
+    rewriteWorkspaceDirtyBoth: string;
+    rewriteWorkspaceDirtyStaged: string;
+    rewriteWorkspaceDirtyUnstaged: string;
+    rewriteProgressTitle: (providerName: string) => string;
+    rewriteAnalyzingCommit: (shortHash: string) => string;
+    commitMessageCannotBeEmpty: string;
+    rewriteApplyingTitle: (shortHash: string) => string;
+    rewriteApplyingProgress: string;
+    rewriteFailedHistory: string;
+    rewriteCommitMessageRewritten: (shortHash: string) => string;
+    rewriteDetachedHeadPushUnavailable: string;
+    rewriteForcePushPrompt: (target: string) => string;
+    pushWithLeaseConfirmAction: string;
+    rewriteForcePushCompleted: (target: string) => string;
+    rewriteForcePushFailed: (message: string) => string;
+    pushingWithLease: string;
   };
 }
 
@@ -127,6 +156,7 @@ export interface WebviewLanguagePack {
     settings: string;
     addProvider: string;
     editProvider: string;
+    rewriteEditor: string;
   };
   labels: {
     provider: string;
@@ -142,6 +172,8 @@ export interface WebviewLanguagePack {
     maxAgentSteps: string;
     providerName: string;
     apiBaseUrl: string;
+    commitMessage: string;
+    selectedCommitMessage: string;
   };
   placeholders: {
     selectProvider: string;
@@ -162,6 +194,9 @@ export interface WebviewLanguagePack {
     editProvider: string;
     addProvider: string;
     deleteProvider: string;
+    rewriteCommitMessage: string;
+    confirmRewrite: string;
+    cancel: string;
   };
   statuses: {
     checkingStatus: string;
@@ -179,6 +214,10 @@ export interface WebviewLanguagePack {
     providerSaved: string;
     providerDeleted: string;
     modelNameRequired: string;
+    commitMessageCannotBeEmpty: string;
+    pushingWithLease: string;
+    forcePushWithLeaseCompleted: string;
+    forcePushWithLeaseFailed: string;
   };
   descriptions: {
     ollamaFixedToDirectDiff: string;
@@ -190,6 +229,7 @@ export interface WebviewLanguagePack {
     anthropicInfo: string;
     maxAgentStepsDescription: string;
     customProviderInfo: string;
+    rewriteEditorDescription: string;
   };
   options: {
     agentic: string;

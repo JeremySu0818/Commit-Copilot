@@ -87,6 +87,12 @@ export const enLocale: LocaleTextBundle = {
       missingApiKeyWarning: (provider) =>
         `Warning: No API Key found for ${provider}.`,
       cancelRequestedFromProgress: 'Cancellation requested from progress UI.',
+      rewriteStart: (timestamp) =>
+        `[${timestamp}] Starting commit-copilot rewrite generation...`,
+      rewriteCancelRequestedFromProgress:
+        'Cancellation requested from progress UI.',
+      rewriteCommitRewritten: (originalHash, replacementHash) =>
+        `Commit rewritten: ${originalHash} -> ${replacementHash}`,
       callingGenerateCommitMessage: 'Calling generateCommitMessage...',
       repositoryPath: (path) => `Repository path: ${path}`,
       usingModel: (model) => `Using model: ${model}`,
@@ -123,6 +129,39 @@ export const enLocale: LocaleTextBundle = {
       noChanges: 'No changes to commit. Make some changes first!',
       generationCanceled: 'Commit message generation canceled.',
       failedPrefix: 'Commit-Copilot failed',
+      rewriteNoNonMergeCommits:
+        'No non-merge commits found in current branch history.',
+      rewriteCommitNoSubject: '(no subject)',
+      rewriteCommitRootDescription: 'root commit',
+      rewriteCommitMergeDescription: 'merge commit',
+      rewriteCommitParentDescription: (parentHash) => `parent ${parentHash}`,
+      rewriteCommitSelectTitle: 'Select Commit to Rewrite',
+      rewriteCommitSelectPlaceholder:
+        'Choose a commit from current branch history',
+      rewriteWorkspaceDirtyBoth:
+        'Cannot rewrite commit history while both staged (not committed) and modified (unstaged) changes are present. Please commit or stash them first.',
+      rewriteWorkspaceDirtyStaged:
+        'Cannot rewrite commit history while staged (not committed) changes are present. Please commit or stash them first.',
+      rewriteWorkspaceDirtyUnstaged:
+        'Cannot rewrite commit history while modified (unstaged) changes are present. Please commit or stash them first.',
+      rewriteProgressTitle: (providerName) => `Rewrite (${providerName})`,
+      rewriteAnalyzingCommit: (shortHash) => `Analyzing commit ${shortHash}...`,
+      commitMessageCannotBeEmpty: 'Commit message cannot be empty.',
+      rewriteApplyingTitle: (shortHash) => `Rewriting ${shortHash}`,
+      rewriteApplyingProgress: 'Rewriting commit history...',
+      rewriteFailedHistory: 'Failed to rewrite commit history.',
+      rewriteCommitMessageRewritten: (shortHash) =>
+        `Commit ${shortHash} message rewritten.`,
+      rewriteDetachedHeadPushUnavailable:
+        'Commit history was rewritten, but force push with lease is unavailable in detached HEAD state.',
+      rewriteForcePushPrompt: (target) =>
+        `History rewritten. Force push with lease to ${target}?`,
+      pushWithLeaseConfirmAction: 'Push with Lease',
+      rewriteForcePushCompleted: (target) =>
+        `Force push with lease completed: ${target}.`,
+      rewriteForcePushFailed: (message) =>
+        `Force push with lease failed: ${message}`,
+      pushingWithLease: 'Pushing with lease',
     },
   },
   sidePanelText: {
@@ -152,6 +191,7 @@ export const enLocale: LocaleTextBundle = {
       settings: 'Settings',
       addProvider: 'Add Custom Provider',
       editProvider: 'Edit Custom Provider',
+      rewriteEditor: 'Rewrite',
     },
     labels: {
       provider: 'Provider',
@@ -167,6 +207,8 @@ export const enLocale: LocaleTextBundle = {
       maxAgentSteps: 'Max Agent Steps',
       providerName: 'Provider Name',
       apiBaseUrl: 'API Base URL',
+      commitMessage: 'Commit Message',
+      selectedCommitMessage: 'Selected Commit Message',
     },
     placeholders: {
       selectProvider: 'Select a provider...',
@@ -187,6 +229,9 @@ export const enLocale: LocaleTextBundle = {
       editProvider: 'Edit Provider',
       addProvider: '+ Add Provider...',
       deleteProvider: 'Delete Provider',
+      rewriteCommitMessage: 'Rewrite Commit Message',
+      confirmRewrite: 'Confirm Rewrite',
+      cancel: 'Cancel',
     },
     statuses: {
       checkingStatus: 'Checking status...',
@@ -204,6 +249,10 @@ export const enLocale: LocaleTextBundle = {
       providerSaved: 'Custom provider saved!',
       providerDeleted: 'Custom provider deleted.',
       modelNameRequired: 'Please enter a model name before generating.',
+      commitMessageCannotBeEmpty: 'Commit message cannot be empty.',
+      pushingWithLease: 'Pushing with lease...',
+      forcePushWithLeaseCompleted: 'Force push with lease completed.',
+      forcePushWithLeaseFailed: 'Force push with lease failed.',
     },
     descriptions: {
       ollamaFixedToDirectDiff: 'Ollama is fixed to Direct Diff mode',
@@ -223,6 +272,7 @@ export const enLocale: LocaleTextBundle = {
         'Limit agentic tool calls per generation. Enter 0 or leave empty for unlimited.',
       customProviderInfo:
         'Custom providers must be <strong>OpenAI-compatible</strong>.<br>The API Base URL should point to a service that implements the OpenAI Chat Completions API.',
+      rewriteEditorDescription: 'Review and confirm the new commit message.',
     },
     options: {
       agentic: 'Agentic Generate',

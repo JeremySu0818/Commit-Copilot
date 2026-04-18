@@ -35,7 +35,7 @@ export function RewriteEditorView() {
         partial: {
           statusHtml: renderStatusHtml(
             'error',
-            'Commit message cannot be empty.',
+            pack.statuses.commitMessageCannotBeEmpty,
           ),
         },
       });
@@ -50,6 +50,7 @@ export function RewriteEditorView() {
   }, [
     rewriteEditorDraft.requestId,
     rewriteEditorDraft.message,
+    pack.statuses.commitMessageCannotBeEmpty,
     returnToMain,
     dispatch,
     vscode,
@@ -73,15 +74,15 @@ export function RewriteEditorView() {
 
       <div className="config-section">
         <div className="section-title">
-          Rewrite{' '}
+          {pack.sections.rewriteEditor}{' '}
           {rewriteEditorDraft.targetCommitShortHash ||
-            'Selected Commit Message'}
+            pack.labels.selectedCommitMessage}
         </div>
         <div className="provider-info">
-          Review and confirm the new commit message.
+          {pack.descriptions.rewriteEditorDescription}
         </div>
         <div className="input-group" style={{ marginTop: '10px' }}>
-          <label>Commit Message</label>
+          <label>{pack.labels.commitMessage}</label>
           <textarea
             id="rewriteEditorTextarea"
             className="rewrite-editor-textarea"
@@ -105,14 +106,14 @@ export function RewriteEditorView() {
         </div>
         <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
           <button id="confirmRewriteEditorBtn" onClick={handleConfirm}>
-            Confirm Rewrite
+            {pack.buttons.confirmRewrite}
           </button>
           <button
             id="cancelRewriteEditorBtn"
             className="secondary"
             onClick={handleCancel}
           >
-            Cancel
+            {pack.buttons.cancel}
           </button>
         </div>
       </div>

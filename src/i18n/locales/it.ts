@@ -89,6 +89,12 @@ export const itLocale: LocaleTextBundle = {
         `Avviso: nessuna chiave API trovata per ${provider}.`,
       cancelRequestedFromProgress:
         "Annullamento richiesto dall'interfaccia di avanzamento.",
+      rewriteStart: (timestamp) =>
+        `[${timestamp}] Avvio della generazione di riscrittura commit-copilot...`,
+      rewriteCancelRequestedFromProgress:
+        'Annullamento richiesto dall’interfaccia di avanzamento.',
+      rewriteCommitRewritten: (originalHash, replacementHash) =>
+        `Commit riscritto: ${originalHash} -> ${replacementHash}`,
       callingGenerateCommitMessage: 'Chiamata a generateCommitMessage...',
       repositoryPath: (path) => `Percorso del repository: ${path}`,
       usingModel: (model) => `Utilizzo del modello: ${model}`,
@@ -126,6 +132,41 @@ export const itLocale: LocaleTextBundle = {
       noChanges: 'Nessuna modifica da committare. Fai prima alcune modifiche!',
       generationCanceled: 'Generazione del messaggio di commit annullata.',
       failedPrefix: 'Commit-Copilot fallito',
+      rewriteNoNonMergeCommits:
+        'Nessun commit non-merge trovato nella cronologia del branch corrente.',
+      rewriteCommitNoSubject: '(nessun oggetto)',
+      rewriteCommitRootDescription: 'commit radice',
+      rewriteCommitMergeDescription: 'commit di merge',
+      rewriteCommitParentDescription: (parentHash) => `padre ${parentHash}`,
+      rewriteCommitSelectTitle: 'Seleziona commit da riscrivere',
+      rewriteCommitSelectPlaceholder:
+        'Scegli un commit dalla cronologia del branch corrente',
+      rewriteWorkspaceDirtyBoth:
+        'Impossibile riscrivere la cronologia dei commit mentre sono presenti modifiche staged (non committate) e modified (unstaged). Esegui prima commit o stash.',
+      rewriteWorkspaceDirtyStaged:
+        'Impossibile riscrivere la cronologia dei commit mentre sono presenti modifiche staged (non committate). Esegui prima commit o stash.',
+      rewriteWorkspaceDirtyUnstaged:
+        'Impossibile riscrivere la cronologia dei commit mentre sono presenti modifiche modified (unstaged). Esegui prima commit o stash.',
+      rewriteProgressTitle: (providerName) => `Riscrittura (${providerName})`,
+      rewriteAnalyzingCommit: (shortHash) =>
+        `Analisi del commit ${shortHash}...`,
+      commitMessageCannotBeEmpty:
+        'Il messaggio di commit non può essere vuoto.',
+      rewriteApplyingTitle: (shortHash) => `Riscrittura di ${shortHash}`,
+      rewriteApplyingProgress: 'Riscrittura della cronologia dei commit...',
+      rewriteFailedHistory: 'Impossibile riscrivere la cronologia dei commit.',
+      rewriteCommitMessageRewritten: (shortHash) =>
+        `Messaggio del commit ${shortHash} riscritto.`,
+      rewriteDetachedHeadPushUnavailable:
+        'La cronologia dei commit è stata riscritta, ma force push with lease non è disponibile nello stato detached HEAD.',
+      rewriteForcePushPrompt: (target) =>
+        `Cronologia riscritta. Eseguire force push with lease verso ${target}?`,
+      pushWithLeaseConfirmAction: 'Push with Lease',
+      rewriteForcePushCompleted: (target) =>
+        `Force push with lease completato: ${target}.`,
+      rewriteForcePushFailed: (message) =>
+        `Force push with lease non riuscito: ${message}`,
+      pushingWithLease: 'Push with lease in corso',
     },
   },
   sidePanelText: {
@@ -156,6 +197,7 @@ export const itLocale: LocaleTextBundle = {
       settings: 'Impostazioni',
       addProvider: 'Aggiungi Provider Personalizzato',
       editProvider: 'Modifica Provider Personalizzato',
+      rewriteEditor: 'Riscrivi',
     },
     labels: {
       provider: 'Provider',
@@ -171,6 +213,8 @@ export const itLocale: LocaleTextBundle = {
       maxAgentSteps: 'Passi Massimi Agente',
       providerName: 'Nome Provider',
       apiBaseUrl: 'URL Base API',
+      commitMessage: 'Messaggio di commit',
+      selectedCommitMessage: 'Messaggio di commit selezionato',
     },
     placeholders: {
       selectProvider: 'Seleziona un provider...',
@@ -191,6 +235,9 @@ export const itLocale: LocaleTextBundle = {
       editProvider: 'Modifica Provider',
       addProvider: '+ Aggiungi Provider...',
       deleteProvider: 'Elimina Provider',
+      rewriteCommitMessage: 'Riscrivi messaggio di commit',
+      confirmRewrite: 'Conferma riscrittura',
+      cancel: 'Annulla',
     },
     statuses: {
       checkingStatus: 'Controllo dello stato...',
@@ -208,6 +255,11 @@ export const itLocale: LocaleTextBundle = {
       providerSaved: 'Provider personalizzato salvato!',
       providerDeleted: 'Provider personalizzato eliminato.',
       modelNameRequired: 'Inserisci il nome del modello prima di generare.',
+      commitMessageCannotBeEmpty:
+        'Il messaggio di commit non può essere vuoto.',
+      pushingWithLease: 'Push with lease in corso...',
+      forcePushWithLeaseCompleted: 'Force push with lease completato.',
+      forcePushWithLeaseFailed: 'Force push with lease non riuscito.',
     },
     descriptions: {
       ollamaFixedToDirectDiff: 'Ollama è fissato sulla modalità Direct Diff',
@@ -227,6 +279,8 @@ export const itLocale: LocaleTextBundle = {
         "Limita le chiamate agli strumenti dell'agente per generazione. Inserisci 0 o lascia vuoto per non avere limiti.",
       customProviderInfo:
         "I provider personalizzati devono essere <strong>compatibili con OpenAI</strong>.<br>L'URL base dell'API deve puntare a un servizio che implementi l'API Chat Completions di OpenAI.",
+      rewriteEditorDescription:
+        'Rivedi e conferma il nuovo messaggio di commit.',
     },
     options: {
       agentic: 'Generazione Agentica',

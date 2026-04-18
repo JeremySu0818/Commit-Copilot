@@ -87,6 +87,12 @@ export const viLocale: LocaleTextBundle = {
       missingApiKeyWarning: (provider) =>
         `Cảnh báo: Không tìm thấy API Key cho ${provider}.`,
       cancelRequestedFromProgress: 'Đã yêu cầu hủy từ giao diện tiến trình.',
+      rewriteStart: (timestamp) =>
+        `[${timestamp}] Bắt đầu tạo rewrite commit-copilot...`,
+      rewriteCancelRequestedFromProgress:
+        'Đã yêu cầu hủy từ giao diện tiến trình.',
+      rewriteCommitRewritten: (originalHash, replacementHash) =>
+        `Commit đã được viết lại: ${originalHash} -> ${replacementHash}`,
       callingGenerateCommitMessage: 'Đang gọi generateCommitMessage...',
       repositoryPath: (path) => `Đường dẫn kho lưu trữ: ${path}`,
       usingModel: (model) => `Sử dụng mô hình: ${model}`,
@@ -124,6 +130,40 @@ export const viLocale: LocaleTextBundle = {
         'Không có thay đổi nào để commit. Hãy thực hiện một số thay đổi trước!',
       generationCanceled: 'Đã hủy tạo thông báo commit.',
       failedPrefix: 'Commit-Copilot thất bại',
+      rewriteNoNonMergeCommits:
+        'Không tìm thấy commit không phải merge trong lịch sử nhánh hiện tại.',
+      rewriteCommitNoSubject: '(không có chủ đề)',
+      rewriteCommitRootDescription: 'commit gốc',
+      rewriteCommitMergeDescription: 'commit merge',
+      rewriteCommitParentDescription: (parentHash) => `parent ${parentHash}`,
+      rewriteCommitSelectTitle: 'Chọn commit để viết lại',
+      rewriteCommitSelectPlaceholder:
+        'Chọn một commit từ lịch sử nhánh hiện tại',
+      rewriteWorkspaceDirtyBoth:
+        'Không thể viết lại lịch sử commit khi đang có thay đổi staged (chưa commit) và modified (unstaged). Vui lòng commit hoặc stash trước.',
+      rewriteWorkspaceDirtyStaged:
+        'Không thể viết lại lịch sử commit khi đang có thay đổi staged (chưa commit). Vui lòng commit hoặc stash trước.',
+      rewriteWorkspaceDirtyUnstaged:
+        'Không thể viết lại lịch sử commit khi đang có thay đổi modified (unstaged). Vui lòng commit hoặc stash trước.',
+      rewriteProgressTitle: (providerName) => `Rewrite (${providerName})`,
+      rewriteAnalyzingCommit: (shortHash) =>
+        `Đang phân tích commit ${shortHash}...`,
+      commitMessageCannotBeEmpty: 'Thông báo commit không được để trống.',
+      rewriteApplyingTitle: (shortHash) => `Đang viết lại ${shortHash}`,
+      rewriteApplyingProgress: 'Đang viết lại lịch sử commit...',
+      rewriteFailedHistory: 'Không thể viết lại lịch sử commit.',
+      rewriteCommitMessageRewritten: (shortHash) =>
+        `Thông báo commit ${shortHash} đã được viết lại.`,
+      rewriteDetachedHeadPushUnavailable:
+        'Lịch sử commit đã được viết lại, nhưng force push with lease không khả dụng trong trạng thái detached HEAD.',
+      rewriteForcePushPrompt: (target) =>
+        `Lịch sử đã được viết lại. Force push with lease tới ${target}?`,
+      pushWithLeaseConfirmAction: 'Push with Lease',
+      rewriteForcePushCompleted: (target) =>
+        `Force push with lease hoàn tất: ${target}.`,
+      rewriteForcePushFailed: (message) =>
+        `Force push with lease thất bại: ${message}`,
+      pushingWithLease: 'Đang push with lease',
     },
   },
   sidePanelText: {
@@ -153,6 +193,7 @@ export const viLocale: LocaleTextBundle = {
       settings: 'Cài đặt',
       addProvider: 'Thêm nhà cung cấp tùy chỉnh',
       editProvider: 'Chỉnh sửa nhà cung cấp tùy chỉnh',
+      rewriteEditor: 'Viết lại',
     },
     labels: {
       provider: 'Nhà cung cấp',
@@ -168,6 +209,8 @@ export const viLocale: LocaleTextBundle = {
       maxAgentSteps: 'Số bước Agent tối đa',
       providerName: 'Tên Nhà cung cấp',
       apiBaseUrl: 'API Base URL',
+      commitMessage: 'Thông báo commit',
+      selectedCommitMessage: 'Thông báo commit đã chọn',
     },
     placeholders: {
       selectProvider: 'Chọn một nhà cung cấp...',
@@ -188,6 +231,9 @@ export const viLocale: LocaleTextBundle = {
       editProvider: 'Chỉnh sửa Nhà cung cấp',
       addProvider: '+ Thêm Nhà cung cấp...',
       deleteProvider: 'Xóa Nhà cung cấp',
+      rewriteCommitMessage: 'Viết lại thông báo commit',
+      confirmRewrite: 'Xác nhận viết lại',
+      cancel: 'Hủy',
     },
     statuses: {
       checkingStatus: 'Đang kiểm tra trạng thái...',
@@ -205,6 +251,10 @@ export const viLocale: LocaleTextBundle = {
       providerSaved: 'Đã lưu nhà cung cấp tùy chỉnh!',
       providerDeleted: 'Đã xóa nhà cung cấp tùy chỉnh.',
       modelNameRequired: 'Vui lòng nhập tên mô hình trước khi tạo.',
+      commitMessageCannotBeEmpty: 'Thông báo commit không được để trống.',
+      pushingWithLease: 'Đang push with lease...',
+      forcePushWithLeaseCompleted: 'Force push with lease hoàn tất.',
+      forcePushWithLeaseFailed: 'Force push with lease thất bại.',
     },
     descriptions: {
       ollamaFixedToDirectDiff: 'Ollama được cố định ở chế độ Direct Diff',
@@ -223,6 +273,7 @@ export const viLocale: LocaleTextBundle = {
         'Giới hạn số lần gọi công cụ agent trong mỗi lần tạo. Nhập 0 hoặc để trống để không giới hạn.',
       customProviderInfo:
         'Các nhà cung cấp tùy chỉnh phải <strong>tương thích với OpenAI</strong>.<br>API Base URL phải trỏ đến một dịch vụ có triển khai OpenAI Chat Completions API.',
+      rewriteEditorDescription: 'Xem lại và xác nhận thông báo commit mới.',
     },
     options: {
       agentic: 'Tạo Agentic',

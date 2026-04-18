@@ -2,6 +2,7 @@
   "extension.displayName": "Commit Copilot",
   "extension.description": "Gere mensagens de commit convencionais usando LLMs.",
   "command.generate.title": "Gerar Mensagem de Commit",
+  "command.rewriteCommitMessage.title": "Reescrever mensagem de commit histórica",
   "command.cancelGeneration.title": "Cancelar Geração",
   "command.openLanguageSettings.title": "Abrir Configurações de Idioma",
   "viewsContainer.title": "Commit Copilot",

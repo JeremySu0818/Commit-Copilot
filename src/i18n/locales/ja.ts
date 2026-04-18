@@ -86,6 +86,12 @@ export const jaLocale: LocaleTextBundle = {
       missingApiKeyWarning: (provider) =>
         `警告: ${provider} の API キーが見つかりません。`,
       cancelRequestedFromProgress: '進行状況UIからキャンセルが要求されました。',
+      rewriteStart: (timestamp) =>
+        `[${timestamp}] commit-copilot の rewrite 生成を開始しています...`,
+      rewriteCancelRequestedFromProgress:
+        '進行状況 UI からキャンセルが要求されました。',
+      rewriteCommitRewritten: (originalHash, replacementHash) =>
+        `コミットを書き換えました: ${originalHash} -> ${replacementHash}`,
       callingGenerateCommitMessage:
         'generateCommitMessage を呼び出しています...',
       repositoryPath: (path) => `リポジトリパス: ${path}`,
@@ -124,6 +130,39 @@ export const jaLocale: LocaleTextBundle = {
       noChanges: 'コミットする変更がありません。まずは変更を加えてください！',
       generationCanceled: 'コミットメッセージの生成がキャンセルされました。',
       failedPrefix: 'Commit-Copilot 失敗',
+      rewriteNoNonMergeCommits:
+        '現在のブランチ履歴に非マージコミットが見つかりません。',
+      rewriteCommitNoSubject: '(件名なし)',
+      rewriteCommitRootDescription: 'ルートコミット',
+      rewriteCommitMergeDescription: 'マージコミット',
+      rewriteCommitParentDescription: (parentHash) => `親 ${parentHash}`,
+      rewriteCommitSelectTitle: '書き換えるコミットを選択',
+      rewriteCommitSelectPlaceholder: '現在のブランチ履歴からコミットを選択',
+      rewriteWorkspaceDirtyBoth:
+        'staged (未コミット) と modified (unstaged) の変更があるため、コミット履歴を書き換えられません。先に commit または stash してください。',
+      rewriteWorkspaceDirtyStaged:
+        'staged (未コミット) の変更があるため、コミット履歴を書き換えられません。先に commit または stash してください。',
+      rewriteWorkspaceDirtyUnstaged:
+        'modified (unstaged) の変更があるため、コミット履歴を書き換えられません。先に commit または stash してください。',
+      rewriteProgressTitle: (providerName) => `Rewrite (${providerName})`,
+      rewriteAnalyzingCommit: (shortHash) =>
+        `コミット ${shortHash} を分析しています...`,
+      commitMessageCannotBeEmpty: 'コミットメッセージは空にできません。',
+      rewriteApplyingTitle: (shortHash) => `${shortHash} を書き換え中`,
+      rewriteApplyingProgress: 'コミット履歴を書き換えています...',
+      rewriteFailedHistory: 'コミット履歴の書き換えに失敗しました。',
+      rewriteCommitMessageRewritten: (shortHash) =>
+        `コミット ${shortHash} のメッセージを書き換えました。`,
+      rewriteDetachedHeadPushUnavailable:
+        'コミット履歴は書き換えられましたが、detached HEAD 状態では force push with lease を使用できません。',
+      rewriteForcePushPrompt: (target) =>
+        `履歴を書き換えました。${target} に force push with lease しますか?`,
+      pushWithLeaseConfirmAction: 'Push with Lease',
+      rewriteForcePushCompleted: (target) =>
+        `Force push with lease が完了しました: ${target}。`,
+      rewriteForcePushFailed: (message) =>
+        `Force push with lease に失敗しました: ${message}`,
+      pushingWithLease: 'Lease 付きで push 中',
     },
   },
   sidePanelText: {
@@ -153,6 +192,7 @@ export const jaLocale: LocaleTextBundle = {
       settings: '設定',
       addProvider: 'カスタムプロバイダーを追加',
       editProvider: 'カスタムプロバイダーを編集',
+      rewriteEditor: '書き換え',
     },
     labels: {
       provider: 'プロバイダー',
@@ -168,6 +208,8 @@ export const jaLocale: LocaleTextBundle = {
       maxAgentSteps: '最大エージェントステップ数',
       providerName: 'プロバイダー名',
       apiBaseUrl: 'API ベース URL',
+      commitMessage: 'コミットメッセージ',
+      selectedCommitMessage: '選択したコミットメッセージ',
     },
     placeholders: {
       selectProvider: 'プロバイダーを選択...',
@@ -188,6 +230,9 @@ export const jaLocale: LocaleTextBundle = {
       editProvider: 'プロバイダーを編集',
       addProvider: '+ プロバイダーを追加...',
       deleteProvider: 'プロバイダーを削除',
+      rewriteCommitMessage: 'コミットメッセージを書き換え',
+      confirmRewrite: '書き換えを確定',
+      cancel: 'キャンセル',
     },
     statuses: {
       checkingStatus: '状態を確認中...',
@@ -205,6 +250,10 @@ export const jaLocale: LocaleTextBundle = {
       providerSaved: 'カスタムプロバイダーを保存しました！',
       providerDeleted: 'カスタムプロバイダーを削除しました。',
       modelNameRequired: '生成する前にモデル名を入力してください。',
+      commitMessageCannotBeEmpty: 'コミットメッセージは空にできません。',
+      pushingWithLease: 'Lease 付きで push 中...',
+      forcePushWithLeaseCompleted: 'Force push with lease が完了しました。',
+      forcePushWithLeaseFailed: 'Force push with lease に失敗しました。',
     },
     descriptions: {
       ollamaFixedToDirectDiff:
@@ -224,6 +273,8 @@ export const jaLocale: LocaleTextBundle = {
         '各生成のエージェントツール呼び出し回数を制限します。無制限にするには0を入力するか空白にしてください。',
       customProviderInfo:
         'カスタムプロバイダーは <strong>OpenAI 互換</strong> である必要があります。<br>API ベース URL は OpenAI Chat Completions API に準拠したサービスを指す必要があります。',
+      rewriteEditorDescription:
+        '新しいコミットメッセージを確認して確定します。',
     },
     options: {
       agentic: 'Agentic 生成',

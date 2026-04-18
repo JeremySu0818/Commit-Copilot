@@ -87,6 +87,12 @@ export const nlLocale: LocaleTextBundle = {
       missingApiKeyWarning: (provider) =>
         `Waarschuwing: Geen API sleutel gevonden voor ${provider}.`,
       cancelRequestedFromProgress: 'Annulering aangevraagd via voortgangs UI.',
+      rewriteStart: (timestamp) =>
+        `[${timestamp}] Commit-copilot rewrite-generatie gestart...`,
+      rewriteCancelRequestedFromProgress:
+        'Annulering aangevraagd vanuit de voortgangsinterface.',
+      rewriteCommitRewritten: (originalHash, replacementHash) =>
+        `Commit herschreven: ${originalHash} -> ${replacementHash}`,
       callingGenerateCommitMessage: 'Aanroepen van generateCommitMessage...',
       repositoryPath: (path) => `Repository pad: ${path}`,
       usingModel: (model) => `Gebruikt model: ${model}`,
@@ -125,6 +131,40 @@ export const nlLocale: LocaleTextBundle = {
         'Geen wijzigingen om te committen. Breng eerst wijzigingen aan!',
       generationCanceled: 'Commitbericht generatie geannuleerd.',
       failedPrefix: 'Commit-Copilot mislukt',
+      rewriteNoNonMergeCommits:
+        'Geen niet-merge commits gevonden in de geschiedenis van de huidige branch.',
+      rewriteCommitNoSubject: '(geen onderwerp)',
+      rewriteCommitRootDescription: 'root commit',
+      rewriteCommitMergeDescription: 'merge commit',
+      rewriteCommitParentDescription: (parentHash) => `parent ${parentHash}`,
+      rewriteCommitSelectTitle: 'Selecteer commit om te herschrijven',
+      rewriteCommitSelectPlaceholder:
+        'Kies een commit uit de geschiedenis van de huidige branch',
+      rewriteWorkspaceDirtyBoth:
+        'Kan de commitgeschiedenis niet herschrijven zolang er staged (niet-gecommitte) en modified (unstaged) wijzigingen aanwezig zijn. Commit of stash ze eerst.',
+      rewriteWorkspaceDirtyStaged:
+        'Kan de commitgeschiedenis niet herschrijven zolang er staged (niet-gecommitte) wijzigingen aanwezig zijn. Commit of stash ze eerst.',
+      rewriteWorkspaceDirtyUnstaged:
+        'Kan de commitgeschiedenis niet herschrijven zolang er modified (unstaged) wijzigingen aanwezig zijn. Commit of stash ze eerst.',
+      rewriteProgressTitle: (providerName) => `Herschrijven (${providerName})`,
+      rewriteAnalyzingCommit: (shortHash) =>
+        `Commit ${shortHash} analyseren...`,
+      commitMessageCannotBeEmpty: 'Commitbericht mag niet leeg zijn.',
+      rewriteApplyingTitle: (shortHash) => `${shortHash} herschrijven`,
+      rewriteApplyingProgress: 'Commitgeschiedenis herschrijven...',
+      rewriteFailedHistory: 'Commitgeschiedenis herschrijven mislukt.',
+      rewriteCommitMessageRewritten: (shortHash) =>
+        `Commitbericht van ${shortHash} herschreven.`,
+      rewriteDetachedHeadPushUnavailable:
+        'Commitgeschiedenis is herschreven, maar force push with lease is niet beschikbaar in detached HEAD-status.',
+      rewriteForcePushPrompt: (target) =>
+        `Geschiedenis herschreven. Force push with lease naar ${target}?`,
+      pushWithLeaseConfirmAction: 'Push with Lease',
+      rewriteForcePushCompleted: (target) =>
+        `Force push with lease voltooid: ${target}.`,
+      rewriteForcePushFailed: (message) =>
+        `Force push with lease mislukt: ${message}`,
+      pushingWithLease: 'Push with lease wordt uitgevoerd',
     },
   },
   sidePanelText: {
@@ -155,6 +195,7 @@ export const nlLocale: LocaleTextBundle = {
       settings: 'Instellingen',
       addProvider: 'Aangepaste Provider Toevoegen',
       editProvider: 'Aangepaste Provider Bewerken',
+      rewriteEditor: 'Herschrijven',
     },
     labels: {
       provider: 'Provider',
@@ -170,6 +211,8 @@ export const nlLocale: LocaleTextBundle = {
       maxAgentSteps: 'Max Agent Stappen',
       providerName: 'Naam van Provider',
       apiBaseUrl: 'API Basis URL',
+      commitMessage: 'Commitbericht',
+      selectedCommitMessage: 'Geselecteerd commitbericht',
     },
     placeholders: {
       selectProvider: 'Selecteer een provider...',
@@ -190,6 +233,9 @@ export const nlLocale: LocaleTextBundle = {
       editProvider: 'Bewerk Provider',
       addProvider: '+ Provider Toevoegen...',
       deleteProvider: 'Verwijder Provider',
+      rewriteCommitMessage: 'Commitbericht herschrijven',
+      confirmRewrite: 'Herschrijven bevestigen',
+      cancel: 'Annuleren',
     },
     statuses: {
       checkingStatus: 'Status controleren...',
@@ -207,6 +253,10 @@ export const nlLocale: LocaleTextBundle = {
       providerSaved: 'Aangepaste provider opgeslagen!',
       providerDeleted: 'Aangepaste provider verwijderd.',
       modelNameRequired: 'Voer een modelnaam in voordat u genereert.',
+      commitMessageCannotBeEmpty: 'Commitbericht mag niet leeg zijn.',
+      pushingWithLease: 'Push with lease wordt uitgevoerd...',
+      forcePushWithLeaseCompleted: 'Force push with lease voltooid.',
+      forcePushWithLeaseFailed: 'Force push with lease mislukt.',
     },
     descriptions: {
       ollamaFixedToDirectDiff: 'Ollama staat vast op Direct Diff modus',
@@ -226,6 +276,8 @@ export const nlLocale: LocaleTextBundle = {
         'Beperk tool calls van de agentic mode per generatie. Voer 0 in of laat leeg voor onbeperkt.',
       customProviderInfo:
         'Aangepaste providers moeten <strong>OpenAI-compatibel</strong> zijn.<br>De API basis URL moet wijzen naar een service die de OpenAI Chat Completions API implementeert.',
+      rewriteEditorDescription:
+        'Controleer en bevestig het nieuwe commitbericht.',
     },
     options: {
       agentic: 'Agentic Genereren',

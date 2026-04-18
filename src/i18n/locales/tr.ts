@@ -89,6 +89,11 @@ export const trLocale: LocaleTextBundle = {
         `Uyarı: ${provider} için API Anahtarı bulunamadı.`,
       cancelRequestedFromProgress:
         'İlerleme (progress) arayüzünden iptal istendi.',
+      rewriteStart: (timestamp) =>
+        `[${timestamp}] commit-copilot rewrite üretimi başlatılıyor...`,
+      rewriteCancelRequestedFromProgress: 'İlerleme arayüzünden iptal istendi.',
+      rewriteCommitRewritten: (originalHash, replacementHash) =>
+        `Commit yeniden yazıldı: ${originalHash} -> ${replacementHash}`,
       callingGenerateCommitMessage: 'generateCommitMessage çağrılıyor...',
       repositoryPath: (path) => `Depo yolu: ${path}`,
       usingModel: (model) => `Kullanılan model: ${model}`,
@@ -127,6 +132,40 @@ export const trLocale: LocaleTextBundle = {
         'Taahhüt edilecek değişiklik yok. Önce bazı değişiklikler yapın!',
       generationCanceled: 'Commit mesajı oluşturma iptal edildi.',
       failedPrefix: 'Commit-Copilot başarısız oldu',
+      rewriteNoNonMergeCommits:
+        'Geçerli branch geçmişinde merge olmayan commit bulunamadı.',
+      rewriteCommitNoSubject: '(konu yok)',
+      rewriteCommitRootDescription: 'root commit',
+      rewriteCommitMergeDescription: 'merge commit',
+      rewriteCommitParentDescription: (parentHash) => `parent ${parentHash}`,
+      rewriteCommitSelectTitle: 'Yeniden Yazılacak Commiti Seç',
+      rewriteCommitSelectPlaceholder:
+        'Geçerli branch geçmişinden bir commit seçin',
+      rewriteWorkspaceDirtyBoth:
+        'Staged (commitlenmemiş) ve modified (unstaged) değişiklikler varken commit geçmişi yeniden yazılamaz. Lütfen önce commit veya stash yapın.',
+      rewriteWorkspaceDirtyStaged:
+        'Staged (commitlenmemiş) değişiklikler varken commit geçmişi yeniden yazılamaz. Lütfen önce commit veya stash yapın.',
+      rewriteWorkspaceDirtyUnstaged:
+        'Modified (unstaged) değişiklikler varken commit geçmişi yeniden yazılamaz. Lütfen önce commit veya stash yapın.',
+      rewriteProgressTitle: (providerName) => `Rewrite (${providerName})`,
+      rewriteAnalyzingCommit: (shortHash) =>
+        `Commit ${shortHash} analiz ediliyor...`,
+      commitMessageCannotBeEmpty: 'Commit mesajı boş olamaz.',
+      rewriteApplyingTitle: (shortHash) => `${shortHash} yeniden yazılıyor`,
+      rewriteApplyingProgress: 'Commit geçmişi yeniden yazılıyor...',
+      rewriteFailedHistory: 'Commit geçmişi yeniden yazılamadı.',
+      rewriteCommitMessageRewritten: (shortHash) =>
+        `Commit ${shortHash} mesajı yeniden yazıldı.`,
+      rewriteDetachedHeadPushUnavailable:
+        'Commit geçmişi yeniden yazıldı, ancak detached HEAD durumunda force push with lease kullanılamaz.',
+      rewriteForcePushPrompt: (target) =>
+        `Geçmiş yeniden yazıldı. ${target} hedefine force push with lease yapılsın mı?`,
+      pushWithLeaseConfirmAction: 'Push with Lease',
+      rewriteForcePushCompleted: (target) =>
+        `Force push with lease tamamlandı: ${target}.`,
+      rewriteForcePushFailed: (message) =>
+        `Force push with lease başarısız: ${message}`,
+      pushingWithLease: 'Lease ile push yapılıyor',
     },
   },
   sidePanelText: {
@@ -157,6 +196,7 @@ export const trLocale: LocaleTextBundle = {
       settings: 'Ayarlar',
       addProvider: 'Özel Sağlayıcı Ekle',
       editProvider: 'Özel Sağlayıcıyı Düzenle',
+      rewriteEditor: 'Rewrite',
     },
     labels: {
       provider: 'Sağlayıcı',
@@ -172,6 +212,8 @@ export const trLocale: LocaleTextBundle = {
       maxAgentSteps: 'Maksimum Ajan Adımı',
       providerName: 'Sağlayıcı Adı',
       apiBaseUrl: 'API Temel URL',
+      commitMessage: 'Commit Mesajı',
+      selectedCommitMessage: 'Seçilen Commit Mesajı',
     },
     placeholders: {
       selectProvider: 'Bir sağlayıcı seçin...',
@@ -192,6 +234,9 @@ export const trLocale: LocaleTextBundle = {
       editProvider: 'Sağlayıcıyı Düzenle',
       addProvider: '+ Sağlayıcı Ekle...',
       deleteProvider: 'Sağlayıcıyı Sil',
+      rewriteCommitMessage: 'Commit Mesajını Yeniden Yaz',
+      confirmRewrite: 'Rewrite Onayla',
+      cancel: 'İptal',
     },
     statuses: {
       checkingStatus: 'Durum kontrol ediliyor...',
@@ -209,6 +254,10 @@ export const trLocale: LocaleTextBundle = {
       providerSaved: 'Özel sağlayıcı kaydedildi!',
       providerDeleted: 'Özel sağlayıcı silindi.',
       modelNameRequired: 'Lütfen oluşturmadan önce bir model adı girin.',
+      commitMessageCannotBeEmpty: 'Commit mesajı boş olamaz.',
+      pushingWithLease: 'Lease ile push yapılıyor...',
+      forcePushWithLeaseCompleted: 'Force push with lease tamamlandı.',
+      forcePushWithLeaseFailed: 'Force push with lease başarısız.',
     },
     descriptions: {
       ollamaFixedToDirectDiff:
@@ -229,6 +278,8 @@ export const trLocale: LocaleTextBundle = {
         'Oluşturma başına ajan araç çağrılarını sınırlayın. Sınırsız için 0 girin veya boş bırakın.',
       customProviderInfo:
         "Özel sağlayıcılar <strong>OpenAI uyumlu</strong> olmalıdır.<br>API Temel URL'si, OpenAI Chat Completions API'sini uygulayan bir hizmeti işaret etmelidir.",
+      rewriteEditorDescription:
+        'Yeni commit mesajını gözden geçirin ve onaylayın.',
     },
     options: {
       agentic: 'Ajan (Agentic) Oluşturma',

@@ -90,6 +90,12 @@ export const deLocale: LocaleTextBundle = {
         `Warnung: Kein API-Schlüssel gefunden für ${provider}.`,
       cancelRequestedFromProgress:
         'Abbruch von der Benutzeroberfläche angefordert.',
+      rewriteStart: (timestamp) =>
+        `[${timestamp}] Starte Commit-Copilot Rewrite-Generierung...`,
+      rewriteCancelRequestedFromProgress:
+        'Abbruch von der Fortschrittsanzeige angefordert.',
+      rewriteCommitRewritten: (originalHash, replacementHash) =>
+        `Commit umgeschrieben: ${originalHash} -> ${replacementHash}`,
       callingGenerateCommitMessage: 'Rufe generateCommitMessage auf...',
       repositoryPath: (path) => `Repository-Pfad: ${path}`,
       usingModel: (model) => `Verwende Modell: ${model}`,
@@ -127,6 +133,41 @@ export const deLocale: LocaleTextBundle = {
         'Keine Änderungen zum Committen. Nehmen Sie zuerst einige Änderungen vor!',
       generationCanceled: 'Erstellung der Commit-Nachricht abgebrochen.',
       failedPrefix: 'Commit-Copilot fehlgeschlagen',
+      rewriteNoNonMergeCommits:
+        'Keine Nicht-Merge-Commits in der Historie des aktuellen Branches gefunden.',
+      rewriteCommitNoSubject: '(kein Betreff)',
+      rewriteCommitRootDescription: 'Root-Commit',
+      rewriteCommitMergeDescription: 'Merge-Commit',
+      rewriteCommitParentDescription: (parentHash) => `Parent ${parentHash}`,
+      rewriteCommitSelectTitle: 'Commit zum Umschreiben auswählen',
+      rewriteCommitSelectPlaceholder:
+        'Wählen Sie einen Commit aus der Historie des aktuellen Branches',
+      rewriteWorkspaceDirtyBoth:
+        'Die Commit-Historie kann nicht umgeschrieben werden, solange sowohl vorgemerkte (nicht committete) als auch geänderte (nicht vorgemerkte) Änderungen vorhanden sind. Bitte zuerst committen oder stashen.',
+      rewriteWorkspaceDirtyStaged:
+        'Die Commit-Historie kann nicht umgeschrieben werden, solange vorgemerkte (nicht committete) Änderungen vorhanden sind. Bitte zuerst committen oder stashen.',
+      rewriteWorkspaceDirtyUnstaged:
+        'Die Commit-Historie kann nicht umgeschrieben werden, solange geänderte (nicht vorgemerkte) Änderungen vorhanden sind. Bitte zuerst committen oder stashen.',
+      rewriteProgressTitle: (providerName) => `Umschreiben (${providerName})`,
+      rewriteAnalyzingCommit: (shortHash) =>
+        `Analysiere Commit ${shortHash}...`,
+      commitMessageCannotBeEmpty: 'Commit-Nachricht darf nicht leer sein.',
+      rewriteApplyingTitle: (shortHash) => `Schreibe ${shortHash} um`,
+      rewriteApplyingProgress: 'Schreibe Commit-Historie um...',
+      rewriteFailedHistory:
+        'Commit-Historie konnte nicht umgeschrieben werden.',
+      rewriteCommitMessageRewritten: (shortHash) =>
+        `Commit-Nachricht von ${shortHash} wurde umgeschrieben.`,
+      rewriteDetachedHeadPushUnavailable:
+        'Die Commit-Historie wurde umgeschrieben, aber Force Push with Lease ist im detached HEAD-Zustand nicht verfügbar.',
+      rewriteForcePushPrompt: (target) =>
+        `Historie umgeschrieben. Force Push with Lease nach ${target} ausführen?`,
+      pushWithLeaseConfirmAction: 'Push with Lease',
+      rewriteForcePushCompleted: (target) =>
+        `Force Push with Lease abgeschlossen: ${target}.`,
+      rewriteForcePushFailed: (message) =>
+        `Force Push with Lease fehlgeschlagen: ${message}`,
+      pushingWithLease: 'Push with Lease läuft',
     },
   },
   sidePanelText: {
@@ -157,6 +198,7 @@ export const deLocale: LocaleTextBundle = {
       settings: 'Einstellungen',
       addProvider: 'Benutzerdefinierten Anbieter hinzufügen',
       editProvider: 'Benutzerdefinierten Anbieter bearbeiten',
+      rewriteEditor: 'Umschreiben',
     },
     labels: {
       provider: 'Anbieter',
@@ -172,6 +214,8 @@ export const deLocale: LocaleTextBundle = {
       maxAgentSteps: 'Max. Agentenschritte',
       providerName: 'Anbietername',
       apiBaseUrl: 'API Basis-URL',
+      commitMessage: 'Commit-Nachricht',
+      selectedCommitMessage: 'Ausgewählte Commit-Nachricht',
     },
     placeholders: {
       selectProvider: 'Einen Anbieter auswählen...',
@@ -192,6 +236,9 @@ export const deLocale: LocaleTextBundle = {
       editProvider: 'Anbieter bearbeiten',
       addProvider: '+ Anbieter hinzufügen...',
       deleteProvider: 'Anbieter löschen',
+      rewriteCommitMessage: 'Commit-Nachricht umschreiben',
+      confirmRewrite: 'Umschreiben bestätigen',
+      cancel: 'Abbrechen',
     },
     statuses: {
       checkingStatus: 'Status wird überprüft...',
@@ -210,6 +257,10 @@ export const deLocale: LocaleTextBundle = {
       providerDeleted: 'Benutzerdefinierter Anbieter gelöscht.',
       modelNameRequired:
         'Bitte geben Sie vor der Generierung einen Modellnamen ein.',
+      commitMessageCannotBeEmpty: 'Commit-Nachricht darf nicht leer sein.',
+      pushingWithLease: 'Push with Lease läuft...',
+      forcePushWithLeaseCompleted: 'Force Push with Lease abgeschlossen.',
+      forcePushWithLeaseFailed: 'Force Push with Lease fehlgeschlagen.',
     },
     descriptions: {
       ollamaFixedToDirectDiff:
@@ -230,6 +281,8 @@ export const deLocale: LocaleTextBundle = {
         'Begrenzen Sie absichtliche Tool-Aufrufe pro Erzeugung. Geben Sie 0 ein oder lassen Sie das Feld leer, um eine unbegrenzte Anzahl zuzulassen.',
       customProviderInfo:
         'Benutzerdefinierte Anbieter müssen <strong>OpenAI-kompatibel</strong> sein.<br>Die API-Base-URL sollte auf einen Dienst weisen, der die OpenAI Chat Completions-API implementiert.',
+      rewriteEditorDescription:
+        'Prüfen und bestätigen Sie die neue Commit-Nachricht.',
     },
     options: {
       agentic: 'Agentic Generierung',

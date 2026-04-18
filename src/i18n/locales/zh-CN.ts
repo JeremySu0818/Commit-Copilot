@@ -77,6 +77,11 @@ export const zhCNLocale: LocaleTextBundle = {
       missingApiKeyWarning: (provider) =>
         `警告：${provider} 尚未设置 API Key。`,
       cancelRequestedFromProgress: '已从进度通知请求取消。',
+      rewriteStart: (timestamp) =>
+        `[${timestamp}] 开始执行 commit-copilot rewrite 生成流程...`,
+      rewriteCancelRequestedFromProgress: '已从进度通知请求取消。',
+      rewriteCommitRewritten: (originalHash, replacementHash) =>
+        `已重写提交：${originalHash} -> ${replacementHash}`,
       callingGenerateCommitMessage: '调用 generateCommitMessage...',
       repositoryPath: (path) => `仓库路径：${path}`,
       usingModel: (model) => `使用模型：${model}`,
@@ -112,6 +117,37 @@ export const zhCNLocale: LocaleTextBundle = {
       noChanges: '目前没有可提交的更改，请先修改文件！',
       generationCanceled: '已取消 commit message 生成。',
       failedPrefix: 'Commit-Copilot 执行失败',
+      rewriteNoNonMergeCommits: '当前分支历史中没有可重写的非合并提交。',
+      rewriteCommitNoSubject: '（无主题）',
+      rewriteCommitRootDescription: '根提交',
+      rewriteCommitMergeDescription: '合并提交',
+      rewriteCommitParentDescription: (parentHash) => `父提交 ${parentHash}`,
+      rewriteCommitSelectTitle: '选择要重写的提交',
+      rewriteCommitSelectPlaceholder: '从当前分支历史中选择一个提交',
+      rewriteWorkspaceDirtyBoth:
+        '存在已暂存（未提交）和已修改（未暂存）的变更时，无法重写提交历史。请先提交或 stash。',
+      rewriteWorkspaceDirtyStaged:
+        '存在已暂存（未提交）的变更时，无法重写提交历史。请先提交或 stash。',
+      rewriteWorkspaceDirtyUnstaged:
+        '存在已修改（未暂存）的变更时，无法重写提交历史。请先提交或 stash。',
+      rewriteProgressTitle: (providerName) => `重写（${providerName}）`,
+      rewriteAnalyzingCommit: (shortHash) => `正在分析提交 ${shortHash}...`,
+      commitMessageCannotBeEmpty: '提交信息不能为空。',
+      rewriteApplyingTitle: (shortHash) => `正在重写 ${shortHash}`,
+      rewriteApplyingProgress: '正在重写提交历史...',
+      rewriteFailedHistory: '重写提交历史失败。',
+      rewriteCommitMessageRewritten: (shortHash) =>
+        `提交 ${shortHash} 的信息已重写。`,
+      rewriteDetachedHeadPushUnavailable:
+        '提交历史已重写，但 detached HEAD 状态下无法使用 force push with lease。',
+      rewriteForcePushPrompt: (target) =>
+        `历史已重写。是否 force push with lease 到 ${target}？`,
+      pushWithLeaseConfirmAction: 'Push with Lease',
+      rewriteForcePushCompleted: (target) =>
+        `Force push with lease 已完成：${target}。`,
+      rewriteForcePushFailed: (message) =>
+        `Force push with lease 失败：${message}`,
+      pushingWithLease: '正在 Push with lease',
     },
   },
   sidePanelText: {
@@ -140,6 +176,7 @@ export const zhCNLocale: LocaleTextBundle = {
       settings: '设置',
       addProvider: '添加自定义提供商',
       editProvider: '编辑自定义提供商',
+      rewriteEditor: '重写',
     },
     labels: {
       provider: '提供商',
@@ -155,6 +192,8 @@ export const zhCNLocale: LocaleTextBundle = {
       maxAgentSteps: '最大 Agent 步数',
       providerName: '提供商名称',
       apiBaseUrl: 'API Base URL',
+      commitMessage: '提交信息',
+      selectedCommitMessage: '已选择的提交信息',
     },
     placeholders: {
       selectProvider: '请选择提供商...',
@@ -175,6 +214,9 @@ export const zhCNLocale: LocaleTextBundle = {
       editProvider: '编辑 Provider',
       addProvider: '+ 添加 Provider...',
       deleteProvider: '删除 Provider',
+      rewriteCommitMessage: '重写提交信息',
+      confirmRewrite: '确认重写',
+      cancel: '取消',
     },
     statuses: {
       checkingStatus: '检查状态中...',
@@ -192,6 +234,10 @@ export const zhCNLocale: LocaleTextBundle = {
       providerSaved: '已保存自定义提供商！',
       providerDeleted: '已删除自定义提供商。',
       modelNameRequired: '请先输入模型名称再进行生成。',
+      commitMessageCannotBeEmpty: '提交信息不能为空。',
+      pushingWithLease: '正在 Push with lease...',
+      forcePushWithLeaseCompleted: 'Force push with lease 已完成。',
+      forcePushWithLeaseFailed: 'Force push with lease 失败。',
     },
     descriptions: {
       ollamaFixedToDirectDiff: 'Ollama 固定使用 Direct Diff 模式',
@@ -209,6 +255,7 @@ export const zhCNLocale: LocaleTextBundle = {
         '限制每次生成的 Agent 工具调用次数。输入 0 或留空表示无限制。',
       customProviderInfo:
         '自定义提供商必须<strong>兼容 OpenAI</strong>。<br>API Base URL 需指向支持 OpenAI Chat Completions API 的服务。',
+      rewriteEditorDescription: '检查并确认新的提交信息。',
     },
     options: {
       agentic: 'Agentic 生成',

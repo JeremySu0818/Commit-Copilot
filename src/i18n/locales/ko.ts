@@ -85,6 +85,11 @@ export const koLocale: LocaleTextBundle = {
       missingApiKeyWarning: (provider) =>
         `경고: ${provider}의 API 키가 구성되지 않았습니다.`,
       cancelRequestedFromProgress: '진행 상황 UI에서 취소 요청됨.',
+      rewriteStart: (timestamp) =>
+        `[${timestamp}] commit-copilot rewrite 생성을 시작합니다...`,
+      rewriteCancelRequestedFromProgress: '진행 UI에서 취소가 요청되었습니다.',
+      rewriteCommitRewritten: (originalHash, replacementHash) =>
+        `커밋이 다시 작성됨: ${originalHash} -> ${replacementHash}`,
       callingGenerateCommitMessage: 'generateCommitMessage 호출 중...',
       repositoryPath: (path) => `리포지토리 경로: ${path}`,
       usingModel: (model) => `사용 중인 모델: ${model}`,
@@ -121,6 +126,38 @@ export const koLocale: LocaleTextBundle = {
       noChanges: '커밋할 변경 사항이 없습니다. 먼저 수정해 주세요!',
       generationCanceled: '커밋 메시지 생성이 취소되었습니다.',
       failedPrefix: 'Commit-Copilot 실패',
+      rewriteNoNonMergeCommits:
+        '현재 브랜치 기록에서 merge가 아닌 커밋을 찾지 못했습니다.',
+      rewriteCommitNoSubject: '(제목 없음)',
+      rewriteCommitRootDescription: '루트 커밋',
+      rewriteCommitMergeDescription: 'merge 커밋',
+      rewriteCommitParentDescription: (parentHash) => `부모 ${parentHash}`,
+      rewriteCommitSelectTitle: '다시 작성할 커밋 선택',
+      rewriteCommitSelectPlaceholder: '현재 브랜치 기록에서 커밋 선택',
+      rewriteWorkspaceDirtyBoth:
+        'staged(커밋되지 않음) 변경과 modified(unstaged) 변경이 모두 있는 동안에는 커밋 기록을 다시 작성할 수 없습니다. 먼저 commit 또는 stash 하세요.',
+      rewriteWorkspaceDirtyStaged:
+        'staged(커밋되지 않음) 변경이 있는 동안에는 커밋 기록을 다시 작성할 수 없습니다. 먼저 commit 또는 stash 하세요.',
+      rewriteWorkspaceDirtyUnstaged:
+        'modified(unstaged) 변경이 있는 동안에는 커밋 기록을 다시 작성할 수 없습니다. 먼저 commit 또는 stash 하세요.',
+      rewriteProgressTitle: (providerName) => `다시 작성 (${providerName})`,
+      rewriteAnalyzingCommit: (shortHash) => `커밋 ${shortHash} 분석 중...`,
+      commitMessageCannotBeEmpty: '커밋 메시지는 비워 둘 수 없습니다.',
+      rewriteApplyingTitle: (shortHash) => `${shortHash} 다시 작성 중`,
+      rewriteApplyingProgress: '커밋 기록을 다시 작성하는 중...',
+      rewriteFailedHistory: '커밋 기록 다시 작성에 실패했습니다.',
+      rewriteCommitMessageRewritten: (shortHash) =>
+        `커밋 ${shortHash} 메시지가 다시 작성되었습니다.`,
+      rewriteDetachedHeadPushUnavailable:
+        '커밋 기록은 다시 작성되었지만 detached HEAD 상태에서는 force push with lease를 사용할 수 없습니다.',
+      rewriteForcePushPrompt: (target) =>
+        `기록이 다시 작성되었습니다. ${target}(으)로 force push with lease 하시겠습니까?`,
+      pushWithLeaseConfirmAction: 'Push with Lease',
+      rewriteForcePushCompleted: (target) =>
+        `Force push with lease 완료: ${target}.`,
+      rewriteForcePushFailed: (message) =>
+        `Force push with lease 실패: ${message}`,
+      pushingWithLease: 'Lease와 함께 push 중',
     },
   },
   sidePanelText: {
@@ -151,6 +188,7 @@ export const koLocale: LocaleTextBundle = {
       settings: '설정',
       addProvider: '사용자 지정 프로바이더 추가',
       editProvider: '사용자 지정 프로바이더 편집',
+      rewriteEditor: '다시 작성',
     },
     labels: {
       provider: '프로바이더',
@@ -166,6 +204,8 @@ export const koLocale: LocaleTextBundle = {
       maxAgentSteps: '최대 에이전트 단계 수',
       providerName: '프로바이더 이름',
       apiBaseUrl: 'API 베이스 URL',
+      commitMessage: '커밋 메시지',
+      selectedCommitMessage: '선택한 커밋 메시지',
     },
     placeholders: {
       selectProvider: '프로바이더 선택...',
@@ -186,6 +226,9 @@ export const koLocale: LocaleTextBundle = {
       editProvider: '프로바이더 편집',
       addProvider: '+ 프로바이더 추가...',
       deleteProvider: '프로바이더 삭제',
+      rewriteCommitMessage: '커밋 메시지 다시 작성',
+      confirmRewrite: '다시 작성 확인',
+      cancel: '취소',
     },
     statuses: {
       checkingStatus: '상태 확인 중...',
@@ -203,6 +246,10 @@ export const koLocale: LocaleTextBundle = {
       providerSaved: '사용자 지정 프로바이더가 저장되었습니다!',
       providerDeleted: '사용자 지정 프로바이더가 삭제되었습니다.',
       modelNameRequired: '생성하기 전에 모델 이름을 입력하십시오.',
+      commitMessageCannotBeEmpty: '커밋 메시지는 비워 둘 수 없습니다.',
+      pushingWithLease: 'Lease와 함께 push 중...',
+      forcePushWithLeaseCompleted: 'Force push with lease 완료.',
+      forcePushWithLeaseFailed: 'Force push with lease 실패.',
     },
     descriptions: {
       ollamaFixedToDirectDiff:
@@ -223,6 +270,7 @@ export const koLocale: LocaleTextBundle = {
         '각 생성이 허용되는 에이전트 도구 호출 횟수를 제한합니다. 제한 없음을 원하면 0 또는 공백을 입력하세요.',
       customProviderInfo:
         '사용자 지정 프로바이더는 <strong>OpenAI 호환</strong>이어야 합니다.<br>API 베이스 URL은 OpenAI Chat Completions API를 준수하는 서비스를 가리켜야 합니다.',
+      rewriteEditorDescription: '새 커밋 메시지를 검토하고 확인합니다.',
     },
     options: {
       agentic: 'Agentic 생성',

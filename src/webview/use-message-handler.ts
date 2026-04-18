@@ -172,18 +172,19 @@ function normalizeScreen(value: unknown): SidePanelState['screen'] {
 function getForcePushStatusText(
   status: string,
   message: string | undefined,
+  pack: SidePanelState['currentPack'],
 ): string {
   if (message && message.length > 0) {
     return message;
   }
   if (status === 'running') {
-    return 'Pushing with lease...';
+    return pack.statuses.pushingWithLease;
   }
   if (status === 'success') {
-    return 'Force push with lease completed.';
+    return pack.statuses.forcePushWithLeaseCompleted;
   }
   if (status === 'error') {
-    return 'Force push with lease failed.';
+    return pack.statuses.forcePushWithLeaseFailed;
   }
   return '';
 }
@@ -511,7 +512,11 @@ export function useMessageHandler(
               type: 'SET_FORCE_PUSH_STATUS_HTML',
               html: renderStatusHtml(
                 'warning',
-                getForcePushStatusText(status, toString(message.message)),
+                getForcePushStatusText(
+                  status,
+                  toString(message.message),
+                  state.currentPack,
+                ),
               ),
             });
             return;
@@ -523,7 +528,11 @@ export function useMessageHandler(
               type: 'SET_FORCE_PUSH_STATUS_HTML',
               html: renderStatusHtml(
                 'success',
-                getForcePushStatusText(status, toString(message.message)),
+                getForcePushStatusText(
+                  status,
+                  toString(message.message),
+                  state.currentPack,
+                ),
               ),
             });
             return;
@@ -533,7 +542,11 @@ export function useMessageHandler(
               type: 'SET_FORCE_PUSH_STATUS_HTML',
               html: renderStatusHtml(
                 'error',
-                getForcePushStatusText(status, toString(message.message)),
+                getForcePushStatusText(
+                  status,
+                  toString(message.message),
+                  state.currentPack,
+                ),
               ),
             });
             return;
