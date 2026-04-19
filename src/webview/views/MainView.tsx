@@ -112,7 +112,7 @@ export function MainView() {
     pack,
   });
 
-  const hasConfiguredKey = state.providerKeyStatuses[currentProvider];
+  const hasConfiguredKey = state.providerKeyStatuses[currentProvider] === true;
   const isApiKeyMissing = !hasConfiguredKey && !state.apiKeyValue.trim();
   const isCustomModelMissing =
     modelState.allowCustomModel && !modelState.customModelValue.trim();

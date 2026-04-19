@@ -292,7 +292,6 @@ export function MainActionButtons({
       </button>
       <button
         id="rewriteCommitMessageBtn"
-        className="secondary"
         disabled={rewriteBtnDisabled}
         title={rewriteBtnTitle}
         onClick={onRewriteCommitMessage}
