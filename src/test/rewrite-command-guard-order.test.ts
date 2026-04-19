@@ -28,3 +28,21 @@ void test('rewrite command checks API key before commit selection', () => {
   assert.notEqual(selectCommitIndex, -1);
   assert.equal(ensureApiKeyIndex < selectCommitIndex, true);
 });
+
+void test('rewrite command does not force agentic mode', () => {
+  const source = readFileSync(EXTENSION_PATH, 'utf8');
+  const functionStart = source.indexOf('async function executeRewriteCommand');
+  const functionEnd = source.indexOf(
+    'function getPushTargetLabel',
+    functionStart,
+  );
+
+  assert.notEqual(functionStart, -1);
+  assert.notEqual(functionEnd, -1);
+
+  const functionBody = source.slice(functionStart, functionEnd);
+  assert.equal(
+    functionBody.includes("providerContext.llmProvider,\n    'agentic',"),
+    false,
+  );
+});

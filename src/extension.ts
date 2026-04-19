@@ -912,7 +912,7 @@ async function executeRewriteCommand(
   const currentGenerateMode = resolveGenerateMode(
     context,
     providerContext.llmProvider,
-    'agentic',
+    undefined,
   );
   const currentCommitOutputOptions = resolveCommitOutputOptions(
     context,
