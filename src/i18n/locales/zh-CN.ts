@@ -135,6 +135,7 @@ export const zhCNLocale: LocaleTextBundle = {
       viewProviderConsoleAction: '打开提供商后台',
       noChanges: '目前没有可提交的更改，请先修改文件！',
       generationCanceled: '已取消 commit message 生成。',
+      rewriteCanceled: '已取消 commit message 重写。',
       failedPrefix: 'Commit-Copilot 执行失败',
       rewriteNoNonMergeCommits: '当前分支历史中没有可重写的非合并提交。',
       rewriteCommitNoSubject: '（无主题）',

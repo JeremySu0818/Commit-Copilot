@@ -149,6 +149,7 @@ export const viLocale: LocaleTextBundle = {
       noChanges:
         'Không có thay đổi nào để commit. Hãy thực hiện một số thay đổi trước!',
       generationCanceled: 'Đã hủy tạo thông báo commit.',
+      rewriteCanceled: 'Đã hủy viết lại thông báo commit.',
       failedPrefix: 'Commit-Copilot thất bại',
       rewriteNoNonMergeCommits:
         'Không tìm thấy commit không phải merge trong lịch sử nhánh hiện tại.',

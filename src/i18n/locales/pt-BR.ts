@@ -153,6 +153,7 @@ export const ptBRLocale: LocaleTextBundle = {
       noChanges:
         'Nenhuma alteração para commitar. Faça algumas alterações primeiro!',
       generationCanceled: 'A geração de mensagem de commit foi cancelada.',
+      rewriteCanceled: 'A reescrita da mensagem de commit foi cancelada.',
       failedPrefix: 'Commit-Copilot falhou',
       rewriteNoNonMergeCommits:
         'Nenhum commit que não seja merge foi encontrado no histórico do branch atual.',

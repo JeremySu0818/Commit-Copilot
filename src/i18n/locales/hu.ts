@@ -152,6 +152,7 @@ export const huLocale: LocaleTextBundle = {
       noChanges:
         'Nincsenek változtatások. Kérjük, először módosítson fájlokat!',
       generationCanceled: 'Commit üzenet generálása megszakítva.',
+      rewriteCanceled: 'Commit üzenet újraírása megszakítva.',
       failedPrefix: 'Commit-Copilot hiba',
       rewriteNoNonMergeCommits:
         'Nem található nem merge commit az aktuális ág előzményeiben.',

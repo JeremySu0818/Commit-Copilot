@@ -149,6 +149,7 @@ export const jaLocale: LocaleTextBundle = {
       viewProviderConsoleAction: 'プロバイダコンソールを表示',
       noChanges: 'コミットする変更がありません。まずは変更を加えてください！',
       generationCanceled: 'コミットメッセージの生成がキャンセルされました。',
+      rewriteCanceled: 'コミットメッセージの書き換えがキャンセルされました。',
       failedPrefix: 'Commit-Copilot 失敗',
       rewriteNoNonMergeCommits:
         '現在のブランチ履歴に非マージコミットが見つかりません。',

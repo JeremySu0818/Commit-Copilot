@@ -150,6 +150,7 @@ export const nlLocale: LocaleTextBundle = {
       noChanges:
         'Geen wijzigingen om te committen. Breng eerst wijzigingen aan!',
       generationCanceled: 'Commitbericht generatie geannuleerd.',
+      rewriteCanceled: 'Commitbericht herschrijven geannuleerd.',
       failedPrefix: 'Commit-Copilot mislukt',
       rewriteNoNonMergeCommits:
         'Geen niet-merge commits gevonden in de geschiedenis van de huidige branch.',

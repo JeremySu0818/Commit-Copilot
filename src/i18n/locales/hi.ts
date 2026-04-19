@@ -149,6 +149,7 @@ export const hiLocale: LocaleTextBundle = {
       noChanges:
         'कमिट करने के लिए कोई परिवर्तन है नहीं। पहले कुछ परिवर्तन करें!',
       generationCanceled: 'कमिट संदेश उत्पादन रद्द कर दिया गया।',
+      rewriteCanceled: 'कमिट संदेश पुनर्लेखन रद्द कर दिया गया।',
       failedPrefix: 'Commit-Copilot विफल रहा',
       rewriteNoNonMergeCommits:
         'वर्तमान branch history में कोई non-merge commit नहीं मिला।',

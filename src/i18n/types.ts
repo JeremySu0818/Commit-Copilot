@@ -119,6 +119,7 @@ export interface ExtensionText {
     viewProviderConsoleAction: string;
     noChanges: string;
     generationCanceled: string;
+    rewriteCanceled: string;
     failedPrefix: string;
     rewriteNoNonMergeCommits: string;
     rewriteCommitNoSubject: string;

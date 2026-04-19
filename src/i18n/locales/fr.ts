@@ -152,6 +152,7 @@ export const frLocale: LocaleTextBundle = {
       noChanges:
         "Aucune modification à commiter. Modifiez d'abord quelques fichiers !",
       generationCanceled: 'Génération du message de commit annulée.',
+      rewriteCanceled: 'Réécriture du message de commit annulée.',
       failedPrefix: 'Échec de Commit-Copilot',
       rewriteNoNonMergeCommits:
         'Aucun commit hors merge trouvé dans l’historique de la branche actuelle.',

@@ -150,6 +150,7 @@ export const csLocale: LocaleTextBundle = {
       noChanges:
         'Žádné změny k potvrzení k dispozici. Nejprve proveďte nějaké změny!',
       generationCanceled: 'Generování zprávy k potvrzení bylo zrušeno.',
+      rewriteCanceled: 'Přepsání zprávy k potvrzení bylo zrušeno.',
       failedPrefix: 'Commit-Copilot selhal',
       rewriteNoNonMergeCommits:
         'V historii aktuální větve nebyly nalezeny žádné nemerge commity.',

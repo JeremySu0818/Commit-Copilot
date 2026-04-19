@@ -147,6 +147,7 @@ export const enLocale: LocaleTextBundle = {
       viewProviderConsoleAction: 'View Provider Console',
       noChanges: 'No changes to commit. Make some changes first!',
       generationCanceled: 'Commit message generation canceled.',
+      rewriteCanceled: 'Commit message rewrite canceled.',
       failedPrefix: 'Commit-Copilot failed',
       rewriteNoNonMergeCommits:
         'No non-merge commits found in current branch history.',

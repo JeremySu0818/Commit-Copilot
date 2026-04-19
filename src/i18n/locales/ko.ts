@@ -145,6 +145,7 @@ export const koLocale: LocaleTextBundle = {
       viewProviderConsoleAction: '프로바이더 콘솔 보기',
       noChanges: '커밋할 변경 사항이 없습니다. 먼저 수정해 주세요!',
       generationCanceled: '커밋 메시지 생성이 취소되었습니다.',
+      rewriteCanceled: '커밋 메시지 재작성이 취소되었습니다.',
       failedPrefix: 'Commit-Copilot 실패',
       rewriteNoNonMergeCommits:
         '현재 브랜치 기록에서 merge가 아닌 커밋을 찾지 못했습니다.',

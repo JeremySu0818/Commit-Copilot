@@ -71,27 +71,19 @@ export function getGenerateBtnTitle({
 
 export function getRewriteBtnTitle({
   isGenerating,
-  pendingStatusCheck,
-  hasChanges,
   isApiKeyMissing,
   apiKeyPlaceholder,
   isCustomModelMissing,
-  isOllama,
   pack,
 }: Readonly<{
   isGenerating: boolean;
-  pendingStatusCheck: boolean;
-  hasChanges: boolean;
   isApiKeyMissing: boolean;
   apiKeyPlaceholder: string;
   isCustomModelMissing: boolean;
-  isOllama: boolean;
   pack: WebviewLanguagePack;
 }>) {
   if (isGenerating) return pack.statuses.cancelCurrentGeneration;
-  if (!pendingStatusCheck && !hasChanges) return pack.statuses.noChangesDetected;
   if (isApiKeyMissing) return apiKeyPlaceholder;
   if (isCustomModelMissing) return pack.statuses.modelNameRequired;
-  if (isOllama) return pack.descriptions.ollamaFixedToDirectDiff;
   return '';
 }

@@ -140,6 +140,7 @@ export const arLocale: LocaleTextBundle = {
       viewProviderConsoleAction: 'عرض وحدة تحكم المزود',
       noChanges: 'لا توجد تغييرات للالتزام بها. قم ببعض التغييرات أولاً!',
       generationCanceled: 'تم إلغاء توليد رسالة الالتزام.',
+      rewriteCanceled: 'تم إلغاء إعادة كتابة رسالة الالتزام.',
       failedPrefix: 'فشل Commit-Copilot',
       rewriteNoNonMergeCommits:
         'لم يتم العثور على أي commits غير دمج في سجل الفرع الحالي.',

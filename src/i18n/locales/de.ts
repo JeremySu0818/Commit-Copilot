@@ -152,6 +152,7 @@ export const deLocale: LocaleTextBundle = {
       noChanges:
         'Keine Änderungen zum Committen. Nehmen Sie zuerst einige Änderungen vor!',
       generationCanceled: 'Erstellung der Commit-Nachricht abgebrochen.',
+      rewriteCanceled: 'Umschreiben der Commit-Nachricht abgebrochen.',
       failedPrefix: 'Commit-Copilot fehlgeschlagen',
       rewriteNoNonMergeCommits:
         'Keine Nicht-Merge-Commits in der Historie des aktuellen Branches gefunden.',

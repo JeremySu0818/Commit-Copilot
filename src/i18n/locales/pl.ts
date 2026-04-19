@@ -150,6 +150,7 @@ export const plLocale: LocaleTextBundle = {
       noChanges:
         'Brak zmian do zatwierdzenia. Najpierw wprowadź jakieś zmiany!',
       generationCanceled: 'Generowanie komunikatu commita anulowane.',
+      rewriteCanceled: 'Przepisywanie komunikatu commita anulowane.',
       failedPrefix: 'Commit-Copilot napotkał błąd',
       rewriteNoNonMergeCommits:
         'Nie znaleziono commitów niebędących merge w historii bieżącej gałęzi.',

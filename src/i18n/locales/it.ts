@@ -151,6 +151,7 @@ export const itLocale: LocaleTextBundle = {
       viewProviderConsoleAction: 'Visualizza Console Provider',
       noChanges: 'Nessuna modifica da committare. Fai prima alcune modifiche!',
       generationCanceled: 'Generazione del messaggio di commit annullata.',
+      rewriteCanceled: 'Riscrittura del messaggio di commit annullata.',
       failedPrefix: 'Commit-Copilot fallito',
       rewriteNoNonMergeCommits:
         'Nessun commit non-merge trovato nella cronologia del branch corrente.',

@@ -150,6 +150,7 @@ export const ruLocale: LocaleTextBundle = {
       viewProviderConsoleAction: 'Открыть консоль провайдера',
       noChanges: 'Нет изменений для коммита. Сначала внесите изменения!',
       generationCanceled: 'Генерация сообщения коммита отменена.',
+      rewriteCanceled: 'Перезапись сообщения коммита отменена.',
       failedPrefix: 'Ошибка Commit-Copilot',
       rewriteNoNonMergeCommits:
         'В истории текущей ветки не найдено коммитов, не являющихся merge.',

@@ -152,6 +152,7 @@ export const esLocale: LocaleTextBundle = {
       viewProviderConsoleAction: 'Ver Consola del Proveedor',
       noChanges: 'Sin cambios para hacer commit. ¡Haz algunos cambios primero!',
       generationCanceled: 'Generación de mensaje de commit cancelada.',
+      rewriteCanceled: 'Reescritura del mensaje de commit cancelada.',
       failedPrefix: 'Commit-Copilot falló',
       rewriteNoNonMergeCommits:
         'No se encontraron commits que no sean merge en el historial de la rama actual.',

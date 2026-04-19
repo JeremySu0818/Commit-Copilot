@@ -112,23 +112,19 @@ export function MainView() {
     pack,
   });
 
-  const isApiKeyMissing = !state.apiKeyValue.trim();
+  const hasConfiguredKey = state.providerKeyStatuses[currentProvider] === true;
+  const isApiKeyMissing = !hasConfiguredKey && !state.apiKeyValue.trim();
   const isCustomModelMissing =
     modelState.allowCustomModel && !modelState.customModelValue.trim();
   const rewriteBtnDisabled =
     isGenerating ||
-    generateBtnDisabled ||
     isApiKeyMissing ||
-    isCustomModelMissing ||
-    isOllama;
+    isCustomModelMissing;
   const rewriteBtnTitle = getRewriteBtnTitle({
     isGenerating,
-    pendingStatusCheck,
-    hasChanges,
     isApiKeyMissing,
     apiKeyPlaceholder,
     isCustomModelMissing,
-    isOllama,
     pack,
   });
 

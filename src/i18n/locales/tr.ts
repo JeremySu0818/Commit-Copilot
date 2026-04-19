@@ -151,6 +151,7 @@ export const trLocale: LocaleTextBundle = {
       noChanges:
         'Taahhüt edilecek değişiklik yok. Önce bazı değişiklikler yapın!',
       generationCanceled: 'Commit mesajı oluşturma iptal edildi.',
+      rewriteCanceled: 'Commit mesajı yeniden yazma iptal edildi.',
       failedPrefix: 'Commit-Copilot başarısız oldu',
       rewriteNoNonMergeCommits:
         'Geçerli branch geçmişinde merge olmayan commit bulunamadı.',

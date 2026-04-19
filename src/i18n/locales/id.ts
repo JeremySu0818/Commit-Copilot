@@ -150,6 +150,7 @@ export const idLocale: LocaleTextBundle = {
       noChanges:
         'Tidak ada perubahan untuk dikomit. Lakukan beberapa perubahan terlebih dahulu!',
       generationCanceled: 'Pembuatan pesan komit dibatalkan.',
+      rewriteCanceled: 'Penulisan ulang pesan komit dibatalkan.',
       failedPrefix: 'Commit-Copilot gagal',
       rewriteNoNonMergeCommits:
         'Tidak ada commit non-merge di riwayat branch saat ini.',

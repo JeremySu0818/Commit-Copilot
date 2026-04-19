@@ -1061,6 +1061,7 @@ async function executeRewriteCommand(
         cancellationToken: cancellationSource.token,
       });
     if (typeof rewrittenMessage !== 'string') {
+      vscode.window.showInformationMessage(text.notification.rewriteCanceled);
       return;
     }
     if (rewrittenMessage.trim().length === 0) {
