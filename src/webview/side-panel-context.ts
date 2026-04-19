@@ -36,11 +36,14 @@ export interface AddProviderDraft {
   statusHtml: string;
 }
 
+export type RewriteEditorStatus = 'error' | 'warning' | null;
+
 export interface RewriteEditorDraft {
   requestId: string | null;
   targetCommitShortHash: string;
   message: string;
-  statusMessage: StatusMessage | null;
+  status: RewriteEditorStatus;
+  statusText: string;
 }
 
 export interface SidePanelState {
@@ -157,7 +160,8 @@ export function createInitialState(
       requestId: null,
       targetCommitShortHash: '',
       message: '',
-      statusMessage: null,
+      status: null,
+      statusText: '',
     },
     keyStatusMessage: null,
     forcePushStatusHtml: '',
@@ -241,7 +245,8 @@ export function sidePanelReducer(
           requestId: null,
           targetCommitShortHash: '',
           message: '',
-          statusMessage: null,
+          status: null,
+          statusText: '',
         },
       };
     case 'SET_KEY_STATUS_MESSAGE':

@@ -692,7 +692,8 @@ export function useMessageHandler(
               targetCommitShortHash:
                 toString(message.targetCommitShortHash) ?? '',
               message: toString(message.message) ?? '',
-              statusMessage: null,
+              status: null,
+              statusText: '',
             },
           });
           dispatch({ type: 'SET_SCREEN', screen: 'rewriteEditor' });

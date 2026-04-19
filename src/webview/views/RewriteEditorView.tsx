@@ -3,11 +3,16 @@ import React, { useCallback } from 'react';
 import { BackIcon } from '../components/BackIcon';
 import { StatusMessageView } from '../components/StatusMessageView';
 import { useSidePanel } from '../side-panel-context';
-import { createStatusMessage } from '../utils';
 
 export function RewriteEditorView() {
   const { state, dispatch, vscode } = useSidePanel();
   const { currentPack: pack, rewriteEditorDraft } = state;
+  const rewriteEditorStatus = rewriteEditorDraft.status
+    ? {
+        type: rewriteEditorDraft.status,
+        text: rewriteEditorDraft.statusText,
+      }
+    : null;
 
   const returnToMain = useCallback(() => {
     dispatch({ type: 'SET_SCREEN', screen: 'main' });
@@ -34,10 +39,8 @@ export function RewriteEditorView() {
       dispatch({
         type: 'UPDATE_REWRITE_EDITOR_DRAFT',
         partial: {
-          statusMessage: createStatusMessage(
-            'error',
-            pack.statuses.commitMessageCannotBeEmpty,
-          ),
+          status: 'error',
+          statusText: pack.statuses.commitMessageCannotBeEmpty,
         },
       });
       return;
@@ -94,7 +97,8 @@ export function RewriteEditorView() {
                 type: 'UPDATE_REWRITE_EDITOR_DRAFT',
                 partial: {
                   message: event.target.value,
-                  statusMessage: null,
+                  status: null,
+                  statusText: '',
                 },
               });
             }}
@@ -102,7 +106,7 @@ export function RewriteEditorView() {
           />
           <StatusMessageView
             id="rewriteEditorStatus"
-            status={rewriteEditorDraft.statusMessage}
+            status={rewriteEditorStatus}
             hideWhenEmpty
           />
         </div>
