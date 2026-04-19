@@ -81,7 +81,7 @@ export function RewriteEditorView() {
         <div className="provider-info">
           {pack.descriptions.rewriteEditorDescription}
         </div>
-        <div className="input-group" style={{ marginTop: '10px' }}>
+        <div className="input-group input-group-spaced">
           <label>{pack.labels.commitMessage}</label>
           <textarea
             id="rewriteEditorTextarea"
@@ -105,7 +105,7 @@ export function RewriteEditorView() {
             dangerouslySetInnerHTML={{ __html: rewriteEditorDraft.statusHtml }}
           />
         </div>
-        <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
+        <div className="panel-actions">
           <button id="confirmRewriteEditorBtn" onClick={handleConfirm}>
             {pack.buttons.confirmRewrite}
           </button>

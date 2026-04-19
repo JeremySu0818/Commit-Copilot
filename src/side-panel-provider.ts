@@ -1327,11 +1327,11 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
     <meta charset="UTF-8" />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'none'; style-src ${cspSource} 'unsafe-inline'; script-src 'nonce-${escapedNonce}';"
+      content="default-src 'none'; style-src ${cspSource} 'nonce-${escapedNonce}'; script-src 'nonce-${escapedNonce}';"
     />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Commit Copilot</title>
-    <link rel="stylesheet" href="${escapedStyleUri}" />
+    <link rel="stylesheet" href="${escapedStyleUri}" nonce="${escapedNonce}" />
   </head>
   <body>
     <div id="root"></div>

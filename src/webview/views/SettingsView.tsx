@@ -76,7 +76,7 @@ export function SettingsView() {
       </div>
       <div className="config-section">
         <div className="section-title">{pack.sections.settings}</div>
-        <div className="input-group" style={{ marginTop: '10px' }}>
+        <div className="input-group input-group-spaced">
           <label>{pack.labels.language}</label>
           <select
             id="languageSelect"
@@ -97,7 +97,7 @@ export function SettingsView() {
             dangerouslySetInnerHTML={{ __html: state.languageStatusHtml }}
           />
         </div>
-        <div className="input-group" style={{ marginTop: '10px' }}>
+        <div className="input-group input-group-spaced">
           <label>{pack.labels.maxAgentSteps}</label>
           <input
             type="text"

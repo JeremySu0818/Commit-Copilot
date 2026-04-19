@@ -150,7 +150,13 @@ void test('webview html shell includes nonce/csp/assets and bootstrap payload', 
     ),
   );
   assert.match(webview.html, new RegExp(`script-src 'nonce-${nonce}'`));
-  assert.match(webview.html, /style-src mock-csp-source 'unsafe-inline';/);
+  assert.match(webview.html, new RegExp(`style-src mock-csp-source 'nonce-${nonce}'`));
+  assert.match(
+    webview.html,
+    new RegExp(
+      `<link rel="stylesheet" href="mock-webview://.*/out/webview/side-panel\\.css" nonce="${nonce}"`,
+    ),
+  );
 
   const bootstrapLine = webview.html
     .split('\n')

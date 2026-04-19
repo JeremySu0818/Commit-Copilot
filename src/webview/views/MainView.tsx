@@ -326,7 +326,7 @@ export function MainView() {
     >
       <div className="config-section">
         <div className="section-title">{pack.sections.apiProvider}</div>
-        <div className="input-group" style={{ marginTop: '10px' }}>
+        <div className="input-group input-group-spaced">
           <label>{pack.labels.provider}</label>
           <select
             id="providerSelect"
@@ -356,7 +356,7 @@ export function MainView() {
 
       <div className="config-section">
         <div className="section-title">{configTitle}</div>
-        <div className="input-group" style={{ marginTop: '10px' }}>
+        <div className="input-group input-group-spaced">
           <label>{apiKeyLabel}</label>
           <input
             type={state.apiKeyType}
@@ -382,7 +382,7 @@ export function MainView() {
           className="provider-info"
           dangerouslySetInnerHTML={{ __html: providerInfoHtml }}
         />
-        <div style={{ marginTop: '8px' }}>
+        <div className="spacer-top-sm">
           <button
             id="editProviderBtn"
             className={`secondary${!customProviderConfig ? ' hidden' : ''}`}
@@ -395,7 +395,7 @@ export function MainView() {
 
       <div className="config-section">
         <div className="section-title">{pack.sections.model}</div>
-        <div className="input-group" style={{ marginTop: '10px' }}>
+        <div className="input-group input-group-spaced">
           <label>{pack.labels.model}</label>
           {modelState.allowCustomModel ? (
             <input
@@ -431,7 +431,7 @@ export function MainView() {
         <div className="section-title">
           {pack.sections.generateConfiguration}
         </div>
-        <div className="input-group" style={{ marginTop: '10px' }}>
+        <div className="input-group input-group-spaced">
           <label>{pack.labels.mode}</label>
           <select
             id="generateModeSelect"
@@ -458,7 +458,7 @@ export function MainView() {
           </select>
           <span className="status">{generateModeStatusText}</span>
         </div>
-        <div className="input-group" style={{ marginTop: '10px' }}>
+        <div className="input-group input-group-spaced">
           <label>{pack.labels.conventionalCommitSections}</label>
           <div className="checkbox-group">
             <label className="checkbox-item" htmlFor="includeScopeCheckbox">
