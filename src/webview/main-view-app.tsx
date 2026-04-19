@@ -9,6 +9,7 @@ import {
 } from './main-view-context';
 import { useMainViewMessageHandler } from './main-view-message-handler';
 import { AddProviderView } from './views/AddProviderView';
+import { AdvancedView } from './views/AdvancedView';
 import { MainView } from './views/MainView';
 import { RewriteEditorView } from './views/RewriteEditorView';
 import { SettingsView } from './views/SettingsView';
@@ -43,6 +44,9 @@ export function MainViewApp({ bootstrap, vscode }: MainViewAppProps) {
     }
     if (state.screen === 'addProvider') {
       return <AddProviderView />;
+    }
+    if (state.screen === 'advanced') {
+      return <AdvancedView />;
     }
     if (state.screen === 'rewriteEditor') {
       return <RewriteEditorView />;

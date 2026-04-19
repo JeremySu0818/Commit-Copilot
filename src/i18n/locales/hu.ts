@@ -218,6 +218,7 @@ export const huLocale: LocaleTextBundle = {
       addProvider: 'Egyéni szolgáltató hozzáadása',
       editProvider: 'Egyéni szolgáltató szerkesztése',
       rewriteEditor: 'Átírás',
+      advancedFeatures: 'Speciális funkciók',
     },
     labels: {
       provider: 'Szolgáltató',
@@ -255,6 +256,7 @@ export const huLocale: LocaleTextBundle = {
       editProvider: 'Szolgáltató szerkesztése',
       addProvider: '+ Szolgáltató hozzáadása...',
       deleteProvider: 'Szolgáltató törlése',
+      openAdvancedFeatures: 'Speciális funkciók megnyitása',
       rewriteCommitMessage: 'Commit üzenet átírása',
       confirmRewrite: 'Átírás megerősítése',
       cancel: 'Mégse',
@@ -298,6 +300,10 @@ export const huLocale: LocaleTextBundle = {
         'Az ügynöki (Agentic) eszköz meghívásainak korlátozása generálásonként. Írjon be 0-t, vagy hagyja üresen a korlátlanhoz.',
       customProviderInfo:
         'Az egyéni szolgáltatóknak <strong>OpenAI-kompatibilisnek</strong> kell lenniük.<br>Az API Base URL-nek olyan szolgáltatásra kell mutatnia, amely megvalósítja az OpenAI Chat Completions API-t.',
+      advancedFeaturesDescription:
+        'Speciális eszközök és munkafolyamatok megnyitása.',
+      rewriteWorkflowDescription:
+        'Egy nem merge commit kiválasztása után a rendszer az aktív módban (Agentic / Direct Diff) újragenerálja az üzenetet a jelenlegi szolgáltató, modell és kimeneti formátumbeállítások (scope/body/footer) alapján, majd szerkeszthető megerősítő felületet nyit; elküldés után a történet rebase-szel íródik át, opcionális force push with lease lehetőséggel.',
       rewriteEditorDescription:
         'Tekintse át és erősítse meg az új commit üzenetet.',
     },

@@ -216,6 +216,7 @@ export const ruLocale: LocaleTextBundle = {
       addProvider: 'Добавить кастомного провайдера',
       editProvider: 'Редактировать кастомного провайдера',
       rewriteEditor: 'Переписать',
+      advancedFeatures: 'Расширенные возможности',
     },
     labels: {
       provider: 'Провайдер',
@@ -253,6 +254,7 @@ export const ruLocale: LocaleTextBundle = {
       editProvider: 'Изменить провайдера',
       addProvider: '+ Добавить провайдера...',
       deleteProvider: 'Удалить провайдера',
+      openAdvancedFeatures: 'Открыть расширенные возможности',
       rewriteCommitMessage: 'Переписать сообщение коммита',
       confirmRewrite: 'Подтвердить переписывание',
       cancel: 'Отмена',
@@ -296,6 +298,10 @@ export const ruLocale: LocaleTextBundle = {
         'Ограничить количество вызовов инструментов агентом за сеанс. Введите 0 или оставьте пустым для снятия ограничения.',
       customProviderInfo:
         'Кастомные провайдеры должны быть совместимы с <strong>OpenAI</strong>.<br>Базовый URL-адрес API должен указывать на сервис, который реализует API Chat Completions от OpenAI.',
+      advancedFeaturesDescription:
+        'Откройте расширенные инструменты и рабочие процессы.',
+      rewriteWorkflowDescription:
+        'После выбора не-merge commit система заново генерирует сообщение в активном режиме (Agentic / Direct Diff), используя текущие provider, model и настройки формата вывода (scope/body/footer), затем открывает редактируемый экран подтверждения; после отправки история переписывается через rebase с опциональным force push with lease.',
       rewriteEditorDescription:
         'Проверьте и подтвердите новое сообщение коммита.',
     },

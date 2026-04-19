@@ -36,7 +36,7 @@ void test('rewrite button uses configured key status before treating API key as 
   const source = readFileSync(MAIN_VIEW_PATH, 'utf8');
   assert.match(
     source,
-    /const hasConfiguredKey = state\.providerKeyStatuses\[currentProvider\] === true;/,
+    /const hasConfiguredKey = state\.providerKeyStatuses\[currentProvider\];/,
   );
   assert.match(
     source,

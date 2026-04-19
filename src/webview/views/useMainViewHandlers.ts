@@ -210,6 +210,11 @@ export function useMainViewHandlers({
     vscode.postMessage({ type: 'rewriteCommitMessage' });
   }, [vscode]);
 
+  const handleOpenAdvancedView = useCallback(() => {
+    dispatch({ type: 'SET_SCREEN', screen: 'advanced' });
+    vscode.postMessage({ type: 'setCurrentScreen', value: 'advanced' });
+  }, [dispatch, vscode]);
+
   const handleModelChange = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
       vscode.postMessage({
@@ -273,6 +278,7 @@ export function useMainViewHandlers({
     handleEditProvider,
     handleGenerate,
     handleRewriteCommitMessage,
+    handleOpenAdvancedView,
     handleModelChange,
     handleCustomModelChange,
     handleCustomModelBlur,

@@ -218,6 +218,7 @@ export const trLocale: LocaleTextBundle = {
       addProvider: 'Özel Sağlayıcı Ekle',
       editProvider: 'Özel Sağlayıcıyı Düzenle',
       rewriteEditor: 'Rewrite',
+      advancedFeatures: 'Gelişmiş Özellikler',
     },
     labels: {
       provider: 'Sağlayıcı',
@@ -255,6 +256,7 @@ export const trLocale: LocaleTextBundle = {
       editProvider: 'Sağlayıcıyı Düzenle',
       addProvider: '+ Sağlayıcı Ekle...',
       deleteProvider: 'Sağlayıcıyı Sil',
+      openAdvancedFeatures: 'Gelişmiş Özellikleri Aç',
       rewriteCommitMessage: 'Commit Mesajını Yeniden Yaz',
       confirmRewrite: 'Rewrite Onayla',
       cancel: 'İptal',
@@ -299,6 +301,9 @@ export const trLocale: LocaleTextBundle = {
         'Oluşturma başına ajan araç çağrılarını sınırlayın. Sınırsız için 0 girin veya boş bırakın.',
       customProviderInfo:
         "Özel sağlayıcılar <strong>OpenAI uyumlu</strong> olmalıdır.<br>API Temel URL'si, OpenAI Chat Completions API'sini uygulayan bir hizmeti işaret etmelidir.",
+      advancedFeaturesDescription: 'Gelişmiş araçları ve iş akışlarını açın.',
+      rewriteWorkflowDescription:
+        'Merge olmayan bir commit seçildikten sonra sistem, etkin modda (Agentic / Direct Diff) mevcut sağlayıcı, model ve çıktı biçimi ayarlarını (scope/body/footer) kullanarak mesajı yeniden üretir ve düzenlenebilir bir onay arayüzü açar; gönderimden sonra geçmiş rebase ile yeniden yazılır ve isteğe bağlı olarak force push with lease uygulanabilir.',
       rewriteEditorDescription:
         'Yeni commit mesajını gözden geçirin ve onaylayın.',
     },

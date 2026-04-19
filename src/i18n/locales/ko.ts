@@ -210,6 +210,7 @@ export const koLocale: LocaleTextBundle = {
       addProvider: '사용자 지정 프로바이더 추가',
       editProvider: '사용자 지정 프로바이더 편집',
       rewriteEditor: '다시 작성',
+      advancedFeatures: '고급 기능',
     },
     labels: {
       provider: '프로바이더',
@@ -247,6 +248,7 @@ export const koLocale: LocaleTextBundle = {
       editProvider: '프로바이더 편집',
       addProvider: '+ 프로바이더 추가...',
       deleteProvider: '프로바이더 삭제',
+      openAdvancedFeatures: '고급 기능 열기',
       rewriteCommitMessage: '커밋 메시지 다시 작성',
       confirmRewrite: '다시 작성 확인',
       cancel: '취소',
@@ -291,6 +293,9 @@ export const koLocale: LocaleTextBundle = {
         '각 생성이 허용되는 에이전트 도구 호출 횟수를 제한합니다. 제한 없음을 원하면 0 또는 공백을 입력하세요.',
       customProviderInfo:
         '사용자 지정 프로바이더는 <strong>OpenAI 호환</strong>이어야 합니다.<br>API 베이스 URL은 OpenAI Chat Completions API를 준수하는 서비스를 가리켜야 합니다.',
+      advancedFeaturesDescription: '고급 도구와 워크플로를 엽니다.',
+      rewriteWorkflowDescription:
+        '병합이 아닌 commit을 선택하면 시스템은 현재 Provider, Model, 출력 형식 설정(Scope/Body/Footer)을 유지한 채 활성 모드(Agentic / Direct Diff)로 메시지를 다시 생성하고, 편집 가능한 확인 UI를 표시합니다. 제출 후에는 rebase로 이력이 재작성되며, 필요 시 force push with lease를 선택할 수 있습니다.',
       rewriteEditorDescription: '새 커밋 메시지를 검토하고 확인합니다.',
     },
     options: {

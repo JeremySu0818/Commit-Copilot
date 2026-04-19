@@ -215,6 +215,7 @@ export const hiLocale: LocaleTextBundle = {
       addProvider: 'कस्टम प्रदाता जोड़ें',
       editProvider: 'कस्टम प्रदाता संपादित करें',
       rewriteEditor: 'Rewrite',
+      advancedFeatures: 'उन्नत सुविधाएँ',
     },
     labels: {
       provider: 'प्रदाता',
@@ -252,6 +253,7 @@ export const hiLocale: LocaleTextBundle = {
       editProvider: 'प्रदाता संपादित करें',
       addProvider: '+ प्रदाता जोड़ें...',
       deleteProvider: 'प्रदाता हटाएं',
+      openAdvancedFeatures: 'उन्नत सुविधाएँ खोलें',
       rewriteCommitMessage: 'Commit Message फिर से लिखें',
       confirmRewrite: 'Rewrite की पुष्टि करें',
       cancel: 'रद्द करें',
@@ -294,6 +296,9 @@ export const hiLocale: LocaleTextBundle = {
         'प्रति उत्पादन एजेंटिक टूल कॉल को सीमित करें। 0 दर्ज करें या असीमित के लिए खाली छोड़ दें।',
       customProviderInfo:
         'कस्टम प्रदाता <strong>OpenAI-संगत</strong> होने चाहिए।<br>एपीआई बेस URL को एक सेवा को इंगित करना चाहिए जो OpenAI Chat Completions API को लागू करती है।',
+      advancedFeaturesDescription: 'उन्नत टूल और वर्कफ़्लो खोलें।',
+      rewriteWorkflowDescription:
+        'गैर-merge commit चुनने के बाद, सिस्टम सक्रिय मोड (Agentic / Direct Diff) में वर्तमान Provider, Model और आउटपुट फ़ॉर्मेट सेटिंग्स (Scope/Body/Footer) के आधार पर संदेश फिर से बनाता है, फिर पुष्टि के लिए संपादन योग्य UI खोलता है; सबमिट करने पर इतिहास rebase के माध्यम से rewrite होता है, और force push with lease वैकल्पिक रहता है।',
       rewriteEditorDescription:
         'नए commit message की समीक्षा करें और पुष्टि करें।',
     },

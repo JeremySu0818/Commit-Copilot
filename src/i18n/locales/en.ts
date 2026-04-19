@@ -212,6 +212,7 @@ export const enLocale: LocaleTextBundle = {
       addProvider: 'Add Custom Provider',
       editProvider: 'Edit Custom Provider',
       rewriteEditor: 'Rewrite',
+      advancedFeatures: 'Advanced Features',
     },
     labels: {
       provider: 'Provider',
@@ -249,6 +250,7 @@ export const enLocale: LocaleTextBundle = {
       editProvider: 'Edit Provider',
       addProvider: '+ Add Provider...',
       deleteProvider: 'Delete Provider',
+      openAdvancedFeatures: 'Open Advanced Features',
       rewriteCommitMessage: 'Rewrite Commit Message',
       confirmRewrite: 'Confirm Rewrite',
       cancel: 'Cancel',
@@ -292,7 +294,11 @@ export const enLocale: LocaleTextBundle = {
         'Limit agentic tool calls per generation. Enter 0 or leave empty for unlimited.',
       customProviderInfo:
         'Custom providers must be <strong>OpenAI-compatible</strong>.<br>The API Base URL should point to a service that implements the OpenAI Chat Completions API.',
-      rewriteEditorDescription: 'Review and confirm the new commit message.',
+      advancedFeaturesDescription: 'Open advanced tools and workflows.',
+      rewriteWorkflowDescription:
+        'After selecting a non-merge commit, the system re-generates the message using the current provider, model, and output format settings (scope/body/footer) in the active mode (Agentic / Direct Diff), then opens an editable confirmation UI; once submitted, history is rewritten via rebase, with an optional force push with lease.',
+      rewriteEditorDescription:
+        'Edit and confirm the rewritten commit message before applying.',
     },
     options: {
       agentic: 'Agentic Generate',

@@ -187,3 +187,15 @@ button.icon-btn {
 button.icon-btn:hover {
   background: var(--vscode-toolbar-hoverBackground);
 }
+button.nav-link-btn {
+  width: 100%;
+  background: transparent;
+  border: 1px solid var(--vscode-widget-border);
+  color: var(--vscode-foreground);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+button.nav-link-btn:hover {
+  background: var(--vscode-toolbar-hoverBackground);
+}

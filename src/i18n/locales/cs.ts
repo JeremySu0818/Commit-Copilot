@@ -215,6 +215,7 @@ export const csLocale: LocaleTextBundle = {
       addProvider: 'Přidat vlastního poskytovatele',
       editProvider: 'Upravit vlastního poskytovatele',
       rewriteEditor: 'Přepsat',
+      advancedFeatures: 'Pokročilé funkce',
     },
     labels: {
       provider: 'Poskytovatel',
@@ -252,6 +253,7 @@ export const csLocale: LocaleTextBundle = {
       editProvider: 'Upravit poskytovatele',
       addProvider: '+ Přidat poskytovatele...',
       deleteProvider: 'Smazat poskytovatele',
+      openAdvancedFeatures: 'Otevřít pokročilé funkce',
       rewriteCommitMessage: 'Přepsat zprávu commitu',
       confirmRewrite: 'Potvrdit přepsání',
       cancel: 'Zrušit',
@@ -295,6 +297,10 @@ export const csLocale: LocaleTextBundle = {
         'Omezí volání nástrojů agenta za jedno generování. Zadejte 0 nebo nechte prázdné pro neomezený počet.',
       customProviderInfo:
         'Vlastní poskytovatelé musí být kompatibilní s <strong>OpenAI</strong>.<br>Základní adresa URL rozhraní API by měla ukazovat na službu, která implementuje rozhraní OpenAI Chat Completions API.',
+      advancedFeaturesDescription:
+        'Otevřete pokročilé nástroje a pracovní postupy.',
+      rewriteWorkflowDescription:
+        'Po výběru ne-merge commitu systém znovu vygeneruje zprávu podle aktuálního poskytovatele, modelu a nastavení formátu výstupu (scope/body/footer) v aktivním režimu (Agentic / Direct Diff), poté otevře upravitelné potvrzovací rozhraní; po odeslání přepíše historii pomocí rebase s volitelným force push with lease.',
       rewriteEditorDescription: 'Zkontrolujte a potvrďte novou zprávu commitu.',
     },
     options: {

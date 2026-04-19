@@ -163,6 +163,7 @@ function normalizeScreen(value: unknown): MainViewState['screen'] {
   if (
     value === 'settings' ||
     value === 'addProvider' ||
+    value === 'advanced' ||
     value === 'rewriteEditor'
   ) {
     return value;
@@ -608,6 +609,11 @@ export function useMainViewMessageHandler(
         },
         openSettingsView: () => {
           dispatch({ type: 'SET_SCREEN', screen: 'settings' });
+          vscode.postMessage({ type: 'setCurrentScreen', value: 'settings' });
+        },
+        openAdvancedView: () => {
+          dispatch({ type: 'SET_SCREEN', screen: 'advanced' });
+          vscode.postMessage({ type: 'setCurrentScreen', value: 'advanced' });
         },
         customProviderSaved: (message) => {
           const customProviders = toCustomProviderArray(

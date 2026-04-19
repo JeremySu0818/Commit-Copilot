@@ -121,6 +121,7 @@ export function createInitialState(
   const initialScreen: MainViewScreen =
     bootstrap.initialScreen === 'settings' ||
     bootstrap.initialScreen === 'addProvider' ||
+    bootstrap.initialScreen === 'advanced' ||
     bootstrap.initialScreen === 'rewriteEditor'
       ? bootstrap.initialScreen
       : 'main';

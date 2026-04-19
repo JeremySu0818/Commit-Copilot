@@ -217,6 +217,7 @@ export const plLocale: LocaleTextBundle = {
       addProvider: 'Dodaj niestandardowego dostawcę',
       editProvider: 'Edytuj niestandardowego dostawcę',
       rewriteEditor: 'Przepisz',
+      advancedFeatures: 'Funkcje zaawansowane',
     },
     labels: {
       provider: 'Dostawca',
@@ -254,6 +255,7 @@ export const plLocale: LocaleTextBundle = {
       editProvider: 'Edytuj dostawcę',
       addProvider: '+ Dodaj dostawcę...',
       deleteProvider: 'Usuń dostawcę',
+      openAdvancedFeatures: 'Otwórz funkcje zaawansowane',
       rewriteCommitMessage: 'Przepisz wiadomość commita',
       confirmRewrite: 'Potwierdź przepisanie',
       cancel: 'Anuluj',
@@ -298,6 +300,10 @@ export const plLocale: LocaleTextBundle = {
         'Ogranicz wywołania narzędzi agenta na generowanie. Wpisz 0 lub pozostaw puste, aby usunąć limit.',
       customProviderInfo:
         'Niestandardowi dostawcy muszą być <strong>zgodni z OpenAI</strong>.<br>Podstawowy adres URL API (API Base URL) powinien wskazywać na usługę implementującą funkcję OpenAI Chat Completions API.',
+      advancedFeaturesDescription:
+        'Otwórz zaawansowane narzędzia i przepływy pracy.',
+      rewriteWorkflowDescription:
+        'Po wybraniu commitu innego niż merge system ponownie generuje wiadomość w aktywnym trybie (Agentic / Direct Diff), używając bieżącego providera, modelu i ustawień formatu wyjścia (scope/body/footer), a następnie otwiera edytowalny ekran potwierdzenia; po zatwierdzeniu historia jest przepisywana przez rebase, z opcjonalnym force push with lease.',
       rewriteEditorDescription: 'Przejrzyj i potwierdź nową wiadomość commita.',
     },
     options: {

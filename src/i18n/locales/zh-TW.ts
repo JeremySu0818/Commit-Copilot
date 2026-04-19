@@ -197,6 +197,7 @@ export const zhTWLocale: LocaleTextBundle = {
       addProvider: '新增自訂供應商',
       editProvider: '編輯自訂供應商',
       rewriteEditor: '重寫',
+      advancedFeatures: '進階功能',
     },
     labels: {
       provider: '供應商',
@@ -234,6 +235,7 @@ export const zhTWLocale: LocaleTextBundle = {
       editProvider: '編輯 Provider',
       addProvider: '+ 新增 Provider...',
       deleteProvider: '刪除 Provider',
+      openAdvancedFeatures: '開啟進階功能',
       rewriteCommitMessage: '重寫 Commit 訊息',
       confirmRewrite: '確認重寫',
       cancel: '取消',
@@ -275,7 +277,10 @@ export const zhTWLocale: LocaleTextBundle = {
         '限制每次產生的 Agent 工具呼叫次數。輸入 0 或留空表示無限制。',
       customProviderInfo:
         '自訂供應商必須<strong>兼容 OpenAI</strong>。<br>API Base URL 需指向支援 OpenAI Chat Completions API 的服務。',
-      rewriteEditorDescription: '檢查並確認新的 commit 訊息。',
+      advancedFeaturesDescription: '開啟進階工具與工作流程。',
+      rewriteWorkflowDescription:
+        '選取非合併 commit 後，系統會沿用目前 Provider、Model 與產生格式設定（Scope／Body／Footer），依當前模式（Agentic / Direct Diff）重新產生訊息，並在可編輯介面供你確認；送出後會以 rebase 重寫歷史，最後可選擇是否 force push with lease。',
+      rewriteEditorDescription: '可編輯並確認要套用的重寫訊息。',
     },
     options: {
       agentic: 'Agentic 產生',

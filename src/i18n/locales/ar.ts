@@ -204,6 +204,7 @@ export const arLocale: LocaleTextBundle = {
       addProvider: 'إضافة مزود مخصص',
       editProvider: 'تعديل مزود مخصص',
       rewriteEditor: 'إعادة كتابة',
+      advancedFeatures: 'الميزات المتقدمة',
     },
     labels: {
       provider: 'المزود',
@@ -241,6 +242,7 @@ export const arLocale: LocaleTextBundle = {
       editProvider: 'تعديل المزود',
       addProvider: '+ إضافة مزود...',
       deleteProvider: 'حذف المزود',
+      openAdvancedFeatures: 'فتح الميزات المتقدمة',
       rewriteCommitMessage: 'إعادة كتابة رسالة Commit',
       confirmRewrite: 'تأكيد إعادة الكتابة',
       cancel: 'إلغاء',
@@ -282,6 +284,9 @@ export const arLocale: LocaleTextBundle = {
         'حد استدعاءات أداة الوكيل لكل عملية توليد. أدخل 0 أو اتركه فارغاً للحصول على عدد غير محدود.',
       customProviderInfo:
         'المزودات المخصصة يجب أن تكون <strong>متوافقة مع OpenAI</strong>.<br>الرابط الأساسي لـ API يجب أن يشير إلى خدمة تنفذ API الخاص بـ OpenAI Chat Completions.',
+      advancedFeaturesDescription: 'افتح الأدوات ومسارات العمل المتقدمة.',
+      rewriteWorkflowDescription:
+        'بعد اختيار commit غير مدمج، سيعيد النظام توليد الرسالة وفق المزود والنموذج وإعدادات التنسيق الحالية (Scope/Body/Footer) وبحسب الوضع النشط (Agentic / Direct Diff)، ثم يعرض واجهة قابلة للتحرير للتأكيد؛ وبعد الإرسال سيُعاد كتابة السجل عبر rebase مع خيار force push with lease.',
       rewriteEditorDescription: 'راجع رسالة commit الجديدة وأكدها.',
     },
     options: {

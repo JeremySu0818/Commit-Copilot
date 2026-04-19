@@ -170,6 +170,7 @@ export interface WebviewLanguagePack {
     ollamaConfiguration: string;
     model: string;
     generateConfiguration: string;
+    advancedFeatures: string;
     settings: string;
     addProvider: string;
     editProvider: string;
@@ -211,6 +212,7 @@ export interface WebviewLanguagePack {
     editProvider: string;
     addProvider: string;
     deleteProvider: string;
+    openAdvancedFeatures: string;
     rewriteCommitMessage: string;
     confirmRewrite: string;
     cancel: string;
@@ -246,6 +248,8 @@ export interface WebviewLanguagePack {
     anthropicInfo: string;
     maxAgentStepsDescription: string;
     customProviderInfo: string;
+    advancedFeaturesDescription: string;
+    rewriteWorkflowDescription: string;
     rewriteEditorDescription: string;
   };
   options: {

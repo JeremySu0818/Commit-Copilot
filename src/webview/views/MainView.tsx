@@ -9,6 +9,7 @@ import {
   getRewriteBtnTitle,
 } from './MainViewDerivedState';
 import {
+  AdvancedFeaturesSection,
   ApiProviderSection,
   GenerateConfigurationSection,
   MainActionButtons,
@@ -51,7 +52,7 @@ export function MainView() {
     handleSave,
     handleEditProvider,
     handleGenerate,
-    handleRewriteCommitMessage,
+    handleOpenAdvancedView,
     handleModelChange,
     handleCustomModelChange,
     handleCustomModelBlur,
@@ -112,7 +113,7 @@ export function MainView() {
     pack,
   });
 
-  const hasConfiguredKey = state.providerKeyStatuses[currentProvider] === true;
+  const hasConfiguredKey = state.providerKeyStatuses[currentProvider];
   const isApiKeyMissing = !hasConfiguredKey && !state.apiKeyValue.trim();
   const isCustomModelMissing =
     modelState.allowCustomModel && !modelState.customModelValue.trim();
@@ -174,15 +175,18 @@ export function MainView() {
         onCheckboxChange={handleCheckboxChange}
       />
 
-      <MainActionButtons
+      <AdvancedFeaturesSection
         pack={pack}
+        rewriteBtnDisabled={rewriteBtnDisabled}
+        rewriteBtnTitle={rewriteBtnTitle}
+        onOpenAdvancedView={handleOpenAdvancedView}
+      />
+
+      <MainActionButtons
         generateBtnDisabled={generateBtnDisabled}
         generateBtnTitle={generateBtnTitle}
         generateBtnText={generateBtnText}
-        rewriteBtnDisabled={rewriteBtnDisabled}
-        rewriteBtnTitle={rewriteBtnTitle}
         onGenerate={handleGenerate}
-        onRewriteCommitMessage={handleRewriteCommitMessage}
       />
     </div>
   );

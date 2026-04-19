@@ -262,23 +262,15 @@ export function GenerateConfigurationSection({
 }
 
 export function MainActionButtons({
-  pack,
   generateBtnDisabled,
   generateBtnTitle,
   generateBtnText,
-  rewriteBtnDisabled,
-  rewriteBtnTitle,
   onGenerate,
-  onRewriteCommitMessage,
 }: Readonly<{
-  pack: LanguagePack;
   generateBtnDisabled: boolean;
   generateBtnTitle: string;
   generateBtnText: string;
-  rewriteBtnDisabled: boolean;
-  rewriteBtnTitle: string;
   onGenerate: React.MouseEventHandler<HTMLButtonElement>;
-  onRewriteCommitMessage: React.MouseEventHandler<HTMLButtonElement>;
 }>) {
   return (
     <div className="input-group">
@@ -290,14 +282,39 @@ export function MainActionButtons({
       >
         {generateBtnText}
       </button>
-      <button
-        id="rewriteCommitMessageBtn"
-        disabled={rewriteBtnDisabled}
-        title={rewriteBtnTitle}
-        onClick={onRewriteCommitMessage}
-      >
-        {pack.buttons.rewriteCommitMessage}
-      </button>
+    </div>
+  );
+}
+
+export function AdvancedFeaturesSection({
+  pack,
+  rewriteBtnDisabled,
+  rewriteBtnTitle,
+  onOpenAdvancedView,
+}: Readonly<{
+  pack: LanguagePack;
+  rewriteBtnDisabled: boolean;
+  rewriteBtnTitle: string;
+  onOpenAdvancedView: React.MouseEventHandler<HTMLButtonElement>;
+}>) {
+  return (
+    <div className="config-section">
+      <div className="section-title">{pack.sections.advancedFeatures}</div>
+      <div className="provider-info">
+        {pack.descriptions.advancedFeaturesDescription}
+      </div>
+      <div className="input-group input-group-spaced">
+        <button
+          id="openAdvancedViewBtn"
+          className="nav-link-btn"
+          disabled={rewriteBtnDisabled}
+          title={rewriteBtnTitle}
+          onClick={onOpenAdvancedView}
+        >
+          <span>{pack.buttons.openAdvancedFeatures}</span>
+          <span aria-hidden="true">›</span>
+        </button>
+      </div>
     </div>
   );
 }

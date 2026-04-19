@@ -217,6 +217,7 @@ export const idLocale: LocaleTextBundle = {
       addProvider: 'Tambahkan Penyedia Kustom',
       editProvider: 'Edit Penyedia Kustom',
       rewriteEditor: 'Rewrite',
+      advancedFeatures: 'Fitur Lanjutan',
     },
     labels: {
       provider: 'Penyedia',
@@ -254,6 +255,7 @@ export const idLocale: LocaleTextBundle = {
       editProvider: 'Edit Penyedia',
       addProvider: '+ Tambah Penyedia...',
       deleteProvider: 'Hapus Penyedia',
+      openAdvancedFeatures: 'Buka Fitur Lanjutan',
       rewriteCommitMessage: 'Tulis Ulang Pesan Commit',
       confirmRewrite: 'Konfirmasi Rewrite',
       cancel: 'Batal',
@@ -297,6 +299,9 @@ export const idLocale: LocaleTextBundle = {
         'Batasi panggilan alat agenik per pembuatan. Masukkan 0 atau biarkan kosong untuk tidak terbatas.',
       customProviderInfo:
         'Penyedia kustom harus <strong>Kompatibel dengan OpenAI</strong>.<br>URL Dasar API harus mengarah ke layanan yang menerapkan API Chat Completions OpenAI.',
+      advancedFeaturesDescription: 'Buka alat dan alur kerja lanjutan.',
+      rewriteWorkflowDescription:
+        'Setelah memilih commit non-merge, sistem membuat ulang pesan menggunakan provider, model, dan format keluaran saat ini (scope/body/footer) pada mode aktif (Agentic / Direct Diff), lalu membuka UI konfirmasi yang dapat diedit; setelah dikirim, riwayat ditulis ulang melalui rebase dengan opsi force push with lease.',
       rewriteEditorDescription: 'Tinjau dan konfirmasi pesan commit baru.',
     },
     options: {

@@ -215,6 +215,7 @@ export const viLocale: LocaleTextBundle = {
       addProvider: 'Thêm nhà cung cấp tùy chỉnh',
       editProvider: 'Chỉnh sửa nhà cung cấp tùy chỉnh',
       rewriteEditor: 'Viết lại',
+      advancedFeatures: 'Tính năng nâng cao',
     },
     labels: {
       provider: 'Nhà cung cấp',
@@ -252,6 +253,7 @@ export const viLocale: LocaleTextBundle = {
       editProvider: 'Chỉnh sửa Nhà cung cấp',
       addProvider: '+ Thêm Nhà cung cấp...',
       deleteProvider: 'Xóa Nhà cung cấp',
+      openAdvancedFeatures: 'Mở tính năng nâng cao',
       rewriteCommitMessage: 'Viết lại thông báo commit',
       confirmRewrite: 'Xác nhận viết lại',
       cancel: 'Hủy',
@@ -294,6 +296,9 @@ export const viLocale: LocaleTextBundle = {
         'Giới hạn số lần gọi công cụ agent trong mỗi lần tạo. Nhập 0 hoặc để trống để không giới hạn.',
       customProviderInfo:
         'Các nhà cung cấp tùy chỉnh phải <strong>tương thích với OpenAI</strong>.<br>API Base URL phải trỏ đến một dịch vụ có triển khai OpenAI Chat Completions API.',
+      advancedFeaturesDescription: 'Mở các công cụ và quy trình nâng cao.',
+      rewriteWorkflowDescription:
+        'Sau khi chọn một commit không phải merge, hệ thống sẽ tạo lại thông điệp theo chế độ đang dùng (Agentic / Direct Diff), sử dụng Provider, Model và định dạng đầu ra hiện tại (scope/body/footer), rồi mở giao diện xác nhận có thể chỉnh sửa; sau khi gửi, lịch sử sẽ được viết lại bằng rebase, kèm tùy chọn force push with lease.',
       rewriteEditorDescription: 'Xem lại và xác nhận thông báo commit mới.',
     },
     options: {

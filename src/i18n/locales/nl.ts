@@ -217,6 +217,7 @@ export const nlLocale: LocaleTextBundle = {
       addProvider: 'Aangepaste Provider Toevoegen',
       editProvider: 'Aangepaste Provider Bewerken',
       rewriteEditor: 'Herschrijven',
+      advancedFeatures: 'Geavanceerde functies',
     },
     labels: {
       provider: 'Provider',
@@ -254,6 +255,7 @@ export const nlLocale: LocaleTextBundle = {
       editProvider: 'Bewerk Provider',
       addProvider: '+ Provider Toevoegen...',
       deleteProvider: 'Verwijder Provider',
+      openAdvancedFeatures: 'Geavanceerde functies openen',
       rewriteCommitMessage: 'Commitbericht herschrijven',
       confirmRewrite: 'Herschrijven bevestigen',
       cancel: 'Annuleren',
@@ -297,6 +299,9 @@ export const nlLocale: LocaleTextBundle = {
         'Beperk tool calls van de agentic mode per generatie. Voer 0 in of laat leeg voor onbeperkt.',
       customProviderInfo:
         'Aangepaste providers moeten <strong>OpenAI-compatibel</strong> zijn.<br>De API basis URL moet wijzen naar een service die de OpenAI Chat Completions API implementeert.',
+      advancedFeaturesDescription: 'Open geavanceerde tools en workflows.',
+      rewriteWorkflowDescription:
+        'Na het selecteren van een niet-merge commit genereert het systeem het bericht opnieuw met de huidige provider-, model- en uitvoerformaatinstellingen (scope/body/footer) in de actieve modus (Agentic / Direct Diff), en opent vervolgens een bewerkbare bevestigingsinterface; na verzenden wordt de geschiedenis herschreven via rebase, met optionele force push with lease.',
       rewriteEditorDescription:
         'Controleer en bevestig het nieuwe commitbericht.',
     },

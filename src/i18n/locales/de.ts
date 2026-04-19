@@ -220,6 +220,7 @@ export const deLocale: LocaleTextBundle = {
       addProvider: 'Benutzerdefinierten Anbieter hinzufügen',
       editProvider: 'Benutzerdefinierten Anbieter bearbeiten',
       rewriteEditor: 'Umschreiben',
+      advancedFeatures: 'Erweiterte Funktionen',
     },
     labels: {
       provider: 'Anbieter',
@@ -257,6 +258,7 @@ export const deLocale: LocaleTextBundle = {
       editProvider: 'Anbieter bearbeiten',
       addProvider: '+ Anbieter hinzufügen...',
       deleteProvider: 'Anbieter löschen',
+      openAdvancedFeatures: 'Erweiterte Funktionen öffnen',
       rewriteCommitMessage: 'Commit-Nachricht umschreiben',
       confirmRewrite: 'Umschreiben bestätigen',
       cancel: 'Abbrechen',
@@ -302,6 +304,9 @@ export const deLocale: LocaleTextBundle = {
         'Begrenzen Sie absichtliche Tool-Aufrufe pro Erzeugung. Geben Sie 0 ein oder lassen Sie das Feld leer, um eine unbegrenzte Anzahl zuzulassen.',
       customProviderInfo:
         'Benutzerdefinierte Anbieter müssen <strong>OpenAI-kompatibel</strong> sein.<br>Die API-Base-URL sollte auf einen Dienst weisen, der die OpenAI Chat Completions-API implementiert.',
+      advancedFeaturesDescription: 'Erweiterte Werkzeuge und Workflows öffnen.',
+      rewriteWorkflowDescription:
+        'Nach Auswahl eines Nicht-Merge-Commits generiert das System die Nachricht im aktiven Modus (Agentic / Direct Diff) mit dem aktuellen Provider, Modell und Ausgabeformat (Scope/Body/Footer) neu, öffnet anschließend eine bearbeitbare Bestätigungsansicht; nach dem Absenden wird die Historie per Rebase umgeschrieben, optional mit force push with lease.',
       rewriteEditorDescription:
         'Prüfen und bestätigen Sie die neue Commit-Nachricht.',
     },

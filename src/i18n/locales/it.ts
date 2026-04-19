@@ -219,6 +219,7 @@ export const itLocale: LocaleTextBundle = {
       addProvider: 'Aggiungi Provider Personalizzato',
       editProvider: 'Modifica Provider Personalizzato',
       rewriteEditor: 'Riscrivi',
+      advancedFeatures: 'Funzionalità avanzate',
     },
     labels: {
       provider: 'Provider',
@@ -256,6 +257,7 @@ export const itLocale: LocaleTextBundle = {
       editProvider: 'Modifica Provider',
       addProvider: '+ Aggiungi Provider...',
       deleteProvider: 'Elimina Provider',
+      openAdvancedFeatures: 'Apri funzionalità avanzate',
       rewriteCommitMessage: 'Riscrivi messaggio di commit',
       confirmRewrite: 'Conferma riscrittura',
       cancel: 'Annulla',
@@ -300,6 +302,10 @@ export const itLocale: LocaleTextBundle = {
         "Limita le chiamate agli strumenti dell'agente per generazione. Inserisci 0 o lascia vuoto per non avere limiti.",
       customProviderInfo:
         "I provider personalizzati devono essere <strong>compatibili con OpenAI</strong>.<br>L'URL base dell'API deve puntare a un servizio che implementi l'API Chat Completions di OpenAI.",
+      advancedFeaturesDescription:
+        'Apri strumenti e flussi di lavoro avanzati.',
+      rewriteWorkflowDescription:
+        "Dopo aver selezionato un commit non-merge, il sistema rigenera il messaggio usando provider, modello e formato di output correnti (scope/body/footer) nella modalità attiva (Agentic / Direct Diff), quindi apre un'interfaccia di conferma modificabile; dopo l'invio, la cronologia viene riscritta tramite rebase, con opzione force push with lease.",
       rewriteEditorDescription:
         'Rivedi e conferma il nuovo messaggio di commit.',
     },

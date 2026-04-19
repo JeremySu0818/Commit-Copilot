@@ -197,6 +197,7 @@ export const zhCNLocale: LocaleTextBundle = {
       addProvider: '添加自定义提供商',
       editProvider: '编辑自定义提供商',
       rewriteEditor: '重写',
+      advancedFeatures: '进阶功能',
     },
     labels: {
       provider: '提供商',
@@ -234,6 +235,7 @@ export const zhCNLocale: LocaleTextBundle = {
       editProvider: '编辑 Provider',
       addProvider: '+ 添加 Provider...',
       deleteProvider: '删除 Provider',
+      openAdvancedFeatures: '打开进阶功能',
       rewriteCommitMessage: '重写提交信息',
       confirmRewrite: '确认重写',
       cancel: '取消',
@@ -275,6 +277,9 @@ export const zhCNLocale: LocaleTextBundle = {
         '限制每次生成的 Agent 工具调用次数。输入 0 或留空表示无限制。',
       customProviderInfo:
         '自定义提供商必须<strong>兼容 OpenAI</strong>。<br>API Base URL 需指向支持 OpenAI Chat Completions API 的服务。',
+      advancedFeaturesDescription: '打开进阶工具与工作流。',
+      rewriteWorkflowDescription:
+        '选择非合并 commit 后，系统会沿用当前 Provider、Model 与生成格式设置（Scope／Body／Footer），按当前模式（Agentic / Direct Diff）重新生成消息，并在可编辑界面供你确认；提交后会通过 rebase 重写历史，最后可选择是否 force push with lease。',
       rewriteEditorDescription: '检查并确认新的提交信息。',
     },
     options: {

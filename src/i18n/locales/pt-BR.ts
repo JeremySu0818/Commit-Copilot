@@ -220,6 +220,7 @@ export const ptBRLocale: LocaleTextBundle = {
       addProvider: 'Adicionar Provedor Personalizado',
       editProvider: 'Editar Provedor Personalizado',
       rewriteEditor: 'Reescrever',
+      advancedFeatures: 'Recursos avançados',
     },
     labels: {
       provider: 'Provedor',
@@ -257,6 +258,7 @@ export const ptBRLocale: LocaleTextBundle = {
       editProvider: 'Editar Provedor',
       addProvider: '+ Adicionar Provedor...',
       deleteProvider: 'Excluir Provedor',
+      openAdvancedFeatures: 'Abrir recursos avançados',
       rewriteCommitMessage: 'Reescrever mensagem de commit',
       confirmRewrite: 'Confirmar reescrita',
       cancel: 'Cancelar',
@@ -301,6 +303,10 @@ export const ptBRLocale: LocaleTextBundle = {
         'Limita os passos do agente nas ferramentas. Insira 0 ou deixe em branco caso queira uso ilimitado.',
       customProviderInfo:
         'Os provedores personalizados precisam ser <strong>compatíveis com a OpenAI</strong>.<br>A URL Base da API deve apontar a um local com completude para Chat.',
+      advancedFeaturesDescription:
+        'Abra ferramentas e fluxos de trabalho avançados.',
+      rewriteWorkflowDescription:
+        'Após selecionar um commit que não seja de merge, o sistema regenera a mensagem usando o provedor, modelo e formato de saída atuais (scope/body/footer) no modo ativo (Agentic / Direct Diff), depois abre uma interface de confirmação editável; após enviar, o histórico é reescrito via rebase, com opção de force push with lease.',
       rewriteEditorDescription: 'Revise e confirme a nova mensagem de commit.',
     },
     options: {

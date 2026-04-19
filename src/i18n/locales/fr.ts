@@ -220,6 +220,7 @@ export const frLocale: LocaleTextBundle = {
       addProvider: 'Ajouter un fournisseur personnalisé',
       editProvider: 'Modifier un fournisseur personnalisé',
       rewriteEditor: 'Réécrire',
+      advancedFeatures: 'Fonctionnalités avancées',
     },
     labels: {
       provider: 'Fournisseur',
@@ -257,6 +258,7 @@ export const frLocale: LocaleTextBundle = {
       editProvider: 'Modifier le fournisseur',
       addProvider: '+ Ajouter un fournisseur...',
       deleteProvider: 'Supprimer le fournisseur',
+      openAdvancedFeatures: 'Ouvrir les fonctionnalités avancées',
       rewriteCommitMessage: 'Réécrire le message de commit',
       confirmRewrite: 'Confirmer la réécriture',
       cancel: 'Annuler',
@@ -300,6 +302,9 @@ export const frLocale: LocaleTextBundle = {
         "Limiter les appels de l'outil de l'agent par génération. Entrez 0 ou laissez vide pour illimité.",
       customProviderInfo:
         "Les fournisseurs personnalisés doivent être <strong>compatibles avec OpenAI</strong>.<br>L'URL de base de l'API doit pointer vers un service qui implémente l'API Chat Completions d'OpenAI.",
+      advancedFeaturesDescription: 'Ouvrez les outils et workflows avancés.',
+      rewriteWorkflowDescription:
+        "Après avoir sélectionné un commit non-merge, le système régénère le message selon le fournisseur, le modèle et le format de sortie actuels (scope/body/footer) dans le mode actif (Agentic / Direct Diff), puis ouvre une interface de confirmation modifiable ; après validation, l'historique est réécrit via rebase, avec option de force push with lease.",
       rewriteEditorDescription:
         'Vérifiez et confirmez le nouveau message de commit.',
     },

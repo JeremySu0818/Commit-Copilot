@@ -16,6 +16,7 @@ export type MainViewScreen =
   | 'main'
   | 'settings'
   | 'addProvider'
+  | 'advanced'
   | 'rewriteEditor';
 
 export interface WebviewBootstrapData {

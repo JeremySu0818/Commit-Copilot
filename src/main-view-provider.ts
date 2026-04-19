@@ -153,6 +153,7 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
     const normalizedScreen: MainViewScreen =
       screen === 'settings' ||
       screen === 'addProvider' ||
+      screen === 'advanced' ||
       screen === 'rewriteEditor'
         ? screen
         : 'main';

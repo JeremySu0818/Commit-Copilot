@@ -214,6 +214,7 @@ export const jaLocale: LocaleTextBundle = {
       addProvider: 'カスタムプロバイダーを追加',
       editProvider: 'カスタムプロバイダーを編集',
       rewriteEditor: '書き換え',
+      advancedFeatures: '高度な機能',
     },
     labels: {
       provider: 'プロバイダー',
@@ -251,6 +252,7 @@ export const jaLocale: LocaleTextBundle = {
       editProvider: 'プロバイダーを編集',
       addProvider: '+ プロバイダーを追加...',
       deleteProvider: 'プロバイダーを削除',
+      openAdvancedFeatures: '高度な機能を開く',
       rewriteCommitMessage: 'コミットメッセージを書き換え',
       confirmRewrite: '書き換えを確定',
       cancel: 'キャンセル',
@@ -294,6 +296,9 @@ export const jaLocale: LocaleTextBundle = {
         '各生成のエージェントツール呼び出し回数を制限します。無制限にするには0を入力するか空白にしてください。',
       customProviderInfo:
         'カスタムプロバイダーは <strong>OpenAI 互換</strong> である必要があります。<br>API ベース URL は OpenAI Chat Completions API に準拠したサービスを指す必要があります。',
+      advancedFeaturesDescription: '高度なツールとワークフローを開きます。',
+      rewriteWorkflowDescription:
+        '非マージコミットを選択すると、システムは現在の Provider・Model・出力形式設定（Scope/Body/Footer）を引き継ぎ、アクティブなモード（Agentic / Direct Diff）でメッセージを再生成します。続いて編集可能な確認 UI を表示し、送信後は rebase により履歴を書き換え、必要に応じて force push with lease を実行できます。',
       rewriteEditorDescription:
         '新しいコミットメッセージを確認して確定します。',
     },
