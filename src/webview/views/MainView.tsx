@@ -116,10 +116,7 @@ export function MainView() {
   const isApiKeyMissing = !hasConfiguredKey && !state.apiKeyValue.trim();
   const isCustomModelMissing =
     modelState.allowCustomModel && !modelState.customModelValue.trim();
-  const rewriteBtnDisabled =
-    isGenerating ||
-    isApiKeyMissing ||
-    isCustomModelMissing;
+  const rewriteBtnDisabled = isGenerating;
   const rewriteBtnTitle = getRewriteBtnTitle({
     isGenerating,
     isApiKeyMissing,

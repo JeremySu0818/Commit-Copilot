@@ -18,14 +18,14 @@ const DERIVED_STATE_PATH = path.resolve(
   'MainViewDerivedState.ts',
 );
 
-void test('rewrite button is not disabled by lack of working tree changes', () => {
+void test('rewrite button is disabled only while generating', () => {
   const source = readFileSync(MAIN_VIEW_PATH, 'utf8');
-  const declarationStart = source.indexOf('const rewriteBtnDisabled =');
-
-  assert.notEqual(declarationStart, -1);
-  const declaration = source.slice(declarationStart, declarationStart + 160);
-  assert.equal(declaration.includes('generateBtnDisabled'), false);
-  assert.equal(declaration.includes('isOllama'), false);
+  assert.match(source, /const rewriteBtnDisabled = isGenerating;/);
+  assert.doesNotMatch(source, /const rewriteBtnDisabled = [^;\n]*isApiKeyMissing/);
+  assert.doesNotMatch(
+    source,
+    /const rewriteBtnDisabled = [^;\n]*isCustomModelMissing/,
+  );
 });
 
 void test('rewrite button uses configured key status before treating API key as missing', () => {
