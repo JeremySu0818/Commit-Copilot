@@ -908,6 +908,49 @@ async function executeRewriteCommand(
     return;
   }
 
+  const providerContext = resolveProviderContext(context);
+  const currentGenerateMode = resolveGenerateMode(
+    context,
+    providerContext.llmProvider,
+    'agentic',
+  );
+  const currentCommitOutputOptions = resolveCommitOutputOptions(
+    context,
+    undefined,
+  );
+  const maxAgentSteps = resolveMaxAgentSteps(context);
+  const apiKey = await resolveProviderApiKey(context, providerContext);
+  const providerDisplayName = getProviderDisplayName(providerContext);
+
+  logGenerationConfig(
+    outputChannel,
+    text,
+    providerDisplayName,
+    currentGenerateMode,
+    currentCommitOutputOptions,
+  );
+
+  const hasApiKey = await ensureProviderApiKey(
+    apiKey,
+    providerContext,
+    providerDisplayName,
+    text,
+    outputChannel,
+  );
+  if (!hasApiKey) {
+    return;
+  }
+
+  const savedModel = resolveSavedModel(context, providerContext);
+  const hasCustomModel = await ensureCustomModelSelection(
+    providerContext,
+    savedModel,
+    language,
+  );
+  if (!hasCustomModel) {
+    return;
+  }
+
   const cancellationSource = new vscode.CancellationTokenSource();
   let generationStateStarted = false;
 
@@ -936,49 +979,6 @@ async function executeRewriteCommand(
 
     const targetCommit = await selectRewriteCommit(repository, text);
     if (!targetCommit) {
-      return;
-    }
-
-    const providerContext = resolveProviderContext(context);
-    const currentGenerateMode = resolveGenerateMode(
-      context,
-      providerContext.llmProvider,
-      'agentic',
-    );
-    const currentCommitOutputOptions = resolveCommitOutputOptions(
-      context,
-      undefined,
-    );
-    const maxAgentSteps = resolveMaxAgentSteps(context);
-    const apiKey = await resolveProviderApiKey(context, providerContext);
-    const providerDisplayName = getProviderDisplayName(providerContext);
-
-    logGenerationConfig(
-      outputChannel,
-      text,
-      providerDisplayName,
-      currentGenerateMode,
-      currentCommitOutputOptions,
-    );
-
-    const hasApiKey = await ensureProviderApiKey(
-      apiKey,
-      providerContext,
-      providerDisplayName,
-      text,
-      outputChannel,
-    );
-    if (!hasApiKey) {
-      return;
-    }
-
-    const savedModel = resolveSavedModel(context, providerContext);
-    const hasCustomModel = await ensureCustomModelSelection(
-      providerContext,
-      savedModel,
-      language,
-    );
-    if (!hasCustomModel) {
       return;
     }
 
