@@ -16,7 +16,8 @@ export function StatusMessageView({
   hideWhenEmpty = false,
 }: StatusMessageViewProps) {
   const baseClass = className ?? 'status';
-  const nextClass = !status && hideWhenEmpty ? `${baseClass} hidden` : baseClass;
+  const nextClass =
+    !status && hideWhenEmpty ? `${baseClass} hidden` : baseClass;
 
   return (
     <span id={id} className={nextClass}>

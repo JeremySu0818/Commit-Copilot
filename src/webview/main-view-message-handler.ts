@@ -313,7 +313,10 @@ export function useMainViewMessageHandler(
           dispatch({
             type: 'SET_KEY_STATUS_MESSAGE',
             status: hasKey
-              ? createStatusMessage('success', state.currentPack.statuses.configured)
+              ? createStatusMessage(
+                  'success',
+                  state.currentPack.statuses.configured,
+                )
               : createStatusMessage(
                   'error',
                   state.currentPack.statuses.notConfigured,
@@ -593,7 +596,10 @@ export function useMainViewMessageHandler(
           });
           dispatch({
             type: 'SET_LANGUAGE_STATUS_MESSAGE',
-            status: createStatusMessage('success', nextPack.statuses.languageSaved),
+            status: createStatusMessage(
+              'success',
+              nextPack.statuses.languageSaved,
+            ),
           });
         },
         currentMaxAgentSteps: (message) => {

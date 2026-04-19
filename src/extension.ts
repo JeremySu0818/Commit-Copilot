@@ -1054,12 +1054,13 @@ async function executeRewriteCommand(
       return;
     }
 
-    const rewrittenMessage =
-      await mainViewProvider.requestRewriteEditorMessage({
+    const rewrittenMessage = await mainViewProvider.requestRewriteEditorMessage(
+      {
         targetCommitShortHash: targetCommit.shortHash,
         generatedMessage,
         cancellationToken: cancellationSource.token,
-      });
+      },
+    );
     if (typeof rewrittenMessage !== 'string') {
       vscode.window.showInformationMessage(text.notification.rewriteCanceled);
       return;

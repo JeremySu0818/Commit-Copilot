@@ -278,9 +278,9 @@ export interface MainViewContextValue {
   bootstrap: WebviewBootstrapData;
 }
 
-export const MainViewContext = createContext<
-  MainViewContextValue | undefined
->(undefined);
+export const MainViewContext = createContext<MainViewContextValue | undefined>(
+  undefined,
+);
 
 export function useMainViewContext(): MainViewContextValue {
   const context = useContext(MainViewContext);

@@ -15,10 +15,14 @@ function toSafeHref(rawHref: string | null): string | null {
   return null;
 }
 
-function renderNodes(nodes: NodeListOf<ChildNode> | ChildNode[]): React.ReactNode[] {
+function renderNodes(
+  nodes: NodeListOf<ChildNode> | ChildNode[],
+): React.ReactNode[] {
   return Array.from(nodes).map((node, index) => {
     if (node.nodeType === Node.TEXT_NODE) {
-      return <React.Fragment key={index}>{node.textContent ?? ''}</React.Fragment>;
+      return (
+        <React.Fragment key={index}>{node.textContent ?? ''}</React.Fragment>
+      );
     }
 
     if (node.nodeType !== Node.ELEMENT_NODE) {

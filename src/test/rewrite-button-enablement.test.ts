@@ -22,7 +22,10 @@ const rewriteTitleFunctionScanLength = 700;
 void test('rewrite button is disabled only while generating', () => {
   const source = readFileSync(MAIN_VIEW_PATH, 'utf8');
   assert.match(source, /const rewriteBtnDisabled = isGenerating;/);
-  assert.doesNotMatch(source, /const rewriteBtnDisabled = [^;\n]*isApiKeyMissing/);
+  assert.doesNotMatch(
+    source,
+    /const rewriteBtnDisabled = [^;\n]*isApiKeyMissing/,
+  );
   assert.doesNotMatch(
     source,
     /const rewriteBtnDisabled = [^;\n]*isCustomModelMissing/,

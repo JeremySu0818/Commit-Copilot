@@ -1307,12 +1307,7 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
       ),
     );
     const scriptUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(
-        this._extensionUri,
-        'out',
-        'webview',
-        'main-view.js',
-      ),
+      vscode.Uri.joinPath(this._extensionUri, 'out', 'webview', 'main-view.js'),
     );
     const bootstrap = serializeForInlineScript(this.getWebviewBootstrapData());
 

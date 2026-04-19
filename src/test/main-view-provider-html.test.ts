@@ -150,7 +150,10 @@ void test('webview html shell includes nonce/csp/assets and bootstrap payload', 
     ),
   );
   assert.match(webview.html, new RegExp(`script-src 'nonce-${nonce}'`));
-  assert.match(webview.html, new RegExp(`style-src mock-csp-source 'nonce-${nonce}'`));
+  assert.match(
+    webview.html,
+    new RegExp(`style-src mock-csp-source 'nonce-${nonce}'`),
+  );
   assert.match(
     webview.html,
     new RegExp(

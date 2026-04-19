@@ -17,7 +17,9 @@ export function SettingsView() {
   const displayedMaxStepsInput = isEditingMaxSteps
     ? maxStepsInput
     : externalMaxStepsInput;
-  const maxStepsInputValue = normalizeMaxAgentStepsValue(displayedMaxStepsInput);
+  const maxStepsInputValue = normalizeMaxAgentStepsValue(
+    displayedMaxStepsInput,
+  );
   const saveMaxStepsDisabled = maxStepsInputValue === currentMaxAgentSteps;
 
   const handleBack = useCallback(() => {
@@ -29,7 +31,10 @@ export function SettingsView() {
     (e: React.ChangeEvent<HTMLSelectElement>) => {
       dispatch({
         type: 'SET_LANGUAGE_STATUS_MESSAGE',
-        status: createStatusMessage('warning', pack.statuses.loadingConfiguration),
+        status: createStatusMessage(
+          'warning',
+          pack.statuses.loadingConfiguration,
+        ),
       });
       vscode.postMessage({
         type: 'saveDisplayLanguage',

@@ -65,7 +65,8 @@ export function getGenerateBtnTitle({
   pack: WebviewLanguagePack;
 }>) {
   if (isGenerating) return pack.statuses.cancelCurrentGeneration;
-  if (!pendingStatusCheck && !hasChanges) return pack.statuses.noChangesDetected;
+  if (!pendingStatusCheck && !hasChanges)
+    return pack.statuses.noChangesDetected;
   return '';
 }
 
