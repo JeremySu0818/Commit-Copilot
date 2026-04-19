@@ -2,15 +2,15 @@ import React from 'react';
 
 import { SafeRichText } from '../components/SafeRichText';
 import { StatusMessageView } from '../components/StatusMessageView';
-import { useSidePanel } from '../side-panel-context';
+import { useMainViewContext } from '../main-view-context';
 
-type SidePanelContextValue = ReturnType<typeof useSidePanel>;
-type SidePanelState = SidePanelContextValue['state'];
-type Bootstrap = SidePanelContextValue['bootstrap'];
-type LanguagePack = SidePanelState['currentPack'];
-type ModelState = SidePanelState['modelState'];
-type CommitOutputOptions = SidePanelState['commitOutputOptions'];
-type CustomProviderConfig = SidePanelState['customProviders'][number] | null;
+type MainViewContextValue = ReturnType<typeof useMainViewContext>;
+type MainViewState = MainViewContextValue['state'];
+type Bootstrap = MainViewContextValue['bootstrap'];
+type LanguagePack = MainViewState['currentPack'];
+type ModelState = MainViewState['modelState'];
+type CommitOutputOptions = MainViewState['commitOutputOptions'];
+type CustomProviderConfig = MainViewState['customProviders'][number] | null;
 
 export function ApiProviderSection({
   pack,
@@ -22,7 +22,7 @@ export function ApiProviderSection({
   pack: LanguagePack;
   bootstrap: Bootstrap;
   currentProvider: string;
-  customProviders: SidePanelState['customProviders'];
+  customProviders: MainViewState['customProviders'];
   onProviderChange: React.ChangeEventHandler<HTMLSelectElement>;
 }>) {
   return (
@@ -77,12 +77,12 @@ export function ProviderConfigurationSection({
   pack: LanguagePack;
   title: string;
   apiKeyLabel: string;
-  apiKeyType: SidePanelState['apiKeyType'];
+  apiKeyType: MainViewState['apiKeyType'];
   apiKeyPlaceholder: string;
   apiKeyValue: string;
   saveBtnDisabled: boolean;
   saveBtnText: string;
-  keyStatusMessage: SidePanelState['keyStatusMessage'];
+  keyStatusMessage: MainViewState['keyStatusMessage'];
   providerInfoHtml: string;
   customProviderConfig: CustomProviderConfig;
   onApiKeyInput: React.ChangeEventHandler<HTMLInputElement>;

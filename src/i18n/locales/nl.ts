@@ -188,7 +188,7 @@ export const nlLocale: LocaleTextBundle = {
       pushingWithLease: 'Push with lease wordt uitgevoerd',
     },
   },
-  sidePanelText: {
+  mainViewText: {
     invalidApiKeyPrefix: 'Ongeldige API sleutel',
     quotaExceededPrefix: 'API quota overschreden',
     apiRequestFailedPrefix: 'API verzoek mislukt',

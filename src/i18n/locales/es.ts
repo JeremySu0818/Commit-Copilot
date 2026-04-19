@@ -190,7 +190,7 @@ export const esLocale: LocaleTextBundle = {
       pushingWithLease: 'Haciendo push with lease',
     },
   },
-  sidePanelText: {
+  mainViewText: {
     invalidApiKeyPrefix: 'Clave API no válida',
     quotaExceededPrefix: 'Cuota de API excedida',
     apiRequestFailedPrefix: 'Falló la solicitud a la API',

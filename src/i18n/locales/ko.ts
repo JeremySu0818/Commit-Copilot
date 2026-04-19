@@ -181,7 +181,7 @@ export const koLocale: LocaleTextBundle = {
       pushingWithLease: 'Lease와 함께 push 중',
     },
   },
-  sidePanelText: {
+  mainViewText: {
     invalidApiKeyPrefix: '잘못된 API 키',
     quotaExceededPrefix: 'API 할당량 초과',
     apiRequestFailedPrefix: 'API 요청 실패',

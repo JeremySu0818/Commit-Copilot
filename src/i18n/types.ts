@@ -147,7 +147,7 @@ export interface ExtensionText {
   };
 }
 
-export interface SidePanelText {
+export interface MainViewText {
   invalidApiKeyPrefix: string;
   quotaExceededPrefix: string;
   apiRequestFailedPrefix: string;
@@ -289,7 +289,7 @@ export interface LocaleTextBundle {
   errorMessages: Record<number, ErrorInfo>;
   commitCopilotErrorMessages: CommitCopilotErrorMessages;
   extensionText: ExtensionText;
-  sidePanelText: SidePanelText;
+  mainViewText: MainViewText;
   webviewLanguagePack: WebviewLanguagePack;
   progressMessages: ProgressMessages;
 }

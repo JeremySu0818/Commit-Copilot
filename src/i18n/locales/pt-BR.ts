@@ -191,7 +191,7 @@ export const ptBRLocale: LocaleTextBundle = {
       pushingWithLease: 'Fazendo push with lease',
     },
   },
-  sidePanelText: {
+  mainViewText: {
     invalidApiKeyPrefix: 'Chave da API Inválida',
     quotaExceededPrefix: 'Cota da API excedida',
     apiRequestFailedPrefix: 'Falha na requisição da API',

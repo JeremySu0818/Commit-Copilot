@@ -187,7 +187,7 @@ export const ruLocale: LocaleTextBundle = {
       pushingWithLease: 'Push with lease выполняется',
     },
   },
-  sidePanelText: {
+  mainViewText: {
     invalidApiKeyPrefix: 'Недействительный API-ключ',
     quotaExceededPrefix: 'Квота API превышена',
     apiRequestFailedPrefix: 'Ошибка запроса к API',

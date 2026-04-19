@@ -187,7 +187,7 @@ export const viLocale: LocaleTextBundle = {
       pushingWithLease: 'Đang push with lease',
     },
   },
-  sidePanelText: {
+  mainViewText: {
     invalidApiKeyPrefix: 'API Key không hợp lệ',
     quotaExceededPrefix: 'Vượt quá hạn ngạch API',
     apiRequestFailedPrefix: 'Yêu cầu API thất bại',

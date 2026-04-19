@@ -186,7 +186,7 @@ export const hiLocale: LocaleTextBundle = {
       pushingWithLease: 'Lease के साथ push हो रहा है',
     },
   },
-  sidePanelText: {
+  mainViewText: {
     invalidApiKeyPrefix: 'अमान्य एपीआई कुंजी',
     quotaExceededPrefix: 'एपीआई कोटा पार हो गया',
     apiRequestFailedPrefix: 'एपीआई अनुरोध विफल रहा',

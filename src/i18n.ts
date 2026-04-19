@@ -6,7 +6,7 @@ import type {
   ErrorInfo,
   ExtensionText,
   LanguageOption,
-  SidePanelText,
+  MainViewText,
   WebviewLanguagePack,
 } from './i18n/types';
 
@@ -15,7 +15,7 @@ export type {
   EffectiveDisplayLanguage,
   ExtensionText,
   LanguageOption,
-  SidePanelText,
+  MainViewText,
   WebviewLanguagePack,
 } from './i18n/types';
 
@@ -216,10 +216,10 @@ export function getExtensionText(
   return LOCALES[language].extensionText;
 }
 
-export function getSidePanelText(
+export function getMainViewText(
   language: EffectiveDisplayLanguage,
-): SidePanelText {
-  return LOCALES[language].sidePanelText;
+): MainViewText {
+  return LOCALES[language].mainViewText;
 }
 
 export function getModelNameRequiredText(

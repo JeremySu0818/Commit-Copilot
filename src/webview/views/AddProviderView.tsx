@@ -1,11 +1,11 @@
 import React, { useCallback, useMemo } from 'react';
 
 import { BackIcon } from '../components/BackIcon';
-import { useSidePanel } from '../side-panel-context';
+import { useMainViewContext } from '../main-view-context';
 import { renderStatusHtml } from '../utils';
 
 export function AddProviderView() {
-  const { state, dispatch, vscode, bootstrap } = useSidePanel();
+  const { state, dispatch, vscode, bootstrap } = useMainViewContext();
   const { currentPack: pack, addProviderDraft: draft } = state;
   const isEditing = !!draft.editingId;
 

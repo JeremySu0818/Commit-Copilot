@@ -186,7 +186,7 @@ export const jaLocale: LocaleTextBundle = {
       pushingWithLease: 'Lease 付きで push 中',
     },
   },
-  sidePanelText: {
+  mainViewText: {
     invalidApiKeyPrefix: '無効な API キー',
     quotaExceededPrefix: 'API クォータ超過',
     apiRequestFailedPrefix: 'API リクエスト失敗',

@@ -188,7 +188,7 @@ export const idLocale: LocaleTextBundle = {
       pushingWithLease: 'Push with lease',
     },
   },
-  sidePanelText: {
+  mainViewText: {
     invalidApiKeyPrefix: 'API Key tidak valid',
     quotaExceededPrefix: 'Kuota API terlampaui',
     apiRequestFailedPrefix: 'Permintaan API gagal',

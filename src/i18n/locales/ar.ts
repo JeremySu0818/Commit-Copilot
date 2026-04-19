@@ -177,7 +177,7 @@ export const arLocale: LocaleTextBundle = {
       pushingWithLease: 'جارٍ الدفع مع lease',
     },
   },
-  sidePanelText: {
+  mainViewText: {
     invalidApiKeyPrefix: 'مفتاح API غير صالح',
     quotaExceededPrefix: 'تم تجاوز حصة API',
     apiRequestFailedPrefix: 'فشل طلب API',

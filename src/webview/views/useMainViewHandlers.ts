@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 
 import type { CommitOutputOptions, CustomProviderConfig, GenerateMode } from '../../models';
-import { useSidePanel } from '../side-panel-context';
+import { useMainViewContext } from '../main-view-context';
 import {
   createStatusMessage,
   normalizeGenerateMode,
@@ -19,7 +19,7 @@ export function useMainViewHandlers({
   isOllama: boolean;
   effectiveGenerateMode: GenerateMode;
 }>) {
-  const { state, dispatch, vscode, bootstrap } = useSidePanel();
+  const { state, dispatch, vscode, bootstrap } = useMainViewContext();
   const {
     currentPack: pack,
     currentProvider,

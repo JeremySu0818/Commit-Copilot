@@ -189,7 +189,7 @@ export const trLocale: LocaleTextBundle = {
       pushingWithLease: 'Lease ile push yapılıyor',
     },
   },
-  sidePanelText: {
+  mainViewText: {
     invalidApiKeyPrefix: 'Geçersiz API Anahtarı',
     quotaExceededPrefix: 'API kotası aşıldı',
     apiRequestFailedPrefix: 'API isteği başarısız oldu',

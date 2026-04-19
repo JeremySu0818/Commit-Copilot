@@ -189,7 +189,7 @@ export const huLocale: LocaleTextBundle = {
       pushingWithLease: 'Push with lease folyamatban',
     },
   },
-  sidePanelText: {
+  mainViewText: {
     invalidApiKeyPrefix: 'Érvénytelen API kulcs',
     quotaExceededPrefix: 'API kvóta túllépve',
     apiRequestFailedPrefix: 'API kérés sikertelen',

@@ -187,7 +187,7 @@ export const csLocale: LocaleTextBundle = {
       pushingWithLease: 'Push with lease probíhá',
     },
   },
-  sidePanelText: {
+  mainViewText: {
     invalidApiKeyPrefix: 'Neplatný API klíč',
     quotaExceededPrefix: 'Kvóta API překročena',
     apiRequestFailedPrefix: 'Požadavek API selhal',

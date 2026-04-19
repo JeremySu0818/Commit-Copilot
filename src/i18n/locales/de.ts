@@ -191,7 +191,7 @@ export const deLocale: LocaleTextBundle = {
       pushingWithLease: 'Push with Lease läuft',
     },
   },
-  sidePanelText: {
+  mainViewText: {
     invalidApiKeyPrefix: 'Ungültiger API-Schlüssel',
     quotaExceededPrefix: 'API-Kontingent überschritten',
     apiRequestFailedPrefix: 'API-Anfrage fehlgeschlagen',

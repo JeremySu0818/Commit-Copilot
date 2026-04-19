@@ -1,31 +1,31 @@
 import React, { useReducer, useMemo } from 'react';
 
-import type { WebviewBootstrapData } from '../side-panel-webview-bootstrap';
+import type { WebviewBootstrapData } from '../main-view-webview-bootstrap';
 
 import {
-  SidePanelContext,
+  MainViewContext,
   createInitialState,
-  sidePanelReducer,
-} from './side-panel-context';
-import { useMessageHandler } from './use-message-handler';
+  mainViewStateReducer,
+} from './main-view-context';
+import { useMainViewMessageHandler } from './main-view-message-handler';
 import { AddProviderView } from './views/AddProviderView';
 import { MainView } from './views/MainView';
 import { RewriteEditorView } from './views/RewriteEditorView';
 import { SettingsView } from './views/SettingsView';
 
-interface AppProps {
+interface MainViewAppProps {
   readonly bootstrap: WebviewBootstrapData;
   readonly vscode: VSCodeWebviewApi;
 }
 
-export function App({ bootstrap, vscode }: AppProps) {
+export function MainViewApp({ bootstrap, vscode }: MainViewAppProps) {
   const [state, dispatch] = useReducer(
-    sidePanelReducer,
+    mainViewStateReducer,
     bootstrap,
     createInitialState,
   );
 
-  useMessageHandler(vscode, bootstrap, state, dispatch);
+  useMainViewMessageHandler(vscode, bootstrap, state, dispatch);
 
   const contextValue = useMemo(
     () => ({
@@ -51,8 +51,8 @@ export function App({ bootstrap, vscode }: AppProps) {
   })();
 
   return (
-    <SidePanelContext.Provider value={contextValue}>
+    <MainViewContext.Provider value={contextValue}>
       {activeView}
-    </SidePanelContext.Provider>
+    </MainViewContext.Provider>
   );
 }

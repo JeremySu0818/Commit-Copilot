@@ -12,7 +12,7 @@ import type {
   ModelConfig,
 } from './models';
 
-export type SidePanelScreen =
+export type MainViewScreen =
   | 'main'
   | 'settings'
   | 'addProvider'
@@ -32,7 +32,7 @@ export interface WebviewBootstrapData {
   initialEffectiveLanguage: EffectiveDisplayLanguage;
   initialVSCodeLanguage?: string;
   displayLanguageOptions: LanguageOption[];
-  initialScreen: SidePanelScreen;
+  initialScreen: MainViewScreen;
   customProviderPrefix: string;
   customProviders: CustomProviderConfig[];
 }

@@ -17,6 +17,7 @@ const DERIVED_STATE_PATH = path.resolve(
   'views',
   'MainViewDerivedState.ts',
 );
+const rewriteTitleFunctionScanLength = 700;
 
 void test('rewrite button is disabled only while generating', () => {
   const source = readFileSync(MAIN_VIEW_PATH, 'utf8');
@@ -45,6 +46,9 @@ void test('rewrite button title does not reuse no-changes generate status', () =
   const functionStart = source.indexOf('export function getRewriteBtnTitle');
 
   assert.notEqual(functionStart, -1);
-  const functionBody = source.slice(functionStart, functionStart + 700);
+  const functionBody = source.slice(
+    functionStart,
+    functionStart + rewriteTitleFunctionScanLength,
+  );
   assert.equal(functionBody.includes('noChangesDetected'), false);
 });

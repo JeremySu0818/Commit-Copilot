@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 
-import { useSidePanel } from '../side-panel-context';
+import { useMainViewContext } from '../main-view-context';
 
 import {
   getApiKeyPlaceholder,
@@ -18,7 +18,7 @@ import {
 import { useMainViewHandlers } from './useMainViewHandlers';
 
 export function MainView() {
-  const { state, bootstrap } = useSidePanel();
+  const { state, bootstrap } = useMainViewContext();
   const {
     currentPack: pack,
     currentProvider,
@@ -112,7 +112,7 @@ export function MainView() {
     pack,
   });
 
-  const hasConfiguredKey = state.providerKeyStatuses[currentProvider] === true;
+  const hasConfiguredKey = state.providerKeyStatuses[currentProvider];
   const isApiKeyMissing = !hasConfiguredKey && !state.apiKeyValue.trim();
   const isCustomModelMissing =
     modelState.allowCustomModel && !modelState.customModelValue.trim();

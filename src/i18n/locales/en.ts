@@ -184,7 +184,7 @@ export const enLocale: LocaleTextBundle = {
       pushingWithLease: 'Pushing with lease',
     },
   },
-  sidePanelText: {
+  mainViewText: {
     invalidApiKeyPrefix: 'Invalid API Key',
     quotaExceededPrefix: 'API quota exceeded',
     apiRequestFailedPrefix: 'API request failed',

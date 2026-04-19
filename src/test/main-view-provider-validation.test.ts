@@ -7,9 +7,9 @@ import type * as vscode from 'vscode';
 
 import { clearRequireCache, withModuleMock } from './helpers/module-mock';
 
-const MODULE_PATH = path.resolve(__dirname, '..', 'side-panel-provider');
+const MODULE_PATH = path.resolve(__dirname, '..', 'main-view-provider');
 
-type ProviderModule = typeof import('../side-panel-provider');
+type ProviderModule = typeof import('../main-view-provider');
 type MessageHandler = (data: unknown) => Promise<void> | void;
 type PostedMessage = Record<string, unknown>;
 
@@ -98,7 +98,7 @@ const baseVscodeMock = {
 };
 
 function createProvider(mod: ProviderModule): ProviderWithValidators {
-  const provider = new mod.SidePanelProvider(
+  const provider = new mod.MainViewProvider(
     { fsPath: process.cwd() } as unknown as vscode.Uri,
     {} as vscode.ExtensionContext,
   );
@@ -182,7 +182,7 @@ async function createHarness(): Promise<Harness> {
     },
   } as unknown as vscode.ExtensionContext;
 
-  const provider = new mod.SidePanelProvider(
+  const provider = new mod.MainViewProvider(
     { fsPath: process.cwd() } as unknown as vscode.Uri,
     context,
   ) as unknown as ProviderWithValidators;

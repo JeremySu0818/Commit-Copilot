@@ -1,14 +1,14 @@
 import { useEffect } from 'react';
 
 import type { DisplayLanguage, EffectiveDisplayLanguage } from '../i18n';
+import type { WebviewBootstrapData } from '../main-view-webview-bootstrap';
 import type {
   CommitOutputOptions,
   CustomProviderConfig,
   ModelConfig,
 } from '../models';
-import type { WebviewBootstrapData } from '../side-panel-webview-bootstrap';
 
-import type { SidePanelAction, SidePanelState } from './side-panel-context';
+import type { MainViewAction, MainViewState } from './main-view-context';
 import {
   createStatusMessage,
   renderStatusHtml,
@@ -159,7 +159,7 @@ function normalizeCommitOutputOptions(
   };
 }
 
-function normalizeScreen(value: unknown): SidePanelState['screen'] {
+function normalizeScreen(value: unknown): MainViewState['screen'] {
   if (
     value === 'settings' ||
     value === 'addProvider' ||
@@ -173,7 +173,7 @@ function normalizeScreen(value: unknown): SidePanelState['screen'] {
 function getForcePushStatusText(
   status: string,
   message: string | undefined,
-  pack: SidePanelState['currentPack'],
+  pack: MainViewState['currentPack'],
 ): string {
   if (message && message.length > 0) {
     return message;
@@ -190,11 +190,11 @@ function getForcePushStatusText(
   return '';
 }
 
-export function useMessageHandler(
+export function useMainViewMessageHandler(
   vscode: VSCodeWebviewApi,
   bootstrap: WebviewBootstrapData,
-  state: SidePanelState,
-  dispatch: React.Dispatch<SidePanelAction>,
+  state: MainViewState,
+  dispatch: React.Dispatch<MainViewAction>,
 ): void {
   useEffect(() => {
     vscode.postMessage({ type: 'getProvider' });

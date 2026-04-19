@@ -2,10 +2,10 @@ import React, { useCallback } from 'react';
 
 import { BackIcon } from '../components/BackIcon';
 import { StatusMessageView } from '../components/StatusMessageView';
-import { useSidePanel } from '../side-panel-context';
+import { useMainViewContext } from '../main-view-context';
 
 export function RewriteEditorView() {
-  const { state, dispatch, vscode } = useSidePanel();
+  const { state, dispatch, vscode } = useMainViewContext();
   const { currentPack: pack, rewriteEditorDraft } = state;
   const rewriteEditorStatus = rewriteEditorDraft.status
     ? {

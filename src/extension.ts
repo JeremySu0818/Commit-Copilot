@@ -20,6 +20,7 @@ import {
   normalizeDisplayLanguage,
   resolveEffectiveDisplayLanguage,
 } from './i18n';
+import { MainViewProvider } from './main-view-provider';
 import {
   APIProvider,
   API_KEY_STORAGE_KEYS,
@@ -38,7 +39,6 @@ import {
   normalizeCommitOutputOptions,
   normalizeMaxAgentStepsValue,
 } from './models';
-import { SidePanelProvider } from './side-panel-provider';
 import { GenerationStateManager } from './state';
 
 type GenerateCommandArg =
@@ -899,7 +899,7 @@ async function runGenerationProgress(args: {
 async function executeRewriteCommand(
   context: vscode.ExtensionContext,
   outputChannel: vscode.OutputChannel,
-  sidePanelProvider: SidePanelProvider,
+  mainViewProvider: MainViewProvider,
 ): Promise<void> {
   const language = getCurrentLanguage(context);
   const text = getExtensionText(language);
@@ -1055,7 +1055,7 @@ async function executeRewriteCommand(
     }
 
     const rewrittenMessage =
-      await sidePanelProvider.requestRewriteEditorMessage({
+      await mainViewProvider.requestRewriteEditorMessage({
         targetCommitShortHash: targetCommit.shortHash,
         generatedMessage,
         cancellationToken: cancellationSource.token,
@@ -1412,10 +1412,10 @@ export function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(outputChannel);
 
-  const provider = new SidePanelProvider(context.extensionUri, context);
+  const provider = new MainViewProvider(context.extensionUri, context);
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider(
-      SidePanelProvider.viewType,
+      MainViewProvider.viewType,
       provider,
     ),
   );

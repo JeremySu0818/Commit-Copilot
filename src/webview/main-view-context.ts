@@ -7,16 +7,17 @@ import type {
   WebviewLanguagePack,
 } from '../i18n';
 import type {
+  MainViewScreen,
+  WebviewBootstrapData,
+} from '../main-view-webview-bootstrap';
+import type {
   CommitOutputOptions,
   CustomProviderConfig,
   GenerateMode,
   ModelConfig,
 } from '../models';
-import type { WebviewBootstrapData } from '../side-panel-webview-bootstrap';
 
 import type { StatusMessage } from './utils';
-
-export type Screen = 'main' | 'settings' | 'addProvider' | 'rewriteEditor';
 
 export interface ModelState {
   models: ModelConfig[];
@@ -46,8 +47,8 @@ export interface RewriteEditorDraft {
   statusText: string;
 }
 
-export interface SidePanelState {
-  screen: Screen;
+export interface MainViewState {
+  screen: MainViewScreen;
   currentProvider: string;
   currentGenerateMode: GenerateMode;
   preferredGenerateMode: GenerateMode;
@@ -75,8 +76,8 @@ export interface SidePanelState {
   apiKeyType: string;
 }
 
-export type SidePanelAction =
-  | { type: 'SET_SCREEN'; screen: Screen }
+export type MainViewAction =
+  | { type: 'SET_SCREEN'; screen: MainViewScreen }
   | { type: 'SET_PROVIDER'; provider: string }
   | { type: 'SET_GENERATE_MODE'; mode: GenerateMode }
   | { type: 'SET_PREFERRED_GENERATE_MODE'; mode: GenerateMode }
@@ -114,10 +115,10 @@ export type SidePanelAction =
 
 export function createInitialState(
   bootstrap: WebviewBootstrapData,
-): SidePanelState {
+): MainViewState {
   const effectiveLang = bootstrap.initialEffectiveLanguage;
   const pack = bootstrap.languagePacks[effectiveLang];
-  const initialScreen: Screen =
+  const initialScreen: MainViewScreen =
     bootstrap.initialScreen === 'settings' ||
     bootstrap.initialScreen === 'addProvider' ||
     bootstrap.initialScreen === 'rewriteEditor'
@@ -173,10 +174,10 @@ export function createInitialState(
   };
 }
 
-export function sidePanelReducer(
-  state: SidePanelState,
-  action: SidePanelAction,
-): SidePanelState {
+export function mainViewStateReducer(
+  state: MainViewState,
+  action: MainViewAction,
+): MainViewState {
   switch (action.type) {
     case 'SET_SCREEN':
       return { ...state, screen: action.screen };
@@ -270,21 +271,21 @@ export function sidePanelReducer(
   }
 }
 
-export interface SidePanelContextValue {
-  state: SidePanelState;
-  dispatch: React.Dispatch<SidePanelAction>;
+export interface MainViewContextValue {
+  state: MainViewState;
+  dispatch: React.Dispatch<MainViewAction>;
   vscode: VSCodeWebviewApi;
   bootstrap: WebviewBootstrapData;
 }
 
-export const SidePanelContext = createContext<
-  SidePanelContextValue | undefined
+export const MainViewContext = createContext<
+  MainViewContextValue | undefined
 >(undefined);
 
-export function useSidePanel(): SidePanelContextValue {
-  const context = useContext(SidePanelContext);
+export function useMainViewContext(): MainViewContextValue {
+  const context = useContext(MainViewContext);
   if (!context) {
-    throw new Error('SidePanelContext is not available.');
+    throw new Error('MainViewContext is not available.');
   }
   return context;
 }

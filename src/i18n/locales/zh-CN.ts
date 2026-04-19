@@ -170,7 +170,7 @@ export const zhCNLocale: LocaleTextBundle = {
       pushingWithLease: '正在 Push with lease',
     },
   },
-  sidePanelText: {
+  mainViewText: {
     invalidApiKeyPrefix: 'API Key 无效',
     quotaExceededPrefix: 'API 配额已用尽',
     apiRequestFailedPrefix: 'API 请求失败',

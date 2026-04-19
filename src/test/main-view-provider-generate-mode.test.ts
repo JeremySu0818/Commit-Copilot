@@ -13,7 +13,7 @@ import {
 
 import { clearRequireCache, withModuleMock } from './helpers/module-mock';
 
-const MODULE_PATH = path.resolve(__dirname, '..', 'side-panel-provider');
+const MODULE_PATH = path.resolve(__dirname, '..', 'main-view-provider');
 
 type MessageHandler = (data: unknown) => Promise<void> | void;
 type PostedMessage = Record<string, unknown>;
@@ -168,7 +168,7 @@ async function createHarness(
     const dynamicRequire = createRequire(__filename);
     return dynamicRequire(
       MODULE_PATH,
-    ) as typeof import('../side-panel-provider');
+    ) as typeof import('../main-view-provider');
   });
 
   const context = {
@@ -188,7 +188,7 @@ async function createHarness(
     },
   } as unknown as vscode.ExtensionContext;
 
-  const provider = new mod.SidePanelProvider(
+  const provider = new mod.MainViewProvider(
     { fsPath: process.cwd() } as unknown as vscode.Uri,
     context,
   );

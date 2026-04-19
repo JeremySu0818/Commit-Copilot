@@ -10,7 +10,7 @@ import { CUSTOM_PROVIDERS_STATE_KEY } from '../models';
 
 import { clearRequireCache, withModuleMock } from './helpers/module-mock';
 
-const MODULE_PATH = path.resolve(__dirname, '..', 'side-panel-provider');
+const MODULE_PATH = path.resolve(__dirname, '..', 'main-view-provider');
 
 interface BootstrapPayload extends Record<string, unknown> {
   initialDisplayLanguage: string;
@@ -75,7 +75,7 @@ void test('webview html shell includes nonce/csp/assets and bootstrap payload', 
     const dynamicRequire = createRequire(__filename);
     return dynamicRequire(
       MODULE_PATH,
-    ) as typeof import('../side-panel-provider');
+    ) as typeof import('../main-view-provider');
   });
 
   const state = new Map<string, unknown>([
@@ -120,7 +120,7 @@ void test('webview html shell includes nonce/csp/assets and bootstrap payload', 
     },
   } as unknown as vscode.ExtensionContext;
 
-  const provider = new mod.SidePanelProvider(
+  const provider = new mod.MainViewProvider(
     { fsPath: process.cwd() } as unknown as vscode.Uri,
     context,
   );
@@ -133,7 +133,7 @@ void test('webview html shell includes nonce/csp/assets and bootstrap payload', 
   assert.match(webview.html, /<div id="root"><\/div>/);
   assert.match(
     webview.html,
-    /<link rel="stylesheet" href="mock-webview:\/\/.*\/out\/webview\/side-panel\.css"/,
+    /<link rel="stylesheet" href="mock-webview:\/\/.*\/out\/webview\/main-view\.css"/,
   );
 
   const inlineNonceMatch =
@@ -146,7 +146,7 @@ void test('webview html shell includes nonce/csp/assets and bootstrap payload', 
   assert.match(
     webview.html,
     new RegExp(
-      `<script nonce="${nonce}" src="mock-webview://.*/out/webview/side-panel\\.js"></script>`,
+      `<script nonce="${nonce}" src="mock-webview://.*/out/webview/main-view\\.js"></script>`,
     ),
   );
   assert.match(webview.html, new RegExp(`script-src 'nonce-${nonce}'`));
@@ -154,7 +154,7 @@ void test('webview html shell includes nonce/csp/assets and bootstrap payload', 
   assert.match(
     webview.html,
     new RegExp(
-      `<link rel="stylesheet" href="mock-webview://.*/out/webview/side-panel\\.css" nonce="${nonce}"`,
+      `<link rel="stylesheet" href="mock-webview://.*/out/webview/main-view\\.css" nonce="${nonce}"`,
     ),
   );
 

@@ -43,7 +43,7 @@ async function main() {
   });
 
   const webviewCtx = await context({
-    entryPoints: ['src/webview/SidePanel.tsx'],
+    entryPoints: ['src/webview/main-view-entry.tsx'],
     bundle: true,
     format: 'iife',
     minify: production,
@@ -51,7 +51,7 @@ async function main() {
     sourcesContent: false,
     platform: 'browser',
     target: ['es2020'],
-    outfile: 'out/webview/side-panel.js',
+    outfile: 'out/webview/main-view.js',
     logLevel: 'silent',
     plugins: [createProblemMatcherPlugin('Webview')],
   });

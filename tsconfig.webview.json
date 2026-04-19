@@ -8,7 +8,7 @@
   "include": [
     "src/webview/**/*.ts",
     "src/webview/**/*.tsx",
-    "src/side-panel-webview-bootstrap.ts",
+    "src/main-view-webview-bootstrap.ts",
     "src/models.ts",
     "src/i18n.ts",
     "src/i18n/**/*.ts"

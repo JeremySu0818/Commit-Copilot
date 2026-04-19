@@ -2,11 +2,11 @@ import React, { useCallback, useMemo, useState } from 'react';
 
 import { BackIcon } from '../components/BackIcon';
 import { StatusMessageView } from '../components/StatusMessageView';
-import { useSidePanel } from '../side-panel-context';
+import { useMainViewContext } from '../main-view-context';
 import { createStatusMessage, normalizeMaxAgentStepsValue } from '../utils';
 
 export function SettingsView() {
-  const { state, dispatch, vscode, bootstrap } = useSidePanel();
+  const { state, dispatch, vscode, bootstrap } = useMainViewContext();
   const { currentPack: pack, displayLanguage, currentMaxAgentSteps } = state;
   const [maxStepsInput, setMaxStepsInput] = useState('');
   const [isEditingMaxSteps, setIsEditingMaxSteps] = useState(false);
