@@ -110,7 +110,9 @@ export function ProviderConfigurationSection({
       <div className="spacer-top-sm">
         <button
           id="editProviderBtn"
-          className={`secondary${!customProviderConfig ? ' hidden' : ''}`}
+          className={`secondary provider-action-btn${
+            !customProviderConfig ? ' hidden' : ''
+          }`}
           onClick={onEditProvider}
         >
           {pack.buttons.editProvider}

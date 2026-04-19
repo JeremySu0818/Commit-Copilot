@@ -86,6 +86,9 @@ button.secondary {
   background: var(--vscode-button-secondaryBackground);
   color: var(--vscode-button-secondaryForeground);
 }
+button.provider-action-btn:hover {
+  background: var(--vscode-button-secondaryHoverBackground);
+}
 select {
   padding: 8px 10px;
   background: var(--vscode-dropdown-background);

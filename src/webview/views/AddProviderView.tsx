@@ -188,7 +188,9 @@ export function AddProviderView() {
           </button>
           <button
             id="deleteProviderBtn"
-            className={`secondary${!isEditing ? ' hidden' : ''}`}
+            className={`secondary provider-action-btn${
+              !isEditing ? ' hidden' : ''
+            }`}
             onClick={handleDelete}
           >
             {pack.buttons.deleteProvider}
