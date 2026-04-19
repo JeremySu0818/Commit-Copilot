@@ -1,8 +1,9 @@
 import React, { useCallback } from 'react';
 
 import { BackIcon } from '../components/BackIcon';
+import { StatusMessageView } from '../components/StatusMessageView';
 import { useSidePanel } from '../side-panel-context';
-import { renderStatusHtml } from '../utils';
+import { createStatusMessage } from '../utils';
 
 export function RewriteEditorView() {
   const { state, dispatch, vscode } = useSidePanel();
@@ -33,7 +34,7 @@ export function RewriteEditorView() {
       dispatch({
         type: 'UPDATE_REWRITE_EDITOR_DRAFT',
         partial: {
-          statusHtml: renderStatusHtml(
+          statusMessage: createStatusMessage(
             'error',
             pack.statuses.commitMessageCannotBeEmpty,
           ),
@@ -93,16 +94,16 @@ export function RewriteEditorView() {
                 type: 'UPDATE_REWRITE_EDITOR_DRAFT',
                 partial: {
                   message: event.target.value,
-                  statusHtml: '',
+                  statusMessage: null,
                 },
               });
             }}
             spellCheck={false}
           />
-          <span
+          <StatusMessageView
             id="rewriteEditorStatus"
-            className={`status${!rewriteEditorDraft.statusHtml ? ' hidden' : ''}`}
-            dangerouslySetInnerHTML={{ __html: rewriteEditorDraft.statusHtml }}
+            status={rewriteEditorDraft.statusMessage}
+            hideWhenEmpty
           />
         </div>
         <div className="panel-actions">

@@ -10,6 +10,7 @@ import type { WebviewBootstrapData } from '../side-panel-webview-bootstrap';
 
 import type { SidePanelAction, SidePanelState } from './side-panel-context';
 import {
+  createStatusMessage,
   renderStatusHtml,
   normalizeGenerateMode,
   normalizeMaxAgentStepsValue,
@@ -218,8 +219,8 @@ export function useMessageHandler(
         text: state.currentPack.buttons.save,
       });
       dispatch({
-        type: 'SET_KEY_STATUS_HTML',
-        html: renderStatusHtml(
+        type: 'SET_KEY_STATUS_MESSAGE',
+        status: createStatusMessage(
           'warning',
           state.currentPack.statuses.checkingStatus,
         ),
@@ -275,8 +276,8 @@ export function useMessageHandler(
 
           if (hasKey) {
             dispatch({
-              type: 'SET_KEY_STATUS_HTML',
-              html: renderStatusHtml(
+              type: 'SET_KEY_STATUS_MESSAGE',
+              status: createStatusMessage(
                 'success',
                 state.currentPack.statuses.configured,
               ),
@@ -289,8 +290,8 @@ export function useMessageHandler(
           }
 
           dispatch({
-            type: 'SET_KEY_STATUS_HTML',
-            html: renderStatusHtml(
+            type: 'SET_KEY_STATUS_MESSAGE',
+            status: createStatusMessage(
               'error',
               state.currentPack.statuses.notConfigured,
             ),
@@ -310,13 +311,10 @@ export function useMessageHandler(
           }
           const hasKey = normalized[state.currentProvider];
           dispatch({
-            type: 'SET_KEY_STATUS_HTML',
-            html: hasKey
-              ? renderStatusHtml(
-                  'success',
-                  state.currentPack.statuses.configured,
-                )
-              : renderStatusHtml(
+            type: 'SET_KEY_STATUS_MESSAGE',
+            status: hasKey
+              ? createStatusMessage('success', state.currentPack.statuses.configured)
+              : createStatusMessage(
                   'error',
                   state.currentPack.statuses.notConfigured,
                 ),
@@ -395,8 +393,8 @@ export function useMessageHandler(
             text: state.currentPack.buttons.validating,
           });
           dispatch({
-            type: 'SET_KEY_STATUS_HTML',
-            html: renderStatusHtml(
+            type: 'SET_KEY_STATUS_MESSAGE',
+            status: createStatusMessage(
               'warning',
               state.currentPack.statuses.validating,
             ),
@@ -414,8 +412,8 @@ export function useMessageHandler(
               toString(message.error) ??
               state.currentPack.statuses.notConfigured;
             dispatch({
-              type: 'SET_KEY_STATUS_HTML',
-              html: renderStatusHtml('error', errorMessage),
+              type: 'SET_KEY_STATUS_MESSAGE',
+              status: createStatusMessage('error', errorMessage),
             });
             dispatch({
               type: 'SET_SAVE_BTN',
@@ -429,8 +427,8 @@ export function useMessageHandler(
           }
 
           dispatch({
-            type: 'SET_KEY_STATUS_HTML',
-            html: renderStatusHtml(
+            type: 'SET_KEY_STATUS_MESSAGE',
+            status: createStatusMessage(
               'success',
               state.currentPack.statuses.configured,
             ),
@@ -566,8 +564,8 @@ export function useMessageHandler(
             text: state.currentPack.buttons.validating,
           });
           dispatch({
-            type: 'SET_KEY_STATUS_HTML',
-            html: renderStatusHtml(
+            type: 'SET_KEY_STATUS_MESSAGE',
+            status: createStatusMessage(
               'warning',
               state.currentPack.statuses.validating,
             ),
@@ -594,8 +592,8 @@ export function useMessageHandler(
             pack: nextPack,
           });
           dispatch({
-            type: 'SET_LANGUAGE_STATUS_HTML',
-            html: renderStatusHtml('success', nextPack.statuses.languageSaved),
+            type: 'SET_LANGUAGE_STATUS_MESSAGE',
+            status: createStatusMessage('success', nextPack.statuses.languageSaved),
           });
         },
         currentMaxAgentSteps: (message) => {
@@ -694,7 +692,7 @@ export function useMessageHandler(
               targetCommitShortHash:
                 toString(message.targetCommitShortHash) ?? '',
               message: toString(message.message) ?? '',
-              statusHtml: '',
+              statusMessage: null,
             },
           });
           dispatch({ type: 'SET_SCREEN', screen: 'rewriteEditor' });

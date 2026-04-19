@@ -14,6 +14,8 @@ import type {
 } from '../models';
 import type { WebviewBootstrapData } from '../side-panel-webview-bootstrap';
 
+import type { StatusMessage } from './utils';
+
 export type Screen = 'main' | 'settings' | 'addProvider' | 'rewriteEditor';
 
 export interface ModelState {
@@ -38,7 +40,7 @@ export interface RewriteEditorDraft {
   requestId: string | null;
   targetCommitShortHash: string;
   message: string;
-  statusHtml: string;
+  statusMessage: StatusMessage | null;
 }
 
 export interface SidePanelState {
@@ -61,9 +63,9 @@ export interface SidePanelState {
   currentMaxAgentSteps: number;
   addProviderDraft: AddProviderDraft;
   rewriteEditorDraft: RewriteEditorDraft;
-  keyStatusHtml: string;
+  keyStatusMessage: StatusMessage | null;
   forcePushStatusHtml: string;
-  languageStatusHtml: string;
+  languageStatusMessage: StatusMessage | null;
   saveBtnDisabled: boolean;
   saveBtnText: string;
   apiKeyValue: string;
@@ -100,9 +102,9 @@ export type SidePanelAction =
       partial: Partial<RewriteEditorDraft>;
     }
   | { type: 'RESET_REWRITE_EDITOR_DRAFT' }
-  | { type: 'SET_KEY_STATUS_HTML'; html: string }
+  | { type: 'SET_KEY_STATUS_MESSAGE'; status: StatusMessage | null }
   | { type: 'SET_FORCE_PUSH_STATUS_HTML'; html: string }
-  | { type: 'SET_LANGUAGE_STATUS_HTML'; html: string }
+  | { type: 'SET_LANGUAGE_STATUS_MESSAGE'; status: StatusMessage | null }
   | { type: 'SET_SAVE_BTN'; disabled: boolean; text: string }
   | { type: 'SET_API_KEY_VALUE'; value: string }
   | { type: 'SET_API_KEY_TYPE'; inputType: string };
@@ -155,11 +157,11 @@ export function createInitialState(
       requestId: null,
       targetCommitShortHash: '',
       message: '',
-      statusHtml: '',
+      statusMessage: null,
     },
-    keyStatusHtml: '',
+    keyStatusMessage: null,
     forcePushStatusHtml: '',
-    languageStatusHtml: '',
+    languageStatusMessage: null,
     saveBtnDisabled: true,
     saveBtnText: pack.buttons.save,
     apiKeyValue: '',
@@ -239,15 +241,15 @@ export function sidePanelReducer(
           requestId: null,
           targetCommitShortHash: '',
           message: '',
-          statusHtml: '',
+          statusMessage: null,
         },
       };
-    case 'SET_KEY_STATUS_HTML':
-      return { ...state, keyStatusHtml: action.html };
+    case 'SET_KEY_STATUS_MESSAGE':
+      return { ...state, keyStatusMessage: action.status };
     case 'SET_FORCE_PUSH_STATUS_HTML':
       return { ...state, forcePushStatusHtml: action.html };
-    case 'SET_LANGUAGE_STATUS_HTML':
-      return { ...state, languageStatusHtml: action.html };
+    case 'SET_LANGUAGE_STATUS_MESSAGE':
+      return { ...state, languageStatusMessage: action.status };
     case 'SET_SAVE_BTN':
       return {
         ...state,

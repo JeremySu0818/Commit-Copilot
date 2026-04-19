@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
 
 import { BackIcon } from '../components/BackIcon';
+import { StatusMessageView } from '../components/StatusMessageView';
 import { useSidePanel } from '../side-panel-context';
-import { normalizeMaxAgentStepsValue, renderStatusHtml } from '../utils';
+import { createStatusMessage, normalizeMaxAgentStepsValue } from '../utils';
 
 export function SettingsView() {
   const { state, dispatch, vscode, bootstrap } = useSidePanel();
@@ -34,8 +35,8 @@ export function SettingsView() {
   const handleLanguageChange = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
       dispatch({
-        type: 'SET_LANGUAGE_STATUS_HTML',
-        html: renderStatusHtml('warning', pack.statuses.loadingConfiguration),
+        type: 'SET_LANGUAGE_STATUS_MESSAGE',
+        status: createStatusMessage('warning', pack.statuses.loadingConfiguration),
       });
       vscode.postMessage({
         type: 'saveDisplayLanguage',
@@ -91,10 +92,9 @@ export function SettingsView() {
               </option>
             ))}
           </select>
-          <span
+          <StatusMessageView
             id="languageStatus"
-            className="status"
-            dangerouslySetInnerHTML={{ __html: state.languageStatusHtml }}
+            status={state.languageStatusMessage}
           />
         </div>
         <div className="input-group input-group-spaced">

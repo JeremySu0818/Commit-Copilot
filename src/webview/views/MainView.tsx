@@ -1,11 +1,13 @@
 import React, { useCallback, useMemo } from 'react';
 
+import { SafeRichText } from '../components/SafeRichText';
+import { StatusMessageView } from '../components/StatusMessageView';
 import { useSidePanel } from '../side-panel-context';
 import {
+  createStatusMessage,
   fillTemplate,
   normalizeGenerateMode,
   normalizeOllamaHostValue,
-  renderStatusHtml,
 } from '../utils';
 
 export function MainView() {
@@ -128,8 +130,8 @@ export function MainView() {
         text: pack.buttons.save,
       });
       dispatch({
-        type: 'SET_KEY_STATUS_HTML',
-        html: renderStatusHtml('warning', pack.statuses.checkingStatus),
+        type: 'SET_KEY_STATUS_MESSAGE',
+        status: createStatusMessage('warning', pack.statuses.checkingStatus),
       });
       dispatch({
         type: 'SET_MODEL_STATE',
@@ -196,8 +198,8 @@ export function MainView() {
       text: pack.buttons.validating,
     });
     dispatch({
-      type: 'SET_KEY_STATUS_HTML',
-      html: renderStatusHtml('warning', pack.statuses.validating),
+      type: 'SET_KEY_STATUS_MESSAGE',
+      status: createStatusMessage('warning', pack.statuses.validating),
     });
     vscode.postMessage({
       type: 'saveKey',
@@ -372,16 +374,12 @@ export function MainView() {
           >
             {state.saveBtnText}
           </button>
-          <span
+          <StatusMessageView
             id="keyStatus"
-            className="status"
-            dangerouslySetInnerHTML={{ __html: state.keyStatusHtml }}
+            status={state.keyStatusMessage}
           />
         </div>
-        <div
-          className="provider-info"
-          dangerouslySetInnerHTML={{ __html: providerInfoHtml }}
-        />
+        <SafeRichText className="provider-info" content={providerInfoHtml} />
         <div className="spacer-top-sm">
           <button
             id="editProviderBtn"
