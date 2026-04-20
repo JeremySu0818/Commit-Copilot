@@ -121,6 +121,30 @@ export const hiLocale: LocaleTextBundle = {
         `त्रुटि: ${errorCode} - ${message}`,
       unexpectedError: (message) => `अप्रत्याशित त्रुटि: ${message}`,
       openingLanguageSettings: 'गतिविधि दृश्य में भाषा सेटिंग्स खोल रहा है...',
+      rewriteLeaseProtectionBlocked:
+        'lease सुरक्षा के कारण push रोका गया (remote बदल गया है)।',
+      rewriteSuggestedRecoverySteps: 'सुझाए गए रिकवरी स्टेप्स:',
+      rewriteAutoSyncBeforeRetryFailed: (message) =>
+        `पुनः प्रयास से पहले ऑटो सिंक विफल रहा: ${message}`,
+      rewriteResolveConflictsContinueRebase:
+        'अगर rebase conflict आए, पहले उन्हें resolve करें और फिर rebase जारी रखें।',
+      rewriteRecoveryCommand: (command) => `• ${command}`,
+      rewriteAutoSyncPreviewSummary: (upstreamRef) =>
+        `Auto-sync preview for ${upstreamRef}:`,
+      rewriteAutoSyncRemoteTracking: (beforeHash, afterHash) =>
+        `Remote tracking: ${beforeHash} -> ${afterHash}`,
+      rewriteAutoSyncLocalHead: (headHash) =>
+        `Local rewritten HEAD: ${headHash}`,
+      rewriteAutoSyncCommitsToPush: 'Commits that will be pushed:',
+      rewriteAutoSyncNoCommitsToPush: '(none)',
+      rewriteAutoSyncDiffStat: 'Diff that will be pushed:',
+      rewriteAutoSyncNoDiffStat: '(no diff)',
+      rewriteAutoSyncRetryUsesCurrentLease:
+        'Retry push will use the refreshed upstream lease, not the pre-rewrite hash.',
+      rewriteCliAuthFailedUsingVscodeFallback:
+        'CLI push failed because Git needs credentials; retrying through VS Code Git.',
+      rewriteVscodeFallbackSkippedLeaseChanged:
+        'VS Code Git fallback skipped because the remote tracking ref changed.',
     },
     notification: {
       gitExtensionMissing:
@@ -184,6 +208,12 @@ export const hiLocale: LocaleTextBundle = {
       rewriteForcePushFailed: (message) =>
         `Force push with lease विफल: ${message}`,
       pushingWithLease: 'Lease के साथ push हो रहा है',
+      rewriteAutoSyncRetryAction: 'ऑटो सिंक करें और force push करें',
+      rewriteAutoSyncRetryTitle: 'upstream के साथ ऑटो सिंक हो रहा है',
+      rewriteAutoSyncPromptWithUpstream: (upstreamRef) =>
+        `Remote ${upstreamRef} बदल गया है। क्या ऑटो सिंक (fetch + rebase ${upstreamRef}) चलाकर lease के साथ force push करें? प्रीव्यू आउटपुट पैनल में लिखा जाएगा।`,
+      rewriteAutoSyncFailed: (message) =>
+        `ऑटो सिंक विफल रहा: ${message}. यदि conflict हों तो उन्हें resolve करके rebase पूरा करें, फिर push दोबारा करें।`,
     },
   },
   mainViewText: {

@@ -114,6 +114,30 @@ export const arLocale: LocaleTextBundle = {
       generationError: (errorCode, message) => `خطأ: ${errorCode} - ${message}`,
       unexpectedError: (message) => `خطأ غير متوقع: ${message}`,
       openingLanguageSettings: 'جاري فتح إعدادات اللغة في عرض النشاط...',
+      rewriteLeaseProtectionBlocked:
+        'تم حظر الدفع بواسطة حماية lease (تم تغيير المستودع البعيد).',
+      rewriteSuggestedRecoverySteps: 'خطوات الاستعادة المقترحة:',
+      rewriteAutoSyncBeforeRetryFailed: (message) =>
+        `فشلت المزامنة التلقائية قبل إعادة المحاولة: ${message}`,
+      rewriteResolveConflictsContinueRebase:
+        'إذا حدثت تعارضات أثناء rebase، فقم بحلها أولاً ثم تابع rebase.',
+      rewriteRecoveryCommand: (command) => `• ${command}`,
+      rewriteAutoSyncPreviewSummary: (upstreamRef) =>
+        `Auto-sync preview for ${upstreamRef}:`,
+      rewriteAutoSyncRemoteTracking: (beforeHash, afterHash) =>
+        `Remote tracking: ${beforeHash} -> ${afterHash}`,
+      rewriteAutoSyncLocalHead: (headHash) =>
+        `Local rewritten HEAD: ${headHash}`,
+      rewriteAutoSyncCommitsToPush: 'Commits that will be pushed:',
+      rewriteAutoSyncNoCommitsToPush: '(none)',
+      rewriteAutoSyncDiffStat: 'Diff that will be pushed:',
+      rewriteAutoSyncNoDiffStat: '(no diff)',
+      rewriteAutoSyncRetryUsesCurrentLease:
+        'Retry push will use the refreshed upstream lease, not the pre-rewrite hash.',
+      rewriteCliAuthFailedUsingVscodeFallback:
+        'CLI push failed because Git needs credentials; retrying through VS Code Git.',
+      rewriteVscodeFallbackSkippedLeaseChanged:
+        'VS Code Git fallback skipped because the remote tracking ref changed.',
     },
     notification: {
       gitExtensionMissing:
@@ -175,6 +199,12 @@ export const arLocale: LocaleTextBundle = {
       rewriteForcePushFailed: (message) =>
         `فشل force push with lease: ${message}`,
       pushingWithLease: 'جارٍ الدفع مع lease',
+      rewriteAutoSyncRetryAction: 'مزامنة تلقائية ودفع إجباري',
+      rewriteAutoSyncRetryTitle: 'تتم المزامنة التلقائية مع upstream',
+      rewriteAutoSyncPromptWithUpstream: (upstreamRef) =>
+        `تغيّر المستودع البعيد ${upstreamRef}. هل تريد تشغيل المزامنة التلقائية (fetch + rebase ${upstreamRef}) والدفع الإجباري مع lease؟ سيُكتب الملخص المسبق في لوحة الإخراج.`,
+      rewriteAutoSyncFailed: (message) =>
+        `فشلت المزامنة التلقائية: ${message}. حلّ التعارضات (إن وجدت)، وأكمل rebase، ثم أعد محاولة الدفع.`,
     },
   },
   mainViewText: {

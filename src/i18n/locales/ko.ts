@@ -118,6 +118,30 @@ export const koLocale: LocaleTextBundle = {
         `오류: ${errorCode} - ${message}`,
       unexpectedError: (message) => `예기치 않은 오류: ${message}`,
       openingLanguageSettings: '활동 뷰에서 언어 설정 열기...',
+      rewriteLeaseProtectionBlocked:
+        'lease 보호로 인해 push가 차단되었습니다(원격이 변경됨).',
+      rewriteSuggestedRecoverySteps: '권장 복구 단계:',
+      rewriteAutoSyncBeforeRetryFailed: (message) =>
+        `재시도 전 자동 동기화에 실패했습니다: ${message}`,
+      rewriteResolveConflictsContinueRebase:
+        'rebase 중 충돌이 발생하면 먼저 해결한 뒤 rebase를 계속하세요.',
+      rewriteRecoveryCommand: (command) => `• ${command}`,
+      rewriteAutoSyncPreviewSummary: (upstreamRef) =>
+        `Auto-sync preview for ${upstreamRef}:`,
+      rewriteAutoSyncRemoteTracking: (beforeHash, afterHash) =>
+        `Remote tracking: ${beforeHash} -> ${afterHash}`,
+      rewriteAutoSyncLocalHead: (headHash) =>
+        `Local rewritten HEAD: ${headHash}`,
+      rewriteAutoSyncCommitsToPush: 'Commits that will be pushed:',
+      rewriteAutoSyncNoCommitsToPush: '(none)',
+      rewriteAutoSyncDiffStat: 'Diff that will be pushed:',
+      rewriteAutoSyncNoDiffStat: '(no diff)',
+      rewriteAutoSyncRetryUsesCurrentLease:
+        'Retry push will use the refreshed upstream lease, not the pre-rewrite hash.',
+      rewriteCliAuthFailedUsingVscodeFallback:
+        'CLI push failed because Git needs credentials; retrying through VS Code Git.',
+      rewriteVscodeFallbackSkippedLeaseChanged:
+        'VS Code Git fallback skipped because the remote tracking ref changed.',
     },
     notification: {
       gitExtensionMissing:
@@ -179,6 +203,12 @@ export const koLocale: LocaleTextBundle = {
       rewriteForcePushFailed: (message) =>
         `Force push with lease 실패: ${message}`,
       pushingWithLease: 'Lease와 함께 push 중',
+      rewriteAutoSyncRetryAction: '자동 동기화 후 강제 push',
+      rewriteAutoSyncRetryTitle: 'upstream과 자동 동기화 중',
+      rewriteAutoSyncPromptWithUpstream: (upstreamRef) =>
+        `원격 ${upstreamRef} 이(가) 변경되었습니다. 자동 동기화(fetch + rebase ${upstreamRef})를 실행하고 lease와 함께 강제 push할까요? 미리보기는 출력 패널에 기록됩니다.`,
+      rewriteAutoSyncFailed: (message) =>
+        `자동 동기화에 실패했습니다: ${message}. 충돌이 있으면 해결하고 rebase를 완료한 뒤 push를 다시 시도하세요.`,
     },
   },
   mainViewText: {

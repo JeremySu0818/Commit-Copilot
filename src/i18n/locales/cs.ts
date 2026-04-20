@@ -122,6 +122,30 @@ export const csLocale: LocaleTextBundle = {
       unexpectedError: (message) => `Neočekávaná chyba: ${message}`,
       openingLanguageSettings:
         'Otevírání nastavení jazyka v zobrazení aktivity...',
+      rewriteLeaseProtectionBlocked:
+        'Push byl zablokován ochranou lease (remote se změnil).',
+      rewriteSuggestedRecoverySteps: 'Navrhované kroky obnovy:',
+      rewriteAutoSyncBeforeRetryFailed: (message) =>
+        `Automatická synchronizace před opakovaným pokusem selhala: ${message}`,
+      rewriteResolveConflictsContinueRebase:
+        'Pokud při rebase dojde ke konfliktům, nejprve je vyřešte a pak pokračujte v rebase.',
+      rewriteRecoveryCommand: (command) => `• ${command}`,
+      rewriteAutoSyncPreviewSummary: (upstreamRef) =>
+        `Auto-sync preview for ${upstreamRef}:`,
+      rewriteAutoSyncRemoteTracking: (beforeHash, afterHash) =>
+        `Remote tracking: ${beforeHash} -> ${afterHash}`,
+      rewriteAutoSyncLocalHead: (headHash) =>
+        `Local rewritten HEAD: ${headHash}`,
+      rewriteAutoSyncCommitsToPush: 'Commits that will be pushed:',
+      rewriteAutoSyncNoCommitsToPush: '(none)',
+      rewriteAutoSyncDiffStat: 'Diff that will be pushed:',
+      rewriteAutoSyncNoDiffStat: '(no diff)',
+      rewriteAutoSyncRetryUsesCurrentLease:
+        'Retry push will use the refreshed upstream lease, not the pre-rewrite hash.',
+      rewriteCliAuthFailedUsingVscodeFallback:
+        'CLI push failed because Git needs credentials; retrying through VS Code Git.',
+      rewriteVscodeFallbackSkippedLeaseChanged:
+        'VS Code Git fallback skipped because the remote tracking ref changed.',
     },
     notification: {
       gitExtensionMissing:
@@ -185,6 +209,12 @@ export const csLocale: LocaleTextBundle = {
       rewriteForcePushFailed: (message) =>
         `Force push with lease selhal: ${message}`,
       pushingWithLease: 'Push with lease probíhá',
+      rewriteAutoSyncRetryAction: 'Automaticky synchronizovat a vynutit push',
+      rewriteAutoSyncRetryTitle: 'Automatická synchronizace s upstream',
+      rewriteAutoSyncPromptWithUpstream: (upstreamRef) =>
+        `Remote ${upstreamRef} se změnil. Spustit automatickou synchronizaci (fetch + rebase ${upstreamRef}) a vynutit push s lease? Náhled bude zapsán do výstupního panelu.`,
+      rewriteAutoSyncFailed: (message) =>
+        `Automatická synchronizace selhala: ${message}. Vyřešte případné konflikty, dokončete rebase a pak zkuste push znovu.`,
     },
   },
   mainViewText: {

@@ -121,6 +121,30 @@ export const viLocale: LocaleTextBundle = {
       unexpectedError: (message) => `Lỗi không mong muốn: ${message}`,
       openingLanguageSettings:
         'Mở cài đặt ngôn ngữ trong chế độ xem hoạt động...',
+      rewriteLeaseProtectionBlocked:
+        'Push bị chặn bởi cơ chế lease (remote đã thay đổi).',
+      rewriteSuggestedRecoverySteps: 'Các bước khôi phục được đề xuất:',
+      rewriteAutoSyncBeforeRetryFailed: (message) =>
+        `Tự động đồng bộ trước khi thử lại đã thất bại: ${message}`,
+      rewriteResolveConflictsContinueRebase:
+        'Nếu có xung đột khi rebase, hãy xử lý trước rồi tiếp tục rebase.',
+      rewriteRecoveryCommand: (command) => `• ${command}`,
+      rewriteAutoSyncPreviewSummary: (upstreamRef) =>
+        `Auto-sync preview for ${upstreamRef}:`,
+      rewriteAutoSyncRemoteTracking: (beforeHash, afterHash) =>
+        `Remote tracking: ${beforeHash} -> ${afterHash}`,
+      rewriteAutoSyncLocalHead: (headHash) =>
+        `Local rewritten HEAD: ${headHash}`,
+      rewriteAutoSyncCommitsToPush: 'Commits that will be pushed:',
+      rewriteAutoSyncNoCommitsToPush: '(none)',
+      rewriteAutoSyncDiffStat: 'Diff that will be pushed:',
+      rewriteAutoSyncNoDiffStat: '(no diff)',
+      rewriteAutoSyncRetryUsesCurrentLease:
+        'Retry push will use the refreshed upstream lease, not the pre-rewrite hash.',
+      rewriteCliAuthFailedUsingVscodeFallback:
+        'CLI push failed because Git needs credentials; retrying through VS Code Git.',
+      rewriteVscodeFallbackSkippedLeaseChanged:
+        'VS Code Git fallback skipped because the remote tracking ref changed.',
     },
     notification: {
       gitExtensionMissing:
@@ -185,6 +209,12 @@ export const viLocale: LocaleTextBundle = {
       rewriteForcePushFailed: (message) =>
         `Force push with lease thất bại: ${message}`,
       pushingWithLease: 'Đang push with lease',
+      rewriteAutoSyncRetryAction: 'Tự động đồng bộ và push bắt buộc',
+      rewriteAutoSyncRetryTitle: 'Đang tự động đồng bộ với upstream',
+      rewriteAutoSyncPromptWithUpstream: (upstreamRef) =>
+        `Remote ${upstreamRef} đã thay đổi. Chạy tự động đồng bộ (fetch + rebase ${upstreamRef}) và push bắt buộc với lease? Bản xem trước sẽ được ghi vào bảng đầu ra.`,
+      rewriteAutoSyncFailed: (message) =>
+        `Tự động đồng bộ thất bại: ${message}. Hãy xử lý xung đột (nếu có), hoàn tất rebase rồi thử push lại.`,
     },
   },
   mainViewText: {

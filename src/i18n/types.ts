@@ -99,6 +99,24 @@ export interface ExtensionText {
     generationError: (errorCode: string, message: string) => string;
     unexpectedError: (message: string) => string;
     openingLanguageSettings: string;
+    rewriteLeaseProtectionBlocked: string;
+    rewriteSuggestedRecoverySteps: string;
+    rewriteAutoSyncBeforeRetryFailed: (message: string) => string;
+    rewriteResolveConflictsContinueRebase: string;
+    rewriteRecoveryCommand: (command: string) => string;
+    rewriteAutoSyncPreviewSummary: (upstreamRef: string) => string;
+    rewriteAutoSyncRemoteTracking: (
+      beforeHash: string,
+      afterHash: string,
+    ) => string;
+    rewriteAutoSyncLocalHead: (headHash: string) => string;
+    rewriteAutoSyncCommitsToPush: string;
+    rewriteAutoSyncNoCommitsToPush: string;
+    rewriteAutoSyncDiffStat: string;
+    rewriteAutoSyncNoDiffStat: string;
+    rewriteAutoSyncRetryUsesCurrentLease: string;
+    rewriteCliAuthFailedUsingVscodeFallback: string;
+    rewriteVscodeFallbackSkippedLeaseChanged: string;
   };
   notification: {
     gitExtensionMissing: string;
@@ -144,6 +162,10 @@ export interface ExtensionText {
     rewriteForcePushCompleted: (target: string) => string;
     rewriteForcePushFailed: (message: string) => string;
     pushingWithLease: string;
+    rewriteAutoSyncRetryAction: string;
+    rewriteAutoSyncRetryTitle: string;
+    rewriteAutoSyncPromptWithUpstream: (upstreamRef: string) => string;
+    rewriteAutoSyncFailed: (message: string) => string;
   };
 }
 

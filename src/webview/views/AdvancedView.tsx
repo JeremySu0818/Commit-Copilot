@@ -3,11 +3,19 @@ import React, { useCallback, useMemo } from 'react';
 import { BackIcon } from '../components/BackIcon';
 import { useMainViewContext } from '../main-view-context';
 
-import { getApiKeyPlaceholder, getRewriteBtnTitle } from './MainViewDerivedState';
+import {
+  getApiKeyPlaceholder,
+  getRewriteBtnTitle,
+} from './MainViewDerivedState';
 
 export function AdvancedView() {
   const { state, dispatch, vscode, bootstrap } = useMainViewContext();
-  const { currentPack: pack, isGenerating, currentProvider, modelState } = state;
+  const {
+    currentPack: pack,
+    isGenerating,
+    currentProvider,
+    modelState,
+  } = state;
   const isCustom = currentProvider.startsWith(bootstrap.customProviderPrefix);
   const isOllama = currentProvider === 'ollama';
   const apiKeyPlaceholder = useMemo(

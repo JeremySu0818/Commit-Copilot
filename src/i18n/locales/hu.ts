@@ -124,6 +124,30 @@ export const huLocale: LocaleTextBundle = {
       unexpectedError: (message) => `Váratlan hiba: ${message}`,
       openingLanguageSettings:
         'Nyelvi beállítások megnyitása a tevékenység nézetben...',
+      rewriteLeaseProtectionBlocked:
+        'A push-t a lease védelem blokkolta (a távoli ág megváltozott).',
+      rewriteSuggestedRecoverySteps: 'Javasolt helyreállítási lépések:',
+      rewriteAutoSyncBeforeRetryFailed: (message) =>
+        `Az automatikus szinkronizálás az újrapróbálás előtt sikertelen: ${message}`,
+      rewriteResolveConflictsContinueRebase:
+        'Ha rebase ütközések vannak, előbb oldd fel őket, majd folytasd a rebase-t.',
+      rewriteRecoveryCommand: (command) => `• ${command}`,
+      rewriteAutoSyncPreviewSummary: (upstreamRef) =>
+        `Auto-sync preview for ${upstreamRef}:`,
+      rewriteAutoSyncRemoteTracking: (beforeHash, afterHash) =>
+        `Remote tracking: ${beforeHash} -> ${afterHash}`,
+      rewriteAutoSyncLocalHead: (headHash) =>
+        `Local rewritten HEAD: ${headHash}`,
+      rewriteAutoSyncCommitsToPush: 'Commits that will be pushed:',
+      rewriteAutoSyncNoCommitsToPush: '(none)',
+      rewriteAutoSyncDiffStat: 'Diff that will be pushed:',
+      rewriteAutoSyncNoDiffStat: '(no diff)',
+      rewriteAutoSyncRetryUsesCurrentLease:
+        'Retry push will use the refreshed upstream lease, not the pre-rewrite hash.',
+      rewriteCliAuthFailedUsingVscodeFallback:
+        'CLI push failed because Git needs credentials; retrying through VS Code Git.',
+      rewriteVscodeFallbackSkippedLeaseChanged:
+        'VS Code Git fallback skipped because the remote tracking ref changed.',
     },
     notification: {
       gitExtensionMissing:
@@ -187,6 +211,12 @@ export const huLocale: LocaleTextBundle = {
       rewriteForcePushFailed: (message) =>
         `Force push with lease sikertelen: ${message}`,
       pushingWithLease: 'Push with lease folyamatban',
+      rewriteAutoSyncRetryAction: 'Automatikus szinkron és kényszer push',
+      rewriteAutoSyncRetryTitle: 'Automatikus szinkronizálás az upstreammel',
+      rewriteAutoSyncPromptWithUpstream: (upstreamRef) =>
+        `A távoli ${upstreamRef} megváltozott. Futtassuk az automatikus szinkront (fetch + rebase ${upstreamRef}) és kényszerítsük a push-t lease-szel? Az előnézet a kimeneti panelre kerül.`,
+      rewriteAutoSyncFailed: (message) =>
+        `Az automatikus szinkronizálás sikertelen: ${message}. Oldd fel az esetleges konfliktusokat, fejezd be a rebase-t, majd próbáld újra a push-t.`,
     },
   },
   mainViewText: {

@@ -28,3 +28,13 @@ void test('all locales include advanced feature i18n keys', () => {
     );
   }
 });
+
+void test('rewrite recovery commands do not depend on leading whitespace indentation', () => {
+  for (const [localeCode, bundle] of Object.entries(LOCALES)) {
+    const rendered = bundle.extensionText.output.rewriteRecoveryCommand(
+      'git push --force-with-lease',
+    );
+    assert.doesNotMatch(rendered, /^\s/, `${localeCode}: leading whitespace`);
+    assert.match(rendered, /^• /, `${localeCode}: bullet prefix`);
+  }
+});

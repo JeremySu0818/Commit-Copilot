@@ -69,10 +69,17 @@ interface TestRepo {
   };
 }
 
+interface RemoteFixture {
+  bareRoot: string;
+  localRoot: string;
+  collaboratorRoot: string;
+}
+
 function git(repoRoot: string, args: string[]): string {
   return execFileSync(gitExecutablePath, args, {
     cwd: repoRoot,
     encoding: 'utf-8',
+    stdio: ['ignore', 'pipe', 'pipe'],
     windowsHide: true,
   }).trim();
 }
@@ -173,6 +180,30 @@ function appendCommits(repoRoot: string, count: number): void {
     git(repoRoot, ['add', fileName]);
     git(repoRoot, ['commit', '-m', `chore(test): extra ${String(index)}`]);
   }
+}
+
+function initRemoteFixture(): RemoteFixture {
+  const bareRoot = createTempDir();
+  const localRoot = createTempDir();
+  const collaboratorRoot = createTempDir();
+
+  git(bareRoot, ['init', '--bare']);
+
+  git(localRoot, ['init']);
+  git(localRoot, ['config', 'user.email', 'test@example.com']);
+  git(localRoot, ['config', 'user.name', 'Commit Copilot Test']);
+  fs.writeFileSync(path.join(localRoot, 'app.ts'), 'export const value = 1;\n');
+  git(localRoot, ['add', 'app.ts']);
+  git(localRoot, ['commit', '-m', 'feat(core): init']);
+  git(localRoot, ['remote', 'add', 'origin', bareRoot]);
+  const branchName = git(localRoot, ['rev-parse', '--abbrev-ref', 'HEAD']);
+  git(localRoot, ['push', '-u', 'origin', branchName]);
+
+  git(collaboratorRoot, ['clone', bareRoot, '.']);
+  git(collaboratorRoot, ['config', 'user.email', 'col@example.com']);
+  git(collaboratorRoot, ['config', 'user.name', 'Collaborator']);
+
+  return { bareRoot, localRoot, collaboratorRoot };
 }
 
 async function loadCommitCopilotWithMocks(options?: {
@@ -308,6 +339,7 @@ void test('rewriteHistoricalCommitMessage rewrites selected commit message', asy
     });
 
     assert.equal(rewriteResult.success, true);
+    assert.equal(rewriteResult.previousRemoteTrackingHash, undefined);
     assert.equal(
       git(fixture.repoRoot, [
         'log',
@@ -327,6 +359,156 @@ void test('rewriteHistoricalCommitMessage rewrites selected commit message', asy
     );
   } finally {
     cleanupTempDir(fixture.repoRoot);
+  }
+});
+
+void test('forcePushWithLease rejects push when expected lease is stale', async () => {
+  const fixture = initRemoteFixture();
+  try {
+    const mod = await loadCommitCopilotWithMocks();
+    const branchName = git(fixture.localRoot, [
+      'rev-parse',
+      '--abbrev-ref',
+      'HEAD',
+    ]);
+    const expectedRemoteHeadHash = git(fixture.localRoot, [
+      'rev-parse',
+      'HEAD',
+    ]);
+
+    fs.writeFileSync(
+      path.join(fixture.collaboratorRoot, 'remote-only.ts'),
+      'export const collaborator = true;\n',
+    );
+    git(fixture.collaboratorRoot, ['add', 'remote-only.ts']);
+    git(fixture.collaboratorRoot, [
+      'commit',
+      '-m',
+      'feat(core): collaborator update',
+    ]);
+    git(fixture.collaboratorRoot, ['push', 'origin', branchName]);
+
+    fs.writeFileSync(
+      path.join(fixture.localRoot, 'local-only.ts'),
+      'export const local = true;\n',
+    );
+    git(fixture.localRoot, ['add', 'local-only.ts']);
+    git(fixture.localRoot, ['commit', '-m', 'chore(core): local rewrite tip']);
+
+    await assert.rejects(
+      () => mod.forcePushWithLease(fixture.localRoot, expectedRemoteHeadHash),
+      /stale info|lease/i,
+    );
+  } finally {
+    cleanupTempDir(fixture.collaboratorRoot);
+    cleanupTempDir(fixture.localRoot);
+    cleanupTempDir(fixture.bareRoot);
+  }
+});
+
+void test('autoSyncWithUpstreamForRewrite rejects when upstream is missing', async () => {
+  const fixture = initTestRepo();
+  try {
+    const mod = await loadCommitCopilotWithMocks();
+    assert.equal(await mod.readUpstreamRef(fixture.repoRoot), null);
+    await assert.rejects(
+      () => mod.autoSyncWithUpstreamForRewrite(fixture.repoRoot),
+      /upstream branch/i,
+    );
+  } finally {
+    cleanupTempDir(fixture.repoRoot);
+  }
+});
+
+void test('git commands force stable locale and disable terminal prompts', async () => {
+  const mod = await loadCommitCopilotWithMocks();
+  const env = mod.getStableGitEnvForTests({
+    LC_ALL: 'zh_TW.UTF-8',
+    LANG: 'ja_JP.UTF-8',
+    LANGUAGE: 'de',
+    GIT_TERMINAL_PROMPT: '1',
+    KEEP_ME: 'yes',
+  } as NodeJS.ProcessEnv);
+
+  assert.equal(env.LC_ALL, 'C');
+  assert.equal(env.LANG, 'C');
+  assert.equal(env.LANGUAGE, 'C');
+  assert.equal(env.GIT_TERMINAL_PROMPT, '0');
+  assert.equal(env.KEEP_ME, 'yes');
+});
+
+void test('autoSyncWithUpstreamForRewrite rebases with explicit upstream ref', async () => {
+  const fixture = initRemoteFixture();
+  try {
+    const mod = await loadCommitCopilotWithMocks();
+    const branchName = git(fixture.localRoot, [
+      'rev-parse',
+      '--abbrev-ref',
+      'HEAD',
+    ]);
+
+    fs.writeFileSync(
+      path.join(fixture.collaboratorRoot, 'remote-sync.ts'),
+      'export const synced = true;\n',
+    );
+    git(fixture.collaboratorRoot, ['add', 'remote-sync.ts']);
+    git(fixture.collaboratorRoot, ['commit', '-m', 'chore(core): remote sync']);
+    git(fixture.collaboratorRoot, ['push', 'origin', branchName]);
+
+    const upstreamRef = `origin/${branchName}`;
+    await mod.autoSyncWithUpstreamForRewrite(fixture.localRoot, upstreamRef);
+
+    const localHeadHash = git(fixture.localRoot, ['rev-parse', 'HEAD']);
+    const upstreamHeadHash = git(fixture.localRoot, ['rev-parse', upstreamRef]);
+    assert.equal(localHeadHash, upstreamHeadHash);
+  } finally {
+    cleanupTempDir(fixture.collaboratorRoot);
+    cleanupTempDir(fixture.localRoot);
+    cleanupTempDir(fixture.bareRoot);
+  }
+});
+
+void test('autoSyncWithUpstreamForRewrite supports retry push with current lease after rebase', async () => {
+  const fixture = initRemoteFixture();
+  try {
+    const mod = await loadCommitCopilotWithMocks();
+    const branchName = git(fixture.localRoot, [
+      'rev-parse',
+      '--abbrev-ref',
+      'HEAD',
+    ]);
+
+    fs.writeFileSync(
+      path.join(fixture.collaboratorRoot, 'remote-sync.ts'),
+      'export const synced = true;\n',
+    );
+    git(fixture.collaboratorRoot, ['add', 'remote-sync.ts']);
+    git(fixture.collaboratorRoot, ['commit', '-m', 'chore(core): remote sync']);
+    git(fixture.collaboratorRoot, ['push', 'origin', branchName]);
+
+    fs.writeFileSync(
+      path.join(fixture.localRoot, 'local-rewrite.ts'),
+      'export const rewrite = true;\n',
+    );
+    git(fixture.localRoot, ['add', 'local-rewrite.ts']);
+    git(fixture.localRoot, ['commit', '-m', 'chore(core): local rewrite tip']);
+
+    await mod.autoSyncWithUpstreamForRewrite(
+      fixture.localRoot,
+      `origin/${branchName}`,
+    );
+    const rebasedLocalHead = git(fixture.localRoot, ['rev-parse', 'HEAD']);
+
+    await mod.forcePushWithCurrentLease(fixture.localRoot);
+
+    assert.equal(
+      git(fixture.bareRoot, ['rev-parse', `refs/heads/${branchName}`]),
+      rebasedLocalHead,
+    );
+  } finally {
+    cleanupTempDir(fixture.collaboratorRoot);
+    cleanupTempDir(fixture.localRoot);
+    cleanupTempDir(fixture.bareRoot);
   }
 });
 
@@ -631,5 +813,153 @@ void test('rewriteHistoricalCommitMessage rejects mixed staged and unstaged chan
     );
   } finally {
     cleanupTempDir(fixture.repoRoot);
+  }
+});
+
+void test('autoSyncWithUpstreamForRewrite aborts rebase on conflict and rethrows', async () => {
+  const fixture = initRemoteFixture();
+  try {
+    const mod = await loadCommitCopilotWithMocks();
+    const branchName = git(fixture.localRoot, [
+      'rev-parse',
+      '--abbrev-ref',
+      'HEAD',
+    ]);
+
+    fs.writeFileSync(
+      path.join(fixture.collaboratorRoot, 'app.ts'),
+      'export const value = 100;\n',
+    );
+    git(fixture.collaboratorRoot, ['add', 'app.ts']);
+    git(fixture.collaboratorRoot, [
+      'commit',
+      '-m',
+      'chore(core): collaborator conflicting edit',
+    ]);
+    git(fixture.collaboratorRoot, ['push', 'origin', branchName]);
+
+    fs.writeFileSync(
+      path.join(fixture.localRoot, 'app.ts'),
+      'export const value = 200;\n',
+    );
+    git(fixture.localRoot, ['add', 'app.ts']);
+    git(fixture.localRoot, [
+      'commit',
+      '-m',
+      'chore(core): local conflicting edit',
+    ]);
+    const localHeadBeforeSync = git(fixture.localRoot, ['rev-parse', 'HEAD']);
+
+    await assert.rejects(() =>
+      mod.autoSyncWithUpstreamForRewrite(
+        fixture.localRoot,
+        `origin/${branchName}`,
+      ),
+    );
+
+    assert.equal(
+      fs.existsSync(path.join(fixture.localRoot, '.git', 'rebase-merge')),
+      false,
+    );
+    assert.equal(
+      fs.existsSync(path.join(fixture.localRoot, '.git', 'rebase-apply')),
+      false,
+    );
+    assert.equal(
+      git(fixture.localRoot, ['rev-parse', 'HEAD']),
+      localHeadBeforeSync,
+    );
+    assert.equal(
+      fs.readFileSync(path.join(fixture.localRoot, 'app.ts'), 'utf-8'),
+      'export const value = 200;\n',
+    );
+  } finally {
+    cleanupTempDir(fixture.collaboratorRoot);
+    cleanupTempDir(fixture.localRoot);
+    cleanupTempDir(fixture.bareRoot);
+  }
+});
+
+void test('rewriteHistoricalCommitMessage captures previousRemoteTrackingHash from upstream ref', async () => {
+  const fixture = initRemoteFixture();
+  try {
+    const mod = await loadCommitCopilotWithMocks();
+    const branchName = git(fixture.localRoot, [
+      'rev-parse',
+      '--abbrev-ref',
+      'HEAD',
+    ]);
+    const pushedUpstreamHash = git(fixture.localRoot, [
+      'rev-parse',
+      `origin/${branchName}`,
+    ]);
+
+    fs.writeFileSync(
+      path.join(fixture.localRoot, 'feature-a.ts'),
+      'export const a = 1;\n',
+    );
+    git(fixture.localRoot, ['add', 'feature-a.ts']);
+    git(fixture.localRoot, ['commit', '-m', 'feat(core): add feature-a']);
+    const targetCommitHash = git(fixture.localRoot, ['rev-parse', 'HEAD']);
+
+    fs.writeFileSync(
+      path.join(fixture.localRoot, 'feature-b.ts'),
+      'export const b = 2;\n',
+    );
+    git(fixture.localRoot, ['add', 'feature-b.ts']);
+    git(fixture.localRoot, ['commit', '-m', 'feat(core): add feature-b']);
+    const localHeadBeforeRewrite = git(fixture.localRoot, [
+      'rev-parse',
+      'HEAD',
+    ]);
+
+    const result = await mod.rewriteHistoricalCommitMessage({
+      repository: createRepository(fixture.localRoot),
+      commitHash: targetCommitHash,
+      newMessage: 'feat(core): standardized feature-a',
+    });
+
+    assert.equal(result.success, true);
+    assert.equal(result.previousRemoteTrackingHash, pushedUpstreamHash);
+    assert.notEqual(result.previousRemoteTrackingHash, localHeadBeforeRewrite);
+  } finally {
+    cleanupTempDir(fixture.collaboratorRoot);
+    cleanupTempDir(fixture.localRoot);
+    cleanupTempDir(fixture.bareRoot);
+  }
+});
+
+void test('forcePushWithLease accepts unpushed local commits when remote tracking ref is unchanged', async () => {
+  const fixture = initRemoteFixture();
+  try {
+    const mod = await loadCommitCopilotWithMocks();
+    const branchName = git(fixture.localRoot, [
+      'rev-parse',
+      '--abbrev-ref',
+      'HEAD',
+    ]);
+    const upstreamHashBeforePush = git(fixture.localRoot, [
+      'rev-parse',
+      `origin/${branchName}`,
+    ]);
+
+    fs.writeFileSync(
+      path.join(fixture.localRoot, 'local-change.ts'),
+      'export const local = true;\n',
+    );
+    git(fixture.localRoot, ['add', 'local-change.ts']);
+    git(fixture.localRoot, ['commit', '-m', 'chore(core): local change']);
+    const localHeadAfterCommit = git(fixture.localRoot, ['rev-parse', 'HEAD']);
+
+    await mod.forcePushWithLease(fixture.localRoot, upstreamHashBeforePush);
+
+    assert.equal(
+      git(fixture.bareRoot, ['rev-parse', `refs/heads/${branchName}`]),
+      localHeadAfterCommit,
+    );
+  } finally {
+    cleanupTempDir(fixture.collaboratorRoot);
+    cleanupTempDir(fixture.localRoot);
+    cleanupTempDir(fixture.bareRoot);
   }
 });

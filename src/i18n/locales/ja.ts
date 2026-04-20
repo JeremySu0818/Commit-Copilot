@@ -122,6 +122,30 @@ export const jaLocale: LocaleTextBundle = {
       unexpectedError: (message) => `予期せぬエラー: ${message}`,
       openingLanguageSettings:
         'アクティビティビューで言語設定を開いています...',
+      rewriteLeaseProtectionBlocked:
+        'lease 保護により push がブロックされました（リモートが更新されました）。',
+      rewriteSuggestedRecoverySteps: '推奨される復旧手順:',
+      rewriteAutoSyncBeforeRetryFailed: (message) =>
+        `再試行前の自動同期に失敗しました: ${message}`,
+      rewriteResolveConflictsContinueRebase:
+        'rebase で競合が発生した場合は、先に解消してから rebase を続行してください。',
+      rewriteRecoveryCommand: (command) => `• ${command}`,
+      rewriteAutoSyncPreviewSummary: (upstreamRef) =>
+        `Auto-sync preview for ${upstreamRef}:`,
+      rewriteAutoSyncRemoteTracking: (beforeHash, afterHash) =>
+        `Remote tracking: ${beforeHash} -> ${afterHash}`,
+      rewriteAutoSyncLocalHead: (headHash) =>
+        `Local rewritten HEAD: ${headHash}`,
+      rewriteAutoSyncCommitsToPush: 'Commits that will be pushed:',
+      rewriteAutoSyncNoCommitsToPush: '(none)',
+      rewriteAutoSyncDiffStat: 'Diff that will be pushed:',
+      rewriteAutoSyncNoDiffStat: '(no diff)',
+      rewriteAutoSyncRetryUsesCurrentLease:
+        'Retry push will use the refreshed upstream lease, not the pre-rewrite hash.',
+      rewriteCliAuthFailedUsingVscodeFallback:
+        'CLI push failed because Git needs credentials; retrying through VS Code Git.',
+      rewriteVscodeFallbackSkippedLeaseChanged:
+        'VS Code Git fallback skipped because the remote tracking ref changed.',
     },
     notification: {
       gitExtensionMissing:
@@ -184,6 +208,12 @@ export const jaLocale: LocaleTextBundle = {
       rewriteForcePushFailed: (message) =>
         `Force push with lease に失敗しました: ${message}`,
       pushingWithLease: 'Lease 付きで push 中',
+      rewriteAutoSyncRetryAction: '自動同期して強制 push',
+      rewriteAutoSyncRetryTitle: 'upstream と自動同期中',
+      rewriteAutoSyncPromptWithUpstream: (upstreamRef) =>
+        `リモート ${upstreamRef} が更新されました。自動同期（fetch + rebase ${upstreamRef}）を実行して lease 付きで強制 push しますか？プレビューは出力パネルに書き込まれます。`,
+      rewriteAutoSyncFailed: (message) =>
+        `自動同期に失敗しました: ${message}。競合があれば解消して rebase を完了してから、push を再試行してください。`,
     },
   },
   mainViewText: {

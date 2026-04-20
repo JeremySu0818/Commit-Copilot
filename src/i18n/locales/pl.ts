@@ -122,6 +122,30 @@ export const plLocale: LocaleTextBundle = {
       unexpectedError: (message) => `Nieoczekiwany błąd: ${message}`,
       openingLanguageSettings:
         'Otwieranie ustawień języka w widoku aktywności...',
+      rewriteLeaseProtectionBlocked:
+        'Wypychanie zablokowane przez ochronę lease (zdalne repozytorium się zmieniło).',
+      rewriteSuggestedRecoverySteps: 'Sugerowane kroki naprawy:',
+      rewriteAutoSyncBeforeRetryFailed: (message) =>
+        `Automatyczna synchronizacja przed ponowną próbą nie powiodła się: ${message}`,
+      rewriteResolveConflictsContinueRebase:
+        'Jeśli podczas rebase wystąpią konflikty, najpierw je rozwiąż, a potem kontynuuj rebase.',
+      rewriteRecoveryCommand: (command) => `• ${command}`,
+      rewriteAutoSyncPreviewSummary: (upstreamRef) =>
+        `Auto-sync preview for ${upstreamRef}:`,
+      rewriteAutoSyncRemoteTracking: (beforeHash, afterHash) =>
+        `Remote tracking: ${beforeHash} -> ${afterHash}`,
+      rewriteAutoSyncLocalHead: (headHash) =>
+        `Local rewritten HEAD: ${headHash}`,
+      rewriteAutoSyncCommitsToPush: 'Commits that will be pushed:',
+      rewriteAutoSyncNoCommitsToPush: '(none)',
+      rewriteAutoSyncDiffStat: 'Diff that will be pushed:',
+      rewriteAutoSyncNoDiffStat: '(no diff)',
+      rewriteAutoSyncRetryUsesCurrentLease:
+        'Retry push will use the refreshed upstream lease, not the pre-rewrite hash.',
+      rewriteCliAuthFailedUsingVscodeFallback:
+        'CLI push failed because Git needs credentials; retrying through VS Code Git.',
+      rewriteVscodeFallbackSkippedLeaseChanged:
+        'VS Code Git fallback skipped because the remote tracking ref changed.',
     },
     notification: {
       gitExtensionMissing:
@@ -186,6 +210,12 @@ export const plLocale: LocaleTextBundle = {
       rewriteForcePushFailed: (message) =>
         `Force push with lease nie powiódł się: ${message}`,
       pushingWithLease: 'Push with lease w toku',
+      rewriteAutoSyncRetryAction: 'Automatycznie zsynchronizuj i wymuś push',
+      rewriteAutoSyncRetryTitle: 'Automatyczna synchronizacja z upstream',
+      rewriteAutoSyncPromptWithUpstream: (upstreamRef) =>
+        `Zdalne ${upstreamRef} zostało zmienione. Uruchomić automatyczną synchronizację (fetch + rebase ${upstreamRef}) i wymusić push z lease? Podgląd zostanie zapisany w panelu wyjścia.`,
+      rewriteAutoSyncFailed: (message) =>
+        `Automatyczna synchronizacja nie powiodła się: ${message}. Rozwiąż konflikty (jeśli są), zakończ rebase i ponów push.`,
     },
   },
   mainViewText: {

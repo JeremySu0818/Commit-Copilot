@@ -120,6 +120,30 @@ export const enLocale: LocaleTextBundle = {
         `Error: ${errorCode} - ${message}`,
       unexpectedError: (message) => `Unexpected error: ${message}`,
       openingLanguageSettings: 'Opening language settings in activity view...',
+      rewriteLeaseProtectionBlocked:
+        'Push blocked by lease protection (remote changed).',
+      rewriteSuggestedRecoverySteps: 'Suggested recovery steps:',
+      rewriteAutoSyncBeforeRetryFailed: (message) =>
+        `Auto sync before retry failed: ${message}`,
+      rewriteResolveConflictsContinueRebase:
+        'If rebase conflicts occur, resolve conflicts first, then continue rebase.',
+      rewriteRecoveryCommand: (command) => `• ${command}`,
+      rewriteAutoSyncPreviewSummary: (upstreamRef) =>
+        `Auto-sync preview for ${upstreamRef}:`,
+      rewriteAutoSyncRemoteTracking: (beforeHash, afterHash) =>
+        `Remote tracking: ${beforeHash} -> ${afterHash}`,
+      rewriteAutoSyncLocalHead: (headHash) =>
+        `Local rewritten HEAD: ${headHash}`,
+      rewriteAutoSyncCommitsToPush: 'Commits that will be pushed:',
+      rewriteAutoSyncNoCommitsToPush: '(none)',
+      rewriteAutoSyncDiffStat: 'Diff that will be pushed:',
+      rewriteAutoSyncNoDiffStat: '(no diff)',
+      rewriteAutoSyncRetryUsesCurrentLease:
+        'Retry push will use the refreshed upstream lease, not the pre-rewrite hash.',
+      rewriteCliAuthFailedUsingVscodeFallback:
+        'CLI push failed because Git needs credentials; retrying through VS Code Git.',
+      rewriteVscodeFallbackSkippedLeaseChanged:
+        'VS Code Git fallback skipped because the remote tracking ref changed.',
     },
     notification: {
       gitExtensionMissing:
@@ -182,6 +206,12 @@ export const enLocale: LocaleTextBundle = {
       rewriteForcePushFailed: (message) =>
         `Force push with lease failed: ${message}`,
       pushingWithLease: 'Pushing with lease',
+      rewriteAutoSyncRetryAction: 'Auto Sync and Force Push',
+      rewriteAutoSyncRetryTitle: 'Auto syncing with upstream',
+      rewriteAutoSyncPromptWithUpstream: (upstreamRef) =>
+        `Remote ${upstreamRef} changed. Auto-sync (fetch + rebase ${upstreamRef}) and force-push with lease? Preview will be written to the output channel.`,
+      rewriteAutoSyncFailed: (message) =>
+        `Auto sync failed: ${message}. Resolve conflicts (if any), finish rebase, then push again.`,
     },
   },
   mainViewText: {

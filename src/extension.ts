@@ -1,10 +1,15 @@
 import * as vscode from 'vscode';
 
 import {
-  forcePushWithLease,
+  autoSyncWithUpstreamForRewrite,
+  forcePushWithCurrentLease,
+  forcePushWithExplicitLease,
   generateCommitMessage,
   generateHistoricalCommitMessage,
   listRecentCommitsForRewrite,
+  readRemoteTrackingHash,
+  readRewriteAutoSyncPreview,
+  readUpstreamRef,
   rewriteHistoricalCommitMessage,
   EXIT_CODES,
   CommitCopilotError,
@@ -39,6 +44,12 @@ import {
   normalizeCommitOutputOptions,
   normalizeMaxAgentStepsValue,
 } from './models';
+import {
+  buildManualRewriteRecoveryCommands,
+  isCommandUnavailableError,
+  isCredentialOrPromptError,
+  isLeaseConflictError,
+} from './rewrite-git-recovery';
 import { GenerationStateManager } from './state';
 
 type GenerateCommandArg =
@@ -60,6 +71,7 @@ interface GitExtensionExports {
 
 const generationLogSeparatorWidth = 50;
 const rewriteCommitParentHashDisplayLength = 7;
+const rewriteLogPrefix = '[Rewrite]';
 const pushWithLeaseCommandId = 'git.pushForceWithLease';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -87,20 +99,6 @@ function parseGenerateMode(value: unknown): GenerateMode | undefined {
 
 function asString(value: unknown): string | undefined {
   return typeof value === 'string' ? value : undefined;
-}
-
-function isCommandUnavailableError(error: unknown, commandId: string): boolean {
-  const message = (error instanceof Error ? error.message : String(error))
-    .trim()
-    .toLowerCase();
-  const normalizedCommandId = commandId.toLowerCase();
-  return (
-    message.includes(normalizedCommandId) &&
-    (message.includes('not found') ||
-      message.includes('not available') ||
-      message.includes('command') ||
-      message.includes('unknown'))
-  );
 }
 
 function parseCommitOutputOptions(
@@ -827,7 +825,9 @@ async function resolveRewriteRepositoryOrAbort(args: {
     args.text,
   );
   if (dirtyWorkspaceMessage) {
-    args.outputChannel.appendLine(`[Rewrite] ${dirtyWorkspaceMessage}`);
+    args.outputChannel.appendLine(
+      `${rewriteLogPrefix} ${dirtyWorkspaceMessage}`,
+    );
     vscode.window.showInformationMessage(dirtyWorkspaceMessage);
     return null;
   }
@@ -903,58 +903,63 @@ async function executeRewriteCommand(
 ): Promise<void> {
   const language = getCurrentLanguage(context);
   const text = getExtensionText(language);
-  if (GenerationStateManager.isGenerating) {
+  if (!GenerationStateManager.tryStart()) {
     outputChannel.appendLine(text.output.generationIgnored);
     return;
   }
-
-  const providerContext = resolveProviderContext(context);
-  const currentGenerateMode = resolveGenerateMode(
-    context,
-    providerContext.llmProvider,
-    undefined,
-  );
-  const currentCommitOutputOptions = resolveCommitOutputOptions(
-    context,
-    undefined,
-  );
-  const maxAgentSteps = resolveMaxAgentSteps(context);
-  const apiKey = await resolveProviderApiKey(context, providerContext);
-  const providerDisplayName = getProviderDisplayName(providerContext);
-
-  logGenerationConfig(
-    outputChannel,
-    text,
-    providerDisplayName,
-    currentGenerateMode,
-    currentCommitOutputOptions,
-  );
-
-  const hasApiKey = await ensureProviderApiKey(
-    apiKey,
-    providerContext,
-    providerDisplayName,
-    text,
-    outputChannel,
-  );
-  if (!hasApiKey) {
-    return;
-  }
-
-  const savedModel = resolveSavedModel(context, providerContext);
-  const hasCustomModel = await ensureCustomModelSelection(
-    providerContext,
-    savedModel,
-    language,
-  );
-  if (!hasCustomModel) {
-    return;
-  }
-
   const cancellationSource = new vscode.CancellationTokenSource();
-  let generationStateStarted = false;
+  currentGenerationCancellationSource = cancellationSource;
 
   try {
+    await vscode.commands.executeCommand(
+      'setContext',
+      'commit-copilot.isGenerating',
+      true,
+    );
+
+    const providerContext = resolveProviderContext(context);
+    const currentGenerateMode = resolveGenerateMode(
+      context,
+      providerContext.llmProvider,
+      undefined,
+    );
+    const currentCommitOutputOptions = resolveCommitOutputOptions(
+      context,
+      undefined,
+    );
+    const maxAgentSteps = resolveMaxAgentSteps(context);
+    const apiKey = await resolveProviderApiKey(context, providerContext);
+    const providerDisplayName = getProviderDisplayName(providerContext);
+
+    logGenerationConfig(
+      outputChannel,
+      text,
+      providerDisplayName,
+      currentGenerateMode,
+      currentCommitOutputOptions,
+    );
+
+    const hasApiKey = await ensureProviderApiKey(
+      apiKey,
+      providerContext,
+      providerDisplayName,
+      text,
+      outputChannel,
+    );
+    if (!hasApiKey) {
+      return;
+    }
+
+    const savedModel = resolveSavedModel(context, providerContext);
+    const hasCustomModel = await ensureCustomModelSelection(
+      providerContext,
+      savedModel,
+      language,
+    );
+    if (!hasCustomModel) {
+      return;
+    }
+
     const repository = await resolveRewriteRepositoryOrAbort({
       outputChannel,
       text,
@@ -962,15 +967,6 @@ async function executeRewriteCommand(
     if (!repository) {
       return;
     }
-
-    currentGenerationCancellationSource = cancellationSource;
-    GenerationStateManager.setGenerating(true);
-    generationStateStarted = true;
-    await vscode.commands.executeCommand(
-      'setContext',
-      'commit-copilot.isGenerating',
-      true,
-    );
 
     outputChannel.appendLine('='.repeat(generationLogSeparatorWidth));
     outputChannel.appendLine(
@@ -992,7 +988,7 @@ async function executeRewriteCommand(
       async (progress, progressToken) => {
         const cancelSubscription = progressToken.onCancellationRequested(() => {
           outputChannel.appendLine(
-            `[Rewrite] ${text.output.rewriteCancelRequestedFromProgress}`,
+            `${rewriteLogPrefix} ${text.output.rewriteCancelRequestedFromProgress}`,
           );
           cancellationSource.cancel();
         });
@@ -1016,7 +1012,7 @@ async function executeRewriteCommand(
               language,
               cancellationToken: cancellationSource.token,
               onProgress: (message, increment) => {
-                outputChannel.appendLine(`[Rewrite] ${message}`);
+                outputChannel.appendLine(`${rewriteLogPrefix} ${message}`);
                 progress.report({ message, increment });
               },
             },
@@ -1102,13 +1098,13 @@ async function executeRewriteCommand(
             rewriteApplyResult.error,
           ) ?? text.notification.rewriteFailedHistory)
         : text.notification.rewriteFailedHistory;
-      outputChannel.appendLine(`[Rewrite] ${rawMessage}`);
+      outputChannel.appendLine(`${rewriteLogPrefix} ${rawMessage}`);
       vscode.window.showErrorMessage(message);
       return;
     }
 
     outputChannel.appendLine(
-      `[Rewrite] ${text.output.rewriteCommitRewritten(
+      `${rewriteLogPrefix} ${text.output.rewriteCommitRewritten(
         targetCommit.hash,
         rewriteApplyResult.replacementCommitHash ?? 'updated',
       )}`,
@@ -1117,7 +1113,12 @@ async function executeRewriteCommand(
       text.notification.rewriteCommitMessageRewritten(targetCommit.shortHash),
     );
 
-    await promptAndForcePushWithLease(repository, outputChannel, text);
+    await promptAndForcePushWithLease(
+      repository,
+      outputChannel,
+      text,
+      rewriteApplyResult.previousRemoteTrackingHash,
+    );
   } catch (error) {
     handleUnexpectedGenerationError({
       error,
@@ -1126,11 +1127,7 @@ async function executeRewriteCommand(
       outputChannel,
     });
   } finally {
-    if (generationStateStarted) {
-      await finalizeGeneration(cancellationSource);
-    } else {
-      cancellationSource.dispose();
-    }
+    await finalizeGeneration(cancellationSource);
   }
 }
 
@@ -1153,10 +1150,194 @@ function getPushTargetLabel(repository: GitRepository): string {
   return repository.rootUri.fsPath;
 }
 
+async function buildLeaseRecoveryCommands(
+  repository: GitRepository,
+): Promise<string[]> {
+  const upstreamRef = await readUpstreamRef(repository.rootUri.fsPath);
+  const stateRecord = repository.state as unknown;
+  const state = isRecord(stateRecord) ? stateRecord : {};
+  const headValue = state.HEAD;
+  const head = isRecord(headValue) ? headValue : {};
+  const branchName = asString(head.name) ?? '';
+  return buildManualRewriteRecoveryCommands({ upstreamRef, branchName });
+}
+
+type AutoRecoverPushResult = 'recovered' | 'failed-handled' | 'skipped';
+
+type ForcePushLeaseMode =
+  | { kind: 'explicit'; expectedRemoteRefHash?: string }
+  | { kind: 'current' };
+
+const rewritePushHashDisplayLength = 12;
+
+function shortHash(hash: string | undefined): string {
+  return hash ? hash.slice(0, rewritePushHashDisplayLength) : '(unknown)';
+}
+
+async function refreshRepositoryStatus(
+  repository: GitRepository,
+): Promise<void> {
+  try {
+    await repository.status();
+  } catch {
+    return;
+  }
+}
+
+function appendIndentedLines(
+  outputChannel: vscode.OutputChannel,
+  lines: string[],
+): void {
+  for (const line of lines) {
+    outputChannel.appendLine(`${rewriteLogPrefix}   ${line}`);
+  }
+}
+
+async function appendAutoSyncPreviewSummary(params: {
+  repository: GitRepository;
+  upstreamRef: string;
+  previousRemoteTrackingHash?: string | null;
+  outputChannel: vscode.OutputChannel;
+  text: ExtensionText;
+}): Promise<void> {
+  const preview = await readRewriteAutoSyncPreview({
+    repoRoot: params.repository.rootUri.fsPath,
+    upstreamRef: params.upstreamRef,
+    previousRemoteTrackingHash: params.previousRemoteTrackingHash,
+  });
+  params.outputChannel.appendLine(
+    `${rewriteLogPrefix} ${params.text.output.rewriteAutoSyncPreviewSummary(preview.upstreamRef)}`,
+  );
+  params.outputChannel.appendLine(
+    `${rewriteLogPrefix} ${params.text.output.rewriteAutoSyncRemoteTracking(
+      shortHash(preview.previousRemoteTrackingHash),
+      shortHash(preview.currentRemoteTrackingHash),
+    )}`,
+  );
+  params.outputChannel.appendLine(
+    `${rewriteLogPrefix} ${params.text.output.rewriteAutoSyncLocalHead(
+      shortHash(preview.localHeadHash),
+    )}`,
+  );
+  params.outputChannel.appendLine(
+    `${rewriteLogPrefix} ${params.text.output.rewriteAutoSyncCommitsToPush}`,
+  );
+  if (preview.commitsToPush.length === 0) {
+    params.outputChannel.appendLine(
+      `${rewriteLogPrefix}   ${params.text.output.rewriteAutoSyncNoCommitsToPush}`,
+    );
+  } else {
+    appendIndentedLines(params.outputChannel, preview.commitsToPush);
+  }
+  params.outputChannel.appendLine(
+    `${rewriteLogPrefix} ${params.text.output.rewriteAutoSyncDiffStat}`,
+  );
+  const diffStatLines = preview.diffStat.split(/\r?\n/).filter(Boolean);
+  if (diffStatLines.length === 0) {
+    params.outputChannel.appendLine(
+      `${rewriteLogPrefix}   ${params.text.output.rewriteAutoSyncNoDiffStat}`,
+    );
+  } else {
+    appendIndentedLines(params.outputChannel, diffStatLines);
+  }
+  params.outputChannel.appendLine(
+    `${rewriteLogPrefix} ${params.text.output.rewriteAutoSyncRetryUsesCurrentLease}`,
+  );
+}
+
+async function attemptAutoSyncAndRetryPush(params: {
+  repository: GitRepository;
+  outputChannel: vscode.OutputChannel;
+  text: ExtensionText;
+  pushTargetLabel: string;
+}): Promise<AutoRecoverPushResult> {
+  const upstreamRef = await readUpstreamRef(params.repository.rootUri.fsPath);
+  if (!upstreamRef) {
+    return 'skipped';
+  }
+  const previousRemoteTrackingHash = await readRemoteTrackingHash(
+    params.repository.rootUri.fsPath,
+    upstreamRef,
+  );
+  const promptMessage =
+    params.text.notification.rewriteAutoSyncPromptWithUpstream(upstreamRef);
+
+  const selection = await vscode.window.showWarningMessage(
+    promptMessage,
+    { modal: true },
+    params.text.notification.rewriteAutoSyncRetryAction,
+  );
+  if (selection !== params.text.notification.rewriteAutoSyncRetryAction) {
+    return 'skipped';
+  }
+
+  try {
+    await vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: params.text.notification.rewriteAutoSyncRetryTitle,
+        cancellable: false,
+      },
+      async () => {
+        await autoSyncWithUpstreamForRewrite(
+          params.repository.rootUri.fsPath,
+          upstreamRef,
+        );
+      },
+    );
+    await refreshRepositoryStatus(params.repository);
+    await appendAutoSyncPreviewSummary({
+      repository: params.repository,
+      upstreamRef,
+      previousRemoteTrackingHash,
+      outputChannel: params.outputChannel,
+      text: params.text,
+    });
+    params.outputChannel.show(true);
+  } catch (error) {
+    const rawErrorMessage =
+      error instanceof Error ? error.message : String(error);
+    params.outputChannel.appendLine(
+      `${rewriteLogPrefix} ${params.text.output.rewriteAutoSyncBeforeRetryFailed(rawErrorMessage)}`,
+    );
+    params.outputChannel.appendLine(
+      `${rewriteLogPrefix} ${params.text.output.rewriteResolveConflictsContinueRebase}`,
+    );
+    vscode.window.showErrorMessage(
+      params.text.notification.rewriteAutoSyncFailed(rawErrorMessage),
+    );
+    return 'failed-handled';
+  }
+
+  try {
+    await runForcePushWithLeasePreferCli({
+      repository: params.repository,
+      outputChannel: params.outputChannel,
+      text: params.text,
+      leaseMode: { kind: 'current' },
+    });
+    const successMessage = params.text.notification.rewriteForcePushCompleted(
+      params.pushTargetLabel,
+    );
+    params.outputChannel.appendLine(`${rewriteLogPrefix} ${successMessage}`);
+    vscode.window.showInformationMessage(successMessage);
+    return 'recovered';
+  } catch (error) {
+    const rawErrorMessage =
+      error instanceof Error ? error.message : String(error);
+    const message =
+      params.text.notification.rewriteForcePushFailed(rawErrorMessage);
+    params.outputChannel.appendLine(`${rewriteLogPrefix} ${message}`);
+    vscode.window.showErrorMessage(message);
+    return 'failed-handled';
+  }
+}
+
 async function promptAndForcePushWithLease(
   repository: GitRepository,
   outputChannel: vscode.OutputChannel,
   text: ExtensionText,
+  expectedRemoteRefHash?: string,
 ): Promise<void> {
   const stateRecord = repository.state as unknown;
   const state = isRecord(stateRecord) ? stateRecord : {};
@@ -1180,58 +1361,167 @@ async function promptAndForcePushWithLease(
   }
 
   try {
-    try {
-      await runForcePushWithLeaseCommand(repository, text);
-    } catch (error) {
-      if (!isCommandUnavailableError(error, pushWithLeaseCommandId)) {
-        throw error;
-      }
-      await runForcePushWithLeaseCli(repository, text);
-    }
+    await runForcePushWithLeasePreferCli({
+      repository,
+      outputChannel,
+      text,
+      leaseMode: { kind: 'explicit', expectedRemoteRefHash },
+    });
 
     const successMessage =
       text.notification.rewriteForcePushCompleted(pushTargetLabel);
-    outputChannel.appendLine(`[Rewrite] ${successMessage}`);
+    outputChannel.appendLine(`${rewriteLogPrefix} ${successMessage}`);
     vscode.window.showInformationMessage(successMessage);
   } catch (error) {
     const rawErrorMessage =
       error instanceof Error ? error.message : String(error);
     const message = text.notification.rewriteForcePushFailed(rawErrorMessage);
-    outputChannel.appendLine(`[Rewrite] ${message}`);
+    outputChannel.appendLine(`${rewriteLogPrefix} ${message}`);
+    if (isLeaseConflictError(rawErrorMessage)) {
+      outputChannel.appendLine(
+        `${rewriteLogPrefix} ${text.output.rewriteLeaseProtectionBlocked}`,
+      );
+      outputChannel.appendLine(
+        `${rewriteLogPrefix} ${text.output.rewriteSuggestedRecoverySteps}`,
+      );
+      const commands = await buildLeaseRecoveryCommands(repository);
+      for (const command of commands) {
+        outputChannel.appendLine(
+          `${rewriteLogPrefix} ${text.output.rewriteRecoveryCommand(command)}`,
+        );
+      }
+      outputChannel.appendLine(
+        `${rewriteLogPrefix} ${text.output.rewriteResolveConflictsContinueRebase}`,
+      );
+      const autoRecoverResult = await attemptAutoSyncAndRetryPush({
+        repository,
+        outputChannel,
+        text,
+        pushTargetLabel,
+      });
+      if (autoRecoverResult !== 'skipped') {
+        return;
+      }
+    }
     vscode.window.showErrorMessage(message);
   }
 }
 
-async function runForcePushWithLeaseCommand(
-  repository: GitRepository,
-  text: ExtensionText,
-): Promise<void> {
+async function runForcePushWithLeaseCli(params: {
+  repository: GitRepository;
+  text: ExtensionText;
+  leaseMode: ForcePushLeaseMode;
+}): Promise<void> {
   await vscode.window.withProgress(
     {
       location: vscode.ProgressLocation.Notification,
-      title: text.notification.pushingWithLease,
+      title: params.text.notification.pushingWithLease,
       cancellable: false,
     },
     async () => {
-      await vscode.commands.executeCommand(pushWithLeaseCommandId, repository);
+      if (params.leaseMode.kind === 'explicit') {
+        await forcePushWithExplicitLease(
+          params.repository.rootUri.fsPath,
+          params.leaseMode.expectedRemoteRefHash,
+        );
+      } else {
+        await forcePushWithCurrentLease(params.repository.rootUri.fsPath);
+      }
     },
   );
+  await refreshRepositoryStatus(params.repository);
 }
 
-async function runForcePushWithLeaseCli(
-  repository: GitRepository,
-  text: ExtensionText,
-): Promise<void> {
+async function runForcePushWithLeaseCommand(params: {
+  repository: GitRepository;
+  text: ExtensionText;
+}): Promise<void> {
   await vscode.window.withProgress(
     {
       location: vscode.ProgressLocation.Notification,
-      title: text.notification.pushingWithLease,
+      title: params.text.notification.pushingWithLease,
       cancellable: false,
     },
     async () => {
-      await forcePushWithLease(repository.rootUri.fsPath);
+      await vscode.commands.executeCommand(
+        pushWithLeaseCommandId,
+        params.repository,
+      );
     },
   );
+  await refreshRepositoryStatus(params.repository);
+}
+
+async function verifyImplicitLeaseFallbackIsStillSafe(params: {
+  repository: GitRepository;
+  expectedRemoteRefHash?: string;
+}): Promise<boolean> {
+  const normalizedExpectedHash = params.expectedRemoteRefHash?.trim() ?? '';
+  if (!normalizedExpectedHash) {
+    return true;
+  }
+  const upstreamRef = await readUpstreamRef(params.repository.rootUri.fsPath);
+  if (!upstreamRef) {
+    return false;
+  }
+  const currentRemoteTrackingHash = await readRemoteTrackingHash(
+    params.repository.rootUri.fsPath,
+    upstreamRef,
+  );
+  return currentRemoteTrackingHash === normalizedExpectedHash;
+}
+
+async function runForcePushWithLeasePreferCli(params: {
+  repository: GitRepository;
+  outputChannel: vscode.OutputChannel;
+  text: ExtensionText;
+  leaseMode: ForcePushLeaseMode;
+}): Promise<void> {
+  try {
+    await runForcePushWithLeaseCli({
+      repository: params.repository,
+      text: params.text,
+      leaseMode: params.leaseMode,
+    });
+    return;
+  } catch (error) {
+    const rawErrorMessage =
+      error instanceof Error ? error.message : String(error);
+    if (!isCredentialOrPromptError(rawErrorMessage)) {
+      throw error;
+    }
+
+    const fallbackIsSafe =
+      params.leaseMode.kind === 'explicit'
+        ? await verifyImplicitLeaseFallbackIsStillSafe({
+            repository: params.repository,
+            expectedRemoteRefHash: params.leaseMode.expectedRemoteRefHash,
+          })
+        : true;
+    if (!fallbackIsSafe) {
+      params.outputChannel.appendLine(
+        `${rewriteLogPrefix} ${params.text.output.rewriteVscodeFallbackSkippedLeaseChanged}`,
+      );
+      throw new Error(
+        'force-with-lease stale info: remote tracking ref changed before VS Code fallback',
+      );
+    }
+
+    params.outputChannel.appendLine(
+      `${rewriteLogPrefix} ${params.text.output.rewriteCliAuthFailedUsingVscodeFallback}`,
+    );
+    try {
+      await runForcePushWithLeaseCommand({
+        repository: params.repository,
+        text: params.text,
+      });
+    } catch (fallbackError) {
+      if (isCommandUnavailableError(fallbackError, pushWithLeaseCommandId)) {
+        throw error;
+      }
+      throw fallbackError;
+    }
+  }
 }
 
 function handleUnexpectedGenerationError(args: {
@@ -1267,7 +1557,7 @@ async function finalizeGeneration(
     currentGenerationCancellationSource = null;
   }
   cancellationSource.dispose();
-  GenerationStateManager.setGenerating(false);
+  GenerationStateManager.finish();
   await vscode.commands.executeCommand(
     'setContext',
     'commit-copilot.isGenerating',
@@ -1282,21 +1572,20 @@ async function executeGenerateCommand(
 ): Promise<void> {
   const language = getCurrentLanguage(context);
   const text = getExtensionText(language);
-  if (GenerationStateManager.isGenerating) {
+  if (!GenerationStateManager.tryStart()) {
     outputChannel.appendLine(text.output.generationIgnored);
     return;
   }
 
   const cancellationSource = new vscode.CancellationTokenSource();
   currentGenerationCancellationSource = cancellationSource;
-  GenerationStateManager.setGenerating(true);
-  await vscode.commands.executeCommand(
-    'setContext',
-    'commit-copilot.isGenerating',
-    true,
-  );
 
   try {
+    await vscode.commands.executeCommand(
+      'setContext',
+      'commit-copilot.isGenerating',
+      true,
+    );
     outputChannel.appendLine('='.repeat(generationLogSeparatorWidth));
     outputChannel.appendLine(
       text.output.generationStart(new Date().toISOString()),

@@ -30,6 +30,10 @@ import {
   GenerateMode,
   normalizeCommitOutputOptions,
 } from './models';
+import {
+  buildRewriteRecoveryCommandPlan,
+  type RewriteRecoveryCommandPlan,
+} from './rewrite-git-recovery';
 
 export {
   EXIT_CODES,
@@ -57,6 +61,7 @@ const GIT_LOG_TIMEOUT_MS = 30000;
 const GIT_DIFF_TIMEOUT_MS = 30000;
 const GIT_COMMIT_TREE_TIMEOUT_MS = 30000;
 const GIT_PUSH_TIMEOUT_MS = 120000;
+const GIT_FATAL_EXIT_CODE = 128;
 const rewriteTempDirPrefix = 'rewrite-';
 const commitRecordSeparator = '\x1e';
 const commitFieldSeparator = '\x1f';
@@ -414,6 +419,34 @@ function parseCommitMessages(value: string): string[] {
     .filter((entry) => entry.length > 0);
 }
 
+const GIT_STABLE_ENV_OVERRIDES = {
+  LC_ALL: 'C',
+  LANG: 'C',
+  LANGUAGE: 'C',
+  GIT_TERMINAL_PROMPT: '0',
+} as const;
+
+function buildGitSpawnEnv(env?: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
+  return {
+    ...(env ?? process.env),
+    ...GIT_STABLE_ENV_OVERRIDES,
+  };
+}
+
+function getProcessExitCode(error: unknown): number | null {
+  if (typeof error !== 'object' || error === null) {
+    return null;
+  }
+  const rawCode = (error as Record<string, unknown>).code;
+  if (typeof rawCode === 'number') {
+    return rawCode;
+  }
+  if (typeof rawCode === 'string' && /^\d+$/.test(rawCode)) {
+    return Number(rawCode);
+  }
+  return null;
+}
+
 async function runGitTextCommand(params: {
   repoRoot: string;
   args: string[];
@@ -426,7 +459,7 @@ async function runGitTextCommand(params: {
     windowsHide: true,
     timeout: params.timeout,
     maxBuffer: params.maxBuffer,
-    ...(params.env ? { env: params.env } : {}),
+    env: buildGitSpawnEnv(params.env),
   });
   return stdout;
 }
@@ -447,6 +480,7 @@ async function runGitBufferCommand(params: {
         timeout: params.timeout,
         maxBuffer: params.maxBuffer,
         encoding: 'buffer',
+        env: buildGitSpawnEnv(),
       },
       (error, stdout) => {
         if (error) {
@@ -824,6 +858,57 @@ async function isAncestorCommit(
         : null;
     if (rawCode === 1 || rawCode === '1') {
       return false;
+    }
+    throw error;
+  }
+}
+
+async function readRefHash(
+  repoRoot: string,
+  ref: string,
+): Promise<string | null> {
+  try {
+    const output = await runGitTextCommand({
+      repoRoot,
+      args: ['rev-parse', '--verify', '--quiet', `${ref}^{commit}`],
+      timeout: GIT_SHOW_TIMEOUT_MS,
+      maxBuffer: bytesPerMiB,
+    });
+    const hash = output.trim();
+    return hash.length > 0 ? hash : null;
+  } catch {
+    return null;
+  }
+}
+
+export function getStableGitEnvForTests(
+  env?: NodeJS.ProcessEnv,
+): NodeJS.ProcessEnv {
+  return buildGitSpawnEnv(env);
+}
+
+export async function readRemoteTrackingHash(
+  repoRoot: string,
+  ref: string,
+): Promise<string | null> {
+  return readRefHash(repoRoot, ref);
+}
+
+export async function readUpstreamRef(
+  repoRoot: string,
+): Promise<string | null> {
+  try {
+    const output = await runGitTextCommand({
+      repoRoot,
+      args: ['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}'],
+      timeout: GIT_SHOW_TIMEOUT_MS,
+      maxBuffer: bytesPerMiB,
+    });
+    const upstreamRef = output.trim();
+    return upstreamRef.length > 0 ? upstreamRef : null;
+  } catch (error) {
+    if (getProcessExitCode(error) === GIT_FATAL_EXIT_CODE) {
+      return null;
     }
     throw error;
   }
@@ -1222,7 +1307,17 @@ export interface RewriteHistoricalCommitMessageOptions {
 export interface RewriteHistoricalCommitMessageResult {
   success: boolean;
   replacementCommitHash?: string;
+  previousRemoteTrackingHash?: string;
   error?: CommitCopilotError;
+}
+
+export interface RewriteAutoSyncPreview {
+  upstreamRef: string;
+  previousRemoteTrackingHash?: string;
+  currentRemoteTrackingHash?: string;
+  localHeadHash: string;
+  commitsToPush: string[];
+  diffStat: string;
 }
 
 export interface GenerateCommitMessageOptions {
@@ -1627,6 +1722,10 @@ export async function rewriteHistoricalCommitMessage(
         },
       );
     }
+    const upstreamRefBeforeRewrite = await readUpstreamRef(repoRoot);
+    const previousRemoteTrackingHash = upstreamRefBeforeRewrite
+      ? ((await readRefHash(repoRoot, upstreamRefBeforeRewrite)) ?? undefined)
+      : undefined;
 
     const replacementCommitHash = await createReplacementCommit({
       repoRoot,
@@ -1643,6 +1742,7 @@ export async function rewriteHistoricalCommitMessage(
     return {
       success: true,
       replacementCommitHash,
+      previousRemoteTrackingHash,
     };
   } catch (error) {
     return {
@@ -1652,13 +1752,163 @@ export async function rewriteHistoricalCommitMessage(
   }
 }
 
-export async function forcePushWithLease(repoRoot: string): Promise<void> {
+function buildExplicitLeasePushArgs(
+  upstreamRef: string | null,
+  expectedRemoteRefHash?: string,
+): string[] {
+  const normalizedExpectedHash = expectedRemoteRefHash?.trim() ?? '';
+  if (!upstreamRef || !normalizedExpectedHash) {
+    return ['push', '--force-with-lease'];
+  }
+  return [
+    'push',
+    `--force-with-lease=${upstreamRef}:${normalizedExpectedHash}`,
+  ];
+}
+
+export async function forcePushWithExplicitLease(
+  repoRoot: string,
+  expectedRemoteRefHash?: string,
+): Promise<void> {
+  const upstreamRef = await readUpstreamRef(repoRoot);
+  await runGitTextCommand({
+    repoRoot,
+    args: buildExplicitLeasePushArgs(upstreamRef, expectedRemoteRefHash),
+    timeout: GIT_PUSH_TIMEOUT_MS,
+    maxBuffer: GIT_LOG_MAX_BUFFER,
+  });
+}
+
+export async function forcePushWithCurrentLease(
+  repoRoot: string,
+): Promise<void> {
   await runGitTextCommand({
     repoRoot,
     args: ['push', '--force-with-lease'],
     timeout: GIT_PUSH_TIMEOUT_MS,
     maxBuffer: GIT_LOG_MAX_BUFFER,
   });
+}
+
+export async function forcePushWithLease(
+  repoRoot: string,
+  expectedRemoteRefHash?: string,
+): Promise<void> {
+  if (expectedRemoteRefHash?.trim()) {
+    await forcePushWithExplicitLease(repoRoot, expectedRemoteRefHash);
+    return;
+  }
+  await forcePushWithCurrentLease(repoRoot);
+}
+
+async function abortRebaseSilently(repoRoot: string): Promise<void> {
+  try {
+    await runGitTextCommand({
+      repoRoot,
+      args: ['rebase', '--abort'],
+      timeout: GIT_PUSH_TIMEOUT_MS,
+      maxBuffer: GIT_LOG_MAX_BUFFER,
+    });
+  } catch {
+    return;
+  }
+}
+
+async function readCommitRangeLines(params: {
+  repoRoot: string;
+  range: string;
+}): Promise<string[]> {
+  const output = await runGitTextCommand({
+    repoRoot: params.repoRoot,
+    args: ['log', '--oneline', params.range],
+    timeout: GIT_LOG_TIMEOUT_MS,
+    maxBuffer: GIT_LOG_MAX_BUFFER,
+  });
+  return splitLines(output);
+}
+
+async function readDiffStat(params: {
+  repoRoot: string;
+  range: string;
+}): Promise<string> {
+  const output = await runGitTextCommand({
+    repoRoot: params.repoRoot,
+    args: ['diff', '--stat', params.range],
+    timeout: GIT_DIFF_TIMEOUT_MS,
+    maxBuffer: GIT_DIFF_MAX_BUFFER,
+  });
+  return output.trim();
+}
+
+export async function readRewriteAutoSyncPreview(params: {
+  repoRoot: string;
+  upstreamRef: string;
+  previousRemoteTrackingHash?: string | null;
+}): Promise<RewriteAutoSyncPreview> {
+  const trimmedUpstreamRef = params.upstreamRef.trim();
+  const [currentRemoteTrackingHash, localHeadHash, commitsToPush, diffStat] =
+    await Promise.all([
+      readRefHash(params.repoRoot, trimmedUpstreamRef),
+      readCurrentHeadHash(params.repoRoot),
+      readCommitRangeLines({
+        repoRoot: params.repoRoot,
+        range: `${trimmedUpstreamRef}..HEAD`,
+      }),
+      readDiffStat({
+        repoRoot: params.repoRoot,
+        range: `${trimmedUpstreamRef}..HEAD`,
+      }),
+    ]);
+
+  const previousRemoteTrackingHash = params.previousRemoteTrackingHash?.trim();
+
+  return {
+    upstreamRef: trimmedUpstreamRef,
+    previousRemoteTrackingHash:
+      previousRemoteTrackingHash !== undefined &&
+      previousRemoteTrackingHash.length > 0
+        ? previousRemoteTrackingHash
+        : undefined,
+    currentRemoteTrackingHash: currentRemoteTrackingHash ?? undefined,
+    localHeadHash,
+    commitsToPush,
+    diffStat,
+  };
+}
+
+export async function autoSyncWithUpstreamForRewrite(
+  repoRoot: string,
+  upstreamRef?: string,
+): Promise<RewriteRecoveryCommandPlan> {
+  const trimmedUpstreamRef = upstreamRef?.trim() ?? '';
+  if (trimmedUpstreamRef.length === 0) {
+    throw new CommitCopilotError(
+      'Cannot auto-sync without an upstream branch. Configure upstream first.',
+      'UPSTREAM_NOT_CONFIGURED',
+      EXIT_CODES.UNKNOWN_ERROR,
+    );
+  }
+
+  const commandPlan = buildRewriteRecoveryCommandPlan(trimmedUpstreamRef);
+  await runGitTextCommand({
+    repoRoot,
+    args: commandPlan.fetchArgs,
+    timeout: GIT_PUSH_TIMEOUT_MS,
+    maxBuffer: GIT_LOG_MAX_BUFFER,
+  });
+
+  try {
+    await runGitTextCommand({
+      repoRoot,
+      args: commandPlan.rebaseArgs,
+      timeout: GIT_PUSH_TIMEOUT_MS,
+      maxBuffer: GIT_LOG_MAX_BUFFER,
+    });
+  } catch (error) {
+    await abortRebaseSilently(repoRoot);
+    throw error;
+  }
+  return commandPlan;
 }
 
 export async function generateCommitMessage(

@@ -109,6 +109,28 @@ export const zhCNLocale: LocaleTextBundle = {
         `错误：${errorCode} - ${message}`,
       unexpectedError: (message) => `未预期错误：${message}`,
       openingLanguageSettings: '正在打开 Activity View 的语言设置...',
+      rewriteLeaseProtectionBlocked: 'Lease 保护已阻止推送（远端已变更）。',
+      rewriteSuggestedRecoverySteps: '建议修复步骤：',
+      rewriteAutoSyncBeforeRetryFailed: (message) =>
+        `重试前自动同步失败：${message}`,
+      rewriteResolveConflictsContinueRebase:
+        '如果 rebase 发生冲突，请先解决冲突，再继续 rebase。',
+      rewriteRecoveryCommand: (command) => `• ${command}`,
+      rewriteAutoSyncPreviewSummary: (upstreamRef) =>
+        `自动同步预览（${upstreamRef}）：`,
+      rewriteAutoSyncRemoteTracking: (beforeHash, afterHash) =>
+        `远端追踪：${beforeHash} -> ${afterHash}`,
+      rewriteAutoSyncLocalHead: (headHash) => `本地重写后的 HEAD：${headHash}`,
+      rewriteAutoSyncCommitsToPush: '将要推送的提交：',
+      rewriteAutoSyncNoCommitsToPush: '（无）',
+      rewriteAutoSyncDiffStat: '将要推送的差异：',
+      rewriteAutoSyncNoDiffStat: '（无差异）',
+      rewriteAutoSyncRetryUsesCurrentLease:
+        '重试推送会使用已刷新的 upstream lease，而不是重写前的 hash。',
+      rewriteCliAuthFailedUsingVscodeFallback:
+        'CLI 推送因 Git 需要凭证而失败；正在改用 VS Code Git 重试。',
+      rewriteVscodeFallbackSkippedLeaseChanged:
+        '远端追踪 ref 已改变，已跳过 VS Code Git fallback。',
     },
     notification: {
       gitExtensionMissing:
@@ -168,6 +190,12 @@ export const zhCNLocale: LocaleTextBundle = {
       rewriteForcePushFailed: (message) =>
         `Force push with lease 失败：${message}`,
       pushingWithLease: '正在 Push with lease',
+      rewriteAutoSyncRetryAction: '自动同步并强制推送',
+      rewriteAutoSyncRetryTitle: '正在与上游自动同步',
+      rewriteAutoSyncPromptWithUpstream: (upstreamRef) =>
+        `远端 ${upstreamRef} 已更新。要自动同步（fetch + rebase ${upstreamRef}）并以 lease 强制推送吗？预览将写入输出面板。`,
+      rewriteAutoSyncFailed: (message) =>
+        `自动同步失败：${message}。若有冲突请先解决并完成 rebase，再重试推送。`,
     },
   },
   mainViewText: {

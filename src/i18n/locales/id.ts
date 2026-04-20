@@ -122,6 +122,30 @@ export const idLocale: LocaleTextBundle = {
       unexpectedError: (message) => `Kesalahan tidak terduga: ${message}`,
       openingLanguageSettings:
         'Membuka pengaturan bahasa di tampilan aktivitas...',
+      rewriteLeaseProtectionBlocked:
+        'Push diblokir oleh perlindungan lease (remote berubah).',
+      rewriteSuggestedRecoverySteps: 'Langkah pemulihan yang disarankan:',
+      rewriteAutoSyncBeforeRetryFailed: (message) =>
+        `Sinkronisasi otomatis sebelum mencoba ulang gagal: ${message}`,
+      rewriteResolveConflictsContinueRebase:
+        'Jika terjadi konflik saat rebase, selesaikan dulu lalu lanjutkan rebase.',
+      rewriteRecoveryCommand: (command) => `• ${command}`,
+      rewriteAutoSyncPreviewSummary: (upstreamRef) =>
+        `Auto-sync preview for ${upstreamRef}:`,
+      rewriteAutoSyncRemoteTracking: (beforeHash, afterHash) =>
+        `Remote tracking: ${beforeHash} -> ${afterHash}`,
+      rewriteAutoSyncLocalHead: (headHash) =>
+        `Local rewritten HEAD: ${headHash}`,
+      rewriteAutoSyncCommitsToPush: 'Commits that will be pushed:',
+      rewriteAutoSyncNoCommitsToPush: '(none)',
+      rewriteAutoSyncDiffStat: 'Diff that will be pushed:',
+      rewriteAutoSyncNoDiffStat: '(no diff)',
+      rewriteAutoSyncRetryUsesCurrentLease:
+        'Retry push will use the refreshed upstream lease, not the pre-rewrite hash.',
+      rewriteCliAuthFailedUsingVscodeFallback:
+        'CLI push failed because Git needs credentials; retrying through VS Code Git.',
+      rewriteVscodeFallbackSkippedLeaseChanged:
+        'VS Code Git fallback skipped because the remote tracking ref changed.',
     },
     notification: {
       gitExtensionMissing:
@@ -186,6 +210,12 @@ export const idLocale: LocaleTextBundle = {
       rewriteForcePushFailed: (message) =>
         `Force push with lease gagal: ${message}`,
       pushingWithLease: 'Push with lease',
+      rewriteAutoSyncRetryAction: 'Sinkronkan otomatis dan paksa push',
+      rewriteAutoSyncRetryTitle: 'Sedang sinkronisasi otomatis dengan upstream',
+      rewriteAutoSyncPromptWithUpstream: (upstreamRef) =>
+        `Remote ${upstreamRef} berubah. Jalankan sinkronisasi otomatis (fetch + rebase ${upstreamRef}) dan paksa push dengan lease? Pratinjau akan ditulis ke panel output.`,
+      rewriteAutoSyncFailed: (message) =>
+        `Sinkronisasi otomatis gagal: ${message}. Selesaikan konflik (jika ada), tuntaskan rebase, lalu coba push lagi.`,
     },
   },
   mainViewText: {
