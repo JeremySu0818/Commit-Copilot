@@ -100,6 +100,16 @@ void test('force push flow keeps CLI primary path with VS Code auth fallback', (
   assert.match(source, /verifyImplicitLeaseFallbackIsStillSafe\(/);
 });
 
+void test('explicit lease failures retry with current lease only after confirming remote still matches', () => {
+  const source = readFileSync(EXTENSION_PATH, 'utf8');
+
+  assert.match(source, /readLiveRemoteHeadHash\(/);
+  assert.match(
+    source,
+    /liveRemoteHeadHash !== normalizedExpectedHash[\s\S]*leaseMode: \{ kind: 'current' \}/,
+  );
+});
+
 void test('auto-sync flow runs preview then force-pushes in single confirmation', () => {
   const source = readFileSync(EXTENSION_PATH, 'utf8');
 

@@ -32,6 +32,7 @@ import {
 } from './models';
 import {
   buildRewriteRecoveryCommandPlan,
+  splitUpstreamRef,
   type RewriteRecoveryCommandPlan,
 } from './rewrite-git-recovery';
 
@@ -892,6 +893,42 @@ export async function readRemoteTrackingHash(
   ref: string,
 ): Promise<string | null> {
   return readRefHash(repoRoot, ref);
+}
+
+export async function readLiveRemoteHeadHash(
+  repoRoot: string,
+  upstreamRef: string,
+): Promise<string | null> {
+  const parsedUpstream = splitUpstreamRef(upstreamRef.trim());
+  if (!parsedUpstream) {
+    return null;
+  }
+
+  try {
+    const output = await runGitTextCommand({
+      repoRoot,
+      args: [
+        'ls-remote',
+        '--heads',
+        parsedUpstream.remote,
+        `refs/heads/${parsedUpstream.branch}`,
+      ],
+      timeout: GIT_SHOW_TIMEOUT_MS,
+      maxBuffer: bytesPerMiB,
+    });
+    const [firstLine] = output
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean);
+    if (!firstLine) {
+      return null;
+    }
+
+    const [hash] = firstLine.split(/\s+/);
+    return hash?.trim() || null;
+  } catch {
+    return null;
+  }
 }
 
 export async function readUpstreamRef(

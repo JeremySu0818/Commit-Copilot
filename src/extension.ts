@@ -7,6 +7,7 @@ import {
   generateCommitMessage,
   generateHistoricalCommitMessage,
   listRecentCommitsForRewrite,
+  readLiveRemoteHeadHash,
   readRemoteTrackingHash,
   readRewriteAutoSyncPreview,
   readUpstreamRef,
@@ -1375,6 +1376,22 @@ async function promptAndForcePushWithLease(
   } catch (error) {
     const rawErrorMessage =
       error instanceof Error ? error.message : String(error);
+    if (isLeaseConflictError(rawErrorMessage)) {
+      const retriedWithCurrentLease =
+        await tryRetryWithCurrentLeaseAfterConfirmedRemoteMatch({
+          repository,
+          outputChannel,
+          text,
+          expectedRemoteRefHash,
+        });
+      if (retriedWithCurrentLease) {
+        const successMessage =
+          text.notification.rewriteForcePushCompleted(pushTargetLabel);
+        outputChannel.appendLine(`${rewriteLogPrefix} ${successMessage}`);
+        vscode.window.showInformationMessage(successMessage);
+        return;
+      }
+    }
     const message = text.notification.rewriteForcePushFailed(rawErrorMessage);
     outputChannel.appendLine(`${rewriteLogPrefix} ${message}`);
     if (isLeaseConflictError(rawErrorMessage)) {
@@ -1469,6 +1486,43 @@ async function verifyImplicitLeaseFallbackIsStillSafe(params: {
     upstreamRef,
   );
   return currentRemoteTrackingHash === normalizedExpectedHash;
+}
+
+async function tryRetryWithCurrentLeaseAfterConfirmedRemoteMatch(params: {
+  repository: GitRepository;
+  outputChannel: vscode.OutputChannel;
+  text: ExtensionText;
+  expectedRemoteRefHash?: string;
+}): Promise<boolean> {
+  const normalizedExpectedHash = params.expectedRemoteRefHash?.trim() ?? '';
+  if (!normalizedExpectedHash) {
+    return false;
+  }
+
+  const upstreamRef = await readUpstreamRef(params.repository.rootUri.fsPath);
+  if (!upstreamRef) {
+    return false;
+  }
+
+  const liveRemoteHeadHash = await readLiveRemoteHeadHash(
+    params.repository.rootUri.fsPath,
+    upstreamRef,
+  );
+  if (liveRemoteHeadHash !== normalizedExpectedHash) {
+    return false;
+  }
+
+  try {
+    await runForcePushWithLeasePreferCli({
+      repository: params.repository,
+      outputChannel: params.outputChannel,
+      text: params.text,
+      leaseMode: { kind: 'current' },
+    });
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 async function runForcePushWithLeasePreferCli(params: {

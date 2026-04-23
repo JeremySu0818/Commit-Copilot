@@ -929,6 +929,49 @@ void test('rewriteHistoricalCommitMessage captures previousRemoteTrackingHash fr
   }
 });
 
+void test('readLiveRemoteHeadHash sees remote updates before local tracking is fetched', async () => {
+  const fixture = initRemoteFixture();
+  try {
+    const mod = await loadCommitCopilotWithMocks();
+    const branchName = git(fixture.localRoot, [
+      'rev-parse',
+      '--abbrev-ref',
+      'HEAD',
+    ]);
+    const upstreamRef = `origin/${branchName}`;
+    const staleTrackingHash = git(fixture.localRoot, ['rev-parse', upstreamRef]);
+
+    fs.writeFileSync(
+      path.join(fixture.collaboratorRoot, 'remote-live.ts'),
+      'export const live = true;\n',
+    );
+    git(fixture.collaboratorRoot, ['add', 'remote-live.ts']);
+    git(fixture.collaboratorRoot, ['commit', '-m', 'feat(core): remote live']);
+    git(fixture.collaboratorRoot, ['push', 'origin', branchName]);
+
+    const liveRemoteHash = await mod.readLiveRemoteHeadHash(
+      fixture.localRoot,
+      upstreamRef,
+    );
+    const currentTrackingHash = await mod.readRemoteTrackingHash(
+      fixture.localRoot,
+      upstreamRef,
+    );
+    const actualRemoteHash = git(fixture.bareRoot, [
+      'rev-parse',
+      `refs/heads/${branchName}`,
+    ]);
+
+    assert.equal(currentTrackingHash, staleTrackingHash);
+    assert.equal(liveRemoteHash, actualRemoteHash);
+    assert.notEqual(liveRemoteHash, currentTrackingHash);
+  } finally {
+    cleanupTempDir(fixture.collaboratorRoot);
+    cleanupTempDir(fixture.localRoot);
+    cleanupTempDir(fixture.bareRoot);
+  }
+});
+
 void test('forcePushWithLease accepts unpushed local commits when remote tracking ref is unchanged', async () => {
   const fixture = initRemoteFixture();
   try {
