@@ -1518,7 +1518,7 @@ async function resolveRewriteCommitOrThrow(
   const resolved = await resolveRewriteCommit(repoRoot, commitHash);
   if (!resolved) {
     throw new CommitCopilotError(
-      `Commit "${commitHash}" was not found.`,
+      'REWRITE_COMMIT_NOT_FOUND',
       'REWRITE_COMMIT_NOT_FOUND',
       EXIT_CODES.UNKNOWN_ERROR,
       {
@@ -1529,7 +1529,7 @@ async function resolveRewriteCommitOrThrow(
   }
   if (resolved.parentHashes.length > 1) {
     throw new CommitCopilotError(
-      `Commit "${commitHash}" is a merge commit and cannot be rewritten by this workflow.`,
+      'REWRITE_MERGE_COMMIT_UNSUPPORTED',
       'REWRITE_MERGE_COMMIT_UNSUPPORTED',
       EXIT_CODES.UNKNOWN_ERROR,
       {
@@ -1550,21 +1550,16 @@ async function ensureRewriteWorkspaceCleanOrThrow(
   if (!hasUnstagedChanges && !hasStagedChanges) {
     return;
   }
-  let details = '';
   let messageKey: CommitCopilotError['messageKey'];
   if (hasStagedChanges && hasUnstagedChanges) {
-    details =
-      'both staged (not committed) and modified (unstaged) changes are present';
     messageKey = 'rewrite.workspaceNotCleanBoth';
   } else if (hasStagedChanges) {
-    details = 'staged (not committed) changes are present';
     messageKey = 'rewrite.workspaceNotCleanStaged';
   } else {
-    details = 'modified (unstaged) changes are present';
     messageKey = 'rewrite.workspaceNotCleanUnstaged';
   }
   throw new CommitCopilotError(
-    `Cannot rewrite commit history while ${details}. Please commit or stash them first.`,
+    'REWRITE_WORKSPACE_NOT_CLEAN',
     'REWRITE_WORKSPACE_NOT_CLEAN',
     EXIT_CODES.UNKNOWN_ERROR,
     { messageKey },
@@ -1638,7 +1633,7 @@ export async function generateHistoricalCommitMessage(
     const gitOps = new GitOperations(repository);
     if (!(await gitOps.isGitRepo())) {
       throw new CommitCopilotError(
-        'Not a git repository. Please run this command inside a git repository.',
+        'NOT_GIT_REPO',
         'NOT_GIT_REPO',
         EXIT_CODES.NOT_GIT_REPO,
         { messageKey: 'git.notRepository' },
@@ -1647,7 +1642,7 @@ export async function generateHistoricalCommitMessage(
 
     if (!commitHash.trim()) {
       throw new CommitCopilotError(
-        'A commit hash is required.',
+        'REWRITE_COMMIT_HASH_REQUIRED',
         'REWRITE_COMMIT_NOT_FOUND',
         EXIT_CODES.UNKNOWN_ERROR,
         { messageKey: 'rewrite.commitHashRequired' },
@@ -1735,7 +1730,7 @@ export async function rewriteHistoricalCommitMessage(
     const gitOps = new GitOperations(options.repository);
     if (!(await gitOps.isGitRepo())) {
       throw new CommitCopilotError(
-        'Not a git repository. Please run this command inside a git repository.',
+        'NOT_GIT_REPO',
         'NOT_GIT_REPO',
         EXIT_CODES.NOT_GIT_REPO,
         { messageKey: 'git.notRepository' },
@@ -1743,7 +1738,7 @@ export async function rewriteHistoricalCommitMessage(
     }
     if (!trimmedMessage) {
       throw new CommitCopilotError(
-        'A non-empty commit message is required.',
+        'REWRITE_EMPTY_MESSAGE',
         'REWRITE_EMPTY_MESSAGE',
         EXIT_CODES.UNKNOWN_ERROR,
         { messageKey: 'rewrite.emptyMessage' },
@@ -1758,7 +1753,7 @@ export async function rewriteHistoricalCommitMessage(
     const branchName = await readCurrentBranchName(repoRoot);
     if (!branchName || branchName === 'HEAD') {
       throw new CommitCopilotError(
-        'Cannot rewrite commits from detached HEAD.',
+        'REWRITE_DETACHED_HEAD',
         'REWRITE_DETACHED_HEAD',
         EXIT_CODES.UNKNOWN_ERROR,
         { messageKey: 'rewrite.detachedHead' },
@@ -1772,7 +1767,7 @@ export async function rewriteHistoricalCommitMessage(
     );
     if (!isAncestor) {
       throw new CommitCopilotError(
-        `Commit "${resolvedCommit.hash}" is not an ancestor of HEAD.`,
+        'REWRITE_COMMIT_NOT_REACHABLE',
         'REWRITE_COMMIT_NOT_REACHABLE',
         EXIT_CODES.UNKNOWN_ERROR,
         {
@@ -2058,9 +2053,13 @@ export async function ensureSafeRewritePreflight(
   const remoteTrackingHash = await readRefHash(repoRoot, upstreamRef);
   if (!remoteTrackingHash) {
     throw new CommitCopilotError(
-      `Cannot verify upstream "${upstreamRef}" after fetch.`,
+      'REWRITE_UPSTREAM_VERIFY_FAILED',
       'UPSTREAM_NOT_CONFIGURED',
       EXIT_CODES.UNKNOWN_ERROR,
+      {
+        messageKey: 'rewrite.upstreamVerifyFailed',
+        messageArgs: { upstreamRef },
+      },
     );
   }
 
@@ -2070,10 +2069,15 @@ export async function ensureSafeRewritePreflight(
     'HEAD',
   );
   if (!localContainsRemote) {
+    const remoteHash = remoteTrackingHash.slice(0, rewriteSnapshotHashLength);
     throw new CommitCopilotError(
-      `Cannot rewrite safely because local HEAD does not include latest ${upstreamRef} (${remoteTrackingHash.slice(0, rewriteSnapshotHashLength)}). Run git pull --rebase (or merge) first.`,
+      'REWRITE_REMOTE_NOT_INTEGRATED',
       'REWRITE_REMOTE_NOT_INTEGRATED',
       EXIT_CODES.UNKNOWN_ERROR,
+      {
+        messageKey: 'rewrite.remoteNotIntegrated',
+        messageArgs: { upstreamRef, remoteHash },
+      },
     );
   }
 
@@ -2091,9 +2095,10 @@ export async function autoSyncWithUpstreamForRewrite(
   const trimmedUpstreamRef = upstreamRef?.trim() ?? '';
   if (trimmedUpstreamRef.length === 0) {
     throw new CommitCopilotError(
-      'Cannot auto-sync without an upstream branch. Configure upstream first.',
+      'REWRITE_AUTOSYNC_MISSING_UPSTREAM',
       'UPSTREAM_NOT_CONFIGURED',
       EXIT_CODES.UNKNOWN_ERROR,
+      { messageKey: 'rewrite.autoSyncMissingUpstream' },
     );
   }
 
@@ -2125,7 +2130,7 @@ export async function autoSyncWithUpstreamForRewrite(
   const currentBranchName = await readCurrentBranchName(repoRoot);
   if (currentBranchName === 'HEAD' || currentBranchName.trim().length === 0) {
     throw new CommitCopilotError(
-      'Cannot auto-sync safely from detached HEAD.',
+      'REWRITE_DETACHED_HEAD',
       'REWRITE_DETACHED_HEAD',
       EXIT_CODES.UNKNOWN_ERROR,
       { messageKey: 'rewrite.detachedHead' },
@@ -2136,9 +2141,13 @@ export async function autoSyncWithUpstreamForRewrite(
     (await readRefHash(repoRoot, trimmedUpstreamRef)) ?? '';
   if (currentRemoteTrackingHash.length === 0) {
     throw new CommitCopilotError(
-      `Cannot auto-sync because upstream "${trimmedUpstreamRef}" is unavailable after fetch.`,
+      'REWRITE_AUTOSYNC_UPSTREAM_UNAVAILABLE',
       'UPSTREAM_NOT_CONFIGURED',
       EXIT_CODES.UNKNOWN_ERROR,
+      {
+        messageKey: 'rewrite.autoSyncUpstreamUnavailable',
+        messageArgs: { upstreamRef: trimmedUpstreamRef },
+      },
     );
   }
   const localAlreadyContainsCurrentRemote = await isAncestorCommit(
@@ -2157,9 +2166,16 @@ export async function autoSyncWithUpstreamForRewrite(
   );
   if (!previousRemoteHashIsAncestor) {
     throw new CommitCopilotError(
-      `Cannot auto-sync safely because upstream "${trimmedUpstreamRef}" no longer contains ${normalizedPreviousRemoteTrackingHash}.`,
+      'REWRITE_AUTOSYNC_UNSAFE_REMOTE_REWRITE',
       'REWRITE_AUTOSYNC_UNSAFE_REMOTE_REWRITE',
       EXIT_CODES.UNKNOWN_ERROR,
+      {
+        messageKey: 'rewrite.autoSyncUnsafeRemoteRewrite',
+        messageArgs: {
+          upstreamRef: trimmedUpstreamRef,
+          previousHash: normalizedPreviousRemoteTrackingHash,
+        },
+      },
     );
   }
 
@@ -2240,7 +2256,7 @@ export async function generateCommitMessage(
     const gitOps = new GitOperations(repository);
     if (!(await gitOps.isGitRepo())) {
       throw new CommitCopilotError(
-        'Not a git repository. Please run this command inside a git repository.',
+        'NOT_GIT_REPO',
         'NOT_GIT_REPO',
         EXIT_CODES.NOT_GIT_REPO,
         { messageKey: 'git.notRepository' },

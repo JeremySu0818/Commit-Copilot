@@ -22,8 +22,9 @@ function isApiRequestErrorWithHostMessage(
   return (
     isRecord(value) &&
     value.name === 'APIRequestError' &&
-    typeof value.message === 'string' &&
-    value.message.includes(`Make sure Ollama is running at ${host}`)
+    value.messageKey === 'api.ollamaConnectionFailed' &&
+    isRecord(value.messageArgs) &&
+    value.messageArgs.host === host
   );
 }
 

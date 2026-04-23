@@ -10,6 +10,10 @@ import {
   APIRequestError,
   GenerationCancelledError,
   NoChangesError,
+  createEmptyResponseError,
+  createOllamaConnectionError,
+  createOllamaModelNotFoundError,
+  createUnknownAnthropicModelError,
 } from './errors';
 import {
   APIProvider,
@@ -200,14 +204,10 @@ function rethrowMappedOllamaClientError(
   modelName: string,
 ): never {
   if (message.includes('ECONNREFUSED') || message.includes('connect')) {
-    throw new APIRequestError(
-      `Cannot connect to Ollama. Make sure Ollama is running at ${host}`,
-    );
+    throw createOllamaConnectionError(host);
   }
   if (message.includes('model') && message.includes('not found')) {
-    throw new APIRequestError(
-      `Model "${modelName}" not found. Please pull it first with: ollama pull ${modelName}`,
-    );
+    throw createOllamaModelNotFoundError(modelName);
   }
   throw new APIRequestError(message);
 }
@@ -336,7 +336,7 @@ export class GeminiClient implements ILLMClient {
       throwIfCancellationRequested(cancellationToken);
 
       if (!text) {
-        throw new APIRequestError('Empty response from Gemini API');
+        throw createEmptyResponseError('Gemini API');
       }
 
       return text.trim();
@@ -428,7 +428,7 @@ export class OpenAIClient implements ILLMClient {
       throwIfCancellationRequested(cancellationToken);
 
       if (!text) {
-        throw new APIRequestError('Empty response from OpenAI API');
+        throw createEmptyResponseError('OpenAI API');
       }
 
       return text.trim();
@@ -483,9 +483,7 @@ export class AnthropicClient implements ILLMClient {
     this.model = pickNonEmpty(model, DEFAULT_MODELS.anthropic);
     const maxTokens = getAnthropicModelMaxTokens(this.model);
     if (maxTokens === undefined) {
-      throw new APIRequestError(
-        `Unknown Anthropic model "${this.model}". Add it to ANTHROPIC_MODELS with max_tokens.`,
-      );
+      throw createUnknownAnthropicModelError(this.model);
     }
     this.maxTokens = maxTokens;
     this.systemPrompt = buildAgentSystemPrompt({
@@ -537,7 +535,7 @@ export class AnthropicClient implements ILLMClient {
       throwIfCancellationRequested(cancellationToken);
 
       if (!text) {
-        throw new APIRequestError('Empty response from Anthropic API');
+        throw createEmptyResponseError('Anthropic API');
       }
 
       return text.trim();
@@ -635,7 +633,7 @@ export class OllamaClient implements ILLMClient {
       throwIfCancellationRequested(cancellationToken);
 
       if (!text) {
-        throw new APIRequestError('Empty response from Ollama');
+        throw createEmptyResponseError('Ollama');
       }
 
       return text.trim();

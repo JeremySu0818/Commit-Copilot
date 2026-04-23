@@ -1115,7 +1115,8 @@ async function executeRewriteCommand(
     outputChannel.appendLine(
       `${rewriteLogPrefix} ${text.output.rewriteCommitRewritten(
         targetCommit.hash,
-        rewriteApplyResult.replacementCommitHash ?? 'updated',
+        rewriteApplyResult.replacementCommitHash ??
+          text.output.rewriteReplacementCommitFallback,
       )}`,
     );
     vscode.window.showInformationMessage(
@@ -1313,7 +1314,12 @@ async function promptAndForcePushWithLease(
     notifyRewriteForcePushSuccess({ outputChannel, text, pushTargetLabel });
   } catch (error) {
     const rawErrorMessage =
-      error instanceof Error ? error.message : String(error);
+      error instanceof CommitCopilotError &&
+      error.messageKey === 'rewrite.forcePushStaleInfo'
+        ? text.output.rewriteVscodeFallbackSkippedLeaseChanged
+        : error instanceof Error
+          ? error.message
+          : String(error);
     await handleRewriteForcePushFailure({
       repository,
       outputChannel,
@@ -1457,8 +1463,11 @@ async function runForcePushWithLeasePreferCli(params: {
       params.outputChannel.appendLine(
         `${rewriteLogPrefix} ${params.text.output.rewriteVscodeFallbackSkippedLeaseChanged}`,
       );
-      throw new Error(
-        'force-with-lease stale info: remote tracking ref changed before VS Code fallback',
+      throw new CommitCopilotError(
+        'REWRITE_FORCE_PUSH_STALE_INFO',
+        'REWRITE_FORCE_PUSH_STALE_INFO',
+        EXIT_CODES.UNKNOWN_ERROR,
+        { messageKey: 'rewrite.forcePushStaleInfo' },
       );
     }
 

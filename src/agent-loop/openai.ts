@@ -21,6 +21,9 @@ import {
   APIRequestError,
   GenerationCancelledError,
   NoChangesError,
+  createEmptyFinalResponseError,
+  createEmptyResponseError,
+  createEmptyTextResponseError,
 } from '../errors';
 import { LOCALES } from '../i18n/locales';
 import type { EffectiveDisplayLanguage } from '../i18n/types';
@@ -202,7 +205,7 @@ async function executeOpenAIInvestigationLoop(params: {
     const completion = await params.requestCompletionWithTools(params.messages);
     const assistantMessage = getAssistantMessage(completion);
     if (!assistantMessage) {
-      throw new APIRequestError('Empty response from OpenAI API');
+      throw createEmptyResponseError('OpenAI API');
     }
 
     params.messages.push(
@@ -212,7 +215,7 @@ async function executeOpenAIInvestigationLoop(params: {
     if (functionToolCalls.length === 0) {
       const text = getOpenAIMessageText(assistantMessage.content);
       if (!text) {
-        throw new APIRequestError('Empty text response from OpenAI API');
+        throw createEmptyTextResponseError('OpenAI API');
       }
       return extractCommitMessage(text);
     }
@@ -389,7 +392,7 @@ async function runOpenAIAgentLoop(
     const finalMessage = getAssistantMessage(finalCompletion);
     const text = getOpenAIMessageText(finalMessage?.content);
     if (!text) {
-      throw new APIRequestError('Empty final response from OpenAI API');
+      throw createEmptyFinalResponseError('OpenAI API');
     }
     return extractCommitMessage(text);
   } catch (error: unknown) {

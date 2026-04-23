@@ -3,6 +3,66 @@ import type { LocaleTextBundle } from '../types';
 
 export const zhTWLocale: LocaleTextBundle = {
   commitCopilotErrorMessages: {
+    'api.keyMissing': () =>
+      '尚未設定 API Key。請先在 Commit-Copilot 面板設定 API Key。',
+    'api.keyInvalid': (args) =>
+      args.details?.trim()
+        ? 'API Key 無效：{details}'.replace('{details}', args.details ?? '')
+        : 'API Key 無效。',
+    'api.quotaExceeded': (args) =>
+      args.details?.trim()
+        ? 'API 配額已用盡：{details}'.replace('{details}', args.details ?? '')
+        : 'API 配額已用盡。',
+    'api.requestFailed': (args) =>
+      args.details?.trim()
+        ? 'API 請求失敗：{details}'.replace('{details}', args.details ?? '')
+        : 'API 請求失敗。',
+    'api.ollamaConnectionFailed': (args) =>
+      '無法連線到 Ollama。請確認 Ollama 已在 {host} 執行。'.replace(
+        '{host}',
+        args.host ?? '',
+      ),
+    'api.ollamaModelNotFound': (args) =>
+      '找不到模型「{model}」。請先執行：ollama pull {model}'.replace(
+        /\{model\}/g,
+        args.model ?? '',
+      ),
+    'api.unknownAnthropicModel': (args) =>
+      '未知的 Anthropic 模型「{model}」。請將它加入 ANTHROPIC_MODELS 並設定 max_tokens。'.replace(
+        '{model}',
+        args.model ?? '',
+      ),
+    'api.emptyResponse': (args) =>
+      '{provider} 回傳空白回應。'.replace('{provider}', args.provider ?? ''),
+    'api.emptyTextResponse': (args) =>
+      '{provider} 回傳空白文字回應。'.replace(
+        '{provider}',
+        args.provider ?? '',
+      ),
+    'api.emptyFinalResponse': (args) =>
+      '{provider} 回傳空白最終回應。'.replace(
+        '{provider}',
+        args.provider ?? '',
+      ),
+    'api.responseTruncated': (args) =>
+      '{provider} 的回應被截斷（{stopReason}）。'
+        .replace('{provider}', args.provider ?? '')
+        .replace('{stopReason}', args.stopReason ?? ''),
+    'api.finalResponseTruncated': (args) =>
+      '{provider} 的最終回應被截斷（{stopReason}）。'
+        .replace('{provider}', args.provider ?? '')
+        .replace('{stopReason}', args.stopReason ?? ''),
+    'git.stageFailed': (args) =>
+      args.details?.trim()
+        ? '暫存變更失敗：{details}'.replace('{details}', args.details ?? '')
+        : '暫存變更失敗。',
+    'generation.noChanges': () => '未偵測到可產生 commit 的變更。',
+    'generation.noChangesButUntracked': () =>
+      '沒有可提交的變更，但偵測到未追蹤檔案。',
+    'generation.noTrackedChangesButUntracked': () =>
+      '未偵測到已追蹤檔案的變更，目前只有未追蹤檔案。',
+    'generation.mixedChanges': () => '偵測到已暫存與未暫存變更同時存在。',
+    'generation.cancelled': () => '使用者已取消產生流程。',
     'rewrite.commitHashRequired': () => '需要提供 commit hash。',
     'rewrite.commitNotFound': (args) =>
       '找不到 commit "{commitHash}"。'.replace(
@@ -20,6 +80,28 @@ export const zhTWLocale: LocaleTextBundle = {
         '{commitHash}',
         args.commitHash ?? '',
       ),
+    'rewrite.upstreamVerifyFailed': (args) =>
+      'Fetch 後無法驗證 upstream「{upstreamRef}」。'.replace(
+        '{upstreamRef}',
+        args.upstreamRef ?? '',
+      ),
+    'rewrite.remoteNotIntegrated': (args) =>
+      '無法安全重寫，因為本機 HEAD 尚未包含最新的 {upstreamRef}（{remoteHash}）。請先執行 git pull --rebase（或 merge）。'
+        .replace('{upstreamRef}', args.upstreamRef ?? '')
+        .replace('{remoteHash}', args.remoteHash ?? ''),
+    'rewrite.autoSyncMissingUpstream': () =>
+      '沒有 upstream branch，無法自動同步。請先設定 upstream。',
+    'rewrite.autoSyncUpstreamUnavailable': (args) =>
+      'Fetch 後 upstream「{upstreamRef}」不可用，無法自動同步。'.replace(
+        '{upstreamRef}',
+        args.upstreamRef ?? '',
+      ),
+    'rewrite.autoSyncUnsafeRemoteRewrite': (args) =>
+      '無法安全自動同步，因為 upstream「{upstreamRef}」已不再包含 {previousHash}。'
+        .replace('{upstreamRef}', args.upstreamRef ?? '')
+        .replace('{previousHash}', args.previousHash ?? ''),
+    'rewrite.forcePushStaleInfo': () =>
+      'Force-with-lease 資訊已過期：remote tracking ref 在 VS Code fallback 前已變更。',
   },
   errorMessages: {
     [EXIT_CODES.NOT_GIT_REPO]: {
@@ -101,6 +183,7 @@ export const zhTWLocale: LocaleTextBundle = {
       rewriteCancelRequestedFromProgress: '已從進度通知請求取消。',
       rewriteCommitRewritten: (originalHash, replacementHash) =>
         `已重寫 commit：${originalHash} -> ${replacementHash}`,
+      rewriteReplacementCommitFallback: '已更新',
       callingGenerateCommitMessage: '呼叫 generateCommitMessage...',
       repositoryPath: (path) => `儲存庫路徑：${path}`,
       usingModel: (model) => `使用模型：${model}`,

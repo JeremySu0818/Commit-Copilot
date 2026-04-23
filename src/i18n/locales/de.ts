@@ -3,6 +3,80 @@ import type { LocaleTextBundle } from '../types';
 
 export const deLocale: LocaleTextBundle = {
   commitCopilotErrorMessages: {
+    'api.keyMissing': () =>
+      'API Key is not configured. Please set your API Key in the Commit-Copilot panel.',
+    'api.keyInvalid': (args) =>
+      args.details?.trim()
+        ? 'Invalid API Key: {details}'.replace('{details}', args.details ?? '')
+        : 'Invalid API Key.',
+    'api.quotaExceeded': (args) =>
+      args.details?.trim()
+        ? 'API quota exceeded: {details}'.replace(
+            '{details}',
+            args.details ?? '',
+          )
+        : 'API quota exceeded.',
+    'api.requestFailed': (args) =>
+      args.details?.trim()
+        ? 'API request failed: {details}'.replace(
+            '{details}',
+            args.details ?? '',
+          )
+        : 'API request failed.',
+    'api.ollamaConnectionFailed': (args) =>
+      'Cannot connect to Ollama. Make sure Ollama is running at {host}.'.replace(
+        '{host}',
+        args.host ?? '',
+      ),
+    'api.ollamaModelNotFound': (args) =>
+      'Model "{model}" was not found. Pull it first with: ollama pull {model}'.replace(
+        /\{model\}/g,
+        args.model ?? '',
+      ),
+    'api.unknownAnthropicModel': (args) =>
+      'Unknown Anthropic model "{model}". Add it to ANTHROPIC_MODELS with max_tokens.'.replace(
+        '{model}',
+        args.model ?? '',
+      ),
+    'api.emptyResponse': (args) =>
+      'Empty response from {provider}.'.replace(
+        '{provider}',
+        args.provider ?? '',
+      ),
+    'api.emptyTextResponse': (args) =>
+      'Empty text response from {provider}.'.replace(
+        '{provider}',
+        args.provider ?? '',
+      ),
+    'api.emptyFinalResponse': (args) =>
+      'Empty final response from {provider}.'.replace(
+        '{provider}',
+        args.provider ?? '',
+      ),
+    'api.responseTruncated': (args) =>
+      'Response from {provider} was truncated ({stopReason}).'
+        .replace('{provider}', args.provider ?? '')
+        .replace('{stopReason}', args.stopReason ?? ''),
+    'api.finalResponseTruncated': (args) =>
+      'Final response from {provider} was truncated ({stopReason}).'
+        .replace('{provider}', args.provider ?? '')
+        .replace('{stopReason}', args.stopReason ?? ''),
+    'git.stageFailed': (args) =>
+      args.details?.trim()
+        ? 'Failed to stage changes: {details}'.replace(
+            '{details}',
+            args.details ?? '',
+          )
+        : 'Failed to stage changes.',
+    'generation.noChanges': () =>
+      'No changes detected to generate a commit for.',
+    'generation.noChangesButUntracked': () =>
+      'No changes to commit, but untracked files were detected.',
+    'generation.noTrackedChangesButUntracked': () =>
+      'No tracked changes detected, only untracked files are present.',
+    'generation.mixedChanges': () =>
+      'Both staged and unstaged changes were detected.',
+    'generation.cancelled': () => 'Generation canceled by user.',
     'rewrite.commitHashRequired': () => 'Ein Commit-Hash ist erforderlich.',
     'rewrite.commitNotFound': (args) =>
       'Commit "{commitHash}" wurde nicht gefunden.'.replace(
@@ -21,6 +95,28 @@ export const deLocale: LocaleTextBundle = {
         '{commitHash}',
         args.commitHash ?? '',
       ),
+    'rewrite.upstreamVerifyFailed': (args) =>
+      'Cannot verify upstream "{upstreamRef}" after fetch.'.replace(
+        '{upstreamRef}',
+        args.upstreamRef ?? '',
+      ),
+    'rewrite.remoteNotIntegrated': (args) =>
+      'Cannot rewrite safely because local HEAD does not include latest {upstreamRef} ({remoteHash}). Run git pull --rebase (or merge) first.'
+        .replace('{upstreamRef}', args.upstreamRef ?? '')
+        .replace('{remoteHash}', args.remoteHash ?? ''),
+    'rewrite.autoSyncMissingUpstream': () =>
+      'Cannot auto-sync without an upstream branch. Configure upstream first.',
+    'rewrite.autoSyncUpstreamUnavailable': (args) =>
+      'Cannot auto-sync because upstream "{upstreamRef}" is unavailable after fetch.'.replace(
+        '{upstreamRef}',
+        args.upstreamRef ?? '',
+      ),
+    'rewrite.autoSyncUnsafeRemoteRewrite': (args) =>
+      'Cannot auto-sync safely because upstream "{upstreamRef}" no longer contains {previousHash}.'
+        .replace('{upstreamRef}', args.upstreamRef ?? '')
+        .replace('{previousHash}', args.previousHash ?? ''),
+    'rewrite.forcePushStaleInfo': () =>
+      'Force-with-lease stale info: remote tracking ref changed before VS Code fallback.',
   },
   errorMessages: {
     [EXIT_CODES.NOT_GIT_REPO]: {
@@ -116,6 +212,7 @@ export const deLocale: LocaleTextBundle = {
         'Abbruch von der Fortschrittsanzeige angefordert.',
       rewriteCommitRewritten: (originalHash, replacementHash) =>
         `Commit umgeschrieben: ${originalHash} -> ${replacementHash}`,
+      rewriteReplacementCommitFallback: 'updated',
       callingGenerateCommitMessage: 'Rufe generateCommitMessage auf...',
       repositoryPath: (path) => `Repository-Pfad: ${path}`,
       usingModel: (model) => `Verwende Modell: ${model}`,

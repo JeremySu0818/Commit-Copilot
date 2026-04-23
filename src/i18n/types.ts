@@ -92,6 +92,7 @@ export interface ExtensionText {
       originalHash: string,
       replacementHash: string,
     ) => string;
+    rewriteReplacementCommitFallback: string;
     callingGenerateCommitMessage: string;
     repositoryPath: (path: string) => string;
     usingModel: (model: string) => string;

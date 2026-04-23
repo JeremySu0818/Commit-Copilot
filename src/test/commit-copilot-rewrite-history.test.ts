@@ -28,6 +28,30 @@ const largeSnapshotBinaryFillByte = 0x61;
 const snapshotSymlinkProbeTargetFile = '__symlink_probe_target__.txt';
 const snapshotSymlinkProbeFile = '__symlink_probe__.txt';
 
+function isCommitCopilotErrorWithKey(
+  value: unknown,
+  messageKey: string,
+): boolean {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'messageKey' in value &&
+    (value as { messageKey?: unknown }).messageKey === messageKey
+  );
+}
+
+function getErrorMessageArgs(
+  value: unknown,
+): Partial<Record<string, string>> {
+  if (typeof value !== 'object' || value === null || !('messageArgs' in value)) {
+    return {};
+  }
+  const args = (value as { messageArgs?: unknown }).messageArgs;
+  return typeof args === 'object' && args !== null
+    ? (args as Partial<Record<string, string>>)
+    : {};
+}
+
 function resolveGitExecutablePath(): string {
   const envPath = process.env.COMMIT_COPILOT_GIT_PATH;
   if (envPath && envPath.trim().length > 0) {
@@ -450,7 +474,15 @@ void test('fetched incoming commits are blocked by rewrite preflight', async () 
 
     await assert.rejects(
       () => mod.ensureSafeRewritePreflight(fixture.localRoot),
-      /does not include latest origin\/.*run git pull --rebase/i,
+      (error) => {
+        const args = getErrorMessageArgs(error);
+        return (
+          isCommitCopilotErrorWithKey(error, 'rewrite.remoteNotIntegrated') &&
+          args.upstreamRef === `origin/${branchName}` &&
+          typeof args.remoteHash === 'string' &&
+          args.remoteHash.length > 0
+        );
+      },
     );
   } finally {
     cleanupTempDir(fixture.collaboratorRoot);
@@ -483,7 +515,15 @@ void test('ensureSafeRewritePreflight rejects when local branch is behind upstre
 
     await assert.rejects(
       () => mod.ensureSafeRewritePreflight(fixture.localRoot),
-      /does not include latest origin\/.*run git pull --rebase/i,
+      (error) => {
+        const args = getErrorMessageArgs(error);
+        return (
+          isCommitCopilotErrorWithKey(error, 'rewrite.remoteNotIntegrated') &&
+          args.upstreamRef === `origin/${branchName}` &&
+          typeof args.remoteHash === 'string' &&
+          args.remoteHash.length > 0
+        );
+      },
     );
   } finally {
     cleanupTempDir(fixture.collaboratorRoot);
@@ -524,7 +564,11 @@ void test('autoSyncWithUpstreamForRewrite rejects when upstream is missing', asy
     assert.equal(await mod.readUpstreamRef(fixture.repoRoot), null);
     await assert.rejects(
       () => mod.autoSyncWithUpstreamForRewrite(fixture.repoRoot),
-      /upstream branch/i,
+      (error) =>
+        isCommitCopilotErrorWithKey(
+          error,
+          'rewrite.autoSyncMissingUpstream',
+        ),
     );
   } finally {
     cleanupTempDir(fixture.repoRoot);
@@ -959,7 +1003,7 @@ void test('rewriteHistoricalCommitMessage rejects unstaged changes before rewrit
     assert.equal(result.success, false);
     assert.equal(result.error?.errorCode, 'REWRITE_WORKSPACE_NOT_CLEAN');
     assert.ok(result.error);
-    assert.match(result.error.message, /modified \(unstaged\) changes/i);
+    assert.equal(result.error.messageKey, 'rewrite.workspaceNotCleanUnstaged');
   } finally {
     cleanupTempDir(fixture.repoRoot);
   }
@@ -981,7 +1025,7 @@ void test('rewriteHistoricalCommitMessage rejects staged changes before rewritin
     assert.equal(result.success, false);
     assert.equal(result.error?.errorCode, 'REWRITE_WORKSPACE_NOT_CLEAN');
     assert.ok(result.error);
-    assert.match(result.error.message, /staged \(not committed\) changes/i);
+    assert.equal(result.error.messageKey, 'rewrite.workspaceNotCleanStaged');
   } finally {
     cleanupTempDir(fixture.repoRoot);
   }
@@ -1003,10 +1047,7 @@ void test('rewriteHistoricalCommitMessage rejects mixed staged and unstaged chan
     assert.equal(result.success, false);
     assert.equal(result.error?.errorCode, 'REWRITE_WORKSPACE_NOT_CLEAN');
     assert.ok(result.error);
-    assert.match(
-      result.error.message,
-      /both staged \(not committed\) and modified \(unstaged\) changes/i,
-    );
+    assert.equal(result.error.messageKey, 'rewrite.workspaceNotCleanBoth');
   } finally {
     cleanupTempDir(fixture.repoRoot);
   }

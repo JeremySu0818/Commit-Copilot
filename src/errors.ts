@@ -20,61 +20,43 @@ export const ERROR_MESSAGES: Record<
   { title: string; action?: string }
 > = {
   [EXIT_CODES.NOT_GIT_REPO]: {
-    title: 'Not a Git repository',
-    action: 'Please open a folder that contains a Git repository.',
+    title: 'NOT_GIT_REPO',
   },
   [EXIT_CODES.STAGE_FAILED]: {
-    title: 'Failed to stage changes',
-    action: 'Check if Git is properly configured.',
+    title: 'STAGE_FAILED',
   },
   [EXIT_CODES.NO_CHANGES]: {
-    title: 'No changes to commit',
-    action: 'Make some changes to your files first.',
+    title: 'NO_CHANGES',
   },
   [EXIT_CODES.NO_CHANGES_BUT_UNTRACKED]: {
-    title: 'No staged changes detected',
-    action:
-      'Untracked files found. Please stage them to generate a commit message.',
+    title: 'NO_CHANGES_BUT_UNTRACKED',
   },
   [EXIT_CODES.NO_TRACKED_CHANGES_BUT_UNTRACKED]: {
-    title: 'Only untracked files found',
-    action:
-      'You have newly created files but no tracked modifications. Please stage them to generate a commit.',
+    title: 'NO_TRACKED_CHANGES_BUT_UNTRACKED',
   },
   [EXIT_CODES.CANCELLED]: {
-    title: 'Generation cancelled',
-    action: 'Generation was cancelled by user.',
+    title: 'CANCELLED',
   },
   [EXIT_CODES.MIXED_CHANGES]: {
-    title: 'Mixed changes detected',
-    action:
-      'You have both staged and unstaged changes. Please choose how to proceed.',
+    title: 'MIXED_CHANGES',
   },
   [EXIT_CODES.API_KEY_MISSING]: {
-    title: 'API Key not configured',
-    action: 'Please set your API Key in the Commit-Copilot panel.',
+    title: 'API_KEY_MISSING',
   },
   [EXIT_CODES.API_KEY_INVALID]: {
-    title: 'Invalid API Key',
-    action:
-      'Your API Key is invalid or has been revoked. Please check and update it.',
+    title: 'API_KEY_INVALID',
   },
   [EXIT_CODES.QUOTA_EXCEEDED]: {
-    title: 'API quota exceeded',
-    action:
-      'You have exceeded your API quota. Please check your provider account.',
+    title: 'QUOTA_EXCEEDED',
   },
   [EXIT_CODES.API_ERROR]: {
-    title: 'API request failed',
-    action: 'There was an error communicating with the API. Please try again.',
+    title: 'API_ERROR',
   },
   [EXIT_CODES.COMMIT_FAILED]: {
-    title: 'Failed to commit changes',
-    action: 'Check if there are any Git conflicts or issues.',
+    title: 'COMMIT_FAILED',
   },
   [EXIT_CODES.UNKNOWN_ERROR]: {
-    title: 'An unexpected error occurred',
-    action: 'Check the "Commit-Copilot Debug" output for details.',
+    title: 'UNKNOWN_ERROR',
   },
 };
 
@@ -86,7 +68,25 @@ function appendDetails(prefix: string, details?: string): string {
 }
 
 export type CommitCopilotErrorMessageKey =
+  | 'api.keyMissing'
+  | 'api.keyInvalid'
+  | 'api.quotaExceeded'
+  | 'api.requestFailed'
+  | 'api.emptyResponse'
+  | 'api.emptyTextResponse'
+  | 'api.emptyFinalResponse'
+  | 'api.responseTruncated'
+  | 'api.finalResponseTruncated'
+  | 'api.ollamaConnectionFailed'
+  | 'api.ollamaModelNotFound'
+  | 'api.unknownAnthropicModel'
   | 'git.notRepository'
+  | 'git.stageFailed'
+  | 'generation.noChanges'
+  | 'generation.noChangesButUntracked'
+  | 'generation.noTrackedChangesButUntracked'
+  | 'generation.mixedChanges'
+  | 'generation.cancelled'
   | 'rewrite.commitHashRequired'
   | 'rewrite.commitNotFound'
   | 'rewrite.mergeCommitUnsupported'
@@ -95,7 +95,13 @@ export type CommitCopilotErrorMessageKey =
   | 'rewrite.workspaceNotCleanUnstaged'
   | 'rewrite.emptyMessage'
   | 'rewrite.detachedHead'
-  | 'rewrite.commitNotReachable';
+  | 'rewrite.commitNotReachable'
+  | 'rewrite.upstreamVerifyFailed'
+  | 'rewrite.remoteNotIntegrated'
+  | 'rewrite.autoSyncMissingUpstream'
+  | 'rewrite.autoSyncUpstreamUnavailable'
+  | 'rewrite.autoSyncUnsafeRemoteRewrite'
+  | 'rewrite.forcePushStaleInfo';
 
 export interface CommitCopilotErrorOptions {
   messageKey?: CommitCopilotErrorMessageKey;
@@ -121,11 +127,9 @@ export class CommitCopilotError extends Error {
 
 export class APIKeyMissingError extends CommitCopilotError {
   constructor() {
-    super(
-      'API Key is not set. Please configure your API key.',
-      'API_KEY_MISSING',
-      EXIT_CODES.API_KEY_MISSING,
-    );
+    super('API_KEY_MISSING', 'API_KEY_MISSING', EXIT_CODES.API_KEY_MISSING, {
+      messageKey: 'api.keyMissing',
+    });
     this.name = 'APIKeyMissingError';
   }
 }
@@ -133,9 +137,13 @@ export class APIKeyMissingError extends CommitCopilotError {
 export class APIKeyInvalidError extends CommitCopilotError {
   constructor(details?: string) {
     super(
-      appendDetails('Invalid API Key', details),
+      appendDetails('API_KEY_INVALID', details),
       'API_KEY_INVALID',
       EXIT_CODES.API_KEY_INVALID,
+      {
+        messageKey: 'api.keyInvalid',
+        messageArgs: { details: details ?? '' },
+      },
     );
     this.name = 'APIKeyInvalidError';
   }
@@ -144,20 +152,33 @@ export class APIKeyInvalidError extends CommitCopilotError {
 export class APIQuotaExceededError extends CommitCopilotError {
   constructor(details?: string) {
     super(
-      appendDetails('API quota exceeded', details),
+      appendDetails('QUOTA_EXCEEDED', details),
       'QUOTA_EXCEEDED',
       EXIT_CODES.QUOTA_EXCEEDED,
+      {
+        messageKey: 'api.quotaExceeded',
+        messageArgs: { details: details ?? '' },
+      },
     );
     this.name = 'APIQuotaExceededError';
   }
 }
 
 export class APIRequestError extends CommitCopilotError {
-  constructor(details?: string) {
+  constructor(details?: string, options: CommitCopilotErrorOptions = {}) {
+    const messageKey = options.messageKey ?? 'api.requestFailed';
     super(
-      appendDetails('API request failed', details),
+      appendDetails(messageKey, details),
       'API_ERROR',
       EXIT_CODES.API_ERROR,
+      {
+        ...options,
+        messageKey,
+        messageArgs: {
+          details: details ?? '',
+          ...(options.messageArgs ?? {}),
+        },
+      },
     );
     this.name = 'APIRequestError';
   }
@@ -165,11 +186,9 @@ export class APIRequestError extends CommitCopilotError {
 
 export class NoChangesError extends CommitCopilotError {
   constructor() {
-    super(
-      'No changes detected to generate a commit for.',
-      'NO_CHANGES',
-      EXIT_CODES.NO_CHANGES,
-    );
+    super('NO_CHANGES', 'NO_CHANGES', EXIT_CODES.NO_CHANGES, {
+      messageKey: 'generation.noChanges',
+    });
     this.name = 'NoChangesError';
   }
 }
@@ -177,9 +196,10 @@ export class NoChangesError extends CommitCopilotError {
 export class NoChangesButUntrackedError extends CommitCopilotError {
   constructor() {
     super(
-      'No changes to commit, but untracked files were detected.',
+      'NO_CHANGES_BUT_UNTRACKED',
       'NO_CHANGES_BUT_UNTRACKED',
       EXIT_CODES.NO_CHANGES_BUT_UNTRACKED,
+      { messageKey: 'generation.noChangesButUntracked' },
     );
     this.name = 'NoChangesButUntrackedError';
   }
@@ -188,9 +208,10 @@ export class NoChangesButUntrackedError extends CommitCopilotError {
 export class NoTrackedChangesButUntrackedError extends CommitCopilotError {
   constructor() {
     super(
-      'No tracked changes detected, only untracked files are present.',
+      'NO_TRACKED_CHANGES_BUT_UNTRACKED',
       'NO_TRACKED_CHANGES_BUT_UNTRACKED',
       EXIT_CODES.NO_TRACKED_CHANGES_BUT_UNTRACKED,
+      { messageKey: 'generation.noTrackedChangesButUntracked' },
     );
     this.name = 'NoTrackedChangesButUntrackedError';
   }
@@ -198,11 +219,9 @@ export class NoTrackedChangesButUntrackedError extends CommitCopilotError {
 
 export class MixedChangesError extends CommitCopilotError {
   constructor() {
-    super(
-      'Both staged and unstaged changes were detected.',
-      'MIXED_CHANGES',
-      EXIT_CODES.MIXED_CHANGES,
-    );
+    super('MIXED_CHANGES', 'MIXED_CHANGES', EXIT_CODES.MIXED_CHANGES, {
+      messageKey: 'generation.mixedChanges',
+    });
     this.name = 'MixedChangesError';
   }
 }
@@ -210,9 +229,13 @@ export class MixedChangesError extends CommitCopilotError {
 export class StageFailedError extends CommitCopilotError {
   constructor(details?: string) {
     super(
-      appendDetails('Failed to stage changes', details),
+      appendDetails('STAGE_FAILED', details),
       'STAGE_FAILED',
       EXIT_CODES.STAGE_FAILED,
+      {
+        messageKey: 'git.stageFailed',
+        messageArgs: { details: details ?? '' },
+      },
     );
     this.name = 'StageFailedError';
   }
@@ -220,7 +243,77 @@ export class StageFailedError extends CommitCopilotError {
 
 export class GenerationCancelledError extends CommitCopilotError {
   constructor() {
-    super('Generation canceled by user.', 'CANCELLED', EXIT_CODES.CANCELLED);
+    super('CANCELLED', 'CANCELLED', EXIT_CODES.CANCELLED, {
+      messageKey: 'generation.cancelled',
+    });
     this.name = 'GenerationCancelledError';
   }
+}
+
+export function createEmptyResponseError(provider: string): APIRequestError {
+  return new APIRequestError(undefined, {
+    messageKey: 'api.emptyResponse',
+    messageArgs: { provider },
+  });
+}
+
+export function createEmptyTextResponseError(
+  provider: string,
+): APIRequestError {
+  return new APIRequestError(undefined, {
+    messageKey: 'api.emptyTextResponse',
+    messageArgs: { provider },
+  });
+}
+
+export function createEmptyFinalResponseError(
+  provider: string,
+): APIRequestError {
+  return new APIRequestError(undefined, {
+    messageKey: 'api.emptyFinalResponse',
+    messageArgs: { provider },
+  });
+}
+
+export function createTruncatedResponseError(
+  provider: string,
+  stopReason: string,
+): APIRequestError {
+  return new APIRequestError(undefined, {
+    messageKey: 'api.responseTruncated',
+    messageArgs: { provider, stopReason },
+  });
+}
+
+export function createTruncatedFinalResponseError(
+  provider: string,
+  stopReason: string,
+): APIRequestError {
+  return new APIRequestError(undefined, {
+    messageKey: 'api.finalResponseTruncated',
+    messageArgs: { provider, stopReason },
+  });
+}
+
+export function createOllamaConnectionError(host: string): APIRequestError {
+  return new APIRequestError(undefined, {
+    messageKey: 'api.ollamaConnectionFailed',
+    messageArgs: { host },
+  });
+}
+
+export function createOllamaModelNotFoundError(model: string): APIRequestError {
+  return new APIRequestError(undefined, {
+    messageKey: 'api.ollamaModelNotFound',
+    messageArgs: { model },
+  });
+}
+
+export function createUnknownAnthropicModelError(
+  model: string,
+): APIRequestError {
+  return new APIRequestError(undefined, {
+    messageKey: 'api.unknownAnthropicModel',
+    messageArgs: { model },
+  });
 }
