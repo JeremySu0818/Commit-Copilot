@@ -436,17 +436,17 @@ void test('fetched incoming commits are blocked by rewrite preflight', async () 
       'chore(core): collaborator incoming commit',
     ]);
     git(fixture.collaboratorRoot, ['push', 'origin', branchName]);
-    const incomingRemoteHash = git(fixture.collaboratorRoot, ['rev-parse', 'HEAD']);
+    const incomingRemoteHash = git(fixture.collaboratorRoot, [
+      'rev-parse',
+      'HEAD',
+    ]);
 
     git(fixture.localRoot, ['fetch', 'origin', branchName]);
     const fetchedTrackingHash = git(fixture.localRoot, [
       'rev-parse',
       `origin/${branchName}`,
     ]);
-    assert.equal(
-      fetchedTrackingHash,
-      incomingRemoteHash,
-    );
+    assert.equal(fetchedTrackingHash, incomingRemoteHash);
 
     await assert.rejects(
       () => mod.ensureSafeRewritePreflight(fixture.localRoot),
@@ -1135,7 +1135,10 @@ void test('readLiveRemoteHeadHash sees remote updates before local tracking is f
       'HEAD',
     ]);
     const upstreamRef = `origin/${branchName}`;
-    const staleTrackingHash = git(fixture.localRoot, ['rev-parse', upstreamRef]);
+    const staleTrackingHash = git(fixture.localRoot, [
+      'rev-parse',
+      upstreamRef,
+    ]);
 
     fs.writeFileSync(
       path.join(fixture.collaboratorRoot, 'remote-live.ts'),

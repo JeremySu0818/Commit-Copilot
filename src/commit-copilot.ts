@@ -1,4 +1,5 @@
 import { execFile } from 'child_process';
+import { randomBytes } from 'crypto';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
@@ -78,6 +79,7 @@ const rewriteCommitParentsFieldIndex = 3;
 const rewriteSnapshotHashLength = 12;
 const rewriteSnapshotTimestampRadix = 36;
 const rewriteAutoSyncTempBranchPrefix = 'commit-copilot-sync-';
+const rewriteAutoSyncRandomTokenByteLength = 4;
 const gitCommandEnvPathKey = 'COMMIT_COPILOT_GIT_PATH';
 const gitTreeRecordSeparator = '\0';
 const gitTreeMetadataPathSeparator = '\t';
@@ -940,7 +942,7 @@ export async function readLiveRemoteHeadHash(
     }
 
     const [hash] = firstLine.split(/\s+/);
-    return hash?.trim() || null;
+    return hash.trim() || null;
   } catch {
     return null;
   }
@@ -1930,9 +1932,9 @@ async function abortRebaseSilently(repoRoot: string): Promise<void> {
 
 function createRewriteAutoSyncTempBranchName(): string {
   const timestamp = Date.now().toString(rewriteSnapshotTimestampRadix);
-  const randomToken = Math.random()
-    .toString(rewriteSnapshotTimestampRadix)
-    .slice(2, 8);
+  const randomToken = randomBytes(
+    rewriteAutoSyncRandomTokenByteLength,
+  ).toString('hex');
   return `${rewriteAutoSyncTempBranchPrefix}${timestamp}-${randomToken}`;
 }
 
@@ -1959,6 +1961,17 @@ async function deleteBranchSilently(
       timeout: GIT_PUSH_TIMEOUT_MS,
       maxBuffer: GIT_LOG_MAX_BUFFER,
     });
+  } catch {
+    return;
+  }
+}
+
+async function restoreOriginalBranchSilently(
+  repoRoot: string,
+  branchName: string,
+): Promise<void> {
+  try {
+    await checkoutBranchSilently(repoRoot, branchName);
   } catch {
     return;
   }
@@ -2194,11 +2207,7 @@ export async function autoSyncWithUpstreamForRewrite(
     });
   } catch (error) {
     await abortRebaseSilently(repoRoot);
-    try {
-      await checkoutBranchSilently(repoRoot, currentBranchName);
-    } catch {
-      // best-effort cleanup while preserving the original error
-    }
+    await restoreOriginalBranchSilently(repoRoot, currentBranchName);
     throw error;
   } finally {
     await deleteBranchSilently(repoRoot, tempBranchName);

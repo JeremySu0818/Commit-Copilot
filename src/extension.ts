@@ -1212,6 +1212,70 @@ async function refreshRepositoryStatus(
   }
 }
 
+function notifyRewriteForcePushSuccess(params: {
+  outputChannel: vscode.OutputChannel;
+  text: ExtensionText;
+  pushTargetLabel: string;
+}): void {
+  const successMessage = params.text.notification.rewriteForcePushCompleted(
+    params.pushTargetLabel,
+  );
+  params.outputChannel.appendLine(`${rewriteLogPrefix} ${successMessage}`);
+  vscode.window.showInformationMessage(successMessage);
+}
+
+async function handleRewriteForcePushFailure(params: {
+  repository: GitRepository;
+  outputChannel: vscode.OutputChannel;
+  text: ExtensionText;
+  pushTargetLabel: string;
+  rawErrorMessage: string;
+  expectedRemoteRefHash?: string;
+}): Promise<void> {
+  if (
+    isLeaseConflictError(params.rawErrorMessage) &&
+    (await tryRetryWithCurrentLeaseAfterConfirmedRemoteMatch({
+      repository: params.repository,
+      outputChannel: params.outputChannel,
+      text: params.text,
+      expectedRemoteRefHash: params.expectedRemoteRefHash,
+    }))
+  ) {
+    notifyRewriteForcePushSuccess({
+      outputChannel: params.outputChannel,
+      text: params.text,
+      pushTargetLabel: params.pushTargetLabel,
+    });
+    return;
+  }
+
+  const message = params.text.notification.rewriteForcePushFailed(
+    params.rawErrorMessage,
+  );
+  params.outputChannel.appendLine(`${rewriteLogPrefix} ${message}`);
+  if (isLeaseConflictError(params.rawErrorMessage)) {
+    params.outputChannel.appendLine(
+      `${rewriteLogPrefix} ${params.text.output.rewriteLeaseProtectionBlocked}`,
+    );
+    params.outputChannel.appendLine(
+      `${rewriteLogPrefix} ${params.text.output.rewriteSuggestedRecoverySteps}`,
+    );
+    const commands = await buildLeaseRecoveryCommands(
+      params.repository,
+      params.expectedRemoteRefHash,
+    );
+    for (const command of commands) {
+      params.outputChannel.appendLine(
+        `${rewriteLogPrefix} ${params.text.output.rewriteRecoveryCommand(command)}`,
+      );
+    }
+    params.outputChannel.appendLine(
+      `${rewriteLogPrefix} ${params.text.output.rewriteResolveConflictsContinueRebase}`,
+    );
+  }
+  vscode.window.showErrorMessage(message);
+}
+
 async function promptAndForcePushWithLease(
   repository: GitRepository,
   outputChannel: vscode.OutputChannel,
@@ -1246,53 +1310,18 @@ async function promptAndForcePushWithLease(
       text,
       leaseMode: { kind: 'explicit', expectedRemoteRefHash },
     });
-
-    const successMessage =
-      text.notification.rewriteForcePushCompleted(pushTargetLabel);
-    outputChannel.appendLine(`${rewriteLogPrefix} ${successMessage}`);
-    vscode.window.showInformationMessage(successMessage);
+    notifyRewriteForcePushSuccess({ outputChannel, text, pushTargetLabel });
   } catch (error) {
     const rawErrorMessage =
       error instanceof Error ? error.message : String(error);
-    if (isLeaseConflictError(rawErrorMessage)) {
-      const retriedWithCurrentLease =
-        await tryRetryWithCurrentLeaseAfterConfirmedRemoteMatch({
-          repository,
-          outputChannel,
-          text,
-          expectedRemoteRefHash,
-        });
-      if (retriedWithCurrentLease) {
-        const successMessage =
-          text.notification.rewriteForcePushCompleted(pushTargetLabel);
-        outputChannel.appendLine(`${rewriteLogPrefix} ${successMessage}`);
-        vscode.window.showInformationMessage(successMessage);
-        return;
-      }
-    }
-    const message = text.notification.rewriteForcePushFailed(rawErrorMessage);
-    outputChannel.appendLine(`${rewriteLogPrefix} ${message}`);
-    if (isLeaseConflictError(rawErrorMessage)) {
-      outputChannel.appendLine(
-        `${rewriteLogPrefix} ${text.output.rewriteLeaseProtectionBlocked}`,
-      );
-      outputChannel.appendLine(
-        `${rewriteLogPrefix} ${text.output.rewriteSuggestedRecoverySteps}`,
-      );
-      const commands = await buildLeaseRecoveryCommands(
-        repository,
-        expectedRemoteRefHash,
-      );
-      for (const command of commands) {
-        outputChannel.appendLine(
-          `${rewriteLogPrefix} ${text.output.rewriteRecoveryCommand(command)}`,
-        );
-      }
-      outputChannel.appendLine(
-        `${rewriteLogPrefix} ${text.output.rewriteResolveConflictsContinueRebase}`,
-      );
-    }
-    vscode.window.showErrorMessage(message);
+    await handleRewriteForcePushFailure({
+      repository,
+      outputChannel,
+      text,
+      pushTargetLabel,
+      rawErrorMessage,
+      expectedRemoteRefHash,
+    });
   }
 }
 

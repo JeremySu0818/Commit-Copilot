@@ -65,8 +65,9 @@ export function buildManualRewriteRecoveryCommands(params: {
     params.previousRemoteTrackingHash?.trim() ?? '';
   if (params.upstreamRef && normalizedPreviousRemoteTrackingHash.length > 0) {
     return [
-      ...buildRewriteRecoveryCommandPlan(params.upstreamRef).displayCommands
-        .slice(0, 1),
+      ...buildRewriteRecoveryCommandPlan(
+        params.upstreamRef,
+      ).displayCommands.slice(0, 1),
       `git branch <sync-branch> ${params.upstreamRef}`,
       `git rebase --onto HEAD ${normalizedPreviousRemoteTrackingHash} <sync-branch>`,
       'git merge --ff-only <sync-branch>',

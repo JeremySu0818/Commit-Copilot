@@ -138,6 +138,9 @@ void test('lease conflict flow avoids auto-sync automation and keeps manual reco
   const source = readFileSync(EXTENSION_PATH, 'utf8');
 
   assert.doesNotMatch(source, /readRewriteAutoSyncPreview\(/);
-  assert.doesNotMatch(source, /rewriteAutoSyncPromptWithUpstream\(upstreamRef\)/);
+  assert.doesNotMatch(
+    source,
+    /rewriteAutoSyncPromptWithUpstream\(upstreamRef\)/,
+  );
   assert.doesNotMatch(source, /attemptAutoSyncAndRetryPush\(/);
 });
