@@ -406,6 +406,117 @@ void test('forcePushWithLease rejects push when expected lease is stale', async 
   }
 });
 
+void test('fetched incoming commits are blocked by rewrite preflight', async () => {
+  const fixture = initRemoteFixture();
+  try {
+    const mod = await loadCommitCopilotWithMocks();
+    const branchName = git(fixture.localRoot, [
+      'rev-parse',
+      '--abbrev-ref',
+      'HEAD',
+    ]);
+
+    fs.writeFileSync(
+      path.join(fixture.localRoot, 'rewrite-target.ts'),
+      'export const rewriteTarget = true;\n',
+    );
+    git(fixture.localRoot, ['add', 'rewrite-target.ts']);
+    git(fixture.localRoot, ['commit', '-m', 'bad commit message']);
+    git(fixture.localRoot, ['push', 'origin', branchName]);
+
+    git(fixture.collaboratorRoot, ['pull', 'origin', branchName]);
+    fs.writeFileSync(
+      path.join(fixture.collaboratorRoot, 'remote-incoming.ts'),
+      'export const remoteIncoming = true;\n',
+    );
+    git(fixture.collaboratorRoot, ['add', 'remote-incoming.ts']);
+    git(fixture.collaboratorRoot, [
+      'commit',
+      '-m',
+      'chore(core): collaborator incoming commit',
+    ]);
+    git(fixture.collaboratorRoot, ['push', 'origin', branchName]);
+    const incomingRemoteHash = git(fixture.collaboratorRoot, ['rev-parse', 'HEAD']);
+
+    git(fixture.localRoot, ['fetch', 'origin', branchName]);
+    const fetchedTrackingHash = git(fixture.localRoot, [
+      'rev-parse',
+      `origin/${branchName}`,
+    ]);
+    assert.equal(
+      fetchedTrackingHash,
+      incomingRemoteHash,
+    );
+
+    await assert.rejects(
+      () => mod.ensureSafeRewritePreflight(fixture.localRoot),
+      /does not include latest origin\/.*run git pull --rebase/i,
+    );
+  } finally {
+    cleanupTempDir(fixture.collaboratorRoot);
+    cleanupTempDir(fixture.localRoot);
+    cleanupTempDir(fixture.bareRoot);
+  }
+});
+
+void test('ensureSafeRewritePreflight rejects when local branch is behind upstream', async () => {
+  const fixture = initRemoteFixture();
+  try {
+    const mod = await loadCommitCopilotWithMocks();
+    const branchName = git(fixture.localRoot, [
+      'rev-parse',
+      '--abbrev-ref',
+      'HEAD',
+    ]);
+
+    fs.writeFileSync(
+      path.join(fixture.collaboratorRoot, 'remote-preflight.ts'),
+      'export const remotePreflight = true;\n',
+    );
+    git(fixture.collaboratorRoot, ['add', 'remote-preflight.ts']);
+    git(fixture.collaboratorRoot, [
+      'commit',
+      '-m',
+      'chore(core): remote preflight commit',
+    ]);
+    git(fixture.collaboratorRoot, ['push', 'origin', branchName]);
+
+    await assert.rejects(
+      () => mod.ensureSafeRewritePreflight(fixture.localRoot),
+      /does not include latest origin\/.*run git pull --rebase/i,
+    );
+  } finally {
+    cleanupTempDir(fixture.collaboratorRoot);
+    cleanupTempDir(fixture.localRoot);
+    cleanupTempDir(fixture.bareRoot);
+  }
+});
+
+void test('ensureSafeRewritePreflight succeeds when local branch already contains upstream', async () => {
+  const fixture = initRemoteFixture();
+  try {
+    const mod = await loadCommitCopilotWithMocks();
+    const branchName = git(fixture.localRoot, [
+      'rev-parse',
+      '--abbrev-ref',
+      'HEAD',
+    ]);
+    const expectedTrackingHash = git(fixture.localRoot, [
+      'rev-parse',
+      `origin/${branchName}`,
+    ]);
+
+    const preflight = await mod.ensureSafeRewritePreflight(fixture.localRoot);
+
+    assert.equal(preflight.upstreamRef, `origin/${branchName}`);
+    assert.equal(preflight.remoteTrackingHash, expectedTrackingHash);
+  } finally {
+    cleanupTempDir(fixture.collaboratorRoot);
+    cleanupTempDir(fixture.localRoot);
+    cleanupTempDir(fixture.bareRoot);
+  }
+});
+
 void test('autoSyncWithUpstreamForRewrite rejects when upstream is missing', async () => {
   const fixture = initTestRepo();
   try {
@@ -499,11 +610,96 @@ void test('autoSyncWithUpstreamForRewrite supports retry push with current lease
     );
     const rebasedLocalHead = git(fixture.localRoot, ['rev-parse', 'HEAD']);
 
-    await mod.forcePushWithCurrentLease(fixture.localRoot);
+    await mod.forcePushWithLease(
+      fixture.localRoot,
+      git(fixture.localRoot, ['rev-parse', `origin/${branchName}`]),
+    );
 
     assert.equal(
       git(fixture.bareRoot, ['rev-parse', `refs/heads/${branchName}`]),
       rebasedLocalHead,
+    );
+  } finally {
+    cleanupTempDir(fixture.collaboratorRoot);
+    cleanupTempDir(fixture.localRoot);
+    cleanupTempDir(fixture.bareRoot);
+  }
+});
+
+void test('autoSyncWithUpstreamForRewrite preserves local rewritten commit when upstream advanced', async () => {
+  const fixture = initRemoteFixture();
+  try {
+    const mod = await loadCommitCopilotWithMocks();
+    const branchName = git(fixture.localRoot, [
+      'rev-parse',
+      '--abbrev-ref',
+      'HEAD',
+    ]);
+
+    fs.writeFileSync(
+      path.join(fixture.localRoot, 'rewrite-target.ts'),
+      'export const rewriteTarget = true;\n',
+    );
+    git(fixture.localRoot, ['add', 'rewrite-target.ts']);
+    git(fixture.localRoot, ['commit', '-m', 'bad commit message']);
+    const targetCommitHash = git(fixture.localRoot, ['rev-parse', 'HEAD']);
+    git(fixture.localRoot, ['push', 'origin', branchName]);
+
+    git(fixture.collaboratorRoot, ['pull', 'origin', branchName]);
+
+    const rewriteResult = await mod.rewriteHistoricalCommitMessage({
+      repository: createRepository(fixture.localRoot),
+      commitHash: targetCommitHash,
+      newMessage: 'fix(core): rewritten tip message',
+    });
+    assert.equal(rewriteResult.success, true);
+    assert.ok(rewriteResult.previousRemoteTrackingHash);
+
+    fs.writeFileSync(
+      path.join(fixture.collaboratorRoot, 'remote-after-rewrite.ts'),
+      'export const remoteAfterRewrite = true;\n',
+    );
+    git(fixture.collaboratorRoot, ['add', 'remote-after-rewrite.ts']);
+    git(fixture.collaboratorRoot, [
+      'commit',
+      '-m',
+      'chore(core): collaborator after rewrite',
+    ]);
+    git(fixture.collaboratorRoot, ['push', 'origin', branchName]);
+
+    await mod.autoSyncWithUpstreamForRewrite(
+      fixture.localRoot,
+      `origin/${branchName}`,
+      rewriteResult.previousRemoteTrackingHash,
+    );
+
+    assert.equal(
+      git(fixture.localRoot, ['log', '--format=%s', '-n', '3']),
+      [
+        'chore(core): collaborator after rewrite',
+        'fix(core): rewritten tip message',
+        'feat(core): init',
+      ].join('\n'),
+    );
+
+    await mod.forcePushWithLease(
+      fixture.localRoot,
+      git(fixture.localRoot, ['rev-parse', `origin/${branchName}`]),
+    );
+
+    assert.equal(
+      git(fixture.bareRoot, [
+        'log',
+        '--format=%s',
+        '-n',
+        '3',
+        `refs/heads/${branchName}`,
+      ]),
+      [
+        'chore(core): collaborator after rewrite',
+        'fix(core): rewritten tip message',
+        'feat(core): init',
+      ].join('\n'),
     );
   } finally {
     cleanupTempDir(fixture.collaboratorRoot);

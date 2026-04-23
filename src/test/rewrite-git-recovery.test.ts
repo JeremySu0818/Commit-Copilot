@@ -52,6 +52,23 @@ void test('buildManualRewriteRecoveryCommands includes upstream setup when upstr
   );
 });
 
+void test('buildManualRewriteRecoveryCommands uses rewrite-preserving flow when previous tracking hash is available', () => {
+  assert.deepEqual(
+    buildManualRewriteRecoveryCommands({
+      upstreamRef: 'origin/main',
+      previousRemoteTrackingHash: 'abc123',
+    }),
+    [
+      'git fetch --prune origin main',
+      'git branch <sync-branch> origin/main',
+      'git rebase --onto HEAD abc123 <sync-branch>',
+      'git merge --ff-only <sync-branch>',
+      'git branch -D <sync-branch>',
+      'git push --force-with-lease',
+    ],
+  );
+});
+
 void test('isLeaseConflictError recognizes C-locale force-with-lease failures', () => {
   assert.equal(
     isLeaseConflictError('! [rejected] main -> main (stale info)'),

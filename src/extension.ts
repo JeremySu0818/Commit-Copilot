@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 
 import {
-  autoSyncWithUpstreamForRewrite,
+  ensureSafeRewritePreflight,
   forcePushWithCurrentLease,
   forcePushWithExplicitLease,
   generateCommitMessage,
@@ -9,7 +9,6 @@ import {
   listRecentCommitsForRewrite,
   readLiveRemoteHeadHash,
   readRemoteTrackingHash,
-  readRewriteAutoSyncPreview,
   readUpstreamRef,
   rewriteHistoricalCommitMessage,
   EXIT_CODES,
@@ -968,6 +967,15 @@ async function executeRewriteCommand(
     if (!repository) {
       return;
     }
+    const preflightPassed = await ensureRewritePreflightSafety({
+      repository,
+      outputChannel,
+      text,
+      language,
+    });
+    if (!preflightPassed) {
+      return;
+    }
 
     outputChannel.appendLine('='.repeat(generationLogSeparatorWidth));
     outputChannel.appendLine(
@@ -1132,6 +1140,28 @@ async function executeRewriteCommand(
   }
 }
 
+async function ensureRewritePreflightSafety(params: {
+  repository: GitRepository;
+  outputChannel: vscode.OutputChannel;
+  text: ExtensionText;
+  language: ReturnType<typeof getCurrentLanguage>;
+}): Promise<boolean> {
+  try {
+    await ensureSafeRewritePreflight(params.repository.rootUri.fsPath);
+    return true;
+  } catch (error) {
+    const rawMessage = error instanceof Error ? error.message : String(error);
+    const localizedMessage =
+      error instanceof CommitCopilotError
+        ? (getLocalizedCommitCopilotErrorMessage(params.language, error) ??
+          rawMessage)
+        : rawMessage;
+    params.outputChannel.appendLine(`${rewriteLogPrefix} ${rawMessage}`);
+    vscode.window.showErrorMessage(localizedMessage);
+    return false;
+  }
+}
+
 function getPushTargetLabel(repository: GitRepository): string {
   const stateRecord = repository.state as unknown;
   const state = isRecord(stateRecord) ? stateRecord : {};
@@ -1153,6 +1183,7 @@ function getPushTargetLabel(repository: GitRepository): string {
 
 async function buildLeaseRecoveryCommands(
   repository: GitRepository,
+  previousRemoteTrackingHash?: string,
 ): Promise<string[]> {
   const upstreamRef = await readUpstreamRef(repository.rootUri.fsPath);
   const stateRecord = repository.state as unknown;
@@ -1160,20 +1191,16 @@ async function buildLeaseRecoveryCommands(
   const headValue = state.HEAD;
   const head = isRecord(headValue) ? headValue : {};
   const branchName = asString(head.name) ?? '';
-  return buildManualRewriteRecoveryCommands({ upstreamRef, branchName });
+  return buildManualRewriteRecoveryCommands({
+    upstreamRef,
+    branchName,
+    previousRemoteTrackingHash,
+  });
 }
-
-type AutoRecoverPushResult = 'recovered' | 'failed-handled' | 'skipped';
 
 type ForcePushLeaseMode =
   | { kind: 'explicit'; expectedRemoteRefHash?: string }
   | { kind: 'current' };
-
-const rewritePushHashDisplayLength = 12;
-
-function shortHash(hash: string | undefined): string {
-  return hash ? hash.slice(0, rewritePushHashDisplayLength) : '(unknown)';
-}
 
 async function refreshRepositoryStatus(
   repository: GitRepository,
@@ -1182,155 +1209,6 @@ async function refreshRepositoryStatus(
     await repository.status();
   } catch {
     return;
-  }
-}
-
-function appendIndentedLines(
-  outputChannel: vscode.OutputChannel,
-  lines: string[],
-): void {
-  for (const line of lines) {
-    outputChannel.appendLine(`${rewriteLogPrefix}   ${line}`);
-  }
-}
-
-async function appendAutoSyncPreviewSummary(params: {
-  repository: GitRepository;
-  upstreamRef: string;
-  previousRemoteTrackingHash?: string | null;
-  outputChannel: vscode.OutputChannel;
-  text: ExtensionText;
-}): Promise<void> {
-  const preview = await readRewriteAutoSyncPreview({
-    repoRoot: params.repository.rootUri.fsPath,
-    upstreamRef: params.upstreamRef,
-    previousRemoteTrackingHash: params.previousRemoteTrackingHash,
-  });
-  params.outputChannel.appendLine(
-    `${rewriteLogPrefix} ${params.text.output.rewriteAutoSyncPreviewSummary(preview.upstreamRef)}`,
-  );
-  params.outputChannel.appendLine(
-    `${rewriteLogPrefix} ${params.text.output.rewriteAutoSyncRemoteTracking(
-      shortHash(preview.previousRemoteTrackingHash),
-      shortHash(preview.currentRemoteTrackingHash),
-    )}`,
-  );
-  params.outputChannel.appendLine(
-    `${rewriteLogPrefix} ${params.text.output.rewriteAutoSyncLocalHead(
-      shortHash(preview.localHeadHash),
-    )}`,
-  );
-  params.outputChannel.appendLine(
-    `${rewriteLogPrefix} ${params.text.output.rewriteAutoSyncCommitsToPush}`,
-  );
-  if (preview.commitsToPush.length === 0) {
-    params.outputChannel.appendLine(
-      `${rewriteLogPrefix}   ${params.text.output.rewriteAutoSyncNoCommitsToPush}`,
-    );
-  } else {
-    appendIndentedLines(params.outputChannel, preview.commitsToPush);
-  }
-  params.outputChannel.appendLine(
-    `${rewriteLogPrefix} ${params.text.output.rewriteAutoSyncDiffStat}`,
-  );
-  const diffStatLines = preview.diffStat.split(/\r?\n/).filter(Boolean);
-  if (diffStatLines.length === 0) {
-    params.outputChannel.appendLine(
-      `${rewriteLogPrefix}   ${params.text.output.rewriteAutoSyncNoDiffStat}`,
-    );
-  } else {
-    appendIndentedLines(params.outputChannel, diffStatLines);
-  }
-  params.outputChannel.appendLine(
-    `${rewriteLogPrefix} ${params.text.output.rewriteAutoSyncRetryUsesCurrentLease}`,
-  );
-}
-
-async function attemptAutoSyncAndRetryPush(params: {
-  repository: GitRepository;
-  outputChannel: vscode.OutputChannel;
-  text: ExtensionText;
-  pushTargetLabel: string;
-}): Promise<AutoRecoverPushResult> {
-  const upstreamRef = await readUpstreamRef(params.repository.rootUri.fsPath);
-  if (!upstreamRef) {
-    return 'skipped';
-  }
-  const previousRemoteTrackingHash = await readRemoteTrackingHash(
-    params.repository.rootUri.fsPath,
-    upstreamRef,
-  );
-  const promptMessage =
-    params.text.notification.rewriteAutoSyncPromptWithUpstream(upstreamRef);
-
-  const selection = await vscode.window.showWarningMessage(
-    promptMessage,
-    { modal: true },
-    params.text.notification.rewriteAutoSyncRetryAction,
-  );
-  if (selection !== params.text.notification.rewriteAutoSyncRetryAction) {
-    return 'skipped';
-  }
-
-  try {
-    await vscode.window.withProgress(
-      {
-        location: vscode.ProgressLocation.Notification,
-        title: params.text.notification.rewriteAutoSyncRetryTitle,
-        cancellable: false,
-      },
-      async () => {
-        await autoSyncWithUpstreamForRewrite(
-          params.repository.rootUri.fsPath,
-          upstreamRef,
-        );
-      },
-    );
-    await refreshRepositoryStatus(params.repository);
-    await appendAutoSyncPreviewSummary({
-      repository: params.repository,
-      upstreamRef,
-      previousRemoteTrackingHash,
-      outputChannel: params.outputChannel,
-      text: params.text,
-    });
-    params.outputChannel.show(true);
-  } catch (error) {
-    const rawErrorMessage =
-      error instanceof Error ? error.message : String(error);
-    params.outputChannel.appendLine(
-      `${rewriteLogPrefix} ${params.text.output.rewriteAutoSyncBeforeRetryFailed(rawErrorMessage)}`,
-    );
-    params.outputChannel.appendLine(
-      `${rewriteLogPrefix} ${params.text.output.rewriteResolveConflictsContinueRebase}`,
-    );
-    vscode.window.showErrorMessage(
-      params.text.notification.rewriteAutoSyncFailed(rawErrorMessage),
-    );
-    return 'failed-handled';
-  }
-
-  try {
-    await runForcePushWithLeasePreferCli({
-      repository: params.repository,
-      outputChannel: params.outputChannel,
-      text: params.text,
-      leaseMode: { kind: 'current' },
-    });
-    const successMessage = params.text.notification.rewriteForcePushCompleted(
-      params.pushTargetLabel,
-    );
-    params.outputChannel.appendLine(`${rewriteLogPrefix} ${successMessage}`);
-    vscode.window.showInformationMessage(successMessage);
-    return 'recovered';
-  } catch (error) {
-    const rawErrorMessage =
-      error instanceof Error ? error.message : String(error);
-    const message =
-      params.text.notification.rewriteForcePushFailed(rawErrorMessage);
-    params.outputChannel.appendLine(`${rewriteLogPrefix} ${message}`);
-    vscode.window.showErrorMessage(message);
-    return 'failed-handled';
   }
 }
 
@@ -1401,7 +1279,10 @@ async function promptAndForcePushWithLease(
       outputChannel.appendLine(
         `${rewriteLogPrefix} ${text.output.rewriteSuggestedRecoverySteps}`,
       );
-      const commands = await buildLeaseRecoveryCommands(repository);
+      const commands = await buildLeaseRecoveryCommands(
+        repository,
+        expectedRemoteRefHash,
+      );
       for (const command of commands) {
         outputChannel.appendLine(
           `${rewriteLogPrefix} ${text.output.rewriteRecoveryCommand(command)}`,
@@ -1410,15 +1291,6 @@ async function promptAndForcePushWithLease(
       outputChannel.appendLine(
         `${rewriteLogPrefix} ${text.output.rewriteResolveConflictsContinueRebase}`,
       );
-      const autoRecoverResult = await attemptAutoSyncAndRetryPush({
-        repository,
-        outputChannel,
-        text,
-        pushTargetLabel,
-      });
-      if (autoRecoverResult !== 'skipped') {
-        return;
-      }
     }
     vscode.window.showErrorMessage(message);
   }

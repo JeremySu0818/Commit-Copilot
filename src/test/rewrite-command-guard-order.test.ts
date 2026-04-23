@@ -29,6 +29,30 @@ void test('rewrite command checks API key before commit selection', () => {
   assert.equal(ensureApiKeyIndex < selectCommitIndex, true);
 });
 
+void test('rewrite command enforces rewrite preflight safety before commit selection', () => {
+  const source = readFileSync(EXTENSION_PATH, 'utf8');
+  const functionStart = source.indexOf('async function executeRewriteCommand');
+  const functionEnd = source.indexOf(
+    'function getPushTargetLabel',
+    functionStart,
+  );
+
+  assert.notEqual(functionStart, -1);
+  assert.notEqual(functionEnd, -1);
+
+  const functionBody = source.slice(functionStart, functionEnd);
+  const preflightIndex = functionBody.indexOf(
+    'const preflightPassed = await ensureRewritePreflightSafety(',
+  );
+  const selectCommitIndex = functionBody.indexOf(
+    'const targetCommit = await selectRewriteCommit(repository, text);',
+  );
+
+  assert.notEqual(preflightIndex, -1);
+  assert.notEqual(selectCommitIndex, -1);
+  assert.equal(preflightIndex < selectCommitIndex, true);
+});
+
 void test('rewrite command does not force agentic mode', () => {
   const source = readFileSync(EXTENSION_PATH, 'utf8');
   const functionStart = source.indexOf('async function executeRewriteCommand');
@@ -110,11 +134,10 @@ void test('explicit lease failures retry with current lease only after confirmin
   );
 });
 
-void test('auto-sync flow runs preview then force-pushes in single confirmation', () => {
+void test('lease conflict flow avoids auto-sync automation and keeps manual recovery only', () => {
   const source = readFileSync(EXTENSION_PATH, 'utf8');
 
-  assert.match(source, /readRewriteAutoSyncPreview\(/);
-  assert.match(source, /rewriteAutoSyncPromptWithUpstream\(upstreamRef\)/);
-  assert.match(source, /leaseMode: \{ kind: 'current' \}/);
-  assert.doesNotMatch(source, /rewriteAutoSyncRetryPushPrompt\(/);
+  assert.doesNotMatch(source, /readRewriteAutoSyncPreview\(/);
+  assert.doesNotMatch(source, /rewriteAutoSyncPromptWithUpstream\(upstreamRef\)/);
+  assert.doesNotMatch(source, /attemptAutoSyncAndRetryPush\(/);
 });

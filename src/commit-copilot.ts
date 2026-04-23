@@ -77,6 +77,7 @@ const rewriteCommitSubjectFieldIndex = 2;
 const rewriteCommitParentsFieldIndex = 3;
 const rewriteSnapshotHashLength = 12;
 const rewriteSnapshotTimestampRadix = 36;
+const rewriteAutoSyncTempBranchPrefix = 'commit-copilot-sync-';
 const gitCommandEnvPathKey = 'COMMIT_COPILOT_GIT_PATH';
 const gitTreeRecordSeparator = '\0';
 const gitTreeMetadataPathSeparator = '\t';
@@ -864,6 +865,20 @@ async function isAncestorCommit(
   }
 }
 
+async function readMergeBaseHash(
+  repoRoot: string,
+  leftRef: string,
+  rightRef: string,
+): Promise<string> {
+  const output = await runGitTextCommand({
+    repoRoot,
+    args: ['merge-base', leftRef, rightRef],
+    timeout: GIT_SHOW_TIMEOUT_MS,
+    maxBuffer: bytesPerMiB,
+  });
+  return output.trim();
+}
+
 async function readRefHash(
   repoRoot: string,
   ref: string,
@@ -1357,6 +1372,11 @@ export interface RewriteAutoSyncPreview {
   diffStat: string;
 }
 
+export interface RewritePreflightSafetyResult {
+  upstreamRef: string | null;
+  remoteTrackingHash?: string;
+}
+
 export interface GenerateCommitMessageOptions {
   repository: GitRepository;
   provider: APIProvider;
@@ -1795,12 +1815,72 @@ function buildExplicitLeasePushArgs(
 ): string[] {
   const normalizedExpectedHash = expectedRemoteRefHash?.trim() ?? '';
   if (!upstreamRef || !normalizedExpectedHash) {
-    return ['push', '--force-with-lease'];
+    return ['push', '--force-with-lease', '--force-if-includes'];
+  }
+  const parsedUpstream = splitUpstreamRef(upstreamRef);
+  if (!parsedUpstream) {
+    return ['push', '--force-with-lease', '--force-if-includes'];
   }
   return [
     'push',
-    `--force-with-lease=${upstreamRef}:${normalizedExpectedHash}`,
+    `--force-with-lease=${parsedUpstream.branch}:${normalizedExpectedHash}`,
+    '--force-if-includes',
   ];
+}
+
+function isForceIfIncludesUnsupportedError(error: unknown): boolean {
+  const rawMessage = error instanceof Error ? error.message : String(error);
+  const normalized = rawMessage.trim().toLowerCase();
+  return (
+    normalized.includes('force-if-includes') &&
+    (normalized.includes('unknown option') ||
+      normalized.includes('unrecognized option') ||
+      normalized.includes('unsupported option') ||
+      normalized.includes('invalid option'))
+  );
+}
+
+function isForceIfIncludesReachabilityError(error: unknown): boolean {
+  const rawMessage = error instanceof Error ? error.message : String(error);
+  const normalized = rawMessage.trim().toLowerCase();
+  return (
+    normalized.includes('remote ref updated since checkout') ||
+    (normalized.includes('non-fast-forward') &&
+      normalized.includes('tip of your current branch is behind'))
+  );
+}
+
+function removeForceIfIncludesArg(args: string[]): string[] {
+  return args.filter((arg) => arg !== '--force-if-includes');
+}
+
+async function pushWithForceIfIncludesFallback(params: {
+  repoRoot: string;
+  args: string[];
+  allowReachabilityFallback?: boolean;
+}): Promise<void> {
+  try {
+    await runGitTextCommand({
+      repoRoot: params.repoRoot,
+      args: params.args,
+      timeout: GIT_PUSH_TIMEOUT_MS,
+      maxBuffer: GIT_LOG_MAX_BUFFER,
+    });
+  } catch (error) {
+    const shouldFallbackWithoutForceIfIncludes =
+      isForceIfIncludesUnsupportedError(error) ||
+      (params.allowReachabilityFallback === true &&
+        isForceIfIncludesReachabilityError(error));
+    if (!shouldFallbackWithoutForceIfIncludes) {
+      throw error;
+    }
+    await runGitTextCommand({
+      repoRoot: params.repoRoot,
+      args: removeForceIfIncludesArg(params.args),
+      timeout: GIT_PUSH_TIMEOUT_MS,
+      maxBuffer: GIT_LOG_MAX_BUFFER,
+    });
+  }
 }
 
 export async function forcePushWithExplicitLease(
@@ -1808,22 +1888,19 @@ export async function forcePushWithExplicitLease(
   expectedRemoteRefHash?: string,
 ): Promise<void> {
   const upstreamRef = await readUpstreamRef(repoRoot);
-  await runGitTextCommand({
+  await pushWithForceIfIncludesFallback({
     repoRoot,
     args: buildExplicitLeasePushArgs(upstreamRef, expectedRemoteRefHash),
-    timeout: GIT_PUSH_TIMEOUT_MS,
-    maxBuffer: GIT_LOG_MAX_BUFFER,
+    allowReachabilityFallback: true,
   });
 }
 
 export async function forcePushWithCurrentLease(
   repoRoot: string,
 ): Promise<void> {
-  await runGitTextCommand({
+  await pushWithForceIfIncludesFallback({
     repoRoot,
-    args: ['push', '--force-with-lease'],
-    timeout: GIT_PUSH_TIMEOUT_MS,
-    maxBuffer: GIT_LOG_MAX_BUFFER,
+    args: ['push', '--force-with-lease', '--force-if-includes'],
   });
 }
 
@@ -1843,6 +1920,42 @@ async function abortRebaseSilently(repoRoot: string): Promise<void> {
     await runGitTextCommand({
       repoRoot,
       args: ['rebase', '--abort'],
+      timeout: GIT_PUSH_TIMEOUT_MS,
+      maxBuffer: GIT_LOG_MAX_BUFFER,
+    });
+  } catch {
+    return;
+  }
+}
+
+function createRewriteAutoSyncTempBranchName(): string {
+  const timestamp = Date.now().toString(rewriteSnapshotTimestampRadix);
+  const randomToken = Math.random()
+    .toString(rewriteSnapshotTimestampRadix)
+    .slice(2, 8);
+  return `${rewriteAutoSyncTempBranchPrefix}${timestamp}-${randomToken}`;
+}
+
+async function checkoutBranchSilently(
+  repoRoot: string,
+  branchName: string,
+): Promise<void> {
+  await runGitTextCommand({
+    repoRoot,
+    args: ['checkout', '--quiet', branchName],
+    timeout: GIT_PUSH_TIMEOUT_MS,
+    maxBuffer: GIT_LOG_MAX_BUFFER,
+  });
+}
+
+async function deleteBranchSilently(
+  repoRoot: string,
+  branchName: string,
+): Promise<void> {
+  try {
+    await runGitTextCommand({
+      repoRoot,
+      args: ['branch', '-D', branchName],
       timeout: GIT_PUSH_TIMEOUT_MS,
       maxBuffer: GIT_LOG_MAX_BUFFER,
     });
@@ -1913,9 +2026,54 @@ export async function readRewriteAutoSyncPreview(params: {
   };
 }
 
+export async function ensureSafeRewritePreflight(
+  repoRoot: string,
+): Promise<RewritePreflightSafetyResult> {
+  const upstreamRef = await readUpstreamRef(repoRoot);
+  if (!upstreamRef) {
+    return { upstreamRef: null };
+  }
+
+  const commandPlan = buildRewriteRecoveryCommandPlan(upstreamRef);
+  await runGitTextCommand({
+    repoRoot,
+    args: commandPlan.fetchArgs,
+    timeout: GIT_PUSH_TIMEOUT_MS,
+    maxBuffer: GIT_LOG_MAX_BUFFER,
+  });
+
+  const remoteTrackingHash = await readRefHash(repoRoot, upstreamRef);
+  if (!remoteTrackingHash) {
+    throw new CommitCopilotError(
+      `Cannot verify upstream "${upstreamRef}" after fetch.`,
+      'UPSTREAM_NOT_CONFIGURED',
+      EXIT_CODES.UNKNOWN_ERROR,
+    );
+  }
+
+  const localContainsRemote = await isAncestorCommit(
+    repoRoot,
+    remoteTrackingHash,
+    'HEAD',
+  );
+  if (!localContainsRemote) {
+    throw new CommitCopilotError(
+      `Cannot rewrite safely because local HEAD does not include latest ${upstreamRef} (${remoteTrackingHash.slice(0, rewriteSnapshotHashLength)}). Run git pull --rebase (or merge) first.`,
+      'REWRITE_REMOTE_NOT_INTEGRATED',
+      EXIT_CODES.UNKNOWN_ERROR,
+    );
+  }
+
+  return {
+    upstreamRef,
+    remoteTrackingHash,
+  };
+}
+
 export async function autoSyncWithUpstreamForRewrite(
   repoRoot: string,
   upstreamRef?: string,
+  previousRemoteTrackingHash?: string,
 ): Promise<RewriteRecoveryCommandPlan> {
   const trimmedUpstreamRef = upstreamRef?.trim() ?? '';
   if (trimmedUpstreamRef.length === 0) {
@@ -1934,17 +2092,118 @@ export async function autoSyncWithUpstreamForRewrite(
     maxBuffer: GIT_LOG_MAX_BUFFER,
   });
 
+  const normalizedPreviousRemoteTrackingHash =
+    previousRemoteTrackingHash?.trim() ?? '';
+  if (normalizedPreviousRemoteTrackingHash.length === 0) {
+    try {
+      await runGitTextCommand({
+        repoRoot,
+        args: commandPlan.rebaseArgs,
+        timeout: GIT_PUSH_TIMEOUT_MS,
+        maxBuffer: GIT_LOG_MAX_BUFFER,
+      });
+    } catch (error) {
+      await abortRebaseSilently(repoRoot);
+      throw error;
+    }
+    return commandPlan;
+  }
+
+  const currentBranchName = await readCurrentBranchName(repoRoot);
+  if (currentBranchName === 'HEAD' || currentBranchName.trim().length === 0) {
+    throw new CommitCopilotError(
+      'Cannot auto-sync safely from detached HEAD.',
+      'REWRITE_DETACHED_HEAD',
+      EXIT_CODES.UNKNOWN_ERROR,
+      { messageKey: 'rewrite.detachedHead' },
+    );
+  }
+  const localHeadBeforeSync = await readCurrentHeadHash(repoRoot);
+  const currentRemoteTrackingHash =
+    (await readRefHash(repoRoot, trimmedUpstreamRef)) ?? '';
+  if (currentRemoteTrackingHash.length === 0) {
+    throw new CommitCopilotError(
+      `Cannot auto-sync because upstream "${trimmedUpstreamRef}" is unavailable after fetch.`,
+      'UPSTREAM_NOT_CONFIGURED',
+      EXIT_CODES.UNKNOWN_ERROR,
+    );
+  }
+  const localAlreadyContainsCurrentRemote = await isAncestorCommit(
+    repoRoot,
+    currentRemoteTrackingHash,
+    localHeadBeforeSync,
+  );
+  if (localAlreadyContainsCurrentRemote) {
+    return commandPlan;
+  }
+
+  const previousRemoteHashIsAncestor = await isAncestorCommit(
+    repoRoot,
+    normalizedPreviousRemoteTrackingHash,
+    currentRemoteTrackingHash,
+  );
+  if (!previousRemoteHashIsAncestor) {
+    throw new CommitCopilotError(
+      `Cannot auto-sync safely because upstream "${trimmedUpstreamRef}" no longer contains ${normalizedPreviousRemoteTrackingHash}.`,
+      'REWRITE_AUTOSYNC_UNSAFE_REMOTE_REWRITE',
+      EXIT_CODES.UNKNOWN_ERROR,
+    );
+  }
+
+  let rebaseBaseHash = normalizedPreviousRemoteTrackingHash;
+  const localContainsPreviousRemote = await isAncestorCommit(
+    repoRoot,
+    normalizedPreviousRemoteTrackingHash,
+    localHeadBeforeSync,
+  );
+  if (!localContainsPreviousRemote) {
+    rebaseBaseHash = await readMergeBaseHash(
+      repoRoot,
+      localHeadBeforeSync,
+      currentRemoteTrackingHash,
+    );
+  }
+
+  const tempBranchName = createRewriteAutoSyncTempBranchName();
+  await runGitTextCommand({
+    repoRoot,
+    args: ['branch', tempBranchName, trimmedUpstreamRef],
+    timeout: GIT_PUSH_TIMEOUT_MS,
+    maxBuffer: GIT_LOG_MAX_BUFFER,
+  });
+
   try {
     await runGitTextCommand({
       repoRoot,
-      args: commandPlan.rebaseArgs,
+      args: [
+        'rebase',
+        '--onto',
+        localHeadBeforeSync,
+        rebaseBaseHash,
+        tempBranchName,
+      ],
+      timeout: GIT_PUSH_TIMEOUT_MS,
+      maxBuffer: GIT_LOG_MAX_BUFFER,
+    });
+    await checkoutBranchSilently(repoRoot, currentBranchName);
+    await runGitTextCommand({
+      repoRoot,
+      args: ['merge', '--ff-only', tempBranchName],
       timeout: GIT_PUSH_TIMEOUT_MS,
       maxBuffer: GIT_LOG_MAX_BUFFER,
     });
   } catch (error) {
     await abortRebaseSilently(repoRoot);
+    try {
+      await checkoutBranchSilently(repoRoot, currentBranchName);
+    } catch {
+      // best-effort cleanup while preserving the original error
+    }
     throw error;
+  } finally {
+    await deleteBranchSilently(repoRoot, tempBranchName);
   }
+
   return commandPlan;
 }
 

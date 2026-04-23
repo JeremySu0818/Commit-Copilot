@@ -59,7 +59,22 @@ export function buildRewriteRecoveryCommandPlan(
 export function buildManualRewriteRecoveryCommands(params: {
   upstreamRef: string | null;
   branchName?: string;
+  previousRemoteTrackingHash?: string;
 }): string[] {
+  const normalizedPreviousRemoteTrackingHash =
+    params.previousRemoteTrackingHash?.trim() ?? '';
+  if (params.upstreamRef && normalizedPreviousRemoteTrackingHash.length > 0) {
+    return [
+      ...buildRewriteRecoveryCommandPlan(params.upstreamRef).displayCommands
+        .slice(0, 1),
+      `git branch <sync-branch> ${params.upstreamRef}`,
+      `git rebase --onto HEAD ${normalizedPreviousRemoteTrackingHash} <sync-branch>`,
+      'git merge --ff-only <sync-branch>',
+      'git branch -D <sync-branch>',
+      'git push --force-with-lease',
+    ];
+  }
+
   if (params.upstreamRef) {
     return buildRewriteRecoveryCommandPlan(params.upstreamRef).displayCommands;
   }
