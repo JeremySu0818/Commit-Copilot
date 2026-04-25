@@ -89,13 +89,13 @@ function buildScopeRule(options: CommitOutputOptions): string {
 
 function buildBodyAndFooterRule(options: CommitOutputOptions): string {
   if (options.includeBody && options.includeFooter) {
-    return 'Body is MANDATORY and footer is MANDATORY. Format: subject line, blank line, body text, blank line, footer line(s).';
+    return 'Body is MANDATORY and footer is MANDATORY. Format: subject line, blank line, body text, blank line, footer line(s). If no footer content can be validly derived from the diff/context under Conventional Commit conventions, write `Footer: none` honestly. Never fabricate footer facts.';
   }
   if (options.includeBody && !options.includeFooter) {
     return 'Body is MANDATORY. Add a blank line after the subject and write the body. Footer is FORBIDDEN.';
   }
   if (!options.includeBody && options.includeFooter) {
-    return 'Body is FORBIDDEN and footer is MANDATORY. Format: subject line, blank line, then footer line(s).';
+    return 'Body is FORBIDDEN and footer is MANDATORY. Format: subject line, blank line, then footer line(s). If no footer content can be validly derived from the diff/context under Conventional Commit conventions, write `Footer: none` honestly. Never fabricate footer facts.';
   }
   return 'Body and footer are both FORBIDDEN. Output exactly one subject line with no extra blank lines.';
 }
@@ -188,7 +188,7 @@ function buildCommitOutputReminder(
     ? 'A body section is MANDATORY.'
     : 'A body section is FORBIDDEN.';
   const footerRule = options.includeFooter
-    ? 'At least one footer line is MANDATORY.'
+    ? 'At least one footer line is MANDATORY. If no valid Conventional Commit footer can be derived, write `Footer: none` honestly. Never fabricate.'
     : 'Footer lines are FORBIDDEN.';
 
   return `When you are done, your ENTIRE text output must be ONLY the commit message. First-line format: ${subjectFormat}. ${scopeRule} ${bodyRule} ${footerRule} No analysis, no explanation, no commentary.`;
