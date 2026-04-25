@@ -72,6 +72,7 @@ export const OPENAI_MODELS: ModelConfig[] = [
   { id: 'gpt-5.4-nano', alias: 'GPT-5.4 nano' },
   { id: 'gpt-5.4-mini', alias: 'GPT-5.4 mini' },
   { id: 'gpt-5.4', alias: 'GPT-5.4' },
+  { id: 'gpt-5.5', alias: 'GPT-5.5' },
 ];
 
 export const ANTHROPIC_MODELS: ModelConfig[] = [
