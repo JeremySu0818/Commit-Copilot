@@ -436,6 +436,22 @@ function isCompactBatch(values: unknown[]): boolean {
   return values.length <= compactBatchSizeThreshold;
 }
 
+function formatToolNameList(toolCalls: { name: string; args: unknown }[]): string {
+  const uniqueToolNames = Array.from(new Set(toolCalls.map((tc) => tc.name)));
+  return uniqueToolNames.join(', ');
+}
+
+function appendToolNamesSuffix(
+  message: string,
+  toolCalls: { name: string; args: unknown }[],
+): string {
+  const toolList = formatToolNameList(toolCalls);
+  if (!toolList) {
+    return message;
+  }
+  return `${message} [tools: ${toolList}]`;
+}
+
 function formatSingleToolBatchProgress(
   step: number,
   toolName: string,
@@ -489,11 +505,14 @@ function formatBatchProgressMessage(
   const msgs = LOCALES[language].progressMessages;
 
   if (toolCalls.length === 1) {
-    return formatProgressMessage(
-      step,
-      toolCalls[0].name,
-      toolCalls[0].args,
-      language,
+    return appendToolNamesSuffix(
+      formatProgressMessage(
+        step,
+        toolCalls[0].name,
+        toolCalls[0].args,
+        language,
+      ),
+      toolCalls,
     );
   }
 
@@ -507,11 +526,14 @@ function formatBatchProgressMessage(
       msgs,
     );
     if (formatted) {
-      return formatted;
+      return appendToolNamesSuffix(formatted, toolCalls);
     }
   }
 
-  return msgs.stepExecutingMultipleTools(step, toolCalls.length);
+  return appendToolNamesSuffix(
+    msgs.stepExecutingMultipleTools(step, toolCalls.length),
+    toolCalls,
+  );
 }
 
 export {
