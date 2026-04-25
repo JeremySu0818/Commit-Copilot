@@ -7,20 +7,20 @@ export const arLocale: LocaleTextBundle = {
       'API Key is not configured. Please set your API Key in the Commit-Copilot panel.',
     'api.keyInvalid': (args) =>
       args.details?.trim()
-        ? 'Invalid API Key: {details}'.replace('{details}', args.details ?? '')
+        ? 'Invalid API Key: {details}'.replace('{details}', args.details)
         : 'Invalid API Key.',
     'api.quotaExceeded': (args) =>
       args.details?.trim()
         ? 'API quota exceeded: {details}'.replace(
             '{details}',
-            args.details ?? '',
+            args.details,
           )
         : 'API quota exceeded.',
     'api.requestFailed': (args) =>
       args.details?.trim()
         ? 'API request failed: {details}'.replace(
             '{details}',
-            args.details ?? '',
+            args.details,
           )
         : 'API request failed.',
     'api.ollamaConnectionFailed': (args) =>
@@ -65,7 +65,7 @@ export const arLocale: LocaleTextBundle = {
       args.details?.trim()
         ? 'Failed to stage changes: {details}'.replace(
             '{details}',
-            args.details ?? '',
+            args.details,
           )
         : 'Failed to stage changes.',
     'generation.noChanges': () =>
@@ -96,27 +96,27 @@ export const arLocale: LocaleTextBundle = {
         args.commitHash ?? '',
       ),
     'rewrite.upstreamVerifyFailed': (args) =>
-      'Cannot verify upstream "{upstreamRef}" after fetch.'.replace(
+      'لا يمكن التحقق من المنبع "{upstreamRef}" بعد الجلب.'.replace(
         '{upstreamRef}',
         args.upstreamRef ?? '',
       ),
     'rewrite.remoteNotIntegrated': (args) =>
-      'Cannot rewrite safely because local HEAD does not include latest {upstreamRef} ({remoteHash}). Run git pull --rebase (or merge) first.'
+      'لا يمكن إعادة الكتابة بأمان لأن HEAD المحلي لا يتضمن أحدث {upstreamRef} ({remoteHash}). قم بتشغيل git pull --rebase (أو merge) أولاً.'
         .replace('{upstreamRef}', args.upstreamRef ?? '')
         .replace('{remoteHash}', args.remoteHash ?? ''),
     'rewrite.autoSyncMissingUpstream': () =>
-      'Cannot auto-sync without an upstream branch. Configure upstream first.',
+      'لا يمكن المزامنة التلقائية بدون فرع منبع. قم بتكوين المنبع أولاً.',
     'rewrite.autoSyncUpstreamUnavailable': (args) =>
-      'Cannot auto-sync because upstream "{upstreamRef}" is unavailable after fetch.'.replace(
+      'لا يمكن المزامنة التلقائية لأن المنبع "{upstreamRef}" غير متوفر بعد الجلب.'.replace(
         '{upstreamRef}',
         args.upstreamRef ?? '',
       ),
     'rewrite.autoSyncUnsafeRemoteRewrite': (args) =>
-      'Cannot auto-sync safely because upstream "{upstreamRef}" no longer contains {previousHash}.'
+      'لا يمكن المزامنة التلقائية بأمان لأن المنبع "{upstreamRef}" لم يعد يحتوي على {previousHash}.'
         .replace('{upstreamRef}', args.upstreamRef ?? '')
         .replace('{previousHash}', args.previousHash ?? ''),
     'rewrite.forcePushStaleInfo': () =>
-      'Force-with-lease stale info: remote tracking ref changed before VS Code fallback.',
+      'معلومات قديمة عن الدفع بالقوة: تغير المرجع المتعقب عن بعد قبل الرجوع إلى VS Code.',
   },
   errorMessages: {
     [EXIT_CODES.NOT_GIT_REPO]: {
@@ -203,7 +203,7 @@ export const arLocale: LocaleTextBundle = {
       rewriteCancelRequestedFromProgress: 'تم طلب الإلغاء من واجهة التقدم.',
       rewriteCommitRewritten: (originalHash, replacementHash) =>
         `تمت إعادة كتابة الالتزام: ${originalHash} -> ${replacementHash}`,
-      rewriteReplacementCommitFallback: 'updated',
+      rewriteReplacementCommitFallback: 'تم التحديث',
       callingGenerateCommitMessage: 'جاري استدعاء generateCommitMessage...',
       repositoryPath: (path) => `مسار المستودع: ${path}`,
       usingModel: (model) => `استخدام النموذج: ${model}`,
@@ -220,21 +220,21 @@ export const arLocale: LocaleTextBundle = {
         'إذا حدثت تعارضات أثناء rebase، فقم بحلها أولاً ثم تابع rebase.',
       rewriteRecoveryCommand: (command) => `• ${command}`,
       rewriteAutoSyncPreviewSummary: (upstreamRef) =>
-        `Auto-sync preview for ${upstreamRef}:`,
+        `معاينة المزامنة التلقائية لـ ${upstreamRef}:`,
       rewriteAutoSyncRemoteTracking: (beforeHash, afterHash) =>
-        `Remote tracking: ${beforeHash} -> ${afterHash}`,
+        `التتبع عن بعد: ${beforeHash} -> ${afterHash}`,
       rewriteAutoSyncLocalHead: (headHash) =>
-        `Local rewritten HEAD: ${headHash}`,
-      rewriteAutoSyncCommitsToPush: 'Commits that will be pushed:',
-      rewriteAutoSyncNoCommitsToPush: '(none)',
-      rewriteAutoSyncDiffStat: 'Diff that will be pushed:',
-      rewriteAutoSyncNoDiffStat: '(no diff)',
+        `HEAD المحلي المعاد كتابته: ${headHash}`,
+      rewriteAutoSyncCommitsToPush: 'الالتزامات التي سيتم دفعها:',
+      rewriteAutoSyncNoCommitsToPush: '(لا يوجد)',
+      rewriteAutoSyncDiffStat: 'الاختلافات التي سيتم دفعها:',
+      rewriteAutoSyncNoDiffStat: '(لا يوجد اختلاف)',
       rewriteAutoSyncRetryUsesCurrentLease:
-        'Retry push will use the refreshed upstream lease, not the pre-rewrite hash.',
+        'ستستخدم إعادة المحاولة منبع المزامنة المحدث، وليس التجزئة ما قبل إعادة الكتابة.',
       rewriteCliAuthFailedUsingVscodeFallback:
-        'CLI push failed because Git needs credentials; retrying through VS Code Git.',
+        'فشل الدفع عبر سطر الأوامر لأن Git يحتاج إلى بيانات اعتماد؛ جاري إعادة المحاولة عبر VS Code Git.',
       rewriteVscodeFallbackSkippedLeaseChanged:
-        'VS Code Git fallback skipped because the remote tracking ref changed.',
+        'تم تخطي الرجوع إلى VS Code Git لتغير المرجع المتعقب عن بعد.',
     },
     notification: {
       gitExtensionMissing:

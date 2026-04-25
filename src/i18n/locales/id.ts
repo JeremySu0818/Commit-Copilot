@@ -7,20 +7,20 @@ export const idLocale: LocaleTextBundle = {
       'API Key is not configured. Please set your API Key in the Commit-Copilot panel.',
     'api.keyInvalid': (args) =>
       args.details?.trim()
-        ? 'Invalid API Key: {details}'.replace('{details}', args.details ?? '')
+        ? 'Invalid API Key: {details}'.replace('{details}', args.details)
         : 'Invalid API Key.',
     'api.quotaExceeded': (args) =>
       args.details?.trim()
         ? 'API quota exceeded: {details}'.replace(
             '{details}',
-            args.details ?? '',
+            args.details,
           )
         : 'API quota exceeded.',
     'api.requestFailed': (args) =>
       args.details?.trim()
         ? 'API request failed: {details}'.replace(
             '{details}',
-            args.details ?? '',
+            args.details,
           )
         : 'API request failed.',
     'api.ollamaConnectionFailed': (args) =>
@@ -65,7 +65,7 @@ export const idLocale: LocaleTextBundle = {
       args.details?.trim()
         ? 'Failed to stage changes: {details}'.replace(
             '{details}',
-            args.details ?? '',
+            args.details,
           )
         : 'Failed to stage changes.',
     'generation.noChanges': () =>
@@ -96,27 +96,27 @@ export const idLocale: LocaleTextBundle = {
         args.commitHash ?? '',
       ),
     'rewrite.upstreamVerifyFailed': (args) =>
-      'Cannot verify upstream "{upstreamRef}" after fetch.'.replace(
+      'Tidak dapat memverifikasi upstream "{upstreamRef}" setelah fetch.'.replace(
         '{upstreamRef}',
         args.upstreamRef ?? '',
       ),
     'rewrite.remoteNotIntegrated': (args) =>
-      'Cannot rewrite safely because local HEAD does not include latest {upstreamRef} ({remoteHash}). Run git pull --rebase (or merge) first.'
+      'Tidak dapat menulis ulang dengan aman karena HEAD lokal tidak menyertakan {upstreamRef} ({remoteHash}) terbaru. Jalankan git pull --rebase (atau merge) terlebih dahulu.'
         .replace('{upstreamRef}', args.upstreamRef ?? '')
         .replace('{remoteHash}', args.remoteHash ?? ''),
     'rewrite.autoSyncMissingUpstream': () =>
-      'Cannot auto-sync without an upstream branch. Configure upstream first.',
+      'Tidak dapat menyelaraskan otomatis tanpa cabang upstream. Konfigurasikan upstream terlebih dahulu.',
     'rewrite.autoSyncUpstreamUnavailable': (args) =>
-      'Cannot auto-sync because upstream "{upstreamRef}" is unavailable after fetch.'.replace(
+      'Tidak dapat menyelaraskan otomatis karena upstream "{upstreamRef}" tidak tersedia setelah fetch.'.replace(
         '{upstreamRef}',
         args.upstreamRef ?? '',
       ),
     'rewrite.autoSyncUnsafeRemoteRewrite': (args) =>
-      'Cannot auto-sync safely because upstream "{upstreamRef}" no longer contains {previousHash}.'
+      'Tidak dapat menyelaraskan otomatis dengan aman karena upstream "{upstreamRef}" tidak lagi memuat {previousHash}.'
         .replace('{upstreamRef}', args.upstreamRef ?? '')
         .replace('{previousHash}', args.previousHash ?? ''),
     'rewrite.forcePushStaleInfo': () =>
-      'Force-with-lease stale info: remote tracking ref changed before VS Code fallback.',
+      'Info force-with-lease kedaluwarsa: referensi pelacakan jarak jauh berubah sebelum fallback VS Code.',
   },
   errorMessages: {
     [EXIT_CODES.NOT_GIT_REPO]: {
@@ -209,7 +209,7 @@ export const idLocale: LocaleTextBundle = {
       rewriteCancelRequestedFromProgress: 'Pembatalan diminta dari UI progres.',
       rewriteCommitRewritten: (originalHash, replacementHash) =>
         `Commit ditulis ulang: ${originalHash} -> ${replacementHash}`,
-      rewriteReplacementCommitFallback: 'updated',
+      rewriteReplacementCommitFallback: 'diperbarui',
       callingGenerateCommitMessage: 'Memanggil generateCommitMessage...',
       repositoryPath: (path) => `Jalur repositori: ${path}`,
       usingModel: (model) => `Menggunakan model: ${model}`,
@@ -228,21 +228,21 @@ export const idLocale: LocaleTextBundle = {
         'Jika terjadi konflik saat rebase, selesaikan dulu lalu lanjutkan rebase.',
       rewriteRecoveryCommand: (command) => `• ${command}`,
       rewriteAutoSyncPreviewSummary: (upstreamRef) =>
-        `Auto-sync preview for ${upstreamRef}:`,
+        `Pratinjau sinkronisasi otomatis untuk ${upstreamRef}:`,
       rewriteAutoSyncRemoteTracking: (beforeHash, afterHash) =>
-        `Remote tracking: ${beforeHash} -> ${afterHash}`,
+        `Pelacakan jarak jauh: ${beforeHash} -> ${afterHash}`,
       rewriteAutoSyncLocalHead: (headHash) =>
-        `Local rewritten HEAD: ${headHash}`,
-      rewriteAutoSyncCommitsToPush: 'Commits that will be pushed:',
-      rewriteAutoSyncNoCommitsToPush: '(none)',
-      rewriteAutoSyncDiffStat: 'Diff that will be pushed:',
-      rewriteAutoSyncNoDiffStat: '(no diff)',
+        `HEAD tertulis ulang lokal: ${headHash}`,
+      rewriteAutoSyncCommitsToPush: 'Commit yang akan di-push:',
+      rewriteAutoSyncNoCommitsToPush: '(tidak ada)',
+      rewriteAutoSyncDiffStat: 'Diff yang akan di-push:',
+      rewriteAutoSyncNoDiffStat: '(tidak ada diff)',
       rewriteAutoSyncRetryUsesCurrentLease:
-        'Retry push will use the refreshed upstream lease, not the pre-rewrite hash.',
+        'Coba lagi push akan menggunakan lease upstream yang disegarkan, bukan hash sebelum penulisan ulang.',
       rewriteCliAuthFailedUsingVscodeFallback:
-        'CLI push failed because Git needs credentials; retrying through VS Code Git.',
+        'Push CLI gagal karena Git memerlukan kredensial; mencoba lagi melalui VS Code Git.',
       rewriteVscodeFallbackSkippedLeaseChanged:
-        'VS Code Git fallback skipped because the remote tracking ref changed.',
+        'Fallback VS Code Git dilewati karena referensi pelacakan jarak jauh berubah.',
     },
     notification: {
       gitExtensionMissing:

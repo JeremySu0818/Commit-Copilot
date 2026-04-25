@@ -7,20 +7,20 @@ export const koLocale: LocaleTextBundle = {
       'API Key is not configured. Please set your API Key in the Commit-Copilot panel.',
     'api.keyInvalid': (args) =>
       args.details?.trim()
-        ? 'Invalid API Key: {details}'.replace('{details}', args.details ?? '')
+        ? 'Invalid API Key: {details}'.replace('{details}', args.details)
         : 'Invalid API Key.',
     'api.quotaExceeded': (args) =>
       args.details?.trim()
         ? 'API quota exceeded: {details}'.replace(
             '{details}',
-            args.details ?? '',
+            args.details,
           )
         : 'API quota exceeded.',
     'api.requestFailed': (args) =>
       args.details?.trim()
         ? 'API request failed: {details}'.replace(
             '{details}',
-            args.details ?? '',
+            args.details,
           )
         : 'API request failed.',
     'api.ollamaConnectionFailed': (args) =>
@@ -65,7 +65,7 @@ export const koLocale: LocaleTextBundle = {
       args.details?.trim()
         ? 'Failed to stage changes: {details}'.replace(
             '{details}',
-            args.details ?? '',
+            args.details,
           )
         : 'Failed to stage changes.',
     'generation.noChanges': () =>
@@ -96,27 +96,27 @@ export const koLocale: LocaleTextBundle = {
         args.commitHash ?? '',
       ),
     'rewrite.upstreamVerifyFailed': (args) =>
-      'Cannot verify upstream "{upstreamRef}" after fetch.'.replace(
+      'fetch 후 업스트림 "{upstreamRef}"을(를) 검증할 수 없습니다.'.replace(
         '{upstreamRef}',
         args.upstreamRef ?? '',
       ),
     'rewrite.remoteNotIntegrated': (args) =>
-      'Cannot rewrite safely because local HEAD does not include latest {upstreamRef} ({remoteHash}). Run git pull --rebase (or merge) first.'
+      '로컬 HEAD에 최신 {upstreamRef} ({remoteHash})이(가) 포함되어 있지 않아 안전하게 다시 쓸 수 없습니다. 먼저 git pull --rebase (또는 merge)를 실행하세요.'
         .replace('{upstreamRef}', args.upstreamRef ?? '')
         .replace('{remoteHash}', args.remoteHash ?? ''),
     'rewrite.autoSyncMissingUpstream': () =>
-      'Cannot auto-sync without an upstream branch. Configure upstream first.',
+      '업스트림 브랜치 없이 자동 동기화할 수 없습니다. 먼저 업스트림을 설정하세요.',
     'rewrite.autoSyncUpstreamUnavailable': (args) =>
-      'Cannot auto-sync because upstream "{upstreamRef}" is unavailable after fetch.'.replace(
+      'fetch 후 업스트림 "{upstreamRef}"을(를) 사용할 수 없으므로 자동 동기화할 수 없습니다.'.replace(
         '{upstreamRef}',
         args.upstreamRef ?? '',
       ),
     'rewrite.autoSyncUnsafeRemoteRewrite': (args) =>
-      'Cannot auto-sync safely because upstream "{upstreamRef}" no longer contains {previousHash}.'
+      '업스트림 "{upstreamRef}"에 더 이상 {previousHash}이(가) 포함되어 있지 않아 안전하게 자동 동기화할 수 없습니다.'
         .replace('{upstreamRef}', args.upstreamRef ?? '')
         .replace('{previousHash}', args.previousHash ?? ''),
     'rewrite.forcePushStaleInfo': () =>
-      'Force-with-lease stale info: remote tracking ref changed before VS Code fallback.',
+      'Force-with-lease 오래된 정보: VS Code 대체 수단 사용 전에 원격 추적 참조가 변경되었습니다.',
   },
   errorMessages: {
     [EXIT_CODES.NOT_GIT_REPO]: {
@@ -206,7 +206,7 @@ export const koLocale: LocaleTextBundle = {
       rewriteCancelRequestedFromProgress: '진행 UI에서 취소가 요청되었습니다.',
       rewriteCommitRewritten: (originalHash, replacementHash) =>
         `커밋이 다시 작성됨: ${originalHash} -> ${replacementHash}`,
-      rewriteReplacementCommitFallback: 'updated',
+      rewriteReplacementCommitFallback: '업데이트됨',
       callingGenerateCommitMessage: 'generateCommitMessage 호출 중...',
       repositoryPath: (path) => `리포지토리 경로: ${path}`,
       usingModel: (model) => `사용 중인 모델: ${model}`,
@@ -224,21 +224,21 @@ export const koLocale: LocaleTextBundle = {
         'rebase 중 충돌이 발생하면 먼저 해결한 뒤 rebase를 계속하세요.',
       rewriteRecoveryCommand: (command) => `• ${command}`,
       rewriteAutoSyncPreviewSummary: (upstreamRef) =>
-        `Auto-sync preview for ${upstreamRef}:`,
+        `${upstreamRef}의 자동 동기화 미리보기:`,
       rewriteAutoSyncRemoteTracking: (beforeHash, afterHash) =>
-        `Remote tracking: ${beforeHash} -> ${afterHash}`,
+        `원격 추적: ${beforeHash} -> ${afterHash}`,
       rewriteAutoSyncLocalHead: (headHash) =>
-        `Local rewritten HEAD: ${headHash}`,
-      rewriteAutoSyncCommitsToPush: 'Commits that will be pushed:',
-      rewriteAutoSyncNoCommitsToPush: '(none)',
-      rewriteAutoSyncDiffStat: 'Diff that will be pushed:',
-      rewriteAutoSyncNoDiffStat: '(no diff)',
+        `로컬 다시 작성된 HEAD: ${headHash}`,
+      rewriteAutoSyncCommitsToPush: '푸시될 커밋:',
+      rewriteAutoSyncNoCommitsToPush: '(없음)',
+      rewriteAutoSyncDiffStat: '푸시될 diff:',
+      rewriteAutoSyncNoDiffStat: '(diff 없음)',
       rewriteAutoSyncRetryUsesCurrentLease:
-        'Retry push will use the refreshed upstream lease, not the pre-rewrite hash.',
+        '다시 시도 푸시는 다시 작성 전 해시가 아니라 새로 고쳐진 업스트림 리스를 사용합니다.',
       rewriteCliAuthFailedUsingVscodeFallback:
-        'CLI push failed because Git needs credentials; retrying through VS Code Git.',
+        'Git에 자격 증명이 필요하여 CLI 푸시에 실패했습니다. VS Code Git을 통해 다시 시도합니다.',
       rewriteVscodeFallbackSkippedLeaseChanged:
-        'VS Code Git fallback skipped because the remote tracking ref changed.',
+        '원격 추적 참조가 변경되어 VS Code Git 대체가 건너뛰어졌습니다.',
     },
     notification: {
       gitExtensionMissing:

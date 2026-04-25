@@ -1313,13 +1313,14 @@ async function promptAndForcePushWithLease(
     });
     notifyRewriteForcePushSuccess({ outputChannel, text, pushTargetLabel });
   } catch (error) {
-    const rawErrorMessage =
-      error instanceof CommitCopilotError &&
-      error.messageKey === 'rewrite.forcePushStaleInfo'
-        ? text.output.rewriteVscodeFallbackSkippedLeaseChanged
-        : error instanceof Error
-          ? error.message
-          : String(error);
+    let rawErrorMessage: string;
+    if (error instanceof CommitCopilotError && error.messageKey === 'rewrite.forcePushStaleInfo') {
+      rawErrorMessage = text.output.rewriteVscodeFallbackSkippedLeaseChanged;
+    } else if (error instanceof Error) {
+      rawErrorMessage = error.message;
+    } else {
+      rawErrorMessage = String(error);
+    }
     await handleRewriteForcePushFailure({
       repository,
       outputChannel,

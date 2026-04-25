@@ -7,20 +7,20 @@ export const huLocale: LocaleTextBundle = {
       'API Key is not configured. Please set your API Key in the Commit-Copilot panel.',
     'api.keyInvalid': (args) =>
       args.details?.trim()
-        ? 'Invalid API Key: {details}'.replace('{details}', args.details ?? '')
+        ? 'Invalid API Key: {details}'.replace('{details}', args.details)
         : 'Invalid API Key.',
     'api.quotaExceeded': (args) =>
       args.details?.trim()
         ? 'API quota exceeded: {details}'.replace(
             '{details}',
-            args.details ?? '',
+            args.details,
           )
         : 'API quota exceeded.',
     'api.requestFailed': (args) =>
       args.details?.trim()
         ? 'API request failed: {details}'.replace(
             '{details}',
-            args.details ?? '',
+            args.details,
           )
         : 'API request failed.',
     'api.ollamaConnectionFailed': (args) =>
@@ -65,7 +65,7 @@ export const huLocale: LocaleTextBundle = {
       args.details?.trim()
         ? 'Failed to stage changes: {details}'.replace(
             '{details}',
-            args.details ?? '',
+            args.details,
           )
         : 'Failed to stage changes.',
     'generation.noChanges': () =>
@@ -96,27 +96,27 @@ export const huLocale: LocaleTextBundle = {
         args.commitHash ?? '',
       ),
     'rewrite.upstreamVerifyFailed': (args) =>
-      'Cannot verify upstream "{upstreamRef}" after fetch.'.replace(
+      'Nem lehet ellenőrizni az upstream "{upstreamRef}"-et fetch után.'.replace(
         '{upstreamRef}',
         args.upstreamRef ?? '',
       ),
     'rewrite.remoteNotIntegrated': (args) =>
-      'Cannot rewrite safely because local HEAD does not include latest {upstreamRef} ({remoteHash}). Run git pull --rebase (or merge) first.'
+      'Nem lehet biztonságosan felülírni, mert a helyi HEAD nem tartalmazza a legújabb {upstreamRef}-et ({remoteHash}). Futtasson először git pull --rebase-t (vagy merge-et).'
         .replace('{upstreamRef}', args.upstreamRef ?? '')
         .replace('{remoteHash}', args.remoteHash ?? ''),
     'rewrite.autoSyncMissingUpstream': () =>
-      'Cannot auto-sync without an upstream branch. Configure upstream first.',
+      'Nem lehet automatikusan szinkronizálni upstream ág nélkül. Először konfigurálja az upstream-et.',
     'rewrite.autoSyncUpstreamUnavailable': (args) =>
-      'Cannot auto-sync because upstream "{upstreamRef}" is unavailable after fetch.'.replace(
+      'Nem lehet automatikusan szinkronizálni, mert az upstream "{upstreamRef}" nem érhető el a fetch után.'.replace(
         '{upstreamRef}',
         args.upstreamRef ?? '',
       ),
     'rewrite.autoSyncUnsafeRemoteRewrite': (args) =>
-      'Cannot auto-sync safely because upstream "{upstreamRef}" no longer contains {previousHash}.'
+      'Nem lehet biztonságosan automatikusan szinkronizálni, mert az upstream "{upstreamRef}" már nem tartalmazza a következőt: {previousHash}.'
         .replace('{upstreamRef}', args.upstreamRef ?? '')
         .replace('{previousHash}', args.previousHash ?? ''),
     'rewrite.forcePushStaleInfo': () =>
-      'Force-with-lease stale info: remote tracking ref changed before VS Code fallback.',
+      'Elavult force-with-lease információ: a távoli követési referencia megváltozott a VS Code fallback előtt.',
   },
   errorMessages: {
     [EXIT_CODES.NOT_GIT_REPO]: {
@@ -211,7 +211,7 @@ export const huLocale: LocaleTextBundle = {
         'Megszakítás kérve a folyamatjelző felületről.',
       rewriteCommitRewritten: (originalHash, replacementHash) =>
         `Commit átírva: ${originalHash} -> ${replacementHash}`,
-      rewriteReplacementCommitFallback: 'updated',
+      rewriteReplacementCommitFallback: 'frissítve',
       callingGenerateCommitMessage: 'generateCommitMessage hívása...',
       repositoryPath: (path) => `Adattár elérési útja: ${path}`,
       usingModel: (model) => `Használt modell: ${model}`,
@@ -230,21 +230,21 @@ export const huLocale: LocaleTextBundle = {
         'Ha rebase ütközések vannak, előbb oldd fel őket, majd folytasd a rebase-t.',
       rewriteRecoveryCommand: (command) => `• ${command}`,
       rewriteAutoSyncPreviewSummary: (upstreamRef) =>
-        `Auto-sync preview for ${upstreamRef}:`,
+        `Automatikus szinkronizálás előnézete a(z) ${upstreamRef} számára:`,
       rewriteAutoSyncRemoteTracking: (beforeHash, afterHash) =>
-        `Remote tracking: ${beforeHash} -> ${afterHash}`,
+        `Távoli követés: ${beforeHash} -> ${afterHash}`,
       rewriteAutoSyncLocalHead: (headHash) =>
-        `Local rewritten HEAD: ${headHash}`,
-      rewriteAutoSyncCommitsToPush: 'Commits that will be pushed:',
-      rewriteAutoSyncNoCommitsToPush: '(none)',
-      rewriteAutoSyncDiffStat: 'Diff that will be pushed:',
-      rewriteAutoSyncNoDiffStat: '(no diff)',
+        `Helyi felülírt HEAD: ${headHash}`,
+      rewriteAutoSyncCommitsToPush: 'Pusholandó commitok:',
+      rewriteAutoSyncNoCommitsToPush: '(nincs)',
+      rewriteAutoSyncDiffStat: 'Pusholandó diff:',
+      rewriteAutoSyncNoDiffStat: '(nincs diff)',
       rewriteAutoSyncRetryUsesCurrentLease:
-        'Retry push will use the refreshed upstream lease, not the pre-rewrite hash.',
+        'Az újra próbált push a frissített upstream lease-t fogja használni, nem pedig a felülírás előtti hasht.',
       rewriteCliAuthFailedUsingVscodeFallback:
-        'CLI push failed because Git needs credentials; retrying through VS Code Git.',
+        'A parancssori push sikertelen, mert a Git hitelesítő adatokat kér; újrapróbálkozás a VS Code Git-en keresztül.',
       rewriteVscodeFallbackSkippedLeaseChanged:
-        'VS Code Git fallback skipped because the remote tracking ref changed.',
+        'A VS Code Git fallback kihagyva, mert a távoli követési referencia megváltozott.',
     },
     notification: {
       gitExtensionMissing:

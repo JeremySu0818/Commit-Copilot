@@ -7,20 +7,20 @@ export const viLocale: LocaleTextBundle = {
       'API Key is not configured. Please set your API Key in the Commit-Copilot panel.',
     'api.keyInvalid': (args) =>
       args.details?.trim()
-        ? 'Invalid API Key: {details}'.replace('{details}', args.details ?? '')
+        ? 'Invalid API Key: {details}'.replace('{details}', args.details)
         : 'Invalid API Key.',
     'api.quotaExceeded': (args) =>
       args.details?.trim()
         ? 'API quota exceeded: {details}'.replace(
             '{details}',
-            args.details ?? '',
+            args.details,
           )
         : 'API quota exceeded.',
     'api.requestFailed': (args) =>
       args.details?.trim()
         ? 'API request failed: {details}'.replace(
             '{details}',
-            args.details ?? '',
+            args.details,
           )
         : 'API request failed.',
     'api.ollamaConnectionFailed': (args) =>
@@ -65,7 +65,7 @@ export const viLocale: LocaleTextBundle = {
       args.details?.trim()
         ? 'Failed to stage changes: {details}'.replace(
             '{details}',
-            args.details ?? '',
+            args.details,
           )
         : 'Failed to stage changes.',
     'generation.noChanges': () =>
@@ -96,27 +96,27 @@ export const viLocale: LocaleTextBundle = {
         args.commitHash ?? '',
       ),
     'rewrite.upstreamVerifyFailed': (args) =>
-      'Cannot verify upstream "{upstreamRef}" after fetch.'.replace(
+      'Không thể xác minh upstream "{upstreamRef}" sau khi fetch.'.replace(
         '{upstreamRef}',
         args.upstreamRef ?? '',
       ),
     'rewrite.remoteNotIntegrated': (args) =>
-      'Cannot rewrite safely because local HEAD does not include latest {upstreamRef} ({remoteHash}). Run git pull --rebase (or merge) first.'
+      'Không thể ghi lại an toàn vì HEAD cục bộ không bao gồm {upstreamRef} ({remoteHash}) mới nhất. Hãy chạy git pull --rebase (hoặc merge) trước.'
         .replace('{upstreamRef}', args.upstreamRef ?? '')
         .replace('{remoteHash}', args.remoteHash ?? ''),
     'rewrite.autoSyncMissingUpstream': () =>
-      'Cannot auto-sync without an upstream branch. Configure upstream first.',
+      'Không thể tự động đồng bộ hóa nếu không có nhánh upstream. Vui lòng định cấu hình upstream trước.',
     'rewrite.autoSyncUpstreamUnavailable': (args) =>
-      'Cannot auto-sync because upstream "{upstreamRef}" is unavailable after fetch.'.replace(
+      'Không thể tự động đồng bộ hóa vì upstream "{upstreamRef}" không khả dụng sau khi fetch.'.replace(
         '{upstreamRef}',
         args.upstreamRef ?? '',
       ),
     'rewrite.autoSyncUnsafeRemoteRewrite': (args) =>
-      'Cannot auto-sync safely because upstream "{upstreamRef}" no longer contains {previousHash}.'
+      'Không thể tự động đồng bộ hóa an toàn vì upstream "{upstreamRef}" không còn chứa {previousHash}.'
         .replace('{upstreamRef}', args.upstreamRef ?? '')
         .replace('{previousHash}', args.previousHash ?? ''),
     'rewrite.forcePushStaleInfo': () =>
-      'Force-with-lease stale info: remote tracking ref changed before VS Code fallback.',
+      'Thông tin cũ của force-with-lease: tham chiếu theo dõi từ xa đã thay đổi trước khi VS Code fallback.',
   },
   errorMessages: {
     [EXIT_CODES.NOT_GIT_REPO]: {
@@ -209,7 +209,7 @@ export const viLocale: LocaleTextBundle = {
         'Đã yêu cầu hủy từ giao diện tiến trình.',
       rewriteCommitRewritten: (originalHash, replacementHash) =>
         `Commit đã được viết lại: ${originalHash} -> ${replacementHash}`,
-      rewriteReplacementCommitFallback: 'updated',
+      rewriteReplacementCommitFallback: 'đã cập nhật',
       callingGenerateCommitMessage: 'Đang gọi generateCommitMessage...',
       repositoryPath: (path) => `Đường dẫn kho lưu trữ: ${path}`,
       usingModel: (model) => `Sử dụng mô hình: ${model}`,
@@ -227,21 +227,21 @@ export const viLocale: LocaleTextBundle = {
         'Nếu có xung đột khi rebase, hãy xử lý trước rồi tiếp tục rebase.',
       rewriteRecoveryCommand: (command) => `• ${command}`,
       rewriteAutoSyncPreviewSummary: (upstreamRef) =>
-        `Auto-sync preview for ${upstreamRef}:`,
+        `Bản xem trước tự động đồng bộ hóa cho ${upstreamRef}:`,
       rewriteAutoSyncRemoteTracking: (beforeHash, afterHash) =>
-        `Remote tracking: ${beforeHash} -> ${afterHash}`,
+        `Theo dõi từ xa: ${beforeHash} -> ${afterHash}`,
       rewriteAutoSyncLocalHead: (headHash) =>
-        `Local rewritten HEAD: ${headHash}`,
-      rewriteAutoSyncCommitsToPush: 'Commits that will be pushed:',
-      rewriteAutoSyncNoCommitsToPush: '(none)',
-      rewriteAutoSyncDiffStat: 'Diff that will be pushed:',
-      rewriteAutoSyncNoDiffStat: '(no diff)',
+        `HEAD ghi lại cục bộ: ${headHash}`,
+      rewriteAutoSyncCommitsToPush: 'Các commit sẽ được push:',
+      rewriteAutoSyncNoCommitsToPush: '(không có)',
+      rewriteAutoSyncDiffStat: 'Diff sẽ được push:',
+      rewriteAutoSyncNoDiffStat: '(không có diff)',
       rewriteAutoSyncRetryUsesCurrentLease:
-        'Retry push will use the refreshed upstream lease, not the pre-rewrite hash.',
+        'Thử push lại sẽ sử dụng lease upstream được làm mới, chứ không phải mã băm trước khi ghi lại.',
       rewriteCliAuthFailedUsingVscodeFallback:
-        'CLI push failed because Git needs credentials; retrying through VS Code Git.',
+        'Push CLI không thành công vì Git cần thông tin xác thực; đang thử lại qua VS Code Git.',
       rewriteVscodeFallbackSkippedLeaseChanged:
-        'VS Code Git fallback skipped because the remote tracking ref changed.',
+        'Đã bỏ qua thao tác dự phòng VS Code Git vì tham chiếu theo dõi từ xa đã thay đổi.',
     },
     notification: {
       gitExtensionMissing:

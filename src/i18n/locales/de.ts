@@ -7,20 +7,20 @@ export const deLocale: LocaleTextBundle = {
       'API Key is not configured. Please set your API Key in the Commit-Copilot panel.',
     'api.keyInvalid': (args) =>
       args.details?.trim()
-        ? 'Invalid API Key: {details}'.replace('{details}', args.details ?? '')
+        ? 'Invalid API Key: {details}'.replace('{details}', args.details)
         : 'Invalid API Key.',
     'api.quotaExceeded': (args) =>
       args.details?.trim()
         ? 'API quota exceeded: {details}'.replace(
             '{details}',
-            args.details ?? '',
+            args.details,
           )
         : 'API quota exceeded.',
     'api.requestFailed': (args) =>
       args.details?.trim()
         ? 'API request failed: {details}'.replace(
             '{details}',
-            args.details ?? '',
+            args.details,
           )
         : 'API request failed.',
     'api.ollamaConnectionFailed': (args) =>
@@ -65,7 +65,7 @@ export const deLocale: LocaleTextBundle = {
       args.details?.trim()
         ? 'Failed to stage changes: {details}'.replace(
             '{details}',
-            args.details ?? '',
+            args.details,
           )
         : 'Failed to stage changes.',
     'generation.noChanges': () =>
@@ -96,27 +96,27 @@ export const deLocale: LocaleTextBundle = {
         args.commitHash ?? '',
       ),
     'rewrite.upstreamVerifyFailed': (args) =>
-      'Cannot verify upstream "{upstreamRef}" after fetch.'.replace(
+      'Upstream "{upstreamRef}" kann nach dem Abrufen nicht verifiziert werden.'.replace(
         '{upstreamRef}',
         args.upstreamRef ?? '',
       ),
     'rewrite.remoteNotIntegrated': (args) =>
-      'Cannot rewrite safely because local HEAD does not include latest {upstreamRef} ({remoteHash}). Run git pull --rebase (or merge) first.'
+      'Sicheres Umschreiben nicht möglich, da der lokale HEAD den neuesten {upstreamRef} ({remoteHash}) nicht enthält. Führen Sie zuerst git pull --rebase (oder merge) aus.'
         .replace('{upstreamRef}', args.upstreamRef ?? '')
         .replace('{remoteHash}', args.remoteHash ?? ''),
     'rewrite.autoSyncMissingUpstream': () =>
-      'Cannot auto-sync without an upstream branch. Configure upstream first.',
+      'Automatische Synchronisierung ohne Upstream-Zweig nicht möglich. Konfigurieren Sie zuerst den Upstream.',
     'rewrite.autoSyncUpstreamUnavailable': (args) =>
-      'Cannot auto-sync because upstream "{upstreamRef}" is unavailable after fetch.'.replace(
+      'Automatische Synchronisierung nicht möglich, da Upstream "{upstreamRef}" nach dem Abrufen nicht verfügbar ist.'.replace(
         '{upstreamRef}',
         args.upstreamRef ?? '',
       ),
     'rewrite.autoSyncUnsafeRemoteRewrite': (args) =>
-      'Cannot auto-sync safely because upstream "{upstreamRef}" no longer contains {previousHash}.'
+      'Sichere automatische Synchronisierung nicht möglich, da Upstream "{upstreamRef}" {previousHash} nicht mehr enthält.'
         .replace('{upstreamRef}', args.upstreamRef ?? '')
         .replace('{previousHash}', args.previousHash ?? ''),
     'rewrite.forcePushStaleInfo': () =>
-      'Force-with-lease stale info: remote tracking ref changed before VS Code fallback.',
+      'Veraltete Force-with-lease-Info: Die Remote-Tracking-Referenz hat sich vor dem VS Code-Fallback geändert.',
   },
   errorMessages: {
     [EXIT_CODES.NOT_GIT_REPO]: {
@@ -212,7 +212,7 @@ export const deLocale: LocaleTextBundle = {
         'Abbruch von der Fortschrittsanzeige angefordert.',
       rewriteCommitRewritten: (originalHash, replacementHash) =>
         `Commit umgeschrieben: ${originalHash} -> ${replacementHash}`,
-      rewriteReplacementCommitFallback: 'updated',
+      rewriteReplacementCommitFallback: 'aktualisiert',
       callingGenerateCommitMessage: 'Rufe generateCommitMessage auf...',
       repositoryPath: (path) => `Repository-Pfad: ${path}`,
       usingModel: (model) => `Verwende Modell: ${model}`,
@@ -231,21 +231,21 @@ export const deLocale: LocaleTextBundle = {
         'Wenn beim Rebase Konflikte auftreten, lösen Sie diese zuerst und setzen Sie dann den Rebase fort.',
       rewriteRecoveryCommand: (command) => `• ${command}`,
       rewriteAutoSyncPreviewSummary: (upstreamRef) =>
-        `Auto-sync preview for ${upstreamRef}:`,
+        `Vorschau der automatischen Synchronisierung für ${upstreamRef}:`,
       rewriteAutoSyncRemoteTracking: (beforeHash, afterHash) =>
-        `Remote tracking: ${beforeHash} -> ${afterHash}`,
+        `Remote-Tracking: ${beforeHash} -> ${afterHash}`,
       rewriteAutoSyncLocalHead: (headHash) =>
-        `Local rewritten HEAD: ${headHash}`,
-      rewriteAutoSyncCommitsToPush: 'Commits that will be pushed:',
-      rewriteAutoSyncNoCommitsToPush: '(none)',
-      rewriteAutoSyncDiffStat: 'Diff that will be pushed:',
-      rewriteAutoSyncNoDiffStat: '(no diff)',
+        `Lokaler umgeschriebener HEAD: ${headHash}`,
+      rewriteAutoSyncCommitsToPush: 'Commits, die gepusht werden:',
+      rewriteAutoSyncNoCommitsToPush: '(keine)',
+      rewriteAutoSyncDiffStat: 'Diff, der gepusht wird:',
+      rewriteAutoSyncNoDiffStat: '(kein Diff)',
       rewriteAutoSyncRetryUsesCurrentLease:
-        'Retry push will use the refreshed upstream lease, not the pre-rewrite hash.',
+        'Beim erneuten Push wird das aktualisierte Upstream-Lease verwendet, nicht der Hash vor dem Umschreiben.',
       rewriteCliAuthFailedUsingVscodeFallback:
-        'CLI push failed because Git needs credentials; retrying through VS Code Git.',
+        'CLI-Push fehlgeschlagen, da Git Anmeldeinformationen benötigt; erneuter Versuch über VS Code Git.',
       rewriteVscodeFallbackSkippedLeaseChanged:
-        'VS Code Git fallback skipped because the remote tracking ref changed.',
+        'VS Code Git-Fallback übersprungen, da sich die Remote-Tracking-Referenz geändert hat.',
     },
     notification: {
       gitExtensionMissing:

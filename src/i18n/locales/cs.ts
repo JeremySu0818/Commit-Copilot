@@ -7,20 +7,20 @@ export const csLocale: LocaleTextBundle = {
       'API Key is not configured. Please set your API Key in the Commit-Copilot panel.',
     'api.keyInvalid': (args) =>
       args.details?.trim()
-        ? 'Invalid API Key: {details}'.replace('{details}', args.details ?? '')
+        ? 'Invalid API Key: {details}'.replace('{details}', args.details)
         : 'Invalid API Key.',
     'api.quotaExceeded': (args) =>
       args.details?.trim()
         ? 'API quota exceeded: {details}'.replace(
             '{details}',
-            args.details ?? '',
+            args.details,
           )
         : 'API quota exceeded.',
     'api.requestFailed': (args) =>
       args.details?.trim()
         ? 'API request failed: {details}'.replace(
             '{details}',
-            args.details ?? '',
+            args.details,
           )
         : 'API request failed.',
     'api.ollamaConnectionFailed': (args) =>
@@ -65,7 +65,7 @@ export const csLocale: LocaleTextBundle = {
       args.details?.trim()
         ? 'Failed to stage changes: {details}'.replace(
             '{details}',
-            args.details ?? '',
+            args.details,
           )
         : 'Failed to stage changes.',
     'generation.noChanges': () =>
@@ -96,27 +96,27 @@ export const csLocale: LocaleTextBundle = {
         args.commitHash ?? '',
       ),
     'rewrite.upstreamVerifyFailed': (args) =>
-      'Cannot verify upstream "{upstreamRef}" after fetch.'.replace(
+      'Po stažení nelze ověřit upstream "{upstreamRef}".'.replace(
         '{upstreamRef}',
         args.upstreamRef ?? '',
       ),
     'rewrite.remoteNotIntegrated': (args) =>
-      'Cannot rewrite safely because local HEAD does not include latest {upstreamRef} ({remoteHash}). Run git pull --rebase (or merge) first.'
+      'Nelze bezpečně přepsat, protože lokální HEAD nezahrnuje nejnovější {upstreamRef} ({remoteHash}). Nejprve spusťte git pull --rebase (nebo merge).'
         .replace('{upstreamRef}', args.upstreamRef ?? '')
         .replace('{remoteHash}', args.remoteHash ?? ''),
     'rewrite.autoSyncMissingUpstream': () =>
-      'Cannot auto-sync without an upstream branch. Configure upstream first.',
+      'Nelze automaticky synchronizovat bez větve upstream. Nejprve nakonfigurujte upstream.',
     'rewrite.autoSyncUpstreamUnavailable': (args) =>
-      'Cannot auto-sync because upstream "{upstreamRef}" is unavailable after fetch.'.replace(
+      'Nelze automaticky synchronizovat, protože upstream "{upstreamRef}" není po stažení k dispozici.'.replace(
         '{upstreamRef}',
         args.upstreamRef ?? '',
       ),
     'rewrite.autoSyncUnsafeRemoteRewrite': (args) =>
-      'Cannot auto-sync safely because upstream "{upstreamRef}" no longer contains {previousHash}.'
+      'Nelze bezpečně automaticky synchronizovat, protože upstream "{upstreamRef}" již neobsahuje {previousHash}.'
         .replace('{upstreamRef}', args.upstreamRef ?? '')
         .replace('{previousHash}', args.previousHash ?? ''),
     'rewrite.forcePushStaleInfo': () =>
-      'Force-with-lease stale info: remote tracking ref changed before VS Code fallback.',
+      'Zastaralé informace pro force-with-lease: odkaz na vzdálené sledování se změnil před zálohou VS Code.',
   },
   errorMessages: {
     [EXIT_CODES.NOT_GIT_REPO]: {
@@ -209,7 +209,7 @@ export const csLocale: LocaleTextBundle = {
       rewriteCancelRequestedFromProgress: 'Zrušení vyžádáno z okna průběhu.',
       rewriteCommitRewritten: (originalHash, replacementHash) =>
         `Commit přepsán: ${originalHash} -> ${replacementHash}`,
-      rewriteReplacementCommitFallback: 'updated',
+      rewriteReplacementCommitFallback: 'aktualizováno',
       callingGenerateCommitMessage: 'Volání generateCommitMessage...',
       repositoryPath: (path) => `Cesta k repozitáři: ${path}`,
       usingModel: (model) => `Používání modelu: ${model}`,
@@ -228,21 +228,21 @@ export const csLocale: LocaleTextBundle = {
         'Pokud při rebase dojde ke konfliktům, nejprve je vyřešte a pak pokračujte v rebase.',
       rewriteRecoveryCommand: (command) => `• ${command}`,
       rewriteAutoSyncPreviewSummary: (upstreamRef) =>
-        `Auto-sync preview for ${upstreamRef}:`,
+        `Náhled automatické synchronizace pro ${upstreamRef}:`,
       rewriteAutoSyncRemoteTracking: (beforeHash, afterHash) =>
-        `Remote tracking: ${beforeHash} -> ${afterHash}`,
+        `Vzdálené sledování: ${beforeHash} -> ${afterHash}`,
       rewriteAutoSyncLocalHead: (headHash) =>
-        `Local rewritten HEAD: ${headHash}`,
-      rewriteAutoSyncCommitsToPush: 'Commits that will be pushed:',
-      rewriteAutoSyncNoCommitsToPush: '(none)',
-      rewriteAutoSyncDiffStat: 'Diff that will be pushed:',
-      rewriteAutoSyncNoDiffStat: '(no diff)',
+        `Lokálně přepsaný HEAD: ${headHash}`,
+      rewriteAutoSyncCommitsToPush: 'Commitů k odeslání (push):',
+      rewriteAutoSyncNoCommitsToPush: '(žádné)',
+      rewriteAutoSyncDiffStat: 'Rozdíly (diff) k odeslání:',
+      rewriteAutoSyncNoDiffStat: '(žádné rozdíly)',
       rewriteAutoSyncRetryUsesCurrentLease:
-        'Retry push will use the refreshed upstream lease, not the pre-rewrite hash.',
+        'Opakovaný push použije obnovený upstream lease, nikoli hash před přepsáním.',
       rewriteCliAuthFailedUsingVscodeFallback:
-        'CLI push failed because Git needs credentials; retrying through VS Code Git.',
+        'Push z CLI selhal, protože Git potřebuje přihlašovací údaje; zkouším znovu přes VS Code Git.',
       rewriteVscodeFallbackSkippedLeaseChanged:
-        'VS Code Git fallback skipped because the remote tracking ref changed.',
+        'Záložní řešení VS Code Git přeskočeno, protože se změnil vzdálený sledovací odkaz.',
     },
     notification: {
       gitExtensionMissing:
