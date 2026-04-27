@@ -29,6 +29,9 @@ import { MainViewProvider } from './main-view-provider';
 import {
   APIProvider,
   API_KEY_STORAGE_KEYS,
+  COMMIT_COPILOT_CLOUD_DEFAULT_API_KEY,
+  COMMIT_COPILOT_CLOUD_DEFAULT_HOST,
+  COMMIT_COPILOT_CLOUD_OPENAI_BASE_URL,
   CommitOutputOptions,
   CustomProviderConfig,
   CUSTOM_PROVIDERS_STATE_KEY,
@@ -160,6 +163,7 @@ const providerConsoleUrls: Record<APIProvider, string> = {
   openai: 'https://platform.openai.com/usage',
   anthropic: 'https://console.anthropic.com/',
   ollama: 'http://127.0.0.1:11434',
+  'commit-copilot-cloud': COMMIT_COPILOT_CLOUD_DEFAULT_HOST,
 };
 
 function parseGenerateCommandArg(
@@ -411,7 +415,28 @@ async function resolveProviderApiKey(
       getCustomProviderStorageKey(providerContext.customProviderId),
     );
   }
-  return context.secrets.get(API_KEY_STORAGE_KEYS[providerContext.llmProvider]);
+  const savedApiKey = await context.secrets.get(
+    API_KEY_STORAGE_KEYS[providerContext.llmProvider],
+  );
+  if (savedApiKey) {
+    return savedApiKey;
+  }
+  if (providerContext.llmProvider === 'commit-copilot-cloud') {
+    return COMMIT_COPILOT_CLOUD_DEFAULT_API_KEY;
+  }
+  return undefined;
+}
+
+function resolveProviderBaseUrl(
+  providerContext: ResolvedProviderContext,
+): string | undefined {
+  if (providerContext.isCustom && providerContext.customProviderConfig) {
+    return providerContext.customProviderConfig.baseUrl;
+  }
+  if (providerContext.llmProvider === 'commit-copilot-cloud') {
+    return COMMIT_COPILOT_CLOUD_OPENAI_BASE_URL;
+  }
+  return undefined;
 }
 
 function getProviderDisplayName(
@@ -512,7 +537,7 @@ function createBaseGenerateOptions(args: {
     repository: args.repository,
     provider: args.providerContext.llmProvider,
     apiKey: args.apiKey ?? '',
-    baseUrl: args.providerContext.customProviderConfig?.baseUrl,
+    baseUrl: resolveProviderBaseUrl(args.providerContext),
     generateMode: args.currentGenerateMode,
     commitOutputOptions: args.currentCommitOutputOptions,
     maxAgentSteps: args.maxAgentSteps,
@@ -1013,7 +1038,7 @@ async function executeRewriteCommand(
               commitHash: targetCommit.hash,
               provider: providerContext.llmProvider,
               apiKey: apiKey ?? '',
-              baseUrl: providerContext.customProviderConfig?.baseUrl,
+              baseUrl: resolveProviderBaseUrl(providerContext),
               model: savedModel,
               generateMode: currentGenerateMode,
               commitOutputOptions: currentCommitOutputOptions,

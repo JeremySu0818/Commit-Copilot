@@ -19,6 +19,8 @@ import {
 } from './main-view-webview-bootstrap';
 import {
   APIProvider,
+  COMMIT_COPILOT_CLOUD_DEFAULT_API_KEY,
+  COMMIT_COPILOT_CLOUD_OPENAI_BASE_URL,
   CommitOutputOptions,
   CustomProviderConfig,
   CUSTOM_PROVIDERS_STATE_KEY,
@@ -50,6 +52,7 @@ const unauthorizedStatus = 401;
 const forbiddenStatus = 403;
 const tooManyRequestsStatus = 429;
 const nonceByteLength = 16;
+const commitCopilotCloudProviderId = 'commit-copilot-cloud';
 
 interface IncomingMessage extends UnknownRecord {
   type: string;
@@ -416,6 +419,26 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
     }
   }
 
+  private async validateCommitCopilotCloudApiKey(
+    apiKey: string,
+  ): Promise<{ valid: boolean; error?: string }> {
+    try {
+      const openAIClientClass = (await import('openai')).default;
+      const client = new openAIClientClass({
+        apiKey,
+        baseURL: COMMIT_COPILOT_CLOUD_OPENAI_BASE_URL,
+      });
+
+      await client.models.list();
+      return { valid: true };
+    } catch (error) {
+      return this.mapProviderValidationError(error, {
+        invalidStatusCodes: [unauthorizedStatus, forbiddenStatus],
+        invalidMessagePatterns: ['Invalid API Key', 'Unauthorized'],
+      });
+    }
+  }
+
   private async validateAnthropicApiKey(
     apiKey: string,
   ): Promise<{ valid: boolean; error?: string }> {
@@ -486,6 +509,8 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
         return this.validateGoogleApiKey(apiKey);
       case 'openai':
         return this.validateOpenAIApiKey(apiKey);
+      case 'commit-copilot-cloud':
+        return this.validateCommitCopilotCloudApiKey(apiKey);
       case 'anthropic':
         return this.validateAnthropicApiKey(apiKey);
       case 'ollama':
@@ -776,7 +801,15 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
       }
 
       const builtIn = provider;
-      const resolvedApiValue = apiKey.length > 0 ? apiKey : OLLAMA_DEFAULT_HOST;
+      let resolvedApiValue = apiKey;
+      if (builtIn === 'ollama' && apiKey.length === 0) {
+        resolvedApiValue = OLLAMA_DEFAULT_HOST;
+      } else if (
+        builtIn === commitCopilotCloudProviderId &&
+        apiKey.length === 0
+      ) {
+        resolvedApiValue = COMMIT_COPILOT_CLOUD_DEFAULT_API_KEY;
+      }
       const validationResult = await this.validateApiKey(
         builtIn,
         resolvedApiValue,
@@ -813,7 +846,11 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
       const text = getMainViewText(this.getEffectiveDisplayLanguage());
       const provider = toProvider(message.provider);
       const apiKey = asString(message.value) ?? '';
-      if (!apiKey && provider !== 'ollama') {
+      if (
+        !apiKey &&
+        provider !== 'ollama' &&
+        provider !== commitCopilotCloudProviderId
+      ) {
         vscode.window.showErrorMessage(text.apiKeyCannotBeEmpty);
         postValidationResult(provider, false);
         return;
@@ -1032,6 +1069,9 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
         } else {
           const builtIn = isAPIProvider(provider) ? provider : DEFAULT_PROVIDER;
           key = await this._context.secrets.get(API_KEY_STORAGE_KEYS[builtIn]);
+          if (!key && builtIn === commitCopilotCloudProviderId) {
+            key = COMMIT_COPILOT_CLOUD_DEFAULT_API_KEY;
+          }
         }
         const resolvedKey = key && key.length > 0 ? key : OLLAMA_DEFAULT_HOST;
         this._view?.webview.postMessage({
@@ -1067,9 +1107,12 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
         }
 
         const builtIn = isAPIProvider(provider) ? provider : DEFAULT_PROVIDER;
-        const key = await this._context.secrets.get(
+        let key = await this._context.secrets.get(
           API_KEY_STORAGE_KEYS[builtIn],
         );
+        if (!key && builtIn === commitCopilotCloudProviderId) {
+          key = COMMIT_COPILOT_CLOUD_DEFAULT_API_KEY;
+        }
         if (key || builtIn === 'ollama') {
           const savedModel = this._context.globalState.get<string>(
             `${builtIn.toUpperCase()}_MODEL`,
@@ -1143,18 +1186,14 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
         });
       },
       getAllKeys: async () => {
-        const keyStatuses: Record<string, boolean> = {
-          google: false,
-          openai: false,
-          anthropic: false,
-          ollama: false,
-        };
+        const keyStatuses: Record<string, boolean> = {};
         for (const [provider, storageKey] of Object.entries(
           API_KEY_STORAGE_KEYS,
         )) {
-          keyStatuses[provider] = Boolean(
-            await this._context.secrets.get(storageKey),
-          );
+          keyStatuses[provider] =
+            provider === commitCopilotCloudProviderId
+              ? true
+              : Boolean(await this._context.secrets.get(storageKey));
         }
         for (const cp of this.getCustomProviders()) {
           keyStatuses[`${CUSTOM_PROVIDER_PREFIX}${cp.id}`] = Boolean(

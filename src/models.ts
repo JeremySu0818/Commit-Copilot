@@ -1,4 +1,9 @@
-export type APIProvider = 'google' | 'openai' | 'anthropic' | 'ollama';
+export type APIProvider =
+  | 'google'
+  | 'openai'
+  | 'anthropic'
+  | 'ollama'
+  | 'commit-copilot-cloud';
 
 export interface CustomProviderConfig {
   id: string;
@@ -39,6 +44,7 @@ export const PROVIDER_DISPLAY_NAMES: Record<APIProvider, string> = {
   openai: 'OpenAI (ChatGPT)',
   anthropic: 'Anthropic (Claude)',
   ollama: 'Ollama (Local)',
+  'commit-copilot-cloud': 'Commit Copilot Cloud',
 };
 export interface ModelConfig {
   id: string;
@@ -136,11 +142,16 @@ export const OLLAMA_MODELS: ModelConfig[] = [
   { id: 'mistral:7b', alias: 'Mistral 7B' },
 ];
 
+export const COMMIT_COPILOT_CLOUD_MODELS: ModelConfig[] = [
+  { id: 'qwen3.5-0.8b', alias: 'Qwen 3.5 0.8B' },
+];
+
 export const MODELS_BY_PROVIDER: Record<APIProvider, ModelConfig[]> = {
   google: GEMINI_MODELS,
   openai: OPENAI_MODELS,
   anthropic: ANTHROPIC_MODELS,
   ollama: OLLAMA_MODELS,
+  'commit-copilot-cloud': COMMIT_COPILOT_CLOUD_MODELS,
 };
 
 export const DEFAULT_MODELS: Record<APIProvider, string> = {
@@ -148,6 +159,7 @@ export const DEFAULT_MODELS: Record<APIProvider, string> = {
   openai: 'gpt-5.4',
   anthropic: 'claude-sonnet-4-6',
   ollama: 'gemma3:12b',
+  'commit-copilot-cloud': 'qwen3.5-0.8b',
 };
 export function getAnthropicModelMaxTokens(
   modelId?: string,
@@ -163,8 +175,14 @@ export const API_KEY_STORAGE_KEYS: Record<APIProvider, string> = {
   openai: 'OPENAI_API_KEY',
   anthropic: 'ANTHROPIC_API_KEY',
   ollama: 'OLLAMA_HOST',
+  'commit-copilot-cloud': 'COMMIT_COPILOT_CLOUD_API_KEY',
 };
 export const OLLAMA_DEFAULT_HOST = 'http://127.0.0.1:11434';
+export const COMMIT_COPILOT_CLOUD_DEFAULT_HOST =
+  'https://commitcopilot-commit-copilot-cloud-endpoint.hf.space';
+export const COMMIT_COPILOT_CLOUD_OPENAI_BASE_URL =
+  'https://commitcopilot-commit-copilot-cloud-endpoint.hf.space/v1';
+export const COMMIT_COPILOT_CLOUD_DEFAULT_API_KEY = 'commit-copilot-cloud';
 export const DEFAULT_GENERATE_MODE: GenerateMode = 'agentic';
 export const MAX_AGENT_STEPS_STATE_KEY = 'MAX_AGENT_STEPS';
 export const DEFAULT_MAX_AGENT_STEPS = 0;

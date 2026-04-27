@@ -420,6 +420,7 @@ void test('getAllKeys reports ollama as not configured when no secret exists', a
       openai: false,
       anthropic: false,
       ollama: false,
+      'commit-copilot-cloud': true,
     });
   } finally {
     harness.dispose();

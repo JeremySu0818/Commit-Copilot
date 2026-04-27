@@ -2,7 +2,11 @@ import { CancellationSignal } from '../cancellation';
 import { GitOperations } from '../commit-copilot';
 import type { EffectiveDisplayLanguage } from '../i18n/types';
 import { ProgressCallback } from '../llm-clients';
-import { APIProvider, CommitOutputOptions } from '../models';
+import {
+  APIProvider,
+  COMMIT_COPILOT_CLOUD_OPENAI_BASE_URL,
+  CommitOutputOptions,
+} from '../models';
 
 import { runAnthropicAgentLoop } from './anthropic';
 import { runGeminiAgentLoop } from './gemini';
@@ -114,6 +118,21 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
         gitOps,
         commitOutputOptions,
         cancellationToken,
+        language,
+      );
+    case 'commit-copilot-cloud':
+      return runOpenAIAgentLoop(
+        apiKey,
+        model,
+        diff,
+        repoRoot,
+        onProgress,
+        isStaged,
+        gitOps,
+        commitOutputOptions,
+        cancellationToken,
+        maxAgentSteps,
+        COMMIT_COPILOT_CLOUD_OPENAI_BASE_URL,
         language,
       );
     default:

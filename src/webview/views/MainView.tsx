@@ -41,6 +41,7 @@ export function MainView() {
     : null;
 
   const isOllama = currentProvider === 'ollama';
+  const isCommitCopilotCloud = currentProvider === 'commit-copilot-cloud';
   const generateModeDisabled = isOllama;
   const effectiveGenerateMode = isOllama
     ? ('direct-diff' as const)
@@ -139,30 +140,34 @@ export function MainView() {
         onProviderChange={handleProviderChange}
       />
 
-      <ProviderConfigurationSection
-        pack={pack}
-        title={configTitle}
-        apiKeyLabel={apiKeyLabel}
-        apiKeyType={state.apiKeyType}
-        apiKeyPlaceholder={apiKeyPlaceholder}
-        apiKeyValue={state.apiKeyValue}
-        saveBtnDisabled={state.saveBtnDisabled}
-        saveBtnText={state.saveBtnText}
-        keyStatusMessage={state.keyStatusMessage}
-        providerInfoHtml={providerInfoHtml}
-        customProviderConfig={customProviderConfig}
-        onApiKeyInput={handleApiKeyInput}
-        onSave={handleSave}
-        onEditProvider={handleEditProvider}
-      />
+      {!isCommitCopilotCloud && (
+        <ProviderConfigurationSection
+          pack={pack}
+          title={configTitle}
+          apiKeyLabel={apiKeyLabel}
+          apiKeyType={state.apiKeyType}
+          apiKeyPlaceholder={apiKeyPlaceholder}
+          apiKeyValue={state.apiKeyValue}
+          saveBtnDisabled={state.saveBtnDisabled}
+          saveBtnText={state.saveBtnText}
+          keyStatusMessage={state.keyStatusMessage}
+          providerInfoHtml={providerInfoHtml}
+          customProviderConfig={customProviderConfig}
+          onApiKeyInput={handleApiKeyInput}
+          onSave={handleSave}
+          onEditProvider={handleEditProvider}
+        />
+      )}
 
-      <ModelSection
-        pack={pack}
-        modelState={modelState}
-        onModelChange={handleModelChange}
-        onCustomModelChange={handleCustomModelChange}
-        onCustomModelBlur={handleCustomModelBlur}
-      />
+      {!isCommitCopilotCloud && (
+        <ModelSection
+          pack={pack}
+          modelState={modelState}
+          onModelChange={handleModelChange}
+          onCustomModelChange={handleCustomModelChange}
+          onCustomModelBlur={handleCustomModelBlur}
+        />
+      )}
 
       <GenerateConfigurationSection
         pack={pack}

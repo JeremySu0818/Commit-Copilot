@@ -17,6 +17,7 @@ import {
 } from './errors';
 import {
   APIProvider,
+  COMMIT_COPILOT_CLOUD_OPENAI_BASE_URL,
   CommitOutputOptions,
   DEFAULT_COMMIT_OUTPUT_OPTIONS,
   DEFAULT_MODELS,
@@ -681,6 +682,13 @@ export function createLLMClient(options: LLMClientOptions): ILLMClient {
         resolvedCommitOutputOptions,
       );
     }
+    case 'commit-copilot-cloud':
+      return new OpenAIClient(
+        apiKey,
+        model,
+        resolvedCommitOutputOptions,
+        COMMIT_COPILOT_CLOUD_OPENAI_BASE_URL,
+      );
     default:
       throw new Error(`Unsupported provider: ${String(provider)}`);
   }

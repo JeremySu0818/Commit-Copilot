@@ -21,6 +21,7 @@ export function getApiKeyPlaceholder({
     google: pack.placeholders.enterGeminiApiKey,
     openai: pack.placeholders.enterOpenAIApiKey,
     anthropic: pack.placeholders.enterAnthropicApiKey,
+    'commit-copilot-cloud': pack.placeholders.enterApiKey,
   };
   return providerPlaceholders[currentProvider] ?? pack.placeholders.enterApiKey;
 }
@@ -49,6 +50,7 @@ export function getProviderInfoHtml({
     google: pack.descriptions.googleInfo,
     openai: pack.descriptions.openaiInfo,
     anthropic: pack.descriptions.anthropicInfo,
+    'commit-copilot-cloud': pack.descriptions.customProviderInfo,
   };
   return providerDescriptions[currentProvider] ?? '';
 }

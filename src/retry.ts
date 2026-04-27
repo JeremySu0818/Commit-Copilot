@@ -145,8 +145,7 @@ function getHeaderValue(headers: unknown, name: string): unknown {
     return null;
   }
   if ('get' in headers && typeof headers.get === 'function') {
-    const getMethod = headers.get as (headerName: string) => unknown;
-    return getMethod(name);
+    return (headers as { get(headerName: string): unknown }).get(name);
   }
   return headers[name] ?? headers[name.toLowerCase()];
 }
