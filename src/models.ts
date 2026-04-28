@@ -143,7 +143,7 @@ export const OLLAMA_MODELS: ModelConfig[] = [
 ];
 
 export const COMMIT_COPILOT_CLOUD_MODELS: ModelConfig[] = [
-  { id: 'qwen3.5-0.8b', alias: 'Qwen 3.5 0.8B' },
+  { id: 'gemma-4-e2b', alias: 'Gemma 4 E2B' },
 ];
 
 export const MODELS_BY_PROVIDER: Record<APIProvider, ModelConfig[]> = {
@@ -159,7 +159,7 @@ export const DEFAULT_MODELS: Record<APIProvider, string> = {
   openai: 'gpt-5.4',
   anthropic: 'claude-sonnet-4-6',
   ollama: 'gemma3:12b',
-  'commit-copilot-cloud': 'qwen3.5-0.8b',
+  'commit-copilot-cloud': 'gemma-4-e2b',
 };
 export function getAnthropicModelMaxTokens(
   modelId?: string,
