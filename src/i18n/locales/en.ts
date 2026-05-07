@@ -222,6 +222,7 @@ export const enLocale: LocaleTextBundle = {
       settings: 'Settings',
       addProvider: 'Add Custom Provider',
       editProvider: 'Edit Custom Provider',
+      addModel: 'Add Custom Model',
     },
     labels: {
       provider: 'Provider',
@@ -238,6 +239,7 @@ export const enLocale: LocaleTextBundle = {
       providerName: 'Provider Name',
       apiBaseUrl: 'API Base URL',
       commitMessage: 'Commit Message',
+      modelName: 'Model Name',
     },
     placeholders: {
       selectProvider: 'Select a provider...',
@@ -248,6 +250,7 @@ export const enLocale: LocaleTextBundle = {
       enterOpenAIApiKey: 'Enter your OpenAI API Key',
       enterAnthropicApiKey: 'Enter your Anthropic API Key',
       enterCustomApiKey: 'Enter your API Key',
+      enterModelName: 'Enter model name',
     },
     buttons: {
       save: 'Save',
@@ -258,6 +261,8 @@ export const enLocale: LocaleTextBundle = {
       editProvider: 'Edit Provider',
       addProvider: '+ Add Provider...',
       deleteProvider: 'Delete Provider',
+      addModel: '+ Add Model...',
+      deleteModel: 'Delete Model',
       cancel: 'Cancel',
     },
     statuses: {
@@ -276,6 +281,11 @@ export const enLocale: LocaleTextBundle = {
       providerSaved: 'Custom provider saved!',
       providerDeleted: 'Custom provider deleted.',
       modelNameRequired: 'Please enter a model name before generating.',
+      modelAdded: 'Custom model added.',
+      modelDeleted: 'Custom model removed.',
+      modelNameConflict: 'This model already exists in the list.',
+      fetchingModels: 'Fetching models from endpoint...',
+      fetchModelsFailed: 'Could not fetch models from endpoint. You can add models manually.',
     },
     descriptions: {
       ollamaFixedToDirectDiff: 'Ollama is fixed to Direct Diff mode',

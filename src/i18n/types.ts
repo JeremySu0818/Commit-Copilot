@@ -139,6 +139,7 @@ export interface WebviewLanguagePack {
     settings: string;
     addProvider: string;
     editProvider: string;
+    addModel: string;
   };
   labels: {
     provider: string;
@@ -155,6 +156,7 @@ export interface WebviewLanguagePack {
     providerName: string;
     apiBaseUrl: string;
     commitMessage: string;
+    modelName: string;
   };
   placeholders: {
     selectProvider: string;
@@ -165,6 +167,7 @@ export interface WebviewLanguagePack {
     enterOpenAIApiKey: string;
     enterAnthropicApiKey: string;
     enterCustomApiKey: string;
+    enterModelName: string;
   };
   buttons: {
     save: string;
@@ -175,6 +178,8 @@ export interface WebviewLanguagePack {
     editProvider: string;
     addProvider: string;
     deleteProvider: string;
+    addModel: string;
+    deleteModel: string;
     cancel: string;
   };
   statuses: {
@@ -193,6 +198,11 @@ export interface WebviewLanguagePack {
     providerSaved: string;
     providerDeleted: string;
     modelNameRequired: string;
+    modelAdded: string;
+    modelDeleted: string;
+    modelNameConflict: string;
+    fetchingModels: string;
+    fetchModelsFailed: string;
   };
   descriptions: {
     ollamaFixedToDirectDiff: string;

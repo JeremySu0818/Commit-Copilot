@@ -37,6 +37,12 @@ export interface AddProviderDraft {
   statusHtml: string;
 }
 
+export interface AddModelDraft {
+  modelName: string;
+  statusHtml: string;
+  customModels: { id: string; alias: string }[];
+}
+
 export interface MainViewState {
   screen: MainViewScreen;
   currentProvider: string;
@@ -55,6 +61,7 @@ export interface MainViewState {
   customProviders: CustomProviderConfig[];
   currentMaxAgentSteps: number;
   addProviderDraft: AddProviderDraft;
+  addModelDraft: AddModelDraft;
   keyStatusMessage: StatusMessage | null;
   languageStatusMessage: StatusMessage | null;
   saveBtnDisabled: boolean;
@@ -86,6 +93,8 @@ export type MainViewAction =
   | { type: 'SET_MAX_AGENT_STEPS'; value: number }
   | { type: 'SET_ADD_PROVIDER_DRAFT'; draft: AddProviderDraft }
   | { type: 'UPDATE_ADD_PROVIDER_DRAFT'; partial: Partial<AddProviderDraft> }
+  | { type: 'SET_ADD_MODEL_DRAFT'; draft: AddModelDraft }
+  | { type: 'UPDATE_ADD_MODEL_DRAFT'; partial: Partial<AddModelDraft> }
   | { type: 'SET_KEY_STATUS_MESSAGE'; status: StatusMessage | null }
   | { type: 'SET_LANGUAGE_STATUS_MESSAGE'; status: StatusMessage | null }
   | { type: 'SET_SAVE_BTN'; disabled: boolean; text: string }
@@ -99,7 +108,8 @@ export function createInitialState(
   const pack = bootstrap.languagePacks[effectiveLang];
   const initialScreen: MainViewScreen =
     bootstrap.initialScreen === 'settings' ||
-    bootstrap.initialScreen === 'addProvider'
+    bootstrap.initialScreen === 'addProvider' ||
+    bootstrap.initialScreen === 'addModel'
       ? bootstrap.initialScreen
       : 'main';
   return {
@@ -133,6 +143,11 @@ export function createInitialState(
       baseUrl: '',
       apiKey: '',
       statusHtml: '',
+    },
+    addModelDraft: {
+      modelName: '',
+      statusHtml: '',
+      customModels: [],
     },
     keyStatusMessage: null,
     languageStatusMessage: null,
@@ -195,6 +210,13 @@ export function mainViewStateReducer(
       return {
         ...state,
         addProviderDraft: { ...state.addProviderDraft, ...action.partial },
+      };
+    case 'SET_ADD_MODEL_DRAFT':
+      return { ...state, addModelDraft: action.draft };
+    case 'UPDATE_ADD_MODEL_DRAFT':
+      return {
+        ...state,
+        addModelDraft: { ...state.addModelDraft, ...action.partial },
       };
     case 'SET_KEY_STATUS_MESSAGE':
       return { ...state, keyStatusMessage: action.status };

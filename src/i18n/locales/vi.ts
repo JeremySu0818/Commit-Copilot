@@ -223,6 +223,7 @@ export const viLocale: LocaleTextBundle = {
       settings: 'Cài đặt',
       addProvider: 'Thêm nhà cung cấp tùy chỉnh',
       editProvider: 'Chỉnh sửa nhà cung cấp tùy chỉnh',
+      addModel: 'Add Custom Model',
     },
     labels: {
       provider: 'Nhà cung cấp',
@@ -239,6 +240,7 @@ export const viLocale: LocaleTextBundle = {
       providerName: 'Tên Nhà cung cấp',
       apiBaseUrl: 'API Base URL',
       commitMessage: 'Thông báo commit',
+      modelName: 'Model Name',
     },
     placeholders: {
       selectProvider: 'Chọn một nhà cung cấp...',
@@ -249,6 +251,7 @@ export const viLocale: LocaleTextBundle = {
       enterOpenAIApiKey: 'Nhập OpenAI API Key của bạn',
       enterAnthropicApiKey: 'Nhập Anthropic API Key của bạn',
       enterCustomApiKey: 'Nhập API Key của bạn',
+      enterModelName: 'Enter model name',
     },
     buttons: {
       save: 'Lưu',
@@ -259,6 +262,8 @@ export const viLocale: LocaleTextBundle = {
       editProvider: 'Chỉnh sửa Nhà cung cấp',
       addProvider: '+ Thêm Nhà cung cấp...',
       deleteProvider: 'Xóa Nhà cung cấp',
+      addModel: '+ Add Model...',
+      deleteModel: 'Delete Model',
       cancel: 'Hủy',
     },
     statuses: {
@@ -277,6 +282,11 @@ export const viLocale: LocaleTextBundle = {
       providerSaved: 'Đã lưu nhà cung cấp tùy chỉnh!',
       providerDeleted: 'Đã xóa nhà cung cấp tùy chỉnh.',
       modelNameRequired: 'Vui lòng nhập tên mô hình trước khi tạo.',
+      modelAdded: 'Custom model added.',
+      modelDeleted: 'Custom model removed.',
+      modelNameConflict: 'This model already exists in the list.',
+      fetchingModels: 'Fetching models from endpoint...',
+      fetchModelsFailed: 'Could not fetch models from endpoint. You can add models manually.',
     },
     descriptions: {
       ollamaFixedToDirectDiff: 'Ollama được cố định ở chế độ Direct Diff',

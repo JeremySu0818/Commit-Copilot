@@ -227,6 +227,7 @@ export const deLocale: LocaleTextBundle = {
       settings: 'Einstellungen',
       addProvider: 'Benutzerdefinierten Anbieter hinzufügen',
       editProvider: 'Benutzerdefinierten Anbieter bearbeiten',
+      addModel: 'Add Custom Model',
     },
     labels: {
       provider: 'Anbieter',
@@ -243,6 +244,7 @@ export const deLocale: LocaleTextBundle = {
       providerName: 'Anbietername',
       apiBaseUrl: 'API Basis-URL',
       commitMessage: 'Commit-Nachricht',
+      modelName: 'Model Name',
     },
     placeholders: {
       selectProvider: 'Einen Anbieter auswählen...',
@@ -253,6 +255,7 @@ export const deLocale: LocaleTextBundle = {
       enterOpenAIApiKey: 'Geben Sie Ihren OpenAI API-Schlüssel ein',
       enterAnthropicApiKey: 'Geben Sie Ihren Anthropic API-Schlüssel ein',
       enterCustomApiKey: 'Geben Sie Ihren API-Schlüssel ein',
+      enterModelName: 'Enter model name',
     },
     buttons: {
       save: 'Speichern',
@@ -263,6 +266,8 @@ export const deLocale: LocaleTextBundle = {
       editProvider: 'Anbieter bearbeiten',
       addProvider: '+ Anbieter hinzufügen...',
       deleteProvider: 'Anbieter löschen',
+      addModel: '+ Add Model...',
+      deleteModel: 'Delete Model',
       cancel: 'Abbrechen',
     },
     statuses: {
@@ -282,6 +287,11 @@ export const deLocale: LocaleTextBundle = {
       providerDeleted: 'Benutzerdefinierter Anbieter gelöscht.',
       modelNameRequired:
         'Bitte geben Sie vor der Generierung einen Modellnamen ein.',
+      modelAdded: 'Custom model added.',
+      modelDeleted: 'Custom model removed.',
+      modelNameConflict: 'This model already exists in the list.',
+      fetchingModels: 'Fetching models from endpoint...',
+      fetchModelsFailed: 'Could not fetch models from endpoint. You can add models manually.',
     },
     descriptions: {
       ollamaFixedToDirectDiff:

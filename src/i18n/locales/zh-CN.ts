@@ -202,6 +202,7 @@ export const zhCNLocale: LocaleTextBundle = {
       settings: '设置',
       addProvider: '添加自定义提供商',
       editProvider: '编辑自定义提供商',
+      addModel: 'Add Custom Model',
     },
     labels: {
       provider: '提供商',
@@ -218,6 +219,7 @@ export const zhCNLocale: LocaleTextBundle = {
       providerName: '提供商名称',
       apiBaseUrl: 'API Base URL',
       commitMessage: '提交信息',
+      modelName: 'Model Name',
     },
     placeholders: {
       selectProvider: '请选择提供商...',
@@ -228,6 +230,7 @@ export const zhCNLocale: LocaleTextBundle = {
       enterOpenAIApiKey: '请输入 OpenAI API Key',
       enterAnthropicApiKey: '请输入 Anthropic API Key',
       enterCustomApiKey: '请输入 API Key',
+      enterModelName: 'Enter model name',
     },
     buttons: {
       save: '保存',
@@ -238,6 +241,8 @@ export const zhCNLocale: LocaleTextBundle = {
       editProvider: '编辑 Provider',
       addProvider: '+ 添加 Provider...',
       deleteProvider: '删除 Provider',
+      addModel: '+ Add Model...',
+      deleteModel: 'Delete Model',
       cancel: '取消',
     },
     statuses: {
@@ -256,6 +261,11 @@ export const zhCNLocale: LocaleTextBundle = {
       providerSaved: '已保存自定义提供商！',
       providerDeleted: '已删除自定义提供商。',
       modelNameRequired: '请先输入模型名称再进行生成。',
+      modelAdded: 'Custom model added.',
+      modelDeleted: 'Custom model removed.',
+      modelNameConflict: 'This model already exists in the list.',
+      fetchingModels: 'Fetching models from endpoint...',
+      fetchModelsFailed: 'Could not fetch models from endpoint. You can add models manually.',
     },
     descriptions: {
       ollamaFixedToDirectDiff: 'Ollama 固定使用 Direct Diff 模式',

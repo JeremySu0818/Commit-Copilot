@@ -202,6 +202,7 @@ export const zhTWLocale: LocaleTextBundle = {
       settings: '設定',
       addProvider: '新增自訂供應商',
       editProvider: '編輯自訂供應商',
+      addModel: '新增自訂模型',
     },
     labels: {
       provider: '供應商',
@@ -218,6 +219,7 @@ export const zhTWLocale: LocaleTextBundle = {
       providerName: '供應商名稱',
       apiBaseUrl: 'API Base URL',
       commitMessage: 'Commit 訊息',
+      modelName: '模型名稱',
     },
     placeholders: {
       selectProvider: '請選擇供應商...',
@@ -228,6 +230,7 @@ export const zhTWLocale: LocaleTextBundle = {
       enterOpenAIApiKey: '請輸入 OpenAI API Key',
       enterAnthropicApiKey: '請輸入 Anthropic API Key',
       enterCustomApiKey: '請輸入 API Key',
+      enterModelName: '請輸入模型名稱',
     },
     buttons: {
       save: '儲存',
@@ -238,6 +241,8 @@ export const zhTWLocale: LocaleTextBundle = {
       editProvider: '編輯 Provider',
       addProvider: '+ 新增 Provider...',
       deleteProvider: '刪除 Provider',
+      addModel: '+ 新增模型...',
+      deleteModel: '刪除模型',
       cancel: '取消',
     },
     statuses: {
@@ -256,6 +261,11 @@ export const zhTWLocale: LocaleTextBundle = {
       providerSaved: '已儲存自訂供應商！',
       providerDeleted: '已刪除自訂供應商。',
       modelNameRequired: '請先輸入模型名稱再進行產生。',
+      modelAdded: '已新增自訂模型。',
+      modelDeleted: '已移除自訂模型。',
+      modelNameConflict: '此模型已在列表中。',
+      fetchingModels: '正在從端點取得模型列表...',
+      fetchModelsFailed: '無法從端點取得模型列表。你可以手動新增模型。',
     },
     descriptions: {
       ollamaFixedToDirectDiff: 'Ollama 固定使用 Direct Diff 模式',

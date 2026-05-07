@@ -224,6 +224,7 @@ export const hiLocale: LocaleTextBundle = {
       settings: 'सेटिंग्स',
       addProvider: 'कस्टम प्रदाता जोड़ें',
       editProvider: 'कस्टम प्रदाता संपादित करें',
+      addModel: 'Add Custom Model',
     },
     labels: {
       provider: 'प्रदाता',
@@ -240,6 +241,7 @@ export const hiLocale: LocaleTextBundle = {
       providerName: 'प्रदाता का नाम',
       apiBaseUrl: 'एपीआई बेस URL',
       commitMessage: 'Commit Message',
+      modelName: 'Model Name',
     },
     placeholders: {
       selectProvider: 'प्रदाता का चयन करें...',
@@ -250,6 +252,7 @@ export const hiLocale: LocaleTextBundle = {
       enterOpenAIApiKey: 'अपनी OpenAI एपीआई कुंजी दर्ज करें',
       enterAnthropicApiKey: 'अपनी Anthropic एपीआई कुंजी दर्ज करें',
       enterCustomApiKey: 'अपनी एपीआई कुंजी दर्ज करें',
+      enterModelName: 'Enter model name',
     },
     buttons: {
       save: 'सहेजें',
@@ -260,6 +263,8 @@ export const hiLocale: LocaleTextBundle = {
       editProvider: 'प्रदाता संपादित करें',
       addProvider: '+ प्रदाता जोड़ें...',
       deleteProvider: 'प्रदाता हटाएं',
+      addModel: '+ Add Model...',
+      deleteModel: 'Delete Model',
       cancel: 'रद्द करें',
     },
     statuses: {
@@ -278,6 +283,11 @@ export const hiLocale: LocaleTextBundle = {
       providerSaved: 'कस्टम प्रदाता सहेजा गया!',
       providerDeleted: 'कस्टम प्रदाता हटा दिया गया।',
       modelNameRequired: 'कृपया उत्पन्न करने से पहले एक मॉडल नाम दर्ज करें।',
+      modelAdded: 'Custom model added.',
+      modelDeleted: 'Custom model removed.',
+      modelNameConflict: 'This model already exists in the list.',
+      fetchingModels: 'Fetching models from endpoint...',
+      fetchModelsFailed: 'Could not fetch models from endpoint. You can add models manually.',
     },
     descriptions: {
       ollamaFixedToDirectDiff: 'Ollama डायरेक्ट डिफ मोड पर निश्चित है',

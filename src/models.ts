@@ -24,6 +24,10 @@ export function makeCustomProviderKey(id: string): string {
 export function getCustomProviderStorageKey(providerId: string): string {
   return `CUSTOM_${providerId}_API_KEY`;
 }
+
+export function getCustomProviderModelsStorageKey(providerId: string): string {
+  return `CUSTOM_${providerId}_MODELS`;
+}
 export type GenerateMode = 'agentic' | 'direct-diff';
 export interface CommitOutputOptions {
   includeScope: boolean;

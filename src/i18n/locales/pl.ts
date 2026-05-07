@@ -225,6 +225,7 @@ export const plLocale: LocaleTextBundle = {
       settings: 'Ustawienia',
       addProvider: 'Dodaj niestandardowego dostawcę',
       editProvider: 'Edytuj niestandardowego dostawcę',
+      addModel: 'Add Custom Model',
     },
     labels: {
       provider: 'Dostawca',
@@ -241,6 +242,7 @@ export const plLocale: LocaleTextBundle = {
       providerName: 'Nazwa dostawcy',
       apiBaseUrl: 'Podstawowy adres URL API',
       commitMessage: 'Wiadomość commita',
+      modelName: 'Model Name',
     },
     placeholders: {
       selectProvider: 'Wybierz dostawcę...',
@@ -251,6 +253,7 @@ export const plLocale: LocaleTextBundle = {
       enterOpenAIApiKey: 'Wprowadź swój klucz API OpenAI',
       enterAnthropicApiKey: 'Wprowadź swój klucz API Anthropic',
       enterCustomApiKey: 'Wprowadź klucz API',
+      enterModelName: 'Enter model name',
     },
     buttons: {
       save: 'Zapisz',
@@ -261,6 +264,8 @@ export const plLocale: LocaleTextBundle = {
       editProvider: 'Edytuj dostawcę',
       addProvider: '+ Dodaj dostawcę...',
       deleteProvider: 'Usuń dostawcę',
+      addModel: '+ Add Model...',
+      deleteModel: 'Delete Model',
       cancel: 'Anuluj',
     },
     statuses: {
@@ -279,6 +284,11 @@ export const plLocale: LocaleTextBundle = {
       providerSaved: 'Niestandardowy dostawca został zapisany!',
       providerDeleted: 'Niestandardowy dostawca został usunięty.',
       modelNameRequired: 'Wprowadź nazwę modelu przed wygenerowaniem.',
+      modelAdded: 'Custom model added.',
+      modelDeleted: 'Custom model removed.',
+      modelNameConflict: 'This model already exists in the list.',
+      fetchingModels: 'Fetching models from endpoint...',
+      fetchModelsFailed: 'Could not fetch models from endpoint. You can add models manually.',
     },
     descriptions: {
       ollamaFixedToDirectDiff:

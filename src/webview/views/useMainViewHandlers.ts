@@ -208,14 +208,29 @@ export function useMainViewHandlers({
 
   const handleModelChange = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
+      const value = e.target.value;
+      if (value === '__add_model__') {
+        e.target.value = modelState.currentModel;
+        dispatch({
+          type: 'SET_ADD_MODEL_DRAFT',
+          draft: { modelName: '', statusHtml: '', customModels: [] },
+        });
+        dispatch({ type: 'SET_SCREEN', screen: 'addModel' });
+        vscode.postMessage({ type: 'setCurrentScreen', value: 'addModel' });
+        vscode.postMessage({
+          type: 'getCustomModels',
+          provider: currentProvider,
+        });
+        return;
+      }
       vscode.postMessage({
         type: 'saveModel',
-        value: e.target.value,
+        value,
         provider: currentProvider,
       });
       dispatch({
         type: 'SET_MODEL_STATE',
-        state: { ...modelState, currentModel: e.target.value },
+        state: { ...modelState, currentModel: value },
       });
     },
     [currentProvider, modelState, dispatch, vscode],

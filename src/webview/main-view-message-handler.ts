@@ -160,7 +160,7 @@ function normalizeCommitOutputOptions(
 }
 
 function normalizeScreen(value: unknown): MainViewState['screen'] {
-  if (value === 'settings' || value === 'addProvider') {
+  if (value === 'settings' || value === 'addProvider' || value === 'addModel') {
     return value;
   }
   return 'main';
@@ -615,6 +615,100 @@ export function useMainViewMessageHandler(
           vscode.postMessage({
             type: 'setCurrentScreen',
             value: 'addProvider',
+          });
+        },
+        customModelAdded: (message) => {
+          const messageProvider = toString(message.provider);
+          if (messageProvider && messageProvider !== state.currentProvider) {
+            return;
+          }
+          const activeProvider = messageProvider ?? state.currentProvider;
+          const models = toModelConfigArray(message.models);
+          const currentModel = toString(message.currentModel) ?? '';
+          const selectedModel = chooseModel(
+            models,
+            currentModel,
+            activeProvider,
+            bootstrap,
+          );
+          if (selectedModel !== currentModel && selectedModel) {
+            vscode.postMessage({
+              type: 'saveModel',
+              value: selectedModel,
+              provider: activeProvider,
+            });
+          }
+          dispatch({
+            type: 'SET_MODEL_STATE',
+            state: {
+              models,
+              currentModel: selectedModel,
+              allowCustomModel: false,
+              customModelValue: '',
+              disabled: false,
+            },
+          });
+          const customModels = toModelConfigArray(message.customModels);
+          dispatch({
+            type: 'UPDATE_ADD_MODEL_DRAFT',
+            partial: { modelName: '', statusHtml: '', customModels },
+          });
+        },
+        customModelAddFailed: (message) => {
+          const errorKey = toString(message.error);
+          const errorText =
+            errorKey === 'duplicate'
+              ? state.currentPack.statuses.modelNameConflict
+              : state.currentPack.statuses.fetchModelsFailed;
+          dispatch({
+            type: 'UPDATE_ADD_MODEL_DRAFT',
+            partial: {
+              statusHtml: renderStatusHtml('error', errorText),
+            },
+          });
+        },
+        customModelDeleted: (message) => {
+          const messageProvider = toString(message.provider);
+          if (messageProvider && messageProvider !== state.currentProvider) {
+            return;
+          }
+          const activeProvider = messageProvider ?? state.currentProvider;
+          const models = toModelConfigArray(message.models);
+          const currentModel = toString(message.currentModel) ?? '';
+          const selectedModel = chooseModel(
+            models,
+            currentModel,
+            activeProvider,
+            bootstrap,
+          );
+          if (selectedModel !== currentModel && selectedModel) {
+            vscode.postMessage({
+              type: 'saveModel',
+              value: selectedModel,
+              provider: activeProvider,
+            });
+          }
+          dispatch({
+            type: 'SET_MODEL_STATE',
+            state: {
+              models,
+              currentModel: selectedModel,
+              allowCustomModel: false,
+              customModelValue: '',
+              disabled: false,
+            },
+          });
+          const customModels = toModelConfigArray(message.customModels);
+          dispatch({
+            type: 'UPDATE_ADD_MODEL_DRAFT',
+            partial: { customModels },
+          });
+        },
+        customModelsList: (message) => {
+          const customModels = toModelConfigArray(message.customModels);
+          dispatch({
+            type: 'UPDATE_ADD_MODEL_DRAFT',
+            partial: { customModels },
           });
         },
       };

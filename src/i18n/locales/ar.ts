@@ -214,6 +214,7 @@ export const arLocale: LocaleTextBundle = {
       settings: 'الإعدادات',
       addProvider: 'إضافة مزود مخصص',
       editProvider: 'تعديل مزود مخصص',
+      addModel: 'Add Custom Model',
     },
     labels: {
       provider: 'المزود',
@@ -230,6 +231,7 @@ export const arLocale: LocaleTextBundle = {
       providerName: 'اسم المزود',
       apiBaseUrl: 'الرابط الأساسي لـ API',
       commitMessage: 'رسالة Commit',
+      modelName: 'Model Name',
     },
     placeholders: {
       selectProvider: 'حدد مزوداً...',
@@ -240,6 +242,7 @@ export const arLocale: LocaleTextBundle = {
       enterOpenAIApiKey: 'أدخل مفتاح OpenAI API الخاص بك',
       enterAnthropicApiKey: 'أدخل مفتاح Anthropic API الخاص بك',
       enterCustomApiKey: 'أدخل مفتاح API الخاص بك',
+      enterModelName: 'Enter model name',
     },
     buttons: {
       save: 'حفظ',
@@ -250,6 +253,8 @@ export const arLocale: LocaleTextBundle = {
       editProvider: 'تعديل المزود',
       addProvider: '+ إضافة مزود...',
       deleteProvider: 'حذف المزود',
+      addModel: '+ Add Model...',
+      deleteModel: 'Delete Model',
       cancel: 'إلغاء',
     },
     statuses: {
@@ -268,6 +273,11 @@ export const arLocale: LocaleTextBundle = {
       providerSaved: 'تم حفظ المزود المخصص!',
       providerDeleted: 'تم حذف المزود المخصص.',
       modelNameRequired: 'يرجى إدخال اسم النموذج قبل التوليد.',
+      modelAdded: 'Custom model added.',
+      modelDeleted: 'Custom model removed.',
+      modelNameConflict: 'This model already exists in the list.',
+      fetchingModels: 'Fetching models from endpoint...',
+      fetchModelsFailed: 'Could not fetch models from endpoint. You can add models manually.',
     },
     descriptions: {
       ollamaFixedToDirectDiff: 'Ollama مثبت على وضع Direct Diff',

@@ -21,6 +21,7 @@ import {
   APIProvider,
   CommitOutputOptions,
   CustomProviderConfig,
+  ModelConfig,
   CUSTOM_PROVIDERS_STATE_KEY,
   CUSTOM_PROVIDER_PREFIX,
   DEFAULT_COMMIT_OUTPUT_OPTIONS,
@@ -37,6 +38,7 @@ import {
   isCustomProvider,
   getCustomProviderId,
   getCustomProviderStorageKey,
+  getCustomProviderModelsStorageKey,
   normalizeCommitOutputOptions,
   normalizeMaxAgentStepsValue,
 } from './models';
@@ -144,7 +146,9 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
 
   private updateCurrentScreen(screen: unknown): void {
     const normalizedScreen: MainViewScreen =
-      screen === 'settings' || screen === 'addProvider' ? screen : 'main';
+      screen === 'settings' || screen === 'addProvider' || screen === 'addModel'
+        ? screen
+        : 'main';
     this._currentScreen = normalizedScreen;
     void vscode.commands.executeCommand(
       'setContext',
@@ -167,6 +171,28 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
         CUSTOM_PROVIDERS_STATE_KEY,
       ) ?? []
     );
+  }
+
+  private getCustomProviderModelStorageKey(customId: string): string {
+    return `CUSTOM_${customId}_MODEL`;
+  }
+
+  private getSavedCustomProviderModel(customId: string): string {
+    return (
+      this._context.globalState.get<string>(
+        this.getCustomProviderModelStorageKey(customId),
+      ) ?? ''
+    );
+  }
+
+  private includeModelIfMissing(
+    models: ModelConfig[],
+    modelId: string,
+  ): ModelConfig[] {
+    if (!modelId || models.some((model) => model.id === modelId)) {
+      return models;
+    }
+    return [...models, { id: modelId, alias: modelId }];
   }
 
   private async saveCustomProviders(
@@ -405,6 +431,50 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
             .unknownProvider,
         };
     }
+  }
+
+  private async fetchCustomProviderModels(
+    apiKey: string,
+    baseUrl: string | undefined,
+    customId: string,
+  ): Promise<ModelConfig[]> {
+    const customProviders = this.getCustomProviders();
+    const cp = customProviders.find((candidate) => candidate.id === customId);
+    const resolvedBaseUrl = baseUrl ?? cp?.baseUrl ?? '';
+
+    const manualModels =
+      this._context.globalState.get<ModelConfig[]>(
+        getCustomProviderModelsStorageKey(customId),
+      ) ?? [];
+
+    let apiModels: ModelConfig[] = [];
+    try {
+      const openAIClientClass = (await import('openai')).default;
+      const client = new openAIClientClass({
+        apiKey,
+        baseURL: resolvedBaseUrl,
+      });
+      const response = await client.models.list();
+      const models: ModelConfig[] = [];
+      for await (const model of response) {
+        if (model.id) {
+          models.push({ id: model.id, alias: model.id });
+        }
+      }
+      models.sort((a, b) => a.id.localeCompare(b.id));
+      apiModels = models;
+    } catch {
+      // If fetch fails, still return manual models
+    }
+
+    const allModelIds = new Set(apiModels.map((m) => m.id));
+    const merged = [...apiModels];
+    for (const manual of manualModels) {
+      if (!allModelIds.has(manual.id)) {
+        merged.push(manual);
+      }
+    }
+    return merged;
   }
 
   public resolveWebviewView(
@@ -656,14 +726,16 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
 
       const storageKey = getCustomProviderStorageKey(customId);
       await this._context.secrets.store(storageKey, apiKey);
-      const savedModel = this._context.globalState.get<string>(
-        `CUSTOM_${customId}_MODEL`,
+      const savedModel = this.getSavedCustomProviderModel(customId);
+      const fetchedModels = await this.fetchCustomProviderModels(
+        apiKey,
+        cp.baseUrl,
+        customId,
       );
       vscode.window.showInformationMessage(text.saveConfigSuccess(cp.name));
       postValidationResult(provider, true, {
-        models: [],
-        currentModel: savedModel ?? '',
-        allowCustomModel: true,
+        models: this.includeModelIfMissing(fetchedModels, savedModel),
+        currentModel: savedModel,
       });
       this._view?.webview.postMessage({
         type: 'keyStatus',
@@ -881,7 +953,11 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
       }
 
       await this._context.globalState.update(
-        `CUSTOM_${deleteId}_MODEL`,
+        this.getCustomProviderModelStorageKey(deleteId),
+        undefined,
+      );
+      await this._context.globalState.update(
+        getCustomProviderModelsStorageKey(deleteId),
         undefined,
       );
       this._view?.webview.postMessage({
@@ -939,15 +1015,17 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
             getCustomProviderStorageKey(customId),
           );
           if (key) {
-            const savedModel = this._context.globalState.get<string>(
-              `CUSTOM_${customId}_MODEL`,
+            const savedModel = this.getSavedCustomProviderModel(customId);
+            const fetchedModels = await this.fetchCustomProviderModels(
+              key,
+              undefined,
+              customId,
             );
             this._view?.webview.postMessage({
               type: 'modelsList',
-              models: [],
-              currentModel: savedModel ?? '',
+              models: this.includeModelIfMissing(fetchedModels, savedModel),
+              currentModel: savedModel,
               provider,
-              allowCustomModel: true,
             });
           }
           return;
@@ -974,7 +1052,9 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
         const modelValue = toStoredModel(message.value);
         if (isCustomProvider(provider)) {
           await this._context.globalState.update(
-            `CUSTOM_${getCustomProviderId(provider)}_MODEL`,
+            this.getCustomProviderModelStorageKey(
+              getCustomProviderId(provider),
+            ),
             modelValue,
           );
           return;
@@ -1128,6 +1208,134 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
       },
       setCurrentScreen: (message) => {
         this.updateCurrentScreen(message.value);
+      },
+      addCustomModel: async (message) => {
+        const provider = toProvider(message.provider);
+        if (!isCustomProvider(provider)) {
+          return;
+        }
+        const customId = getCustomProviderId(provider);
+        const modelName = (asString(message.modelName) ?? '').trim();
+        if (!modelName) {
+          return;
+        }
+        const storageKey = getCustomProviderModelsStorageKey(customId);
+        const existing =
+          this._context.globalState.get<{ id: string; alias: string }[]>(
+            storageKey,
+          ) ?? [];
+        if (existing.some((m) => m.id === modelName)) {
+          this._view?.webview.postMessage({
+            type: 'customModelAddFailed',
+            error: 'duplicate',
+          });
+          return;
+        }
+        existing.push({ id: modelName, alias: modelName });
+        await this._context.globalState.update(storageKey, existing);
+        let currentModel = this.getSavedCustomProviderModel(customId);
+        if (!currentModel) {
+          currentModel = modelName;
+          await this._context.globalState.update(
+            this.getCustomProviderModelStorageKey(customId),
+            modelName,
+          );
+        }
+        // Re-fetch full model list to send back
+        const apiKey = await this._context.secrets.get(
+          getCustomProviderStorageKey(customId),
+        );
+        if (apiKey) {
+          const models = await this.fetchCustomProviderModels(
+            apiKey,
+            undefined,
+            customId,
+          );
+          this._view?.webview.postMessage({
+            type: 'customModelAdded',
+            models: this.includeModelIfMissing(models, currentModel),
+            currentModel,
+            provider,
+            customModels: existing,
+          });
+        }
+      },
+      deleteCustomModel: async (message) => {
+        const provider = toProvider(message.provider);
+        if (!isCustomProvider(provider)) {
+          return;
+        }
+        const customId = getCustomProviderId(provider);
+        const modelId = (asString(message.modelId) ?? '').trim();
+        if (!modelId) {
+          return;
+        }
+        const storageKey = getCustomProviderModelsStorageKey(customId);
+        const existing =
+          this._context.globalState.get<{ id: string; alias: string }[]>(
+            storageKey,
+          ) ?? [];
+        const filtered = existing.filter((m) => m.id !== modelId);
+        await this._context.globalState.update(storageKey, filtered);
+        const savedModel = this.getSavedCustomProviderModel(customId);
+        // Re-fetch full model list to send back
+        const apiKey = await this._context.secrets.get(
+          getCustomProviderStorageKey(customId),
+        );
+        if (!apiKey && savedModel === modelId) {
+          await this._context.globalState.update(
+            this.getCustomProviderModelStorageKey(customId),
+            undefined,
+          );
+        }
+        if (apiKey) {
+          const fetchedModels = await this.fetchCustomProviderModels(
+            apiKey,
+            undefined,
+            customId,
+          );
+          const savedModelStillAvailable = fetchedModels.some(
+            (model) => model.id === savedModel,
+          );
+          const currentModel =
+            savedModel === modelId && !savedModelStillAvailable
+              ? ''
+              : savedModel;
+          if (savedModel && !currentModel) {
+            await this._context.globalState.update(
+              this.getCustomProviderModelStorageKey(customId),
+              undefined,
+            );
+          }
+          const models = this.includeModelIfMissing(
+            fetchedModels,
+            currentModel,
+          );
+          this._view?.webview.postMessage({
+            type: 'customModelDeleted',
+            models,
+            currentModel,
+            provider,
+            customModels: filtered,
+          });
+        }
+      },
+      getCustomModels: (message) => {
+        const provider = toProvider(message.provider);
+        if (!isCustomProvider(provider)) {
+          return;
+        }
+        const customId = getCustomProviderId(provider);
+        const storageKey = getCustomProviderModelsStorageKey(customId);
+        const customModels =
+          this._context.globalState.get<{ id: string; alias: string }[]>(
+            storageKey,
+          ) ?? [];
+        this._view?.webview.postMessage({
+          type: 'customModelsList',
+          customModels,
+          provider,
+        });
       },
     };
 

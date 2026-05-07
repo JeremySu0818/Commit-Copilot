@@ -225,6 +225,7 @@ export const ruLocale: LocaleTextBundle = {
       settings: 'Настройки',
       addProvider: 'Добавить кастомного провайдера',
       editProvider: 'Редактировать кастомного провайдера',
+      addModel: 'Add Custom Model',
     },
     labels: {
       provider: 'Провайдер',
@@ -241,6 +242,7 @@ export const ruLocale: LocaleTextBundle = {
       providerName: 'Имя провайдера',
       apiBaseUrl: 'Базовый URL-адрес API',
       commitMessage: 'Сообщение коммита',
+      modelName: 'Model Name',
     },
     placeholders: {
       selectProvider: 'Выберите провайдера...',
@@ -251,6 +253,7 @@ export const ruLocale: LocaleTextBundle = {
       enterOpenAIApiKey: 'Введите ваш API-ключ OpenAI',
       enterAnthropicApiKey: 'Введите ваш API-ключ Anthropic',
       enterCustomApiKey: 'Введите ваш API-ключ',
+      enterModelName: 'Enter model name',
     },
     buttons: {
       save: 'Сохранить',
@@ -261,6 +264,8 @@ export const ruLocale: LocaleTextBundle = {
       editProvider: 'Изменить провайдера',
       addProvider: '+ Добавить провайдера...',
       deleteProvider: 'Удалить провайдера',
+      addModel: '+ Add Model...',
+      deleteModel: 'Delete Model',
       cancel: 'Отмена',
     },
     statuses: {
@@ -279,6 +284,11 @@ export const ruLocale: LocaleTextBundle = {
       providerSaved: 'Кастомный провайдер сохранен!',
       providerDeleted: 'Кастомный провайдер удален.',
       modelNameRequired: 'Пожалуйста, введите имя модели перед генерацией.',
+      modelAdded: 'Custom model added.',
+      modelDeleted: 'Custom model removed.',
+      modelNameConflict: 'This model already exists in the list.',
+      fetchingModels: 'Fetching models from endpoint...',
+      fetchModelsFailed: 'Could not fetch models from endpoint. You can add models manually.',
     },
     descriptions: {
       ollamaFixedToDirectDiff: 'Ollama зафиксирована в режиме Direct Diff',

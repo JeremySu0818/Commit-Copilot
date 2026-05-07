@@ -221,6 +221,7 @@ export const koLocale: LocaleTextBundle = {
       settings: '설정',
       addProvider: '사용자 지정 프로바이더 추가',
       editProvider: '사용자 지정 프로바이더 편집',
+      addModel: 'Add Custom Model',
     },
     labels: {
       provider: '프로바이더',
@@ -237,6 +238,7 @@ export const koLocale: LocaleTextBundle = {
       providerName: '프로바이더 이름',
       apiBaseUrl: 'API 베이스 URL',
       commitMessage: '커밋 메시지',
+      modelName: 'Model Name',
     },
     placeholders: {
       selectProvider: '프로바이더 선택...',
@@ -247,6 +249,7 @@ export const koLocale: LocaleTextBundle = {
       enterOpenAIApiKey: 'OpenAI API 키 입력',
       enterAnthropicApiKey: 'Anthropic API 키 입력',
       enterCustomApiKey: 'API 키 입력',
+      enterModelName: 'Enter model name',
     },
     buttons: {
       save: '저장',
@@ -257,6 +260,8 @@ export const koLocale: LocaleTextBundle = {
       editProvider: '프로바이더 편집',
       addProvider: '+ 프로바이더 추가...',
       deleteProvider: '프로바이더 삭제',
+      addModel: '+ Add Model...',
+      deleteModel: 'Delete Model',
       cancel: '취소',
     },
     statuses: {
@@ -275,6 +280,11 @@ export const koLocale: LocaleTextBundle = {
       providerSaved: '사용자 지정 프로바이더가 저장되었습니다!',
       providerDeleted: '사용자 지정 프로바이더가 삭제되었습니다.',
       modelNameRequired: '생성하기 전에 모델 이름을 입력하십시오.',
+      modelAdded: 'Custom model added.',
+      modelDeleted: 'Custom model removed.',
+      modelNameConflict: 'This model already exists in the list.',
+      fetchingModels: 'Fetching models from endpoint...',
+      fetchModelsFailed: 'Could not fetch models from endpoint. You can add models manually.',
     },
     descriptions: {
       ollamaFixedToDirectDiff:

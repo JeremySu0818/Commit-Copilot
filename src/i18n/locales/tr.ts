@@ -227,6 +227,7 @@ export const trLocale: LocaleTextBundle = {
       settings: 'Ayarlar',
       addProvider: 'Özel Sağlayıcı Ekle',
       editProvider: 'Özel Sağlayıcıyı Düzenle',
+      addModel: 'Add Custom Model',
     },
     labels: {
       provider: 'Sağlayıcı',
@@ -243,6 +244,7 @@ export const trLocale: LocaleTextBundle = {
       providerName: 'Sağlayıcı Adı',
       apiBaseUrl: 'API Temel URL',
       commitMessage: 'Commit Mesajı',
+      modelName: 'Model Name',
     },
     placeholders: {
       selectProvider: 'Bir sağlayıcı seçin...',
@@ -253,6 +255,7 @@ export const trLocale: LocaleTextBundle = {
       enterOpenAIApiKey: 'OpenAI API Anahtarınızı girin',
       enterAnthropicApiKey: 'Anthropic API Anahtarınızı girin',
       enterCustomApiKey: 'API Anahtarınızı girin',
+      enterModelName: 'Enter model name',
     },
     buttons: {
       save: 'Kaydet',
@@ -263,6 +266,8 @@ export const trLocale: LocaleTextBundle = {
       editProvider: 'Sağlayıcıyı Düzenle',
       addProvider: '+ Sağlayıcı Ekle...',
       deleteProvider: 'Sağlayıcıyı Sil',
+      addModel: '+ Add Model...',
+      deleteModel: 'Delete Model',
       cancel: 'İptal',
     },
     statuses: {
@@ -281,6 +286,11 @@ export const trLocale: LocaleTextBundle = {
       providerSaved: 'Özel sağlayıcı kaydedildi!',
       providerDeleted: 'Özel sağlayıcı silindi.',
       modelNameRequired: 'Lütfen oluşturmadan önce bir model adı girin.',
+      modelAdded: 'Custom model added.',
+      modelDeleted: 'Custom model removed.',
+      modelNameConflict: 'This model already exists in the list.',
+      fetchingModels: 'Fetching models from endpoint...',
+      fetchModelsFailed: 'Could not fetch models from endpoint. You can add models manually.',
     },
     descriptions: {
       ollamaFixedToDirectDiff:

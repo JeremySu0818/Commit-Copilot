@@ -223,6 +223,7 @@ export const jaLocale: LocaleTextBundle = {
       settings: '設定',
       addProvider: 'カスタムプロバイダーを追加',
       editProvider: 'カスタムプロバイダーを編集',
+      addModel: 'Add Custom Model',
     },
     labels: {
       provider: 'プロバイダー',
@@ -239,6 +240,7 @@ export const jaLocale: LocaleTextBundle = {
       providerName: 'プロバイダー名',
       apiBaseUrl: 'API ベース URL',
       commitMessage: 'コミットメッセージ',
+      modelName: 'Model Name',
     },
     placeholders: {
       selectProvider: 'プロバイダーを選択...',
@@ -249,6 +251,7 @@ export const jaLocale: LocaleTextBundle = {
       enterOpenAIApiKey: 'OpenAI API キーを入力',
       enterAnthropicApiKey: 'Anthropic API キーを入力',
       enterCustomApiKey: 'API キーを入力',
+      enterModelName: 'Enter model name',
     },
     buttons: {
       save: '保存',
@@ -259,6 +262,8 @@ export const jaLocale: LocaleTextBundle = {
       editProvider: 'プロバイダーを編集',
       addProvider: '+ プロバイダーを追加...',
       deleteProvider: 'プロバイダーを削除',
+      addModel: '+ Add Model...',
+      deleteModel: 'Delete Model',
       cancel: 'キャンセル',
     },
     statuses: {
@@ -277,6 +282,11 @@ export const jaLocale: LocaleTextBundle = {
       providerSaved: 'カスタムプロバイダーを保存しました！',
       providerDeleted: 'カスタムプロバイダーを削除しました。',
       modelNameRequired: '生成する前にモデル名を入力してください。',
+      modelAdded: 'Custom model added.',
+      modelDeleted: 'Custom model removed.',
+      modelNameConflict: 'This model already exists in the list.',
+      fetchingModels: 'Fetching models from endpoint...',
+      fetchModelsFailed: 'Could not fetch models from endpoint. You can add models manually.',
     },
     descriptions: {
       ollamaFixedToDirectDiff:

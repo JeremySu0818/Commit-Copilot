@@ -225,6 +225,7 @@ export const csLocale: LocaleTextBundle = {
       settings: 'Nastavení',
       addProvider: 'Přidat vlastního poskytovatele',
       editProvider: 'Upravit vlastního poskytovatele',
+      addModel: 'Add Custom Model',
     },
     labels: {
       provider: 'Poskytovatel',
@@ -241,6 +242,7 @@ export const csLocale: LocaleTextBundle = {
       providerName: 'Název poskytovatele',
       apiBaseUrl: 'Základní URL API',
       commitMessage: 'Zpráva commitu',
+      modelName: 'Model Name',
     },
     placeholders: {
       selectProvider: 'Vyberte poskytovatele...',
@@ -251,6 +253,7 @@ export const csLocale: LocaleTextBundle = {
       enterOpenAIApiKey: 'Zadejte svůj OpenAI API klíč',
       enterAnthropicApiKey: 'Zadejte svůj Anthropic API klíč',
       enterCustomApiKey: 'Zadejte svůj API klíč',
+      enterModelName: 'Enter model name',
     },
     buttons: {
       save: 'Uložit',
@@ -261,6 +264,8 @@ export const csLocale: LocaleTextBundle = {
       editProvider: 'Upravit poskytovatele',
       addProvider: '+ Přidat poskytovatele...',
       deleteProvider: 'Smazat poskytovatele',
+      addModel: '+ Add Model...',
+      deleteModel: 'Delete Model',
       cancel: 'Zrušit',
     },
     statuses: {
@@ -279,6 +284,11 @@ export const csLocale: LocaleTextBundle = {
       providerSaved: 'Vlastní poskytovatel byl uložen!',
       providerDeleted: 'Vlastní poskytovatel byl smazán.',
       modelNameRequired: 'Před generováním zadejte prosím název modelu.',
+      modelAdded: 'Custom model added.',
+      modelDeleted: 'Custom model removed.',
+      modelNameConflict: 'This model already exists in the list.',
+      fetchingModels: 'Fetching models from endpoint...',
+      fetchModelsFailed: 'Could not fetch models from endpoint. You can add models manually.',
     },
     descriptions: {
       ollamaFixedToDirectDiff: 'Ollama je pevně nastavena na režim Direct Diff',

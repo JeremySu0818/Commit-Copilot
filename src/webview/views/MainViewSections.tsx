@@ -125,12 +125,14 @@ export function ProviderConfigurationSection({
 export function ModelSection({
   pack,
   modelState,
+  isCustomProvider,
   onModelChange,
   onCustomModelChange,
   onCustomModelBlur,
 }: Readonly<{
   pack: LanguagePack;
   modelState: ModelState;
+  isCustomProvider: boolean;
   onModelChange: React.ChangeEventHandler<HTMLSelectElement>;
   onCustomModelChange: React.ChangeEventHandler<HTMLInputElement>;
   onCustomModelBlur: React.FocusEventHandler<HTMLInputElement>;
@@ -165,6 +167,9 @@ export function ModelSection({
                 {model.alias}
               </option>
             ))}
+            {isCustomProvider && (
+              <option value="__add_model__">{pack.buttons.addModel}</option>
+            )}
           </select>
         )}
       </div>

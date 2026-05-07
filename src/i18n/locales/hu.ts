@@ -227,6 +227,7 @@ export const huLocale: LocaleTextBundle = {
       settings: 'Beállítások',
       addProvider: 'Egyéni szolgáltató hozzáadása',
       editProvider: 'Egyéni szolgáltató szerkesztése',
+      addModel: 'Add Custom Model',
     },
     labels: {
       provider: 'Szolgáltató',
@@ -243,6 +244,7 @@ export const huLocale: LocaleTextBundle = {
       providerName: 'Szolgáltató neve',
       apiBaseUrl: 'API Base URL',
       commitMessage: 'Commit üzenet',
+      modelName: 'Model Name',
     },
     placeholders: {
       selectProvider: 'Válasszon szolgáltatót...',
@@ -253,6 +255,7 @@ export const huLocale: LocaleTextBundle = {
       enterOpenAIApiKey: 'Adja meg az OpenAI API kulcsot',
       enterAnthropicApiKey: 'Adja meg az Anthropic API kulcsot',
       enterCustomApiKey: 'Adja meg az API kulcsot',
+      enterModelName: 'Enter model name',
     },
     buttons: {
       save: 'Mentés',
@@ -263,6 +266,8 @@ export const huLocale: LocaleTextBundle = {
       editProvider: 'Szolgáltató szerkesztése',
       addProvider: '+ Szolgáltató hozzáadása...',
       deleteProvider: 'Szolgáltató törlése',
+      addModel: '+ Add Model...',
+      deleteModel: 'Delete Model',
       cancel: 'Mégse',
     },
     statuses: {
@@ -281,6 +286,11 @@ export const huLocale: LocaleTextBundle = {
       providerSaved: 'Egyéni szolgáltató mentve!',
       providerDeleted: 'Egyéni szolgáltató törölve.',
       modelNameRequired: 'Kérjük, adjon meg egy modellnevet a generálás előtt.',
+      modelAdded: 'Custom model added.',
+      modelDeleted: 'Custom model removed.',
+      modelNameConflict: 'This model already exists in the list.',
+      fetchingModels: 'Fetching models from endpoint...',
+      fetchModelsFailed: 'Could not fetch models from endpoint. You can add models manually.',
     },
     descriptions: {
       ollamaFixedToDirectDiff: 'Az Ollama rögzítve van a Direct Diff módhoz',

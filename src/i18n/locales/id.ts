@@ -226,6 +226,7 @@ export const idLocale: LocaleTextBundle = {
       settings: 'Pengaturan',
       addProvider: 'Tambahkan Penyedia Kustom',
       editProvider: 'Edit Penyedia Kustom',
+      addModel: 'Add Custom Model',
     },
     labels: {
       provider: 'Penyedia',
@@ -242,6 +243,7 @@ export const idLocale: LocaleTextBundle = {
       providerName: 'Nama Penyedia',
       apiBaseUrl: 'URL Dasar API',
       commitMessage: 'Pesan Commit',
+      modelName: 'Model Name',
     },
     placeholders: {
       selectProvider: 'Pilih penyedia...',
@@ -252,6 +254,7 @@ export const idLocale: LocaleTextBundle = {
       enterOpenAIApiKey: 'Masukkan API Key OpenAI Anda',
       enterAnthropicApiKey: 'Masukkan API Key Anthropic Anda',
       enterCustomApiKey: 'Masukkan API Key Anda',
+      enterModelName: 'Enter model name',
     },
     buttons: {
       save: 'Simpan',
@@ -262,6 +265,8 @@ export const idLocale: LocaleTextBundle = {
       editProvider: 'Edit Penyedia',
       addProvider: '+ Tambah Penyedia...',
       deleteProvider: 'Hapus Penyedia',
+      addModel: '+ Add Model...',
+      deleteModel: 'Delete Model',
       cancel: 'Batal',
     },
     statuses: {
@@ -280,6 +285,11 @@ export const idLocale: LocaleTextBundle = {
       providerSaved: 'Penyedia kustom disimpan!',
       providerDeleted: 'Penyedia kustom dihapus.',
       modelNameRequired: 'Silakan masukkan nama model sebelum menghasilkan.',
+      modelAdded: 'Custom model added.',
+      modelDeleted: 'Custom model removed.',
+      modelNameConflict: 'This model already exists in the list.',
+      fetchingModels: 'Fetching models from endpoint...',
+      fetchModelsFailed: 'Could not fetch models from endpoint. You can add models manually.',
     },
     descriptions: {
       ollamaFixedToDirectDiff: 'Ollama ditetapkan ke mode Direct Diff',
