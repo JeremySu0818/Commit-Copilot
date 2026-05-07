@@ -9,10 +9,14 @@ import {
   EffectiveDisplayLanguage,
   WEBVIEW_LANGUAGE_PACKS,
   getDisplayLanguageLabel,
-  getSidePanelText,
+  getMainViewText,
   normalizeDisplayLanguage,
   resolveEffectiveDisplayLanguage,
 } from './i18n';
+import {
+  MainViewScreen,
+  WebviewBootstrapData,
+} from './main-view-webview-bootstrap';
 import {
   APIProvider,
   CommitOutputOptions,
@@ -36,14 +40,11 @@ import {
   normalizeCommitOutputOptions,
   normalizeMaxAgentStepsValue,
 } from './models';
-import {
-  SidePanelScreen,
-  WebviewBootstrapData,
-} from './side-panel-webview-bootstrap';
 import { GenerationStateManager, ValidationStateManager } from './state';
 
 type UnknownRecord = Record<string, unknown>;
 type MessageHandler = (message: IncomingMessage) => void | Promise<void>;
+type WebviewWarningMessageKey = 'modelNameRequired';
 const badRequestStatus = 400;
 const unauthorizedStatus = 401;
 const forbiddenStatus = 403;
@@ -54,10 +55,22 @@ interface IncomingMessage extends UnknownRecord {
   type: string;
 }
 
+interface GitUpstreamRef {
+  remote?: string;
+  name?: string;
+}
+
+interface GitHeadState {
+  name?: string;
+  detached?: boolean;
+  upstream?: GitUpstreamRef;
+}
+
 interface GitRepositoryState {
   workingTreeChanges: unknown[];
   indexChanges: unknown[];
   untrackedChanges: unknown[];
+  HEAD?: GitHeadState;
   onDidChange(listener: () => void): vscode.Disposable;
 }
 
@@ -111,10 +124,16 @@ function toStoredModel(value: unknown): string {
   return asString(value) ?? '';
 }
 
-export class SidePanelProvider implements vscode.WebviewViewProvider {
+function isWebviewWarningMessageKey(
+  value: string | undefined,
+): value is WebviewWarningMessageKey {
+  return value === 'modelNameRequired';
+}
+
+export class MainViewProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = 'commit-copilot.view';
   private _view?: vscode.WebviewView;
-  private _currentScreen: SidePanelScreen = 'main';
+  private _currentScreen: MainViewScreen = 'main';
 
   constructor(
     private readonly _extensionUri: vscode.Uri,
@@ -124,8 +143,10 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
   }
 
   private updateCurrentScreen(screen: unknown): void {
-    const normalizedScreen: SidePanelScreen =
-      screen === 'settings' || screen === 'addProvider' ? screen : 'main';
+    const normalizedScreen: MainViewScreen =
+      screen === 'settings' || screen === 'addProvider'
+        ? screen
+        : 'main';
     this._currentScreen = normalizedScreen;
     void vscode.commands.executeCommand(
       'setContext',
@@ -237,7 +258,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
     },
   ): { valid: false; error: string } {
     const { status, message } = this.extractValidationError(error);
-    const text = getSidePanelText(this.getEffectiveDisplayLanguage());
+    const text = getMainViewText(this.getEffectiveDisplayLanguage());
 
     const isInvalidKey =
       (typeof status === 'number' &&
@@ -326,7 +347,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
   private async validateOllamaHost(
     host: string,
   ): Promise<{ valid: boolean; error?: string }> {
-    const text = getSidePanelText(this.getEffectiveDisplayLanguage());
+    const text = getMainViewText(this.getEffectiveDisplayLanguage());
     try {
       const hostUrl = host || OLLAMA_DEFAULT_HOST;
       const response = await fetch(`${hostUrl}/api/tags`, {
@@ -382,7 +403,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
       default:
         return {
           valid: false,
-          error: getSidePanelText(this.getEffectiveDisplayLanguage())
+          error: getMainViewText(this.getEffectiveDisplayLanguage())
             .unknownProvider,
         };
     }
@@ -445,6 +466,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
       GenerationStateManager.removeListener(onGenerationStateChange);
       ValidationStateManager.removeListener(onValidationStateChange);
       disposeGitDisposables();
+      this.updateCurrentScreen('main');
       if (this._view === webviewView) {
         this._view = undefined;
       }
@@ -610,7 +632,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
     const handleCustomProviderSaveKey = async (
       provider: string,
       apiKey: string,
-      text: ReturnType<typeof getSidePanelText>,
+      text: ReturnType<typeof getMainViewText>,
     ): Promise<void> => {
       const customId = getCustomProviderId(provider);
       const customProviders = this.getCustomProviders();
@@ -655,10 +677,18 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
     const handleBuiltInProviderSaveKey = async (
       provider: string,
       apiKey: string,
-      text: ReturnType<typeof getSidePanelText>,
+      text: ReturnType<typeof getMainViewText>,
     ): Promise<void> => {
-      const builtIn = isAPIProvider(provider) ? provider : DEFAULT_PROVIDER;
-      const resolvedApiValue = apiKey.length > 0 ? apiKey : OLLAMA_DEFAULT_HOST;
+      if (!isAPIProvider(provider)) {
+        postValidationResult(provider, false, { error: text.unknownProvider });
+        return;
+      }
+
+      const builtIn = provider;
+      let resolvedApiValue = apiKey;
+      if (builtIn === 'ollama' && apiKey.length === 0) {
+        resolvedApiValue = OLLAMA_DEFAULT_HOST;
+      }
       const validationResult = await this.validateApiKey(
         builtIn,
         resolvedApiValue,
@@ -692,7 +722,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
     const handleSaveKeyMessage = async (
       message: IncomingMessage,
     ): Promise<void> => {
-      const text = getSidePanelText(this.getEffectiveDisplayLanguage());
+      const text = getMainViewText(this.getEffectiveDisplayLanguage());
       const provider = toProvider(message.provider);
       const apiKey = asString(message.value) ?? '';
       if (!apiKey && provider !== 'ollama') {
@@ -771,7 +801,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
 
     const validateCustomProviderBeforeSave = async (
       payload: { apiKey: string; baseUrl: string; editId: string | null },
-      text: ReturnType<typeof getSidePanelText>,
+      text: ReturnType<typeof getMainViewText>,
     ): Promise<boolean> => {
       if (payload.editId && !payload.apiKey) {
         return true;
@@ -794,7 +824,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
     const handleSaveCustomProviderMessage = async (
       message: IncomingMessage,
     ): Promise<void> => {
-      const text = getSidePanelText(this.getEffectiveDisplayLanguage());
+      const text = getMainViewText(this.getEffectiveDisplayLanguage());
       const customProviders = this.getCustomProviders();
       const payload = {
         name: (asString(message.name) ?? '').trim(),
@@ -926,7 +956,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
         }
 
         const builtIn = isAPIProvider(provider) ? provider : DEFAULT_PROVIDER;
-        const key = await this._context.secrets.get(
+        let key = await this._context.secrets.get(
           API_KEY_STORAGE_KEYS[builtIn],
         );
         if (key || builtIn === 'ollama') {
@@ -1002,12 +1032,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
         });
       },
       getAllKeys: async () => {
-        const keyStatuses: Record<string, boolean> = {
-          google: false,
-          openai: false,
-          anthropic: false,
-          ollama: false,
-        };
+        const keyStatuses: Record<string, boolean> = {};
         for (const [provider, storageKey] of Object.entries(
           API_KEY_STORAGE_KEYS,
         )) {
@@ -1048,7 +1073,7 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
           nextLanguage,
           this.getVSCodeLanguage(),
         );
-        const text = getSidePanelText(effectiveLanguage);
+        const text = getMainViewText(effectiveLanguage);
         vscode.window.showInformationMessage(
           text.languageSaved(
             getDisplayLanguageLabel(nextLanguage, effectiveLanguage),
@@ -1090,8 +1115,16 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
         });
       },
       showWarning: (message) => {
-        const warningMessage = asString(message.message) ?? '';
-        if (warningMessage) {
+        const warningKey = asString(message.key);
+        if (!isWebviewWarningMessageKey(warningKey)) {
+          return;
+        }
+
+        const warningMessage =
+          WEBVIEW_LANGUAGE_PACKS[this.getEffectiveDisplayLanguage()].statuses[
+            warningKey
+          ];
+        if (warningMessage.length > 0) {
           vscode.window.showWarningMessage(warningMessage);
         }
       },
@@ -1155,16 +1188,11 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
         this._extensionUri,
         'out',
         'webview',
-        'side-panel.css',
+        'main-view.css',
       ),
     );
     const scriptUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(
-        this._extensionUri,
-        'out',
-        'webview',
-        'side-panel.js',
-      ),
+      vscode.Uri.joinPath(this._extensionUri, 'out', 'webview', 'main-view.js'),
     );
     const bootstrap = serializeForInlineScript(this.getWebviewBootstrapData());
 
@@ -1179,11 +1207,11 @@ export class SidePanelProvider implements vscode.WebviewViewProvider {
     <meta charset="UTF-8" />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'none'; style-src ${cspSource} 'unsafe-inline'; script-src 'nonce-${escapedNonce}';"
+      content="default-src 'none'; style-src ${cspSource} 'nonce-${escapedNonce}'; script-src 'nonce-${escapedNonce}';"
     />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Commit Copilot</title>
-    <link rel="stylesheet" href="${escapedStyleUri}" />
+    <link rel="stylesheet" href="${escapedStyleUri}" nonce="${escapedNonce}" />
   </head>
   <body>
     <div id="root"></div>

@@ -8,6 +8,7 @@ const successfulAttemptIndex = 3;
 const expectedRetryAttempts = [1, successfulAttemptIndex - 1];
 const maxDelayMs = 5;
 const maxAttempts = 4;
+const attemptsAfterSingleRetry = 2;
 
 function createImmediateSetTimeout(
   scheduledDelays: number[],
@@ -109,6 +110,44 @@ void test('withRetry clamps retry-after delay by maxDelayMs', async () => {
       ),
     );
 
+    assert.deepEqual(scheduledDelays, [maxDelayMs]);
+  } finally {
+    globalThis.setTimeout = originalSetTimeout;
+  }
+});
+
+void test('withRetry reads Fetch Headers retry-after without illegal invocation', async () => {
+  const originalSetTimeout = globalThis.setTimeout;
+  const scheduledDelays: number[] = [];
+  let attempts = 0;
+
+  globalThis.setTimeout = createImmediateSetTimeout(scheduledDelays);
+
+  try {
+    const result = await withRetry(
+      () => {
+        attempts++;
+        if (attempts === 1) {
+          const err = new Error('server unavailable') as Error & {
+            status?: number;
+            headers?: Headers;
+          };
+          err.status = 503;
+          err.headers = new Headers({ 'retry-after': '1' });
+          return Promise.reject(err);
+        }
+        return Promise.resolve('ok');
+      },
+      {
+        maxAttempts,
+        baseDelayMs: 1,
+        maxDelayMs,
+        jitterMs: 0,
+      },
+    );
+
+    assert.equal(result, 'ok');
+    assert.equal(attempts, attemptsAfterSingleRetry);
     assert.deepEqual(scheduledDelays, [maxDelayMs]);
   } finally {
     globalThis.setTimeout = originalSetTimeout;

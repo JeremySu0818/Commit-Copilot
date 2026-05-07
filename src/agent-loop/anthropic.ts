@@ -21,6 +21,11 @@ import {
   APIRequestError,
   GenerationCancelledError,
   NoChangesError,
+  createEmptyFinalResponseError,
+  createEmptyResponseError,
+  createTruncatedFinalResponseError,
+  createTruncatedResponseError,
+  createUnknownAnthropicModelError,
 } from '../errors';
 import { LOCALES } from '../i18n/locales';
 import type { EffectiveDisplayLanguage } from '../i18n/types';
@@ -60,7 +65,6 @@ interface AnthropicToolUseBlock {
   input: Record<string, unknown>;
 }
 
-const defaultAnthropicMaxTokens = 16384;
 const millisecondsPerSecond = 1000;
 const unauthorizedStatus = 401;
 const forbiddenStatus = 403;
@@ -189,14 +193,15 @@ async function executeAnthropicInvestigationLoop(params: {
     if (isCompleteTextResponse) {
       const text = textBlocks.map((block) => block.text).join('');
       if (!text) {
-        throw new APIRequestError('Empty response from Anthropic API');
+        throw createEmptyResponseError('Anthropic API');
       }
       return extractCommitMessage(text);
     }
 
     if (toolUseBlocks.length === 0 && response.stop_reason === 'max_tokens') {
-      throw new APIRequestError(
-        'Anthropic response was truncated (stop_reason=max_tokens)',
+      throw createTruncatedResponseError(
+        'Anthropic API',
+        'stop_reason=max_tokens',
       );
     }
 
@@ -273,8 +278,10 @@ async function runAnthropicAgentLoop(
     const anthropicClientClass = (await import('@anthropic-ai/sdk')).default;
     const client = new anthropicClientClass({ apiKey });
     const modelName = pickNonEmpty(model, DEFAULT_MODELS.anthropic);
-    const maxTokens =
-      getAnthropicModelMaxTokens(modelName) ?? defaultAnthropicMaxTokens;
+    const maxTokens = getAnthropicModelMaxTokens(modelName);
+    if (maxTokens === undefined) {
+      throw createUnknownAnthropicModelError(modelName);
+    }
     const resolvedCommitOutputOptions =
       normalizeCommitOutputOptions(commitOutputOptions);
 
@@ -381,12 +388,16 @@ async function runAnthropicAgentLoop(
       .join('');
 
     if (finalResponse.stop_reason === 'max_tokens') {
-      throw new APIRequestError(
-        'Anthropic final response was truncated (stop_reason=max_tokens)',
+      throw createTruncatedFinalResponseError(
+        'Anthropic API',
+        'stop_reason=max_tokens',
       );
     }
 
-    return text ? extractCommitMessage(text) : 'chore(project): update files';
+    if (!text) {
+      throw createEmptyFinalResponseError('Anthropic API');
+    }
+    return extractCommitMessage(text);
   } catch (error: unknown) {
     if (
       error instanceof NoChangesError ||

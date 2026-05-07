@@ -7,14 +7,17 @@ import type {
   WebviewLanguagePack,
 } from '../i18n';
 import type {
+  MainViewScreen,
+  WebviewBootstrapData,
+} from '../main-view-webview-bootstrap';
+import type {
   CommitOutputOptions,
   CustomProviderConfig,
   GenerateMode,
   ModelConfig,
 } from '../models';
-import type { WebviewBootstrapData } from '../side-panel-webview-bootstrap';
 
-export type Screen = 'main' | 'settings' | 'addProvider';
+import type { StatusMessage } from './utils';
 
 export interface ModelState {
   models: ModelConfig[];
@@ -34,8 +37,8 @@ export interface AddProviderDraft {
   statusHtml: string;
 }
 
-export interface SidePanelState {
-  screen: Screen;
+export interface MainViewState {
+  screen: MainViewScreen;
   currentProvider: string;
   currentGenerateMode: GenerateMode;
   preferredGenerateMode: GenerateMode;
@@ -52,16 +55,16 @@ export interface SidePanelState {
   customProviders: CustomProviderConfig[];
   currentMaxAgentSteps: number;
   addProviderDraft: AddProviderDraft;
-  keyStatusHtml: string;
-  languageStatusHtml: string;
+  keyStatusMessage: StatusMessage | null;
+  languageStatusMessage: StatusMessage | null;
   saveBtnDisabled: boolean;
   saveBtnText: string;
   apiKeyValue: string;
   apiKeyType: string;
 }
 
-export type SidePanelAction =
-  | { type: 'SET_SCREEN'; screen: Screen }
+export type MainViewAction =
+  | { type: 'SET_SCREEN'; screen: MainViewScreen }
   | { type: 'SET_PROVIDER'; provider: string }
   | { type: 'SET_GENERATE_MODE'; mode: GenerateMode }
   | { type: 'SET_PREFERRED_GENERATE_MODE'; mode: GenerateMode }
@@ -83,19 +86,24 @@ export type SidePanelAction =
   | { type: 'SET_MAX_AGENT_STEPS'; value: number }
   | { type: 'SET_ADD_PROVIDER_DRAFT'; draft: AddProviderDraft }
   | { type: 'UPDATE_ADD_PROVIDER_DRAFT'; partial: Partial<AddProviderDraft> }
-  | { type: 'SET_KEY_STATUS_HTML'; html: string }
-  | { type: 'SET_LANGUAGE_STATUS_HTML'; html: string }
+  | { type: 'SET_KEY_STATUS_MESSAGE'; status: StatusMessage | null }
+  | { type: 'SET_LANGUAGE_STATUS_MESSAGE'; status: StatusMessage | null }
   | { type: 'SET_SAVE_BTN'; disabled: boolean; text: string }
   | { type: 'SET_API_KEY_VALUE'; value: string }
   | { type: 'SET_API_KEY_TYPE'; inputType: string };
 
 export function createInitialState(
   bootstrap: WebviewBootstrapData,
-): SidePanelState {
+): MainViewState {
   const effectiveLang = bootstrap.initialEffectiveLanguage;
   const pack = bootstrap.languagePacks[effectiveLang];
+  const initialScreen: MainViewScreen =
+    bootstrap.initialScreen === 'settings' ||
+    bootstrap.initialScreen === 'addProvider'
+      ? bootstrap.initialScreen
+      : 'main';
   return {
-    screen: bootstrap.initialScreen === 'settings' ? 'settings' : 'main',
+    screen: initialScreen,
     currentProvider: bootstrap.defaultProvider,
     currentGenerateMode: bootstrap.defaultGenerateMode,
     preferredGenerateMode: bootstrap.defaultGenerateMode,
@@ -126,8 +134,8 @@ export function createInitialState(
       apiKey: '',
       statusHtml: '',
     },
-    keyStatusHtml: '',
-    languageStatusHtml: '',
+    keyStatusMessage: null,
+    languageStatusMessage: null,
     saveBtnDisabled: true,
     saveBtnText: pack.buttons.save,
     apiKeyValue: '',
@@ -135,10 +143,10 @@ export function createInitialState(
   };
 }
 
-export function sidePanelReducer(
-  state: SidePanelState,
-  action: SidePanelAction,
-): SidePanelState {
+export function mainViewStateReducer(
+  state: MainViewState,
+  action: MainViewAction,
+): MainViewState {
   switch (action.type) {
     case 'SET_SCREEN':
       return { ...state, screen: action.screen };
@@ -188,10 +196,10 @@ export function sidePanelReducer(
         ...state,
         addProviderDraft: { ...state.addProviderDraft, ...action.partial },
       };
-    case 'SET_KEY_STATUS_HTML':
-      return { ...state, keyStatusHtml: action.html };
-    case 'SET_LANGUAGE_STATUS_HTML':
-      return { ...state, languageStatusHtml: action.html };
+    case 'SET_KEY_STATUS_MESSAGE':
+      return { ...state, keyStatusMessage: action.status };
+    case 'SET_LANGUAGE_STATUS_MESSAGE':
+      return { ...state, languageStatusMessage: action.status };
     case 'SET_SAVE_BTN':
       return {
         ...state,
@@ -207,21 +215,21 @@ export function sidePanelReducer(
   }
 }
 
-export interface SidePanelContextValue {
-  state: SidePanelState;
-  dispatch: React.Dispatch<SidePanelAction>;
+export interface MainViewContextValue {
+  state: MainViewState;
+  dispatch: React.Dispatch<MainViewAction>;
   vscode: VSCodeWebviewApi;
   bootstrap: WebviewBootstrapData;
 }
 
-export const SidePanelContext = createContext<
-  SidePanelContextValue | undefined
->(undefined);
+export const MainViewContext = createContext<MainViewContextValue | undefined>(
+  undefined,
+);
 
-export function useSidePanel(): SidePanelContextValue {
-  const context = useContext(SidePanelContext);
+export function useMainViewContext(): MainViewContextValue {
+  const context = useContext(MainViewContext);
   if (!context) {
-    throw new Error('SidePanelContext is not available.');
+    throw new Error('MainViewContext is not available.');
   }
   return context;
 }

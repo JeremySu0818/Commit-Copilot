@@ -2,6 +2,82 @@ import { EXIT_CODES } from '../../errors';
 import type { LocaleTextBundle } from '../types';
 
 export const koLocale: LocaleTextBundle = {
+  commitCopilotErrorMessages: {
+    'api.keyMissing': () =>
+      'API Key is not configured. Please set your API Key in the Commit-Copilot panel.',
+    'api.keyInvalid': (args) =>
+      args.details?.trim()
+        ? 'Invalid API Key: {details}'.replace('{details}', args.details ?? '')
+        : 'Invalid API Key.',
+    'api.quotaExceeded': (args) =>
+      args.details?.trim()
+        ? 'API quota exceeded: {details}'.replace(
+            '{details}',
+            args.details ?? '',
+          )
+        : 'API quota exceeded.',
+    'api.requestFailed': (args) =>
+      args.details?.trim()
+        ? 'API request failed: {details}'.replace(
+            '{details}',
+            args.details ?? '',
+          )
+        : 'API request failed.',
+    'api.ollamaConnectionFailed': (args) =>
+      'Cannot connect to Ollama. Make sure Ollama is running at {host}.'.replace(
+        '{host}',
+        args.host ?? '',
+      ),
+    'api.ollamaModelNotFound': (args) =>
+      'Model "{model}" was not found. Pull it first with: ollama pull {model}'.replace(
+        /\{model\}/g,
+        args.model ?? '',
+      ),
+    'api.unknownAnthropicModel': (args) =>
+      'Unknown Anthropic model "{model}". Add it to ANTHROPIC_MODELS with max_tokens.'.replace(
+        '{model}',
+        args.model ?? '',
+      ),
+    'api.emptyResponse': (args) =>
+      'Empty response from {provider}.'.replace(
+        '{provider}',
+        args.provider ?? '',
+      ),
+    'api.emptyTextResponse': (args) =>
+      'Empty text response from {provider}.'.replace(
+        '{provider}',
+        args.provider ?? '',
+      ),
+    'api.emptyFinalResponse': (args) =>
+      'Empty final response from {provider}.'.replace(
+        '{provider}',
+        args.provider ?? '',
+      ),
+    'api.responseTruncated': (args) =>
+      'Response from {provider} was truncated ({stopReason}).'
+        .replace('{provider}', args.provider ?? '')
+        .replace('{stopReason}', args.stopReason ?? ''),
+    'api.finalResponseTruncated': (args) =>
+      'Final response from {provider} was truncated ({stopReason}).'
+        .replace('{provider}', args.provider ?? '')
+        .replace('{stopReason}', args.stopReason ?? ''),
+    'git.stageFailed': (args) =>
+      args.details?.trim()
+        ? 'Failed to stage changes: {details}'.replace(
+            '{details}',
+            args.details ?? '',
+          )
+        : 'Failed to stage changes.',
+    'generation.noChanges': () =>
+      'No changes detected to generate a commit for.',
+    'generation.noChangesButUntracked': () =>
+      'No changes to commit, but untracked files were detected.',
+    'generation.noTrackedChangesButUntracked': () =>
+      'No tracked changes detected, only untracked files are present.',
+    'generation.mixedChanges': () =>
+      'Both staged and unstaged changes were detected.',
+    'generation.cancelled': () => 'Generation canceled by user.',
+  },
   errorMessages: {
     [EXIT_CODES.NOT_GIT_REPO]: {
       title: 'Git 리포지토리가 아닙니다',
@@ -123,7 +199,7 @@ export const koLocale: LocaleTextBundle = {
       failedPrefix: 'Commit-Copilot 실패',
     },
   },
-  sidePanelText: {
+  mainViewText: {
     invalidApiKeyPrefix: '잘못된 API 키',
     quotaExceededPrefix: 'API 할당량 초과',
     apiRequestFailedPrefix: 'API 요청 실패',
@@ -166,6 +242,7 @@ export const koLocale: LocaleTextBundle = {
       maxAgentSteps: '최대 에이전트 단계 수',
       providerName: '프로바이더 이름',
       apiBaseUrl: 'API 베이스 URL',
+      commitMessage: '커밋 메시지',
     },
     placeholders: {
       selectProvider: '프로바이더 선택...',
@@ -186,6 +263,7 @@ export const koLocale: LocaleTextBundle = {
       editProvider: '프로바이더 편집',
       addProvider: '+ 프로바이더 추가...',
       deleteProvider: '프로바이더 삭제',
+      cancel: '취소',
     },
     statuses: {
       checkingStatus: '상태 확인 중...',

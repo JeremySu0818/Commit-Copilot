@@ -245,6 +245,16 @@ function isPathWithinRoot(rootPath: string, targetPath: string): boolean {
   return !path.isAbsolute(rel);
 }
 
+function isRealPathWithinRoot(rootPath: string, targetPath: string): boolean {
+  try {
+    const realRoot = fs.realpathSync(rootPath);
+    const realTarget = fs.realpathSync(targetPath);
+    return isPathWithinRoot(realRoot, realTarget);
+  } catch {
+    return false;
+  }
+}
+
 function toPosixPath(relPath: string): string {
   return relPath.split(path.sep).join('/');
 }
@@ -434,6 +444,7 @@ export {
   STAGED_WORKSPACE_DIR_NAME,
   STAGED_WORKSPACE_SUBDIR_NAME,
   isPathWithinRoot,
+  isRealPathWithinRoot,
   toPosixPath,
   createStagedWorkspaceSnapshot,
   cleanupStagedWorkspaceSnapshot,

@@ -2,6 +2,82 @@ import { EXIT_CODES } from '../../errors';
 import type { LocaleTextBundle } from '../types';
 
 export const nlLocale: LocaleTextBundle = {
+  commitCopilotErrorMessages: {
+    'api.keyMissing': () =>
+      'API Key is not configured. Please set your API Key in the Commit-Copilot panel.',
+    'api.keyInvalid': (args) =>
+      args.details?.trim()
+        ? 'Invalid API Key: {details}'.replace('{details}', args.details ?? '')
+        : 'Invalid API Key.',
+    'api.quotaExceeded': (args) =>
+      args.details?.trim()
+        ? 'API quota exceeded: {details}'.replace(
+            '{details}',
+            args.details ?? '',
+          )
+        : 'API quota exceeded.',
+    'api.requestFailed': (args) =>
+      args.details?.trim()
+        ? 'API request failed: {details}'.replace(
+            '{details}',
+            args.details ?? '',
+          )
+        : 'API request failed.',
+    'api.ollamaConnectionFailed': (args) =>
+      'Cannot connect to Ollama. Make sure Ollama is running at {host}.'.replace(
+        '{host}',
+        args.host ?? '',
+      ),
+    'api.ollamaModelNotFound': (args) =>
+      'Model "{model}" was not found. Pull it first with: ollama pull {model}'.replace(
+        /\{model\}/g,
+        args.model ?? '',
+      ),
+    'api.unknownAnthropicModel': (args) =>
+      'Unknown Anthropic model "{model}". Add it to ANTHROPIC_MODELS with max_tokens.'.replace(
+        '{model}',
+        args.model ?? '',
+      ),
+    'api.emptyResponse': (args) =>
+      'Empty response from {provider}.'.replace(
+        '{provider}',
+        args.provider ?? '',
+      ),
+    'api.emptyTextResponse': (args) =>
+      'Empty text response from {provider}.'.replace(
+        '{provider}',
+        args.provider ?? '',
+      ),
+    'api.emptyFinalResponse': (args) =>
+      'Empty final response from {provider}.'.replace(
+        '{provider}',
+        args.provider ?? '',
+      ),
+    'api.responseTruncated': (args) =>
+      'Response from {provider} was truncated ({stopReason}).'
+        .replace('{provider}', args.provider ?? '')
+        .replace('{stopReason}', args.stopReason ?? ''),
+    'api.finalResponseTruncated': (args) =>
+      'Final response from {provider} was truncated ({stopReason}).'
+        .replace('{provider}', args.provider ?? '')
+        .replace('{stopReason}', args.stopReason ?? ''),
+    'git.stageFailed': (args) =>
+      args.details?.trim()
+        ? 'Failed to stage changes: {details}'.replace(
+            '{details}',
+            args.details ?? '',
+          )
+        : 'Failed to stage changes.',
+    'generation.noChanges': () =>
+      'No changes detected to generate a commit for.',
+    'generation.noChangesButUntracked': () =>
+      'No changes to commit, but untracked files were detected.',
+    'generation.noTrackedChangesButUntracked': () =>
+      'No tracked changes detected, only untracked files are present.',
+    'generation.mixedChanges': () =>
+      'Both staged and unstaged changes were detected.',
+    'generation.cancelled': () => 'Generation canceled by user.',
+  },
   errorMessages: {
     [EXIT_CODES.NOT_GIT_REPO]: {
       title: 'Geen Git repository',
@@ -127,7 +203,7 @@ export const nlLocale: LocaleTextBundle = {
       failedPrefix: 'Commit-Copilot mislukt',
     },
   },
-  sidePanelText: {
+  mainViewText: {
     invalidApiKeyPrefix: 'Ongeldige API sleutel',
     quotaExceededPrefix: 'API quota overschreden',
     apiRequestFailedPrefix: 'API verzoek mislukt',
@@ -170,6 +246,7 @@ export const nlLocale: LocaleTextBundle = {
       maxAgentSteps: 'Max Agent Stappen',
       providerName: 'Naam van Provider',
       apiBaseUrl: 'API Basis URL',
+      commitMessage: 'Commitbericht',
     },
     placeholders: {
       selectProvider: 'Selecteer een provider...',
@@ -190,6 +267,7 @@ export const nlLocale: LocaleTextBundle = {
       editProvider: 'Bewerk Provider',
       addProvider: '+ Provider Toevoegen...',
       deleteProvider: 'Verwijder Provider',
+      cancel: 'Annuleren',
     },
     statuses: {
       checkingStatus: 'Status controleren...',

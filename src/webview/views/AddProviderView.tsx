@@ -1,11 +1,11 @@
 import React, { useCallback, useMemo } from 'react';
 
 import { BackIcon } from '../components/BackIcon';
-import { useSidePanel } from '../side-panel-context';
+import { useMainViewContext } from '../main-view-context';
 import { renderStatusHtml } from '../utils';
 
 export function AddProviderView() {
-  const { state, dispatch, vscode, bootstrap } = useSidePanel();
+  const { state, dispatch, vscode, bootstrap } = useMainViewContext();
   const { currentPack: pack, addProviderDraft: draft } = state;
   const isEditing = !!draft.editingId;
 
@@ -128,7 +128,7 @@ export function AddProviderView() {
             __html: pack.descriptions.customProviderInfo,
           }}
         />
-        <div className="input-group" style={{ marginTop: '10px' }}>
+        <div className="input-group input-group-spaced">
           <label>{pack.labels.providerName}</label>
           <input
             type="text"
@@ -142,7 +142,7 @@ export function AddProviderView() {
             }}
           />
         </div>
-        <div className="input-group" style={{ marginTop: '10px' }}>
+        <div className="input-group input-group-spaced">
           <label>{pack.labels.apiBaseUrl}</label>
           <input
             type="text"
@@ -157,9 +157,8 @@ export function AddProviderView() {
           />
         </div>
         <div
-          className="input-group"
+          className={`input-group input-group-spaced${isEditing ? ' hidden' : ''}`}
           id="customApiKeyGroup"
-          style={{ marginTop: '10px', display: isEditing ? 'none' : undefined }}
         >
           <label>{pack.labels.apiKey}</label>
           <input
@@ -179,7 +178,7 @@ export function AddProviderView() {
           className="status"
           dangerouslySetInnerHTML={{ __html: draft.statusHtml }}
         />
-        <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
+        <div className="panel-actions">
           <button
             id="saveProviderBtn"
             disabled={saveDisabled}
@@ -189,7 +188,9 @@ export function AddProviderView() {
           </button>
           <button
             id="deleteProviderBtn"
-            className={`secondary${!isEditing ? ' hidden' : ''}`}
+            className={`secondary provider-action-btn${
+              !isEditing ? ' hidden' : ''
+            }`}
             onClick={handleDelete}
           >
             {pack.buttons.deleteProvider}

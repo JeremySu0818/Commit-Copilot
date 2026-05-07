@@ -10,6 +10,10 @@ import {
   APIRequestError,
   GenerationCancelledError,
   NoChangesError,
+  createEmptyResponseError,
+  createOllamaConnectionError,
+  createOllamaModelNotFoundError,
+  createUnknownAnthropicModelError,
 } from './errors';
 import {
   APIProvider,
@@ -37,7 +41,6 @@ const unauthorizedStatus = 401;
 const forbiddenStatus = 403;
 const tooManyRequestsStatus = 429;
 const progressPercentageScale = 100;
-const defaultAnthropicMaxTokens = 65536;
 const geminiAuthMessagePatterns = [
   'unauthorized',
   'forbidden',
@@ -201,14 +204,10 @@ function rethrowMappedOllamaClientError(
   modelName: string,
 ): never {
   if (message.includes('ECONNREFUSED') || message.includes('connect')) {
-    throw new APIRequestError(
-      `Cannot connect to Ollama. Make sure Ollama is running at ${host}`,
-    );
+    throw createOllamaConnectionError(host);
   }
   if (message.includes('model') && message.includes('not found')) {
-    throw new APIRequestError(
-      `Model "${modelName}" not found. Please pull it first with: ollama pull ${modelName}`,
-    );
+    throw createOllamaModelNotFoundError(modelName);
   }
   throw new APIRequestError(message);
 }
@@ -337,7 +336,7 @@ export class GeminiClient implements ILLMClient {
       throwIfCancellationRequested(cancellationToken);
 
       if (!text) {
-        throw new APIRequestError('Empty response from Gemini API');
+        throw createEmptyResponseError('Gemini API');
       }
 
       return text.trim();
@@ -429,7 +428,7 @@ export class OpenAIClient implements ILLMClient {
       throwIfCancellationRequested(cancellationToken);
 
       if (!text) {
-        throw new APIRequestError('Empty response from OpenAI API');
+        throw createEmptyResponseError('OpenAI API');
       }
 
       return text.trim();
@@ -482,8 +481,11 @@ export class AnthropicClient implements ILLMClient {
     }
     this.apiKey = apiKey;
     this.model = pickNonEmpty(model, DEFAULT_MODELS.anthropic);
-    this.maxTokens =
-      getAnthropicModelMaxTokens(this.model) ?? defaultAnthropicMaxTokens;
+    const maxTokens = getAnthropicModelMaxTokens(this.model);
+    if (maxTokens === undefined) {
+      throw createUnknownAnthropicModelError(this.model);
+    }
+    this.maxTokens = maxTokens;
     this.systemPrompt = buildAgentSystemPrompt({
       includeFindReferences: false,
       enableTools: false,
@@ -527,15 +529,13 @@ export class AnthropicClient implements ILLMClient {
 
       const text = message.content
         .map((block: unknown) =>
-          isAnthropicTextBlock(block) ? block.text : null,
+          isAnthropicTextBlock(block) ? block.text : '',
         )
-        .find(
-          (blockText): blockText is string => typeof blockText === 'string',
-        );
+        .join('');
       throwIfCancellationRequested(cancellationToken);
 
       if (!text) {
-        throw new APIRequestError('Empty response from Anthropic API');
+        throw createEmptyResponseError('Anthropic API');
       }
 
       return text.trim();
@@ -633,7 +633,7 @@ export class OllamaClient implements ILLMClient {
       throwIfCancellationRequested(cancellationToken);
 
       if (!text) {
-        throw new APIRequestError('Empty response from Ollama');
+        throw createEmptyResponseError('Ollama');
       }
 
       return text.trim();

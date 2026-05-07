@@ -1,3 +1,5 @@
+import type { CommitCopilotErrorMessageKey } from '../errors';
+
 export type DisplayLanguage =
   | 'auto'
   | 'ar'
@@ -53,6 +55,16 @@ export interface ErrorInfo {
   action?: string;
 }
 
+export type LocaleCommitCopilotErrorMessageKey = Exclude<
+  CommitCopilotErrorMessageKey,
+  'git.notRepository'
+>;
+
+export type CommitCopilotErrorMessages = Record<
+  LocaleCommitCopilotErrorMessageKey,
+  (args: Partial<Record<string, string>>) => string
+>;
+
 export interface ExtensionText {
   output: {
     generationIgnored: string;
@@ -101,7 +113,7 @@ export interface ExtensionText {
   };
 }
 
-export interface SidePanelText {
+export interface MainViewText {
   invalidApiKeyPrefix: string;
   quotaExceededPrefix: string;
   apiRequestFailedPrefix: string;
@@ -142,6 +154,7 @@ export interface WebviewLanguagePack {
     maxAgentSteps: string;
     providerName: string;
     apiBaseUrl: string;
+    commitMessage: string;
   };
   placeholders: {
     selectProvider: string;
@@ -162,6 +175,7 @@ export interface WebviewLanguagePack {
     editProvider: string;
     addProvider: string;
     deleteProvider: string;
+    cancel: string;
   };
   statuses: {
     checkingStatus: string;
@@ -230,8 +244,9 @@ export interface ProgressMessages {
 
 export interface LocaleTextBundle {
   errorMessages: Record<number, ErrorInfo>;
+  commitCopilotErrorMessages: CommitCopilotErrorMessages;
   extensionText: ExtensionText;
-  sidePanelText: SidePanelText;
+  mainViewText: MainViewText;
   webviewLanguagePack: WebviewLanguagePack;
   progressMessages: ProgressMessages;
 }

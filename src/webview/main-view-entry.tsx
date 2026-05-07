@@ -1,10 +1,10 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 
-import type { WebviewBootstrapData } from '../side-panel-webview-bootstrap';
+import type { WebviewBootstrapData } from '../main-view-webview-bootstrap';
 
-import { App } from './App';
-import './side-panel.css';
+import { MainViewApp } from './main-view-app';
+import './main-view.css';
 
 declare global {
   interface Window {
@@ -24,4 +24,6 @@ if (!bootstrap) {
   throw new Error('Missing webview bootstrap data');
 }
 
-createRoot(rootElement).render(<App bootstrap={bootstrap} vscode={vscode} />);
+createRoot(rootElement).render(
+  <MainViewApp bootstrap={bootstrap} vscode={vscode} />,
+);

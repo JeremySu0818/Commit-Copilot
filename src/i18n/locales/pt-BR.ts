@@ -2,6 +2,82 @@ import { EXIT_CODES } from '../../errors';
 import type { LocaleTextBundle } from '../types';
 
 export const ptBRLocale: LocaleTextBundle = {
+  commitCopilotErrorMessages: {
+    'api.keyMissing': () =>
+      'API Key is not configured. Please set your API Key in the Commit-Copilot panel.',
+    'api.keyInvalid': (args) =>
+      args.details?.trim()
+        ? 'Invalid API Key: {details}'.replace('{details}', args.details ?? '')
+        : 'Invalid API Key.',
+    'api.quotaExceeded': (args) =>
+      args.details?.trim()
+        ? 'API quota exceeded: {details}'.replace(
+            '{details}',
+            args.details ?? '',
+          )
+        : 'API quota exceeded.',
+    'api.requestFailed': (args) =>
+      args.details?.trim()
+        ? 'API request failed: {details}'.replace(
+            '{details}',
+            args.details ?? '',
+          )
+        : 'API request failed.',
+    'api.ollamaConnectionFailed': (args) =>
+      'Cannot connect to Ollama. Make sure Ollama is running at {host}.'.replace(
+        '{host}',
+        args.host ?? '',
+      ),
+    'api.ollamaModelNotFound': (args) =>
+      'Model "{model}" was not found. Pull it first with: ollama pull {model}'.replace(
+        /\{model\}/g,
+        args.model ?? '',
+      ),
+    'api.unknownAnthropicModel': (args) =>
+      'Unknown Anthropic model "{model}". Add it to ANTHROPIC_MODELS with max_tokens.'.replace(
+        '{model}',
+        args.model ?? '',
+      ),
+    'api.emptyResponse': (args) =>
+      'Empty response from {provider}.'.replace(
+        '{provider}',
+        args.provider ?? '',
+      ),
+    'api.emptyTextResponse': (args) =>
+      'Empty text response from {provider}.'.replace(
+        '{provider}',
+        args.provider ?? '',
+      ),
+    'api.emptyFinalResponse': (args) =>
+      'Empty final response from {provider}.'.replace(
+        '{provider}',
+        args.provider ?? '',
+      ),
+    'api.responseTruncated': (args) =>
+      'Response from {provider} was truncated ({stopReason}).'
+        .replace('{provider}', args.provider ?? '')
+        .replace('{stopReason}', args.stopReason ?? ''),
+    'api.finalResponseTruncated': (args) =>
+      'Final response from {provider} was truncated ({stopReason}).'
+        .replace('{provider}', args.provider ?? '')
+        .replace('{stopReason}', args.stopReason ?? ''),
+    'git.stageFailed': (args) =>
+      args.details?.trim()
+        ? 'Failed to stage changes: {details}'.replace(
+            '{details}',
+            args.details ?? '',
+          )
+        : 'Failed to stage changes.',
+    'generation.noChanges': () =>
+      'No changes detected to generate a commit for.',
+    'generation.noChangesButUntracked': () =>
+      'No changes to commit, but untracked files were detected.',
+    'generation.noTrackedChangesButUntracked': () =>
+      'No tracked changes detected, only untracked files are present.',
+    'generation.mixedChanges': () =>
+      'Both staged and unstaged changes were detected.',
+    'generation.cancelled': () => 'Generation canceled by user.',
+  },
   errorMessages: {
     [EXIT_CODES.NOT_GIT_REPO]: {
       title: 'Não é um repositório Git',
@@ -130,7 +206,7 @@ export const ptBRLocale: LocaleTextBundle = {
       failedPrefix: 'Commit-Copilot falhou',
     },
   },
-  sidePanelText: {
+  mainViewText: {
     invalidApiKeyPrefix: 'Chave da API Inválida',
     quotaExceededPrefix: 'Cota da API excedida',
     apiRequestFailedPrefix: 'Falha na requisição da API',
@@ -173,6 +249,7 @@ export const ptBRLocale: LocaleTextBundle = {
       maxAgentSteps: 'Número Máximo de Passos do Agente',
       providerName: 'Nome do Provedor',
       apiBaseUrl: 'URL Base da API',
+      commitMessage: 'Mensagem de commit',
     },
     placeholders: {
       selectProvider: 'Selecione um provedor...',
@@ -193,6 +270,7 @@ export const ptBRLocale: LocaleTextBundle = {
       editProvider: 'Editar Provedor',
       addProvider: '+ Adicionar Provedor...',
       deleteProvider: 'Excluir Provedor',
+      cancel: 'Cancelar',
     },
     statuses: {
       checkingStatus: 'Verificando o status...',

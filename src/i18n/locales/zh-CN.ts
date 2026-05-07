@@ -2,6 +2,68 @@ import { EXIT_CODES } from '../../errors';
 import type { LocaleTextBundle } from '../types';
 
 export const zhCNLocale: LocaleTextBundle = {
+  commitCopilotErrorMessages: {
+    'api.keyMissing': () =>
+      '尚未设置 API Key。请先在 Commit-Copilot 面板设置 API Key。',
+    'api.keyInvalid': (args) =>
+      args.details?.trim()
+        ? 'API Key 无效：{details}'.replace('{details}', args.details ?? '')
+        : 'API Key 无效。',
+    'api.quotaExceeded': (args) =>
+      args.details?.trim()
+        ? 'API 配额已用尽：{details}'.replace('{details}', args.details ?? '')
+        : 'API 配额已用尽。',
+    'api.requestFailed': (args) =>
+      args.details?.trim()
+        ? 'API 请求失败：{details}'.replace('{details}', args.details ?? '')
+        : 'API 请求失败。',
+    'api.ollamaConnectionFailed': (args) =>
+      '无法连接到 Ollama。请确认 Ollama 已在 {host} 运行。'.replace(
+        '{host}',
+        args.host ?? '',
+      ),
+    'api.ollamaModelNotFound': (args) =>
+      '找不到模型“{model}”。请先执行：ollama pull {model}'.replace(
+        /\{model\}/g,
+        args.model ?? '',
+      ),
+    'api.unknownAnthropicModel': (args) =>
+      '未知的 Anthropic 模型“{model}”。请将它加入 ANTHROPIC_MODELS 并设置 max_tokens。'.replace(
+        '{model}',
+        args.model ?? '',
+      ),
+    'api.emptyResponse': (args) =>
+      '{provider} 返回空白响应。'.replace('{provider}', args.provider ?? ''),
+    'api.emptyTextResponse': (args) =>
+      '{provider} 返回空白文本响应。'.replace(
+        '{provider}',
+        args.provider ?? '',
+      ),
+    'api.emptyFinalResponse': (args) =>
+      '{provider} 返回空白最终响应。'.replace(
+        '{provider}',
+        args.provider ?? '',
+      ),
+    'api.responseTruncated': (args) =>
+      '{provider} 的响应被截断（{stopReason}）。'
+        .replace('{provider}', args.provider ?? '')
+        .replace('{stopReason}', args.stopReason ?? ''),
+    'api.finalResponseTruncated': (args) =>
+      '{provider} 的最终响应被截断（{stopReason}）。'
+        .replace('{provider}', args.provider ?? '')
+        .replace('{stopReason}', args.stopReason ?? ''),
+    'git.stageFailed': (args) =>
+      args.details?.trim()
+        ? '暂存更改失败：{details}'.replace('{details}', args.details ?? '')
+        : '暂存更改失败。',
+    'generation.noChanges': () => '未检测到可生成 commit 的更改。',
+    'generation.noChangesButUntracked': () =>
+      '没有可提交的更改，但检测到未追踪文件。',
+    'generation.noTrackedChangesButUntracked': () =>
+      '未检测到已追踪文件的更改，目前只有未追踪文件。',
+    'generation.mixedChanges': () => '检测到已暂存与未暂存更改同时存在。',
+    'generation.cancelled': () => '用户已取消生成流程。',
+  },
   errorMessages: {
     [EXIT_CODES.NOT_GIT_REPO]: {
       title: '不是 Git 仓库',
@@ -114,7 +176,7 @@ export const zhCNLocale: LocaleTextBundle = {
       failedPrefix: 'Commit-Copilot 执行失败',
     },
   },
-  sidePanelText: {
+  mainViewText: {
     invalidApiKeyPrefix: 'API Key 无效',
     quotaExceededPrefix: 'API 配额已用尽',
     apiRequestFailedPrefix: 'API 请求失败',
@@ -155,6 +217,7 @@ export const zhCNLocale: LocaleTextBundle = {
       maxAgentSteps: '最大 Agent 步数',
       providerName: '提供商名称',
       apiBaseUrl: 'API Base URL',
+      commitMessage: '提交信息',
     },
     placeholders: {
       selectProvider: '请选择提供商...',
@@ -175,6 +238,7 @@ export const zhCNLocale: LocaleTextBundle = {
       editProvider: '编辑 Provider',
       addProvider: '+ 添加 Provider...',
       deleteProvider: '删除 Provider',
+      cancel: '取消',
     },
     statuses: {
       checkingStatus: '检查状态中...',

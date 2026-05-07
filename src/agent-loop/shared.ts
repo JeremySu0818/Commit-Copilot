@@ -89,13 +89,13 @@ function buildScopeRule(options: CommitOutputOptions): string {
 
 function buildBodyAndFooterRule(options: CommitOutputOptions): string {
   if (options.includeBody && options.includeFooter) {
-    return 'Body is MANDATORY and footer is MANDATORY. Format: subject line, blank line, body text, blank line, footer line(s).';
+    return 'Body is MANDATORY and footer is MANDATORY. Format: subject line, blank line, body text, blank line, footer line(s). If no footer content can be validly derived from the diff/context under Conventional Commit conventions, write `Footer: none` honestly. Never fabricate footer facts.';
   }
   if (options.includeBody && !options.includeFooter) {
     return 'Body is MANDATORY. Add a blank line after the subject and write the body. Footer is FORBIDDEN.';
   }
   if (!options.includeBody && options.includeFooter) {
-    return 'Body is FORBIDDEN and footer is MANDATORY. Format: subject line, blank line, then footer line(s).';
+    return 'Body is FORBIDDEN and footer is MANDATORY. Format: subject line, blank line, then footer line(s). If no footer content can be validly derived from the diff/context under Conventional Commit conventions, write `Footer: none` honestly. Never fabricate footer facts.';
   }
   return 'Body and footer are both FORBIDDEN. Output exactly one subject line with no extra blank lines.';
 }
@@ -188,7 +188,7 @@ function buildCommitOutputReminder(
     ? 'A body section is MANDATORY.'
     : 'A body section is FORBIDDEN.';
   const footerRule = options.includeFooter
-    ? 'At least one footer line is MANDATORY.'
+    ? 'At least one footer line is MANDATORY. If no valid Conventional Commit footer can be derived, write `Footer: none` honestly. Never fabricate.'
     : 'Footer lines are FORBIDDEN.';
 
   return `When you are done, your ENTIRE text output must be ONLY the commit message. First-line format: ${subjectFormat}. ${scopeRule} ${bodyRule} ${footerRule} No analysis, no explanation, no commentary.`;
@@ -436,6 +436,22 @@ function isCompactBatch(values: unknown[]): boolean {
   return values.length <= compactBatchSizeThreshold;
 }
 
+function formatToolNameList(toolCalls: { name: string; args: unknown }[]): string {
+  const uniqueToolNames = Array.from(new Set(toolCalls.map((tc) => tc.name)));
+  return uniqueToolNames.join(', ');
+}
+
+function appendToolNamesSuffix(
+  message: string,
+  toolCalls: { name: string; args: unknown }[],
+): string {
+  const toolList = formatToolNameList(toolCalls);
+  if (!toolList) {
+    return message;
+  }
+  return `${message} [tools: ${toolList}]`;
+}
+
 function formatSingleToolBatchProgress(
   step: number,
   toolName: string,
@@ -489,11 +505,14 @@ function formatBatchProgressMessage(
   const msgs = LOCALES[language].progressMessages;
 
   if (toolCalls.length === 1) {
-    return formatProgressMessage(
-      step,
-      toolCalls[0].name,
-      toolCalls[0].args,
-      language,
+    return appendToolNamesSuffix(
+      formatProgressMessage(
+        step,
+        toolCalls[0].name,
+        toolCalls[0].args,
+        language,
+      ),
+      toolCalls,
     );
   }
 
@@ -507,11 +526,14 @@ function formatBatchProgressMessage(
       msgs,
     );
     if (formatted) {
-      return formatted;
+      return appendToolNamesSuffix(formatted, toolCalls);
     }
   }
 
-  return msgs.stepExecutingMultipleTools(step, toolCalls.length);
+  return appendToolNamesSuffix(
+    msgs.stepExecutingMultipleTools(step, toolCalls.length),
+    toolCalls,
+  );
 }
 
 export {

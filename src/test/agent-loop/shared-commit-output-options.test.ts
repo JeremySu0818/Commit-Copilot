@@ -49,6 +49,7 @@ void test('buildAgentSystemPrompt enforces footer-only layout when body is disab
   });
 
   assert.match(prompt, /Body is FORBIDDEN and footer is MANDATORY/);
+  assert.match(prompt, /If no footer content can be validly derived/);
   assert.match(prompt, /type\(scope\): description\n\nRefs: #123/);
 });
 

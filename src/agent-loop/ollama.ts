@@ -8,6 +8,9 @@ import {
   APIRequestError,
   GenerationCancelledError,
   NoChangesError,
+  createEmptyResponseError,
+  createOllamaConnectionError,
+  createOllamaModelNotFoundError,
 } from '../errors';
 import { LOCALES } from '../i18n/locales';
 import type { EffectiveDisplayLanguage } from '../i18n/types';
@@ -88,14 +91,10 @@ function rethrowMappedOllamaError(
   modelName: string,
 ): never {
   if (message.includes('ECONNREFUSED') || message.includes('connect')) {
-    throw new APIRequestError(
-      `Cannot connect to Ollama. Make sure Ollama is running at ${resolvedHost}`,
-    );
+    throw createOllamaConnectionError(resolvedHost);
   }
   if (message.includes('model') && message.includes('not found')) {
-    throw new APIRequestError(
-      `Model "${modelName}" not found. Please pull it first.`,
-    );
+    throw createOllamaModelNotFoundError(modelName);
   }
   throw new APIRequestError(message);
 }
@@ -169,7 +168,7 @@ async function runOllamaAgentLoop(
     const text = response.message.content;
     throwIfCancellationRequested(cancellationToken);
     if (!text) {
-      throw new APIRequestError('Empty response from Ollama');
+      throw createEmptyResponseError('Ollama');
     }
     return extractCommitMessage(text);
   } catch (error: unknown) {

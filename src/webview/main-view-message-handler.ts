@@ -1,15 +1,16 @@
 import { useEffect } from 'react';
 
 import type { DisplayLanguage, EffectiveDisplayLanguage } from '../i18n';
+import type { WebviewBootstrapData } from '../main-view-webview-bootstrap';
 import type {
   CommitOutputOptions,
   CustomProviderConfig,
   ModelConfig,
 } from '../models';
-import type { WebviewBootstrapData } from '../side-panel-webview-bootstrap';
 
-import type { SidePanelAction, SidePanelState } from './side-panel-context';
+import type { MainViewAction, MainViewState } from './main-view-context';
 import {
+  createStatusMessage,
   renderStatusHtml,
   normalizeGenerateMode,
   normalizeMaxAgentStepsValue,
@@ -158,11 +159,18 @@ function normalizeCommitOutputOptions(
   };
 }
 
-export function useMessageHandler(
+function normalizeScreen(value: unknown): MainViewState['screen'] {
+  if (value === 'settings' || value === 'addProvider') {
+    return value;
+  }
+  return 'main';
+}
+
+export function useMainViewMessageHandler(
   vscode: VSCodeWebviewApi,
   bootstrap: WebviewBootstrapData,
-  state: SidePanelState,
-  dispatch: React.Dispatch<SidePanelAction>,
+  state: MainViewState,
+  dispatch: React.Dispatch<MainViewAction>,
 ): void {
   useEffect(() => {
     vscode.postMessage({ type: 'getProvider' });
@@ -175,8 +183,7 @@ export function useMessageHandler(
     vscode.postMessage({ type: 'checkGenerationStatus' });
     vscode.postMessage({ type: 'checkValidationStatus' });
     vscode.postMessage({ type: 'getDisplayLanguage' });
-    const effectiveScreen =
-      bootstrap.initialScreen === 'settings' ? 'settings' : 'main';
+    const effectiveScreen = normalizeScreen(bootstrap.initialScreen);
     vscode.postMessage({ type: 'setCurrentScreen', value: effectiveScreen });
   }, [vscode, bootstrap]);
 
@@ -188,8 +195,8 @@ export function useMessageHandler(
         text: state.currentPack.buttons.save,
       });
       dispatch({
-        type: 'SET_KEY_STATUS_HTML',
-        html: renderStatusHtml(
+        type: 'SET_KEY_STATUS_MESSAGE',
+        status: createStatusMessage(
           'warning',
           state.currentPack.statuses.checkingStatus,
         ),
@@ -245,8 +252,8 @@ export function useMessageHandler(
 
           if (hasKey) {
             dispatch({
-              type: 'SET_KEY_STATUS_HTML',
-              html: renderStatusHtml(
+              type: 'SET_KEY_STATUS_MESSAGE',
+              status: createStatusMessage(
                 'success',
                 state.currentPack.statuses.configured,
               ),
@@ -259,8 +266,8 @@ export function useMessageHandler(
           }
 
           dispatch({
-            type: 'SET_KEY_STATUS_HTML',
-            html: renderStatusHtml(
+            type: 'SET_KEY_STATUS_MESSAGE',
+            status: createStatusMessage(
               'error',
               state.currentPack.statuses.notConfigured,
             ),
@@ -280,13 +287,13 @@ export function useMessageHandler(
           }
           const hasKey = normalized[state.currentProvider];
           dispatch({
-            type: 'SET_KEY_STATUS_HTML',
-            html: hasKey
-              ? renderStatusHtml(
+            type: 'SET_KEY_STATUS_MESSAGE',
+            status: hasKey
+              ? createStatusMessage(
                   'success',
                   state.currentPack.statuses.configured,
                 )
-              : renderStatusHtml(
+              : createStatusMessage(
                   'error',
                   state.currentPack.statuses.notConfigured,
                 ),
@@ -365,8 +372,8 @@ export function useMessageHandler(
             text: state.currentPack.buttons.validating,
           });
           dispatch({
-            type: 'SET_KEY_STATUS_HTML',
-            html: renderStatusHtml(
+            type: 'SET_KEY_STATUS_MESSAGE',
+            status: createStatusMessage(
               'warning',
               state.currentPack.statuses.validating,
             ),
@@ -384,8 +391,8 @@ export function useMessageHandler(
               toString(message.error) ??
               state.currentPack.statuses.notConfigured;
             dispatch({
-              type: 'SET_KEY_STATUS_HTML',
-              html: renderStatusHtml('error', errorMessage),
+              type: 'SET_KEY_STATUS_MESSAGE',
+              status: createStatusMessage('error', errorMessage),
             });
             dispatch({
               type: 'SET_SAVE_BTN',
@@ -399,8 +406,8 @@ export function useMessageHandler(
           }
 
           dispatch({
-            type: 'SET_KEY_STATUS_HTML',
-            html: renderStatusHtml(
+            type: 'SET_KEY_STATUS_MESSAGE',
+            status: createStatusMessage(
               'success',
               state.currentPack.statuses.configured,
             ),
@@ -486,8 +493,8 @@ export function useMessageHandler(
             text: state.currentPack.buttons.validating,
           });
           dispatch({
-            type: 'SET_KEY_STATUS_HTML',
-            html: renderStatusHtml(
+            type: 'SET_KEY_STATUS_MESSAGE',
+            status: createStatusMessage(
               'warning',
               state.currentPack.statuses.validating,
             ),
@@ -514,8 +521,11 @@ export function useMessageHandler(
             pack: nextPack,
           });
           dispatch({
-            type: 'SET_LANGUAGE_STATUS_HTML',
-            html: renderStatusHtml('success', nextPack.statuses.languageSaved),
+            type: 'SET_LANGUAGE_STATUS_MESSAGE',
+            status: createStatusMessage(
+              'success',
+              nextPack.statuses.languageSaved,
+            ),
           });
         },
         currentMaxAgentSteps: (message) => {
@@ -524,6 +534,7 @@ export function useMessageHandler(
         },
         openSettingsView: () => {
           dispatch({ type: 'SET_SCREEN', screen: 'settings' });
+          vscode.postMessage({ type: 'setCurrentScreen', value: 'settings' });
         },
         customProviderSaved: (message) => {
           const customProviders = toCustomProviderArray(

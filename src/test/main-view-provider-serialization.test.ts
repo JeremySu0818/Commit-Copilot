@@ -7,7 +7,7 @@ import type * as vscode from 'vscode';
 
 import { clearRequireCache, withModuleMock } from './helpers/module-mock';
 
-const MODULE_PATH = path.resolve(__dirname, '..', 'side-panel-provider');
+const MODULE_PATH = path.resolve(__dirname, '..', 'main-view-provider');
 const lineSeparatorCodePoint = 0x2028;
 const paragraphSeparatorCodePoint = 0x2029;
 
@@ -70,7 +70,7 @@ void test('inline script serialization escapes html terminators and unicode sepa
       const dynamicRequire = createRequire(__filename);
       return dynamicRequire(
         MODULE_PATH,
-      ) as typeof import('../side-panel-provider');
+      ) as typeof import('../main-view-provider');
     }),
   );
 
@@ -104,7 +104,7 @@ void test('inline script serialization escapes html terminators and unicode sepa
     },
   } as unknown as vscode.ExtensionContext;
 
-  const provider = new mod.SidePanelProvider(
+  const provider = new mod.MainViewProvider(
     { fsPath: process.cwd() } as unknown as vscode.Uri,
     context,
   );

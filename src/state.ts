@@ -17,6 +17,18 @@ export const GenerationStateManager = {
     });
   },
 
+  tryStart(): boolean {
+    if (isGenerating) {
+      return false;
+    }
+    this.setGenerating(true);
+    return true;
+  },
+
+  finish(): void {
+    this.setGenerating(false);
+  },
+
   addListener(listener: () => void): void {
     generationListeners.add(listener);
   },

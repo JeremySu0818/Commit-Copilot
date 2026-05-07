@@ -31,6 +31,30 @@ export function renderStatusHtml(type: string, text: string): string {
   return `<span class="status-dot ${escapeHtml(type)}"></span>${escapeHtml(text)}`;
 }
 
+export type StatusType = 'success' | 'error' | 'warning';
+
+export interface StatusMessage {
+  type: StatusType;
+  text: string;
+}
+
+function normalizeStatusType(value: unknown): StatusType {
+  if (value === 'success' || value === 'error') {
+    return value;
+  }
+  return 'warning';
+}
+
+export function createStatusMessage(
+  type: unknown,
+  text: unknown,
+): StatusMessage {
+  return {
+    type: normalizeStatusType(type),
+    text: typeof text === 'string' ? text : '',
+  };
+}
+
 export function normalizeGenerateMode(
   mode: unknown,
 ): 'agentic' | 'direct-diff' {

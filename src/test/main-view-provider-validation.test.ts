@@ -7,9 +7,9 @@ import type * as vscode from 'vscode';
 
 import { clearRequireCache, withModuleMock } from './helpers/module-mock';
 
-const MODULE_PATH = path.resolve(__dirname, '..', 'side-panel-provider');
+const MODULE_PATH = path.resolve(__dirname, '..', 'main-view-provider');
 
-type ProviderModule = typeof import('../side-panel-provider');
+type ProviderModule = typeof import('../main-view-provider');
 type MessageHandler = (data: unknown) => Promise<void> | void;
 type PostedMessage = Record<string, unknown>;
 
@@ -35,6 +35,7 @@ interface Harness {
   warningMessages: string[];
   infoMessages: string[];
   storedSecrets: { key: string; value: string }[];
+  provider: ProviderWithValidators;
   dispose: () => void;
 }
 
@@ -97,7 +98,7 @@ const baseVscodeMock = {
 };
 
 function createProvider(mod: ProviderModule): ProviderWithValidators {
-  const provider = new mod.SidePanelProvider(
+  const provider = new mod.MainViewProvider(
     { fsPath: process.cwd() } as unknown as vscode.Uri,
     {} as vscode.ExtensionContext,
   );
@@ -181,7 +182,7 @@ async function createHarness(): Promise<Harness> {
     },
   } as unknown as vscode.ExtensionContext;
 
-  const provider = new mod.SidePanelProvider(
+  const provider = new mod.MainViewProvider(
     { fsPath: process.cwd() } as unknown as vscode.Uri,
     context,
   ) as unknown as ProviderWithValidators;
@@ -201,6 +202,7 @@ async function createHarness(): Promise<Harness> {
     warningMessages,
     infoMessages,
     storedSecrets,
+    provider,
     dispose: () => {
       disposeHandler?.();
     },
@@ -460,5 +462,37 @@ void test('Anthropic API key validation maps 401 SDK errors to invalid key messa
   } finally {
     harness.dispose();
     global.fetch = originalFetch;
+  }
+});
+
+void test('saveKey rejects unknown built-in provider without falling back to default provider', async () => {
+  const harness = await createHarness();
+  let googleValidationCalls = 0;
+  harness.provider.validateGoogleApiKey = () => {
+    googleValidationCalls += 1;
+    return Promise.resolve({ valid: true });
+  };
+
+  try {
+    await harness.sendMessage({
+      type: 'saveKey',
+      provider: 'unexpected-provider',
+      value: 'test-api-key',
+    });
+
+    assert.equal(googleValidationCalls, 0);
+    assert.equal(harness.storedSecrets.length, 0);
+    assert.equal(harness.infoMessages.length, 0);
+
+    const resultMessage = harness.postedMessages.find((message) =>
+      isValidationResultMessage(message, 'unexpected-provider'),
+    );
+    if (!resultMessage) {
+      throw new Error('Unknown provider validation result message not found');
+    }
+    assert.equal(resultMessage.success, false);
+    assert.equal(resultMessage.error, 'Unknown provider');
+  } finally {
+    harness.dispose();
   }
 });

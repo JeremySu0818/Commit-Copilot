@@ -13,7 +13,7 @@ import {
 
 import { clearRequireCache, withModuleMock } from './helpers/module-mock';
 
-const MODULE_PATH = path.resolve(__dirname, '..', 'side-panel-provider');
+const MODULE_PATH = path.resolve(__dirname, '..', 'main-view-provider');
 
 type MessageHandler = (data: unknown) => Promise<void> | void;
 type PostedMessage = Record<string, unknown>;
@@ -24,6 +24,7 @@ interface Harness {
   sendMessage: (message: unknown) => Promise<void>;
   postedMessages: PostedMessage[];
   commandCalls: CommandCall[];
+  warningMessages: string[];
   state: Map<string, unknown>;
   dispose: () => void;
 }
@@ -99,6 +100,7 @@ async function createHarness(
 
   const postedMessages: PostedMessage[] = [];
   const commandCalls: CommandCall[] = [];
+  const warningMessages: string[] = [];
   const state = new Map<string, unknown>(Object.entries(initialState ?? {}));
   const secrets = new Map<string, string>(Object.entries(initialSecrets ?? {}));
 
@@ -153,7 +155,10 @@ async function createHarness(
       },
     },
     window: {
-      showWarningMessage: () => Promise.resolve(undefined),
+      showWarningMessage: (message: string) => {
+        warningMessages.push(message);
+        return Promise.resolve(undefined);
+      },
       showInformationMessage: () => Promise.resolve(undefined),
       showErrorMessage: () => Promise.resolve(undefined),
     },
@@ -163,7 +168,7 @@ async function createHarness(
     const dynamicRequire = createRequire(__filename);
     return dynamicRequire(
       MODULE_PATH,
-    ) as typeof import('../side-panel-provider');
+    ) as typeof import('../main-view-provider');
   });
 
   const context = {
@@ -183,7 +188,7 @@ async function createHarness(
     },
   } as unknown as vscode.ExtensionContext;
 
-  const provider = new mod.SidePanelProvider(
+  const provider = new mod.MainViewProvider(
     { fsPath: process.cwd() } as unknown as vscode.Uri,
     context,
   );
@@ -201,6 +206,7 @@ async function createHarness(
     sendMessage,
     postedMessages,
     commandCalls,
+    warningMessages,
     state,
     dispose: () => {
       disposeHandler?.();
@@ -297,6 +303,32 @@ void test('generate forwards normalized generateMode to command payload', async 
       (message) => message.type === 'generationDone',
     );
     assert.equal(doneMessages.length, expectedGenerateCallCount);
+  } finally {
+    harness.dispose();
+  }
+});
+
+void test('showWarning displays only allowlisted warning keys', async () => {
+  const harness = await createHarness();
+
+  try {
+    await harness.sendMessage({
+      type: 'showWarning',
+      message: 'Untrusted warning text',
+    });
+    await harness.sendMessage({
+      type: 'showWarning',
+      key: 'unknownWarning',
+    });
+    assert.deepEqual(harness.warningMessages, []);
+
+    await harness.sendMessage({
+      type: 'showWarning',
+      key: 'modelNameRequired',
+    });
+    assert.deepEqual(harness.warningMessages, [
+      'Please enter a model name before generating.',
+    ]);
   } finally {
     harness.dispose();
   }

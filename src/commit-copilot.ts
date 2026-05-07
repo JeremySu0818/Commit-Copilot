@@ -50,8 +50,7 @@ const GIT_COMMIT_COUNT_TIMEOUT_MS = 15000;
 const GIT_LS_FILES_TIMEOUT_MS = 15000;
 const bytesPerKiB = 1024;
 const bytesPerMiB = bytesPerKiB * bytesPerKiB;
-const gitLsFilesMaxBufferMiB = 20;
-const GIT_LS_FILES_MAX_BUFFER = gitLsFilesMaxBufferMiB * bytesPerMiB;
+const GIT_LS_FILES_MAX_BUFFER = Number.POSITIVE_INFINITY;
 const execFileAsync = promisify(execFile);
 
 function isNoCommitsError(message: string): boolean {
@@ -606,9 +605,10 @@ export async function generateCommitMessage(
     const gitOps = new GitOperations(repository);
     if (!(await gitOps.isGitRepo())) {
       throw new CommitCopilotError(
-        'Not a git repository. Please run this command inside a git repository.',
+        'NOT_GIT_REPO',
         'NOT_GIT_REPO',
         EXIT_CODES.NOT_GIT_REPO,
+        { messageKey: 'git.notRepository' },
       );
     }
 

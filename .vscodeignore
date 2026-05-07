@@ -12,8 +12,8 @@ tsconfig.test.json
 package-lock.json
 out/**
 !out/extension.js
-!out/webview/side-panel.js
-!out/webview/side-panel.css
+!out/webview/main-view.js
+!out/webview/main-view.css
 esbuild.mjs
 tsconfig*.json
 build.*

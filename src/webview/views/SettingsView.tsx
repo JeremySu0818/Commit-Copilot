@@ -1,29 +1,25 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 
 import { BackIcon } from '../components/BackIcon';
-import { useSidePanel } from '../side-panel-context';
-import { normalizeMaxAgentStepsValue, renderStatusHtml } from '../utils';
+import { StatusMessageView } from '../components/StatusMessageView';
+import { useMainViewContext } from '../main-view-context';
+import { createStatusMessage, normalizeMaxAgentStepsValue } from '../utils';
 
 export function SettingsView() {
-  const { state, dispatch, vscode, bootstrap } = useSidePanel();
+  const { state, dispatch, vscode, bootstrap } = useMainViewContext();
   const { currentPack: pack, displayLanguage, currentMaxAgentSteps } = state;
-  const [maxStepsInput, setMaxStepsInput] = useState(
-    currentMaxAgentSteps > 0 ? String(currentMaxAgentSteps) : '',
+  const [maxStepsInput, setMaxStepsInput] = useState('');
+  const [isEditingMaxSteps, setIsEditingMaxSteps] = useState(false);
+  const externalMaxStepsInput = useMemo(
+    () => (currentMaxAgentSteps > 0 ? String(currentMaxAgentSteps) : ''),
+    [currentMaxAgentSteps],
   );
-
-  useEffect(() => {
-    const nextInputValue =
-      currentMaxAgentSteps > 0 ? String(currentMaxAgentSteps) : '';
-    const syncTimer = setTimeout(() => {
-      setMaxStepsInput(nextInputValue);
-    }, 0);
-
-    return () => {
-      clearTimeout(syncTimer);
-    };
-  }, [currentMaxAgentSteps]);
-
-  const maxStepsInputValue = normalizeMaxAgentStepsValue(maxStepsInput);
+  const displayedMaxStepsInput = isEditingMaxSteps
+    ? maxStepsInput
+    : externalMaxStepsInput;
+  const maxStepsInputValue = normalizeMaxAgentStepsValue(
+    displayedMaxStepsInput,
+  );
   const saveMaxStepsDisabled = maxStepsInputValue === currentMaxAgentSteps;
 
   const handleBack = useCallback(() => {
@@ -34,8 +30,11 @@ export function SettingsView() {
   const handleLanguageChange = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
       dispatch({
-        type: 'SET_LANGUAGE_STATUS_HTML',
-        html: renderStatusHtml('warning', pack.statuses.loadingConfiguration),
+        type: 'SET_LANGUAGE_STATUS_MESSAGE',
+        status: createStatusMessage(
+          'warning',
+          pack.statuses.loadingConfiguration,
+        ),
       });
       vscode.postMessage({
         type: 'saveDisplayLanguage',
@@ -47,17 +46,19 @@ export function SettingsView() {
 
   const handleMaxStepsInput = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
+      setIsEditingMaxSteps(true);
       setMaxStepsInput(e.target.value);
     },
     [],
   );
 
   const handleSaveMaxSteps = useCallback(() => {
-    const value = normalizeMaxAgentStepsValue(maxStepsInput);
+    const value = normalizeMaxAgentStepsValue(displayedMaxStepsInput);
     setMaxStepsInput(value > 0 ? String(value) : '');
+    setIsEditingMaxSteps(false);
     dispatch({ type: 'SET_MAX_AGENT_STEPS', value });
     vscode.postMessage({ type: 'saveMaxAgentSteps', value });
-  }, [maxStepsInput, dispatch, vscode]);
+  }, [displayedMaxStepsInput, dispatch, vscode]);
 
   return (
     <div
@@ -76,7 +77,7 @@ export function SettingsView() {
       </div>
       <div className="config-section">
         <div className="section-title">{pack.sections.settings}</div>
-        <div className="input-group" style={{ marginTop: '10px' }}>
+        <div className="input-group input-group-spaced">
           <label>{pack.labels.language}</label>
           <select
             id="languageSelect"
@@ -91,20 +92,19 @@ export function SettingsView() {
               </option>
             ))}
           </select>
-          <span
+          <StatusMessageView
             id="languageStatus"
-            className="status"
-            dangerouslySetInnerHTML={{ __html: state.languageStatusHtml }}
+            status={state.languageStatusMessage}
           />
         </div>
-        <div className="input-group" style={{ marginTop: '10px' }}>
+        <div className="input-group input-group-spaced">
           <label>{pack.labels.maxAgentSteps}</label>
           <input
             type="text"
             id="maxAgentStepsInput"
             inputMode="numeric"
             pattern="[0-9]*"
-            value={maxStepsInput}
+            value={displayedMaxStepsInput}
             onChange={handleMaxStepsInput}
           />
           <button

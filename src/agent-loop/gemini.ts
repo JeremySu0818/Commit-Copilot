@@ -15,6 +15,9 @@ import {
   APIRequestError,
   GenerationCancelledError,
   NoChangesError,
+  createEmptyFinalResponseError,
+  createEmptyResponseError,
+  createEmptyTextResponseError,
 } from '../errors';
 import { LOCALES } from '../i18n/locales';
 import type { EffectiveDisplayLanguage } from '../i18n/types';
@@ -354,14 +357,14 @@ async function executeGeminiInvestigationLoop(params: {
     throwIfCancellationRequested(params.cancellationToken);
     const response = await params.requestGeminiResponse(params.history);
     if (!getGeminiFirstCandidate(response)) {
-      throw new APIRequestError('Empty response from Gemini API');
+      throw createEmptyResponseError('Gemini API');
     }
 
     const functionCalls = normalizeGeminiFunctionCalls(response);
     if (functionCalls.length === 0) {
       const text = getGeminiResponseText(response);
       if (!text) {
-        throw new APIRequestError('Empty text response from Gemini API');
+        throw createEmptyTextResponseError('Gemini API');
       }
       return extractCommitMessage(text);
     }
@@ -551,7 +554,10 @@ async function runGeminiAgentLoop(
       finalGenerationConfig,
     );
     const text = getGeminiResponseText(finalResponse);
-    return text ? extractCommitMessage(text) : 'chore(project): update files';
+    if (!text) {
+      throw createEmptyFinalResponseError('Gemini API');
+    }
+    return extractCommitMessage(text);
   } catch (error: unknown) {
     if (
       error instanceof NoChangesError ||

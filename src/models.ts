@@ -72,6 +72,7 @@ export const OPENAI_MODELS: ModelConfig[] = [
   { id: 'gpt-5.4-nano', alias: 'GPT-5.4 nano' },
   { id: 'gpt-5.4-mini', alias: 'GPT-5.4 mini' },
   { id: 'gpt-5.4', alias: 'GPT-5.4' },
+  { id: 'gpt-5.5', alias: 'GPT-5.5' },
 ];
 
 export const ANTHROPIC_MODELS: ModelConfig[] = [
@@ -115,6 +116,11 @@ export const ANTHROPIC_MODELS: ModelConfig[] = [
     alias: 'Claude Opus 4.6',
     max_tokens: 128000,
   },
+  {
+    id: 'claude-opus-4-7',
+    alias: 'Claude Opus 4.7',
+    max_tokens: 128000,
+  },
 ];
 
 export const OLLAMA_MODELS: ModelConfig[] = [
@@ -148,17 +154,7 @@ export function getAnthropicModelMaxTokens(
 ): number | undefined {
   const resolvedModelId =
     modelId && modelId.length > 0 ? modelId : DEFAULT_MODELS.anthropic;
-  const selectedModel = ANTHROPIC_MODELS.find(
-    ({ id }) => id === resolvedModelId,
-  );
-  if (selectedModel?.max_tokens !== undefined) {
-    return selectedModel.max_tokens;
-  }
-  if (resolvedModelId === DEFAULT_MODELS.anthropic) {
-    return undefined;
-  }
-  return ANTHROPIC_MODELS.find(({ id }) => id === DEFAULT_MODELS.anthropic)
-    ?.max_tokens;
+  return ANTHROPIC_MODELS.find(({ id }) => id === resolvedModelId)?.max_tokens;
 }
 export const DEFAULT_PROVIDER: APIProvider = 'google';
 export const DEFAULT_MODEL = DEFAULT_MODELS[DEFAULT_PROVIDER];

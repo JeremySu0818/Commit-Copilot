@@ -64,6 +64,40 @@ void test('executeGetFileOutline prevents path traversal', async () => {
   assert.equal(output, 'Error: path traversal is not allowed.');
 });
 
+void test('executeGetFileOutline rejects symlinks that resolve outside the workspace', async (context) => {
+  const repoRoot = createTempDir();
+  const outsideRoot = createTempDir();
+  try {
+    const outsideFile = path.join(outsideRoot, 'secret.ts');
+    const linkPath = path.join(repoRoot, 'link.ts');
+    fs.writeFileSync(outsideFile, 'export const secret = true;\n', 'utf-8');
+    try {
+      fs.symlinkSync(outsideFile, linkPath);
+    } catch {
+      context.skip('Symlink creation is not available in this environment.');
+      return;
+    }
+
+    const vscodeMock = createVscodeMock({
+      openTextDocument: () =>
+        Promise.reject(new Error('Unsafe symlink should not be opened.')),
+    });
+    const { executeGetFileOutline } = await loadModule(vscodeMock);
+    const output = await executeGetFileOutline(
+      repoRoot,
+      { path: 'link.ts' },
+      false,
+    );
+    assert.equal(
+      output,
+      'Error: resolved file path escapes the workspace root.',
+    );
+  } finally {
+    cleanupTempDir(outsideRoot);
+    cleanupTempDir(repoRoot);
+  }
+});
+
 void test('executeGetFileOutline renders outline from document symbols', async () => {
   const repoRoot = createTempDir();
   try {

@@ -20,6 +20,17 @@ void test('GenerationStateManager notifies listeners on state change', () => {
   assert.equal(called, expectedListenerCalls);
 });
 
+void test('GenerationStateManager tryStart is synchronous single-flight guard', () => {
+  GenerationStateManager.setGenerating(false);
+
+  assert.equal(GenerationStateManager.tryStart(), true);
+  assert.equal(GenerationStateManager.tryStart(), false);
+  assert.equal(GenerationStateManager.isGenerating, true);
+
+  GenerationStateManager.finish();
+  assert.equal(GenerationStateManager.isGenerating, false);
+});
+
 void test('ValidationStateManager tracks provider and notifies listeners', () => {
   let called = 0;
   const listener = () => {
