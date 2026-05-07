@@ -6,10 +6,10 @@ Commit-Copilot is an **agentic** VS Code extension that uses a multi-step AI age
 
 - **Multi-Provider Support**: Choose your preferred AI provider:
   - **Google Gemini**: Support for Gemini 2.5 Flash-Lite/Flash/Pro, Gemini 3 Flash and Gemini 3.1 Flash-Lite/Pro.
-  - **OpenAI**: Support for o3/o3-mini, o4-mini, GPT-4o mini/GPT-4o, GPT-4.1 nano/GPT-4.1 mini/GPT-4.1, GPT-5 nano/GPT-5 mini/GPT-5, GPT-5.1, GPT-5.2, and GPT-5.4 nano/GPT-5.4 mini/GPT-5.4.
-  - **Anthropic**: Support for Claude Sonnet/Opus 4, Claude Opus 4.1, Claude Haiku/Sonnet/Opus 4.5 and Claude Opus 4.6.
+  - **OpenAI**: Support for o3/o3-mini, o4-mini, GPT-4o mini/GPT-4o, GPT-4.1 nano/GPT-4.1 mini/GPT-4.1, GPT-5 nano/GPT-5 mini/GPT-5, GPT-5.1, GPT-5.2, GPT-5.4 nano/GPT-5.4 mini/GPT-5.4, and GPT-5.5.
+  - **Anthropic**: Support for Claude Sonnet/Opus 4, Claude Opus 4.1, Claude Haiku/Sonnet/Opus 4.5, Claude Opus 4.6 and Claude Opus 4.7.
   - **Ollama**: Support for local models like Gemma 3 1B/4B/12B/27B, gpt-oss-20B/120B, Llama 3.3 8B/70B, Phi-4 14B and Mistral 7B.
-  - **Custom Provider**: Add any OpenAI-compatible endpoint (e.g. DeepSeek, Azure OpenAI, LM Studio) by specifying a display name and Base URL. Custom providers appear alongside built-in providers and use the same API key storage.
+  - **Custom Provider**: Add any OpenAI-compatible endpoint (e.g. DeepSeek, Azure OpenAI, LM Studio) by specifying a display name and Base URL. Custom providers appear alongside built-in providers, use secure API key storage, and can fetch or manually manage provider-specific models.
 - **Two Generate Modes**:
   - **Agentic** (default): Runs a multi-step agent loop. The AI is given only file names and line counts initially, then autonomously calls tools — `get_diff`, `read_file`, `get_file_outline`, `find_references`, `get_recent_commits`, `search_code` — to investigate changes, understand context, and learn the project's commit style before classifying.
   - **Direct Diff**: Skips the agent loop and feeds the full diff directly to the model in one shot. Faster and better suited for smaller or local models. Ollama always uses this mode.
@@ -22,13 +22,13 @@ Commit-Copilot is an **agentic** VS Code extension that uses a multi-step AI age
 - **Real-Time API Validation**: Each provider's API key is validated against its actual endpoint before saving. Invalid keys, quota limits, and connection failures are caught immediately with provider-specific error messages.
 - **Ollama Pull (Always)**: Always runs `ollama pull` for the selected model before generation, with real-time download progress reporting in the notification area. This can re-download layers even if the model already exists.
 - **Seamless VS Code Integration**: Access Commit-Copilot from the Activity Bar, Source Control navigation bar (wand icon), or Command Palette — three entry points integrated into your existing workflow.
-- **Real-Time Git Monitoring**: The side panel dynamically reflects your repository state. The Generate button automatically enables when changes are detected and disables when the working tree is clean.
+- **Real-Time Git Monitoring**: The main view dynamically reflects your repository state. The Generate button automatically enables when changes are detected and disables when the working tree is clean.
 - **Detailed Error Handling**: Provides specific, actionable error messages for every failure scenario — API key issues link to the settings panel, quota errors open the provider console, and staging failures suggest corrective actions.
 - **Cancellable Agent Loop**: Stop the agent at any point during its investigation loop directly from the UI. Perfect for when you change your mind or notice the agent is taking an unexpected path.
 - **Automatic Retries**: Automatically retries failed API requests due to temporary network issues or rate limits, making the generation process more resilient.
 - **Secure Key Storage**: API keys are stored securely using VS Code's Secret Storage.
 - **Flexible Commit Output Structure**: Individually toggle whether the generated message includes a **Scope**, a **Body**, and a **Footer**. All three are optional — defaults are scope on, body on, footer off.
-- **Model Selection**: Customize which model you want to use for each provider.
+- **Model Selection**: Customize which model you want to use for each provider. Custom providers can fetch models from their endpoint, and you can manually add or remove custom model IDs when needed.
 - **Localization**: The UI follows VS Code's display language automatically, or you can manually pin it to any of 20 supported languages: العربية, Čeština, Deutsch, English, Español, Français, हिन्दी, Magyar, Bahasa Indonesia, Italiano, 日本語, 한국어, Nederlands, Polski, Português (Brasil), Русский, Türkçe, Tiếng Việt, 简体中文, 繁體中文.
 - **Preview & Edit**: Review the generated message in the Source Control input box before committing.
 
@@ -79,7 +79,7 @@ To use any OpenAI-compatible endpoint (e.g. DeepSeek, Azure OpenAI, LM Studio):
 2. Enter a display **Name** and the **Base URL** for the endpoint.
 3. Save and enter the API key for that endpoint.
 
-The custom provider will appear in the provider list alongside the built-in ones.
+The custom provider will appear in the provider list alongside the built-in ones. After validation, Commit-Copilot tries to fetch the provider's model list from the endpoint. If the endpoint does not expose the model you need, choose **"Add Model"** from the model dropdown to add a custom model ID manually. Manually added models are stored per custom provider and can be deleted from the Add Model view.
 
 #### Additional Options
 
@@ -179,13 +179,13 @@ npm test
 This executes:
 
 1. `npm run test:build` (compile TypeScript tests with `tsconfig.test.json`)
-2. `node --test --test-concurrency=1 out/test/**/*.test.js`
+2. `node --test --test-concurrency=1 "out/test/**/*.test.js"`
 
 Current unit tests cover:
 
 - All agent tools: `get_diff`, `read_file`, `get_file_outline`, `find_references`, `get_recent_commits`, `search_code`
 - Tool dispatcher: `executeToolCall`
-- Core supporting logic: context parsing/building, staged workspace snapshot utilities, retry behavior, and state managers
+- Core supporting logic: context parsing/building, staged workspace snapshot utilities, retry behavior, localized errors, main view provider behavior, custom model management, and state managers
 
 ## License
 
