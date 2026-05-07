@@ -218,6 +218,10 @@ export function useMainViewMessageHandler(
         currentProvider: (message) => {
           const provider = toString(message.provider) ?? state.currentProvider;
           dispatch({ type: 'SET_PROVIDER', provider });
+          dispatch({
+            type: 'SET_API_KEY_TYPE',
+            inputType: provider === 'ollama' ? 'text' : 'password',
+          });
           vscode.postMessage({ type: 'checkKey', provider });
           vscode.postMessage({ type: 'getModels', provider });
         },

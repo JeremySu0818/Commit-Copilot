@@ -15,6 +15,7 @@ import {
   normalizeDisplayLanguage,
   resolveEffectiveDisplayLanguage,
 } from './i18n';
+import { MainViewProvider } from './main-view-provider';
 import {
   APIProvider,
   API_KEY_STORAGE_KEYS,
@@ -33,7 +34,6 @@ import {
   normalizeCommitOutputOptions,
   normalizeMaxAgentStepsValue,
 } from './models';
-import { MainViewProvider } from './main-view-provider';
 import { GenerationStateManager } from './state';
 
 type GenerateCommandArg =
@@ -868,9 +868,7 @@ async function executeGenerateCommand(
     }
 
     const progressTitle =
-      providerContext.llmProvider === 'ollama'
-        ? 'Ollama'
-        : providerDisplayName;
+      providerContext.llmProvider === 'ollama' ? 'Ollama' : providerDisplayName;
     await vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,

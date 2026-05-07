@@ -144,9 +144,7 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
 
   private updateCurrentScreen(screen: unknown): void {
     const normalizedScreen: MainViewScreen =
-      screen === 'settings' || screen === 'addProvider'
-        ? screen
-        : 'main';
+      screen === 'settings' || screen === 'addProvider' ? screen : 'main';
     this._currentScreen = normalizedScreen;
     void vscode.commands.executeCommand(
       'setContext',
@@ -956,7 +954,7 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
         }
 
         const builtIn = isAPIProvider(provider) ? provider : DEFAULT_PROVIDER;
-        let key = await this._context.secrets.get(
+        const key = await this._context.secrets.get(
           API_KEY_STORAGE_KEYS[builtIn],
         );
         if (key || builtIn === 'ollama') {

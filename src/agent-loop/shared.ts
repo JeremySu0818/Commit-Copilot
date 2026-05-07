@@ -436,7 +436,9 @@ function isCompactBatch(values: unknown[]): boolean {
   return values.length <= compactBatchSizeThreshold;
 }
 
-function formatToolNameList(toolCalls: { name: string; args: unknown }[]): string {
+function formatToolNameList(
+  toolCalls: { name: string; args: unknown }[],
+): string {
   const uniqueToolNames = Array.from(new Set(toolCalls.map((tc) => tc.name)));
   return uniqueToolNames.join(', ');
 }

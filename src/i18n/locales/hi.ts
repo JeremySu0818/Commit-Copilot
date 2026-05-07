@@ -7,21 +7,15 @@ export const hiLocale: LocaleTextBundle = {
       'API Key is not configured. Please set your API Key in the Commit-Copilot panel.',
     'api.keyInvalid': (args) =>
       args.details?.trim()
-        ? 'Invalid API Key: {details}'.replace('{details}', args.details ?? '')
+        ? 'Invalid API Key: {details}'.replace('{details}', args.details)
         : 'Invalid API Key.',
     'api.quotaExceeded': (args) =>
       args.details?.trim()
-        ? 'API quota exceeded: {details}'.replace(
-            '{details}',
-            args.details ?? '',
-          )
+        ? 'API quota exceeded: {details}'.replace('{details}', args.details)
         : 'API quota exceeded.',
     'api.requestFailed': (args) =>
       args.details?.trim()
-        ? 'API request failed: {details}'.replace(
-            '{details}',
-            args.details ?? '',
-          )
+        ? 'API request failed: {details}'.replace('{details}', args.details)
         : 'API request failed.',
     'api.ollamaConnectionFailed': (args) =>
       'Cannot connect to Ollama. Make sure Ollama is running at {host}.'.replace(
@@ -65,7 +59,7 @@ export const hiLocale: LocaleTextBundle = {
       args.details?.trim()
         ? 'Failed to stage changes: {details}'.replace(
             '{details}',
-            args.details ?? '',
+            args.details,
           )
         : 'Failed to stage changes.',
     'generation.noChanges': () =>

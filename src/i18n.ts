@@ -192,14 +192,12 @@ export function getLocalizedCommitCopilotErrorMessage(
   }
 
   const text = LOCALES[language].extensionText;
-  switch (key) {
-    case 'git.notRepository':
-      return text.notification.repoNotFound;
-    default:
-      return LOCALES[language].commitCopilotErrorMessages[key](
-        error.messageArgs ?? {},
-      );
+  if (key === 'git.notRepository') {
+    return text.notification.repoNotFound;
   }
+  return LOCALES[language].commitCopilotErrorMessages[key](
+    error.messageArgs ?? {},
+  );
 }
 
 export function getExtensionText(

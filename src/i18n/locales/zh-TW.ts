@@ -7,15 +7,15 @@ export const zhTWLocale: LocaleTextBundle = {
       '尚未設定 API Key。請先在 Commit-Copilot 面板設定 API Key。',
     'api.keyInvalid': (args) =>
       args.details?.trim()
-        ? 'API Key 無效：{details}'.replace('{details}', args.details ?? '')
+        ? 'API Key 無效：{details}'.replace('{details}', args.details)
         : 'API Key 無效。',
     'api.quotaExceeded': (args) =>
       args.details?.trim()
-        ? 'API 配額已用盡：{details}'.replace('{details}', args.details ?? '')
+        ? 'API 配額已用盡：{details}'.replace('{details}', args.details)
         : 'API 配額已用盡。',
     'api.requestFailed': (args) =>
       args.details?.trim()
-        ? 'API 請求失敗：{details}'.replace('{details}', args.details ?? '')
+        ? 'API 請求失敗：{details}'.replace('{details}', args.details)
         : 'API 請求失敗。',
     'api.ollamaConnectionFailed': (args) =>
       '無法連線到 Ollama。請確認 Ollama 已在 {host} 執行。'.replace(
@@ -54,7 +54,7 @@ export const zhTWLocale: LocaleTextBundle = {
         .replace('{stopReason}', args.stopReason ?? ''),
     'git.stageFailed': (args) =>
       args.details?.trim()
-        ? '暫存變更失敗：{details}'.replace('{details}', args.details ?? '')
+        ? '暫存變更失敗：{details}'.replace('{details}', args.details)
         : '暫存變更失敗。',
     'generation.noChanges': () => '未偵測到可產生 commit 的變更。',
     'generation.noChangesButUntracked': () =>
