@@ -1,9 +1,10 @@
+import * as fs from 'fs';
 import * as path from 'path';
 
 import * as vscode from 'vscode';
 
 import { GitOperations } from '../../commit-copilot';
-import { toPosixPath } from '../staged-workspace';
+import { isRealPathWithinRoot, toPosixPath } from '../staged-workspace';
 
 import {
   MAX_SEARCH_FILES,
@@ -72,6 +73,7 @@ function isValidRelativePath(relPath: string): boolean {
 }
 
 async function loadSearchableContent(
+  repoRoot: string,
   fileUri: vscode.Uri,
   relPath: string,
   isStaged: boolean,
@@ -90,6 +92,12 @@ async function loadSearchableContent(
       return indexContent;
     }
 
+    if (
+      fs.existsSync(fileUri.fsPath) &&
+      !isRealPathWithinRoot(repoRoot, fileUri.fsPath)
+    ) {
+      return null;
+    }
     const raw = await vscode.workspace.fs.readFile(fileUri);
     if (await isBinaryContent(raw)) {
       return null;
@@ -149,6 +157,7 @@ async function collectFileMatches(params: {
     }
 
     const content = await loadSearchableContent(
+      params.repoRoot,
       fileUri,
       relPath,
       params.isStaged,

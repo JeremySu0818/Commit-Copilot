@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import { GitOperations } from '../../commit-copilot';
-import { isPathWithinRoot } from '../staged-workspace';
+import { isPathWithinRoot, isRealPathWithinRoot } from '../staged-workspace';
 
 import { MAX_FILE_LINES, parseIntegerArg } from './shared';
 
@@ -15,6 +15,61 @@ function getErrorMessage(error: unknown): string {
     return error.message;
   }
   return String(error);
+}
+
+function validateReadableDiskPath(
+  repoRoot: string,
+  absPath: string,
+): string | null {
+  if (!fs.existsSync(absPath)) {
+    return 'missing';
+  }
+  if (!isRealPathWithinRoot(repoRoot, absPath)) {
+    return 'unsafe';
+  }
+  return null;
+}
+
+function readDiskFileForTool(
+  repoRoot: string,
+  absPath: string,
+  missingMessage: string,
+): { content?: string; error?: string } {
+  const diskPathError = validateReadableDiskPath(repoRoot, absPath);
+  if (diskPathError === 'missing') {
+    return { error: missingMessage };
+  }
+  if (diskPathError === 'unsafe') {
+    return { error: 'Error: resolved file path escapes the workspace root.' };
+  }
+  return { content: fs.readFileSync(absPath, 'utf-8') };
+}
+
+async function readFileContentForTool(
+  repoRoot: string,
+  relPath: string,
+  absPath: string,
+  isStaged: boolean,
+  gitOps?: GitOperations,
+): Promise<{ content?: string; error?: string }> {
+  if (!isStaged || !gitOps) {
+    return readDiskFileForTool(
+      repoRoot,
+      absPath,
+      `Error: file '${relPath}' does not exist.`,
+    );
+  }
+
+  const { content: indexContent, found } = await gitOps.showIndexFile(relPath);
+  if (found) {
+    return { content: indexContent };
+  }
+
+  return readDiskFileForTool(
+    repoRoot,
+    absPath,
+    `Error: file '${relPath}' does not exist in index or disk.`,
+  );
 }
 
 async function executeReadFile(
@@ -36,23 +91,17 @@ async function executeReadFile(
 
   let content: string;
   try {
-    if (isStaged && gitOps) {
-      const { content: indexContent, found } =
-        await gitOps.showIndexFile(relPath);
-      if (found) {
-        content = indexContent;
-      } else {
-        if (!fs.existsSync(absPath)) {
-          return `Error: file '${relPath}' does not exist in index or disk.`;
-        }
-        content = fs.readFileSync(absPath, 'utf-8');
-      }
-    } else {
-      if (!fs.existsSync(absPath)) {
-        return `Error: file '${relPath}' does not exist.`;
-      }
-      content = fs.readFileSync(absPath, 'utf-8');
+    const result = await readFileContentForTool(
+      repoRoot,
+      relPath,
+      absPath,
+      isStaged,
+      gitOps,
+    );
+    if (result.error) {
+      return result.error;
     }
+    content = result.content ?? '';
 
     const lines = content.split('\n');
 

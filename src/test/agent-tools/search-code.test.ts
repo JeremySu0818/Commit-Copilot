@@ -1,3 +1,4 @@
+import * as fs from 'fs';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import test from 'node:test';
@@ -5,6 +6,7 @@ import * as path from 'path';
 
 import type { GitOperations } from '../../commit-copilot';
 import { clearRequireCache, withModuleMock } from '../helpers/module-mock';
+import { cleanupTempDir, createTempDir } from '../helpers/temp-dir';
 import { MockUri, createVscodeMock } from '../helpers/vscode-mock';
 
 const MODULE_PATH = '../../agent-tools/executors/search-code';
@@ -43,6 +45,35 @@ void test('executeSearchCode returns no matches message', async () => {
   const { executeSearchCode } = await loadModule(vscodeMock);
   const output = await executeSearchCode(repoRoot, { query: 'needle' });
   assert.equal(output, 'No matches found for "needle" in the project.');
+});
+
+void test('executeSearchCode skips symlinks that resolve outside the workspace', async (context) => {
+  const repoRoot = createTempDir();
+  const outsideRoot = createTempDir();
+  try {
+    const outsideFile = path.join(outsideRoot, 'secret.txt');
+    const linkPath = path.join(repoRoot, 'link.txt');
+    fs.writeFileSync(outsideFile, 'needle outside workspace\n', 'utf-8');
+    try {
+      fs.symlinkSync(outsideFile, linkPath);
+    } catch {
+      context.skip('Symlink creation is not available in this environment.');
+      return;
+    }
+
+    const vscodeMock = createVscodeMock({
+      findFiles: () => Promise.resolve([MockUri.file(linkPath)]),
+      readFile: () =>
+        Promise.reject(new Error('Unsafe symlink should not be read.')),
+    });
+
+    const { executeSearchCode } = await loadModule(vscodeMock);
+    const output = await executeSearchCode(repoRoot, { query: 'needle' });
+    assert.equal(output, 'No matches found for "needle" in the project.');
+  } finally {
+    cleanupTempDir(outsideRoot);
+    cleanupTempDir(repoRoot);
+  }
 });
 
 void test('executeSearchCode performs case-insensitive search and result capping', async () => {

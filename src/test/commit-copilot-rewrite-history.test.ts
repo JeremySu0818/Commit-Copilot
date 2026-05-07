@@ -40,10 +40,12 @@ function isCommitCopilotErrorWithKey(
   );
 }
 
-function getErrorMessageArgs(
-  value: unknown,
-): Partial<Record<string, string>> {
-  if (typeof value !== 'object' || value === null || !('messageArgs' in value)) {
+function getErrorMessageArgs(value: unknown): Partial<Record<string, string>> {
+  if (
+    typeof value !== 'object' ||
+    value === null ||
+    !('messageArgs' in value)
+  ) {
     return {};
   }
   const args = (value as { messageArgs?: unknown }).messageArgs;
@@ -135,7 +137,7 @@ function createRepository(repoRoot: string): GitRepository {
 
 function createRepositoryWithDirtyState(
   repoRoot: string,
-  options: { staged: boolean; unstaged: boolean },
+  options: { staged: boolean; unstaged: boolean; untracked?: boolean },
 ): GitRepository {
   const createChange = (fileName: string) => ({
     uri: { fsPath: path.join(repoRoot, fileName) },
@@ -146,7 +148,7 @@ function createRepositoryWithDirtyState(
     state: {
       workingTreeChanges: options.unstaged ? [createChange('app.ts')] : [],
       indexChanges: options.staged ? [createChange('util.ts')] : [],
-      untrackedChanges: [],
+      untrackedChanges: options.untracked ? [createChange('untracked.ts')] : [],
     },
   };
 }
@@ -565,10 +567,7 @@ void test('autoSyncWithUpstreamForRewrite rejects when upstream is missing', asy
     await assert.rejects(
       () => mod.autoSyncWithUpstreamForRewrite(fixture.repoRoot),
       (error) =>
-        isCommitCopilotErrorWithKey(
-          error,
-          'rewrite.autoSyncMissingUpstream',
-        ),
+        isCommitCopilotErrorWithKey(error, 'rewrite.autoSyncMissingUpstream'),
     );
   } finally {
     cleanupTempDir(fixture.repoRoot);
@@ -1026,6 +1025,29 @@ void test('rewriteHistoricalCommitMessage rejects staged changes before rewritin
     assert.equal(result.error?.errorCode, 'REWRITE_WORKSPACE_NOT_CLEAN');
     assert.ok(result.error);
     assert.equal(result.error.messageKey, 'rewrite.workspaceNotCleanStaged');
+  } finally {
+    cleanupTempDir(fixture.repoRoot);
+  }
+});
+
+void test('rewriteHistoricalCommitMessage rejects untracked files before rewriting', async () => {
+  const fixture = initTestRepo();
+  try {
+    const mod = await loadCommitCopilotWithMocks();
+    const result = await mod.rewriteHistoricalCommitMessage({
+      repository: createRepositoryWithDirtyState(fixture.repoRoot, {
+        staged: false,
+        unstaged: false,
+        untracked: true,
+      }),
+      commitHash: fixture.commits.second,
+      newMessage: 'fix(core): standardized message',
+    });
+
+    assert.equal(result.success, false);
+    assert.equal(result.error?.errorCode, 'REWRITE_WORKSPACE_NOT_CLEAN');
+    assert.ok(result.error);
+    assert.equal(result.error.messageKey, 'rewrite.workspaceNotCleanUnstaged');
   } finally {
     cleanupTempDir(fixture.repoRoot);
   }

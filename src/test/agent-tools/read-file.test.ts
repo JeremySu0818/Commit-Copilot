@@ -27,6 +27,31 @@ void test('executeReadFile prevents path traversal', async () => {
   }
 });
 
+void test('executeReadFile rejects symlinks that resolve outside the workspace', async (context) => {
+  const repoRoot = createTempDir();
+  const outsideRoot = createTempDir();
+  try {
+    const outsideFile = path.join(outsideRoot, 'secret.txt');
+    const linkPath = path.join(repoRoot, 'link.txt');
+    fs.writeFileSync(outsideFile, 'outside secret\n', 'utf-8');
+    try {
+      fs.symlinkSync(outsideFile, linkPath);
+    } catch {
+      context.skip('Symlink creation is not available in this environment.');
+      return;
+    }
+
+    const output = await executeReadFile(repoRoot, { path: 'link.txt' }, false);
+    assert.equal(
+      output,
+      'Error: resolved file path escapes the workspace root.',
+    );
+  } finally {
+    cleanupTempDir(outsideRoot);
+    cleanupTempDir(repoRoot);
+  }
+});
+
 void test('executeReadFile reads disk file and line range', async () => {
   const repoRoot = createTempDir();
   try {

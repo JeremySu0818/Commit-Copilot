@@ -806,7 +806,9 @@ async function getRewriteWorkspaceDirtyMessage(
   text: ExtensionText,
 ): Promise<string | null> {
   await repository.status();
-  const hasUnstagedChanges = repository.state.workingTreeChanges.length > 0;
+  const hasUnstagedChanges =
+    repository.state.workingTreeChanges.length > 0 ||
+    repository.state.untrackedChanges.length > 0;
   const hasStagedChanges = repository.state.indexChanges.length > 0;
 
   if (!hasUnstagedChanges && !hasStagedChanges) {
@@ -1339,7 +1341,10 @@ async function promptAndForcePushWithLease(
     notifyRewriteForcePushSuccess({ outputChannel, text, pushTargetLabel });
   } catch (error) {
     let rawErrorMessage: string;
-    if (error instanceof CommitCopilotError && error.messageKey === 'rewrite.forcePushStaleInfo') {
+    if (
+      error instanceof CommitCopilotError &&
+      error.messageKey === 'rewrite.forcePushStaleInfo'
+    ) {
       rawErrorMessage = text.output.rewriteVscodeFallbackSkippedLeaseChanged;
     } else if (error instanceof Error) {
       rawErrorMessage = error.message;

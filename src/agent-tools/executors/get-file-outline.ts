@@ -4,7 +4,7 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 
 import { GitOperations } from '../../commit-copilot';
-import { isPathWithinRoot } from '../staged-workspace';
+import { isPathWithinRoot, isRealPathWithinRoot } from '../staged-workspace';
 
 import { MAX_OUTLINE_LINES } from './shared';
 
@@ -100,8 +100,11 @@ function getErrorMessage(error: unknown): string {
   return String(error);
 }
 
-async function resolveLanguageId(absPath: string): Promise<string | undefined> {
-  if (fs.existsSync(absPath)) {
+async function resolveLanguageId(
+  repoRoot: string,
+  absPath: string,
+): Promise<string | undefined> {
+  if (fs.existsSync(absPath) && isRealPathWithinRoot(repoRoot, absPath)) {
     const diskDoc = await vscode.workspace.openTextDocument(
       vscode.Uri.file(absPath),
     );
@@ -190,6 +193,7 @@ function collectOutlineFromSymbolInformation(
 }
 
 async function resolveOutlineContent(
+  repoRoot: string,
   relPath: string,
   absPath: string,
   isStaged: boolean,
@@ -206,23 +210,30 @@ async function resolveOutlineContent(
         error: `Error: file '${relPath}' does not exist in index or disk.`,
       };
     }
+    if (!isRealPathWithinRoot(repoRoot, absPath)) {
+      return { error: 'Error: resolved file path escapes the workspace root.' };
+    }
     return { content: fs.readFileSync(absPath, 'utf-8') };
   }
 
   if (!fs.existsSync(absPath)) {
     return { error: `Error: file '${relPath}' does not exist.` };
   }
+  if (!isRealPathWithinRoot(repoRoot, absPath)) {
+    return { error: 'Error: resolved file path escapes the workspace root.' };
+  }
 
   return { content: fs.readFileSync(absPath, 'utf-8') };
 }
 
 async function openOutlineDocument(
+  repoRoot: string,
   absPath: string,
   content: string,
   isStaged: boolean,
 ): Promise<vscode.TextDocument> {
   if (isStaged) {
-    const languageId = await resolveLanguageId(absPath);
+    const languageId = await resolveLanguageId(repoRoot, absPath);
     return vscode.workspace.openTextDocument({
       content,
       language: languageId,
@@ -275,6 +286,7 @@ async function executeGetFileOutline(
 
   try {
     const contentResult = await resolveOutlineContent(
+      repoRoot,
       relPath,
       absPath,
       isStaged,
@@ -291,7 +303,12 @@ async function executeGetFileOutline(
     outlineLines.push(`File: ${relPath} (${String(lines.length)} total lines)`);
     outlineLines.push('');
 
-    const document = await openOutlineDocument(absPath, content, isStaged);
+    const document = await openOutlineDocument(
+      repoRoot,
+      absPath,
+      content,
+      isStaged,
+    );
 
     const symbolResult = await vscode.commands.executeCommand<
       vscode.DocumentSymbol[] | vscode.SymbolInformation[] | undefined

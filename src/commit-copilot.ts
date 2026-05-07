@@ -1545,7 +1545,9 @@ async function ensureRewriteWorkspaceCleanOrThrow(
   repository: GitRepository,
 ): Promise<void> {
   await repository.status();
-  const hasUnstagedChanges = repository.state.workingTreeChanges.length > 0;
+  const hasUnstagedChanges =
+    repository.state.workingTreeChanges.length > 0 ||
+    repository.state.untrackedChanges.length > 0;
   const hasStagedChanges = repository.state.indexChanges.length > 0;
   if (!hasUnstagedChanges && !hasStagedChanges) {
     return;
