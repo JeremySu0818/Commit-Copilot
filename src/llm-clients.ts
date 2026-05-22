@@ -681,6 +681,41 @@ export function createLLMClient(options: LLMClientOptions): ILLMClient {
         resolvedCommitOutputOptions,
       );
     }
+    case 'grok':
+      return new OpenAIClient(
+        apiKey,
+        model ?? DEFAULT_MODELS.grok,
+        resolvedCommitOutputOptions,
+        'https://api.x.ai/v1',
+      );
+    case 'groq':
+      return new OpenAIClient(
+        apiKey,
+        model ?? DEFAULT_MODELS.groq,
+        resolvedCommitOutputOptions,
+        'https://api.groq.com/openai/v1',
+      );
+    case 'openrouter':
+      return new OpenAIClient(
+        apiKey,
+        model ?? DEFAULT_MODELS.openrouter,
+        resolvedCommitOutputOptions,
+        'https://openrouter.ai/api/v1',
+      );
+    case 'deepseek':
+      return new OpenAIClient(
+        apiKey,
+        model ?? DEFAULT_MODELS.deepseek,
+        resolvedCommitOutputOptions,
+        'https://api.deepseek.com',
+      );
+    case 'qwen':
+      return new OpenAIClient(
+        apiKey,
+        model ?? DEFAULT_MODELS.qwen,
+        resolvedCommitOutputOptions,
+        'https://dashscope.aliyuncs.com/compatible-mode/v1',
+      );
     default:
       throw new Error(`Unsupported provider: ${String(provider)}`);
   }

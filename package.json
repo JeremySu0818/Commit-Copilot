@@ -2,7 +2,7 @@
   "name": "commit-copilot",
   "displayName": "%extension.displayName%",
   "description": "%extension.description%",
-  "version": "1.10.0",
+  "version": "1.11.0",
   "publisher": "JeremySu0818",
   "icon": "assets/icon.png",
   "repository": {
@@ -101,7 +101,7 @@
     "check-format": "prettier --check ."
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.82.0",
+    "@anthropic-ai/sdk": "^0.98.0",
     "@google/genai": "^1.48.0",
     "ignore": "^7.0.5",
     "isbinaryfile": "^4.0.10",

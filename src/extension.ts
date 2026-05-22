@@ -131,6 +131,11 @@ const providerConsoleUrls: Record<APIProvider, string> = {
   openai: 'https://platform.openai.com/usage',
   anthropic: 'https://console.anthropic.com/',
   ollama: 'http://127.0.0.1:11434',
+  grok: 'https://console.x.ai/',
+  groq: 'https://console.groq.com/',
+  openrouter: 'https://openrouter.ai/keys',
+  deepseek: 'https://platform.deepseek.com/',
+  qwen: 'https://dashscope.console.aliyun.com/',
 };
 
 function parseGenerateCommandArg(

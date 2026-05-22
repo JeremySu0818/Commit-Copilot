@@ -116,9 +116,84 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
         cancellationToken,
         language,
       );
+    case 'grok':
+      return runOpenAIAgentLoop(
+        apiKey,
+        model,
+        diff,
+        repoRoot,
+        onProgress,
+        isStaged,
+        gitOps,
+        commitOutputOptions,
+        cancellationToken,
+        maxAgentSteps,
+        'https://api.x.ai/v1',
+        language,
+      );
+    case 'groq':
+      return runOpenAIAgentLoop(
+        apiKey,
+        model,
+        diff,
+        repoRoot,
+        onProgress,
+        isStaged,
+        gitOps,
+        commitOutputOptions,
+        cancellationToken,
+        maxAgentSteps,
+        'https://api.groq.com/openai/v1',
+        language,
+      );
+    case 'openrouter':
+      return runOpenAIAgentLoop(
+        apiKey,
+        model,
+        diff,
+        repoRoot,
+        onProgress,
+        isStaged,
+        gitOps,
+        commitOutputOptions,
+        cancellationToken,
+        maxAgentSteps,
+        'https://openrouter.ai/api/v1',
+        language,
+      );
+    case 'deepseek':
+      return runOpenAIAgentLoop(
+        apiKey,
+        model,
+        diff,
+        repoRoot,
+        onProgress,
+        isStaged,
+        gitOps,
+        commitOutputOptions,
+        cancellationToken,
+        maxAgentSteps,
+        'https://api.deepseek.com',
+        language,
+      );
+    case 'qwen':
+      return runOpenAIAgentLoop(
+        apiKey,
+        model,
+        diff,
+        repoRoot,
+        onProgress,
+        isStaged,
+        gitOps,
+        commitOutputOptions,
+        cancellationToken,
+        maxAgentSteps,
+        'https://dashscope.aliyuncs.com/compatible-mode/v1',
+        language,
+      );
     default:
       throw new Error(
-        `Unsupported provider for agent loop: ${String(provider)}`,
+        `Unsupported provider for agent loop: ${provider as string}`,
       );
   }
 }

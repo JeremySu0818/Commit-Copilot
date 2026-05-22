@@ -35,6 +35,8 @@ import {
   DEFAULT_PROVIDER,
   API_KEY_STORAGE_KEYS,
   OLLAMA_DEFAULT_HOST,
+  fetchOpenRouterModels,
+  fetchQwenModels,
   isCustomProvider,
   getCustomProviderId,
   getCustomProviderStorageKey,
@@ -411,6 +413,42 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
     }
   }
 
+  private async validateOpenRouterApiKey(
+    apiKey: string,
+  ): Promise<{ valid: boolean; error?: string }> {
+    try {
+      const response = await fetch('https://openrouter.ai/api/v1/key', {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+        },
+      });
+      if (response.ok) {
+        return { valid: true };
+      }
+
+      let message = '';
+      try {
+        message = await response.text();
+      } catch {
+        message = response.statusText;
+      }
+
+      return this.mapProviderValidationError(
+        { status: response.status, message },
+        {
+          invalidStatusCodes: [unauthorizedStatus, forbiddenStatus],
+          invalidMessagePatterns: ['invalid', 'unauthorized', 'forbidden'],
+        },
+      );
+    } catch (error) {
+      return this.mapProviderValidationError(error, {
+        invalidStatusCodes: [unauthorizedStatus, forbiddenStatus],
+        invalidMessagePatterns: ['invalid', 'unauthorized', 'forbidden'],
+      });
+    }
+  }
+
   private async validateApiKey(
     provider: APIProvider,
     apiKey: string,
@@ -424,6 +462,25 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
         return this.validateAnthropicApiKey(apiKey);
       case 'ollama':
         return this.validateOllamaHost(apiKey);
+      case 'grok':
+        return this.validateCustomProviderKey(apiKey, 'https://api.x.ai/v1');
+      case 'groq':
+        return this.validateCustomProviderKey(
+          apiKey,
+          'https://api.groq.com/openai/v1',
+        );
+      case 'openrouter':
+        return this.validateOpenRouterApiKey(apiKey);
+      case 'deepseek':
+        return this.validateCustomProviderKey(
+          apiKey,
+          'https://api.deepseek.com',
+        );
+      case 'qwen':
+        return this.validateCustomProviderKey(
+          apiKey,
+          'https://dashscope.aliyuncs.com/compatible-mode/v1',
+        );
       default:
         return {
           valid: false,
@@ -475,6 +532,38 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
       }
     }
     return merged;
+  }
+
+  private async getBuiltInProviderModels(
+    provider: APIProvider,
+    apiKey?: string,
+  ): Promise<ModelConfig[]> {
+    if (provider === 'openrouter') {
+      try {
+        return await fetchOpenRouterModels(apiKey);
+      } catch {
+        return [];
+      }
+    }
+    if (provider === 'qwen') {
+      try {
+        return await fetchQwenModels(apiKey);
+      } catch {
+        return [];
+      }
+    }
+    return MODELS_BY_PROVIDER[provider];
+  }
+
+  private includeBuiltInModelIfMissing(
+    provider: APIProvider,
+    models: ModelConfig[],
+    modelId: string,
+  ): ModelConfig[] {
+    if (provider === 'openrouter' || provider === 'qwen') {
+      return models;
+    }
+    return this.includeModelIfMissing(models, modelId);
   }
 
   public resolveWebviewView(
@@ -778,8 +867,20 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
       vscode.window.showInformationMessage(
         text.saveConfigSuccess(PROVIDER_DISPLAY_NAMES[builtIn]),
       );
+      const savedModel = this._context.globalState.get<string>(
+        `${builtIn.toUpperCase()}_MODEL`,
+      );
+      const models = await this.getBuiltInProviderModels(
+        builtIn,
+        resolvedApiValue,
+      );
       postValidationResult(provider, true, {
-        models: MODELS_BY_PROVIDER[builtIn],
+        models: this.includeBuiltInModelIfMissing(
+          builtIn,
+          models,
+          savedModel ?? DEFAULT_MODELS[builtIn],
+        ),
+        currentModel: savedModel ?? DEFAULT_MODELS[builtIn],
       });
       this._view?.webview.postMessage({
         type: 'keyStatus',
@@ -1039,9 +1140,14 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
           const savedModel = this._context.globalState.get<string>(
             `${builtIn.toUpperCase()}_MODEL`,
           );
+          const models = await this.getBuiltInProviderModels(builtIn, key);
           this._view?.webview.postMessage({
             type: 'modelsList',
-            models: MODELS_BY_PROVIDER[builtIn],
+            models: this.includeBuiltInModelIfMissing(
+              builtIn,
+              models,
+              savedModel ?? DEFAULT_MODELS[builtIn],
+            ),
             currentModel: savedModel ?? DEFAULT_MODELS[builtIn],
             provider,
           });

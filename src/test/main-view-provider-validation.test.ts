@@ -8,6 +8,7 @@ import type * as vscode from 'vscode';
 import { clearRequireCache, withModuleMock } from './helpers/module-mock';
 
 const MODULE_PATH = path.resolve(__dirname, '..', 'main-view-provider');
+const expectedOpenRouterSaveFetchCalls = 2;
 
 type ProviderModule = typeof import('../main-view-provider');
 type MessageHandler = (data: unknown) => Promise<void> | void;
@@ -459,6 +460,150 @@ void test('Anthropic API key validation maps 401 SDK errors to invalid key messa
     }
     assert.equal(resultMessage.success, false);
     assert.match(String(resultMessage.error), /Invalid API Key/i);
+  } finally {
+    harness.dispose();
+    global.fetch = originalFetch;
+  }
+});
+
+void test('OpenRouter API key validation uses authenticated key endpoint', async () => {
+  const originalFetch = global.fetch;
+  type FetchFn = NonNullable<typeof global.fetch>;
+  type FetchInput = Parameters<FetchFn>[0];
+  type FetchInit = Parameters<FetchFn>[1];
+  const fetchCalls: { input: FetchInput; init: FetchInit | undefined }[] = [];
+  const fetchMock: FetchFn = (input: FetchInput, init?: FetchInit) => {
+    fetchCalls.push({ input, init });
+    return Promise.resolve(
+      new Response(
+        JSON.stringify({
+          error: {
+            message: 'User not found',
+          },
+        }),
+        {
+          status: 401,
+          headers: { 'content-type': 'application/json' },
+        },
+      ),
+    );
+  };
+  global.fetch = fetchMock;
+
+  const harness = await createHarness();
+
+  try {
+    await harness.sendMessage({
+      type: 'saveKey',
+      provider: 'openrouter',
+      value: 'bad-openrouter-key',
+    });
+
+    assert.equal(fetchCalls.length, 1);
+    const firstFetchCall = fetchCalls[0];
+    assert.equal(
+      toRequestUrl(firstFetchCall.input),
+      'https://openrouter.ai/api/v1/key',
+    );
+    assert.deepEqual(firstFetchCall.init, {
+      method: 'GET',
+      headers: {
+        Authorization: 'Bearer bad-openrouter-key',
+      },
+    });
+    assert.equal(harness.storedSecrets.length, 0);
+    assert.equal(harness.warningMessages.length, 1);
+    assert.match(harness.warningMessages[0] ?? '', /Invalid API Key/i);
+
+    const resultMessage = harness.postedMessages.find((message) =>
+      isValidationResultMessage(message, 'openrouter'),
+    );
+    if (!resultMessage) {
+      throw new Error('OpenRouter validation result message not found');
+    }
+    assert.equal(resultMessage.success, false);
+    assert.match(String(resultMessage.error), /Invalid API Key/i);
+  } finally {
+    harness.dispose();
+    global.fetch = originalFetch;
+  }
+});
+
+void test('OpenRouter saveKey fetches selectable models from models endpoint', async () => {
+  const originalFetch = global.fetch;
+  type FetchFn = NonNullable<typeof global.fetch>;
+  type FetchInput = Parameters<FetchFn>[0];
+  type FetchInit = Parameters<FetchFn>[1];
+  const fetchCalls: { input: FetchInput; init: FetchInit | undefined }[] = [];
+  const fetchMock: FetchFn = (input: FetchInput, init?: FetchInit) => {
+    fetchCalls.push({ input, init });
+    const requestUrl = toRequestUrl(input);
+    if (requestUrl === 'https://openrouter.ai/api/v1/key') {
+      return Promise.resolve(
+        new Response(JSON.stringify({ data: { label: 'test' } }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        }),
+      );
+    }
+    return Promise.resolve(
+      new Response(
+        JSON.stringify({
+          data: [
+            {
+              id: 'provider/text-tools',
+              name: 'Text Tools',
+              architecture: { output_modalities: ['text'] },
+              supported_parameters: ['tools'],
+            },
+            {
+              id: 'provider/no-tools',
+              name: 'No Tools',
+              architecture: { output_modalities: ['text'] },
+              supported_parameters: ['temperature'],
+            },
+          ],
+        }),
+        {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        },
+      ),
+    );
+  };
+  global.fetch = fetchMock;
+
+  const harness = await createHarness();
+
+  try {
+    await harness.sendMessage({
+      type: 'saveKey',
+      provider: 'openrouter',
+      value: 'good-openrouter-key',
+    });
+
+    assert.equal(fetchCalls.length, expectedOpenRouterSaveFetchCalls);
+    const modelsUrl = new URL(toRequestUrl(fetchCalls[1].input));
+    assert.equal(
+      `${modelsUrl.origin}${modelsUrl.pathname}`,
+      'https://openrouter.ai/api/v1/models',
+    );
+    assert.equal(modelsUrl.searchParams.get('output_modalities'), 'text');
+    assert.equal(modelsUrl.searchParams.get('supported_parameters'), 'tools');
+    assert.deepEqual(fetchCalls[1].init?.headers, {
+      Authorization: 'Bearer good-openrouter-key',
+    });
+
+    const resultMessage = harness.postedMessages.find((message) =>
+      isValidationResultMessage(message, 'openrouter'),
+    );
+    if (!resultMessage) {
+      throw new Error('OpenRouter validation result message not found');
+    }
+    assert.equal(resultMessage.success, true);
+    assert.deepEqual(resultMessage.models, [
+      { id: 'provider/text-tools', alias: 'Text Tools' },
+    ]);
   } finally {
     harness.dispose();
     global.fetch = originalFetch;

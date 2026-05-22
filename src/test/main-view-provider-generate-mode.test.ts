@@ -404,6 +404,11 @@ void test('getAllKeys reports ollama as not configured when no secret exists', a
       openai: false,
       anthropic: false,
       ollama: false,
+      grok: false,
+      groq: false,
+      openrouter: false,
+      deepseek: false,
+      qwen: false,
     });
   } finally {
     harness.dispose();
