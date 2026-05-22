@@ -57,6 +57,7 @@ export const GEMINI_MODELS: ModelConfig[] = [
   { id: 'gemini-3-flash-preview', alias: 'Gemini 3 Flash' },
   { id: 'gemini-3.1-flash-lite-preview', alias: 'Gemini 3.1 Flash-Lite' },
   { id: 'gemini-3.1-pro-preview', alias: 'Gemini 3.1 Pro' },
+  { id: 'gemini-3.5-flash', alias: 'Gemini 3.5 Flash' },
 ];
 
 export const OPENAI_MODELS: ModelConfig[] = [
@@ -148,8 +149,8 @@ export const MODELS_BY_PROVIDER: Record<APIProvider, ModelConfig[]> = {
 };
 
 export const DEFAULT_MODELS: Record<APIProvider, string> = {
-  google: 'gemini-3-flash-preview',
-  openai: 'gpt-5.4',
+  google: 'gemini-3.5-flash',
+  openai: 'gpt-5.5',
   anthropic: 'claude-sonnet-4-6',
   ollama: 'gemma3:12b',
 };
