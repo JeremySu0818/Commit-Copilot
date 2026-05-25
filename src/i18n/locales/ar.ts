@@ -54,10 +54,7 @@ export const arLocale: LocaleTextBundle = {
         .replace('{stopReason}', args.stopReason ?? ''),
     'git.stageFailed': (args) =>
       args.details?.trim()
-        ? 'فشل في تجهيز التغييرات: {details}'.replace(
-            '{details}',
-            args.details,
-          )
+        ? 'فشل في تجهيز التغييرات: {details}'.replace('{details}', args.details)
         : 'فشل في تجهيز التغييرات.',
     'generation.noChanges': () =>
       'لم يتم اكتشاف أي تغييرات لإنشاء كود التزام لها.',
@@ -65,8 +62,7 @@ export const arLocale: LocaleTextBundle = {
       'لا توجد تغييرات للالتزام بها، ولكن تم اكتشاف ملفات غير متتبعة.',
     'generation.noTrackedChangesButUntracked': () =>
       'لم يتم اكتشاف أي تغييرات متتبعة، تتوفر فقط ملفات غير متتبعة.',
-    'generation.mixedChanges': () =>
-      'تم اكتشاف تغييرات مجهزة وغير مجهزة معًا.',
+    'generation.mixedChanges': () => 'تم اكتشاف تغييرات مجهزة وغير مجهزة معًا.',
     'generation.cancelled': () => 'تم إلغاء الإنشاء بواسطة المستخدم.',
   },
   errorMessages: {
@@ -274,7 +270,8 @@ export const arLocale: LocaleTextBundle = {
       modelDeleted: 'تم إزالة النموذج المخصص.',
       modelNameConflict: 'هذا النموذج موجود بالفعل في القائمة.',
       fetchingModels: 'جاري جلب النماذج من نقطة النهاية...',
-      fetchModelsFailed: 'تعذر جلب النماذج من نقطة النهاية. يمكنك إضافة النماذج يدويًا.',
+      fetchModelsFailed:
+        'تعذر جلب النماذج من نقطة النهاية. يمكنك إضافة النماذج يدويًا.',
     },
     descriptions: {
       ollamaFixedToDirectDiff: 'Ollama مثبت على وضع Direct Diff',
@@ -324,6 +321,8 @@ export const arLocale: LocaleTextBundle = {
       `[الخطوة ${String(step)}] البحث في المشروع عن: ${keyword}`,
     stepCalling: (step, toolName) =>
       `[الخطوة ${String(step)}] استدعاء ${toolName}...`,
+    stepWritingCommitMessage: (step) =>
+      `[الخطوة ${String(step)}] كتابة رسالة الالتزام...`,
 
     stepAnalyzingMultipleDiffs: (step, paths) =>
       `[الخطوة ${String(step)}] تحليل الفروق: ${paths}`,

@@ -33,7 +33,10 @@ export const huLocale: LocaleTextBundle = {
         args.model ?? '',
       ),
     'api.emptyResponse': (args) =>
-      'Üres válasz érkezett a következőtől: {provider}.'.replace('{provider}', args.provider ?? ''),
+      'Üres válasz érkezett a következőtől: {provider}.'.replace(
+        '{provider}',
+        args.provider ?? '',
+      ),
     'api.emptyTextResponse': (args) =>
       'Üres szöveges válasz érkezett a következőtől: {provider}.'.replace(
         '{provider}',
@@ -287,7 +290,8 @@ export const huLocale: LocaleTextBundle = {
       modelDeleted: 'Egyedi modell eltávolítva.',
       modelNameConflict: 'Ez a modell már szerepel a listában.',
       fetchingModels: 'Modellek lekérése a végpontról...',
-      fetchModelsFailed: 'Nem sikerült lekérni a modelleket a végpontról. Hozzáadhat modelleket manuálisan.',
+      fetchModelsFailed:
+        'Nem sikerült lekérni a modelleket a végpontról. Hozzáadhat modelleket manuálisan.',
     },
     descriptions: {
       ollamaFixedToDirectDiff: 'Az Ollama rögzítve van a Direct Diff módhoz',
@@ -339,6 +343,8 @@ export const huLocale: LocaleTextBundle = {
       `[${String(step)}. lépés] Keresés a projektben: ${keyword}`,
     stepCalling: (step, toolName) =>
       `[${String(step)}. lépés] ${toolName} hívása...`,
+    stepWritingCommitMessage: (step) =>
+      `[${String(step)}. lépés] Commit üzenet írása...`,
 
     stepAnalyzingMultipleDiffs: (step, paths) =>
       `[${String(step)}. lépés] Diffek elemzése: ${paths}`,

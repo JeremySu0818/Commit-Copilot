@@ -33,7 +33,10 @@ export const hiLocale: LocaleTextBundle = {
         args.model ?? '',
       ),
     'api.emptyResponse': (args) =>
-      '{provider} से खाली प्रतिक्रिया मिली।'.replace('{provider}', args.provider ?? ''),
+      '{provider} से खाली प्रतिक्रिया मिली।'.replace(
+        '{provider}',
+        args.provider ?? '',
+      ),
     'api.emptyTextResponse': (args) =>
       '{provider} से खाली टेक्स्ट प्रतिक्रिया मिली।'.replace(
         '{provider}',
@@ -284,7 +287,8 @@ export const hiLocale: LocaleTextBundle = {
       modelDeleted: 'कस्टम model हटा दिया गया।',
       modelNameConflict: 'यह मॉडल पहले से ही सूची में है।',
       fetchingModels: 'एंडपॉइंट से मॉडल प्राप्त किए जा रहे हैं...',
-      fetchModelsFailed: 'एंडपॉइंट से मॉडल प्राप्त नहीं किए जा सके। आप मैन्युअल रूप से मॉडल जोड़ सकते हैं।',
+      fetchModelsFailed:
+        'एंडपॉइंट से मॉडल प्राप्त नहीं किए जा सके। आप मैन्युअल रूप से मॉडल जोड़ सकते हैं।',
     },
     descriptions: {
       ollamaFixedToDirectDiff: 'Ollama डायरेक्ट डिफ मोड पर निश्चित है',
@@ -335,6 +339,8 @@ export const hiLocale: LocaleTextBundle = {
       `[कदम ${String(step)}] परियोजना में खोज रहा है: ${keyword}`,
     stepCalling: (step, toolName) =>
       `[कदम ${String(step)}] ${toolName} को कॉल कर रहा है...`,
+    stepWritingCommitMessage: (step) =>
+      `[चरण ${String(step)}] कमिट संदेश लिखा जा रहा है...`,
 
     stepAnalyzingMultipleDiffs: (step, paths) =>
       `[कदम ${String(step)}] अंतर का विश्लेषण कर रहा है: ${paths}`,

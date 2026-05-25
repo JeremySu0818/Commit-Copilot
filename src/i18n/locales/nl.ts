@@ -11,7 +11,10 @@ export const nlLocale: LocaleTextBundle = {
         : 'Ongeldige API-sleutel.',
     'api.quotaExceeded': (args) =>
       args.details?.trim()
-        ? 'API-quotum overschreden: {details}'.replace('{details}', args.details)
+        ? 'API-quotum overschreden: {details}'.replace(
+            '{details}',
+            args.details,
+          )
         : 'API-quotum overschreden.',
     'api.requestFailed': (args) =>
       args.details?.trim()
@@ -285,7 +288,8 @@ export const nlLocale: LocaleTextBundle = {
       modelDeleted: 'Aangepast model verwijderd.',
       modelNameConflict: 'Dit model bestaat al in de lijst.',
       fetchingModels: 'Modellen ophalen van eindpunt...',
-      fetchModelsFailed: 'Kon modellen niet ophalen van eindpunt. U kunt modellen handmatig toevoegen.',
+      fetchModelsFailed:
+        'Kon modellen niet ophalen van eindpunt. U kunt modellen handmatig toevoegen.',
     },
     descriptions: {
       ollamaFixedToDirectDiff: 'Ollama staat vast op Direct Diff modus',
@@ -337,6 +341,8 @@ export const nlLocale: LocaleTextBundle = {
       `[Stap ${String(step)}] Project doorzoeken op: ${keyword}`,
     stepCalling: (step, toolName) =>
       `[Stap ${String(step)}] Aanroepen ${toolName}...`,
+    stepWritingCommitMessage: (step) =>
+      `[Stap ${String(step)}] Commit-bericht schrijven...`,
 
     stepAnalyzingMultipleDiffs: (step, paths) =>
       `[Stap ${String(step)}] Diffs analyseren: ${paths}`,

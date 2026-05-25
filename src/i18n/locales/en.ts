@@ -285,7 +285,8 @@ export const enLocale: LocaleTextBundle = {
       modelDeleted: 'Custom model removed.',
       modelNameConflict: 'This model already exists in the list.',
       fetchingModels: 'Fetching models from endpoint...',
-      fetchModelsFailed: 'Could not fetch models from endpoint. You can add models manually.',
+      fetchModelsFailed:
+        'Could not fetch models from endpoint. You can add models manually.',
     },
     descriptions: {
       ollamaFixedToDirectDiff: 'Ollama is fixed to Direct Diff mode',
@@ -337,6 +338,8 @@ export const enLocale: LocaleTextBundle = {
       `[Step ${String(step)}] Searching project for: ${keyword}`,
     stepCalling: (step, toolName) =>
       `[Step ${String(step)}] Calling ${toolName}...`,
+    stepWritingCommitMessage: (step) =>
+      `[Step ${String(step)}] Writing commit message...`,
 
     stepAnalyzingMultipleDiffs: (step, paths) =>
       `[Step ${String(step)}] Analyzing diffs: ${paths}`,

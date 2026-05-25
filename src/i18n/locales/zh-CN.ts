@@ -314,6 +314,8 @@ export const zhCNLocale: LocaleTextBundle = {
       `[步骤 ${String(step)}] 在项目中搜索：${keyword}`,
     stepCalling: (step, toolName) =>
       `[步骤 ${String(step)}] 调用 ${toolName}...`,
+    stepWritingCommitMessage: (step) =>
+      `[步骤 ${String(step)}] 撰写Commit Message...`,
 
     stepAnalyzingMultipleDiffs: (step, paths) =>
       `[步骤 ${String(step)}] 分析多个 diff：${paths}`,

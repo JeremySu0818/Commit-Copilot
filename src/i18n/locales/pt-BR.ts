@@ -15,7 +15,10 @@ export const ptBRLocale: LocaleTextBundle = {
         : 'Cota de API excedida.',
     'api.requestFailed': (args) =>
       args.details?.trim()
-        ? 'Falha na requisição da API: {details}'.replace('{details}', args.details)
+        ? 'Falha na requisição da API: {details}'.replace(
+            '{details}',
+            args.details,
+          )
         : 'Falha na requisição da API.',
     'api.ollamaConnectionFailed': (args) =>
       'Não foi possível conectar ao Ollama. Certifique-se de que o Ollama está rodando em {host}.'.replace(
@@ -33,7 +36,10 @@ export const ptBRLocale: LocaleTextBundle = {
         args.model ?? '',
       ),
     'api.emptyResponse': (args) =>
-      'Resposta vazia do {provider}.'.replace('{provider}', args.provider ?? ''),
+      'Resposta vazia do {provider}.'.replace(
+        '{provider}',
+        args.provider ?? '',
+      ),
     'api.emptyTextResponse': (args) =>
       'Resposta de texto vazia do {provider}.'.replace(
         '{provider}',
@@ -289,7 +295,8 @@ export const ptBRLocale: LocaleTextBundle = {
       modelDeleted: 'Modelo personalizado removido.',
       modelNameConflict: 'Este modelo já existe na lista.',
       fetchingModels: 'Buscando modelos do endpoint...',
-      fetchModelsFailed: 'Não foi possível buscar modelos do endpoint. Você pode adicionar modelos manualmente.',
+      fetchModelsFailed:
+        'Não foi possível buscar modelos do endpoint. Você pode adicionar modelos manualmente.',
     },
     descriptions: {
       ollamaFixedToDirectDiff: 'O Ollama está fixado no modo de Diff Direto',
@@ -341,6 +348,8 @@ export const ptBRLocale: LocaleTextBundle = {
       `[Passo ${String(step)}] Pesquisando o projeto por: ${keyword}`,
     stepCalling: (step, toolName) =>
       `[Passo ${String(step)}] Chamando ${toolName}...`,
+    stepWritingCommitMessage: (step) =>
+      `[Passo ${String(step)}] Escrevendo mensagem de commit...`,
 
     stepAnalyzingMultipleDiffs: (step, paths) =>
       `[Passo ${String(step)}] Analisando diffs: ${paths}`,

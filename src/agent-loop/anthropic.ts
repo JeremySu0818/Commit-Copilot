@@ -267,7 +267,9 @@ async function handleAnthropicToolUseBatch(params: {
 async function executeAnthropicInvestigationLoop(params: {
   messages: MessageParam[];
   stepLimit: number;
-  requestResponse: (messages: MessageParam[]) => Promise<AnthropicAgentResponse>;
+  requestResponse: (
+    messages: MessageParam[],
+  ) => Promise<AnthropicAgentResponse>;
   onProgress?: ProgressCallback;
   language: EffectiveDisplayLanguage;
   repoRoot: string;

@@ -11,11 +11,17 @@ export const jaLocale: LocaleTextBundle = {
         : '無効なAPIキーです。',
     'api.quotaExceeded': (args) =>
       args.details?.trim()
-        ? 'APIクォータを超過しました: {details}'.replace('{details}', args.details)
+        ? 'APIクォータを超過しました: {details}'.replace(
+            '{details}',
+            args.details,
+          )
         : 'APIクォータを超過しました。',
     'api.requestFailed': (args) =>
       args.details?.trim()
-        ? 'APIリクエストが失敗しました: {details}'.replace('{details}', args.details)
+        ? 'APIリクエストが失敗しました: {details}'.replace(
+            '{details}',
+            args.details,
+          )
         : 'APIリクエストが失敗しました。',
     'api.ollamaConnectionFailed': (args) =>
       'Ollamaに接続できません。Ollamaが {host} で実行されていることを確認してください。'.replace(
@@ -67,7 +73,8 @@ export const jaLocale: LocaleTextBundle = {
       '追跡された変更は検出されませんでした。追跡されていないファイルのみが存在します。',
     'generation.mixedChanges': () =>
       'ステージングされた変更とステージングされていない変更の両方が検出されました。',
-    'generation.cancelled': () => 'ユーザーによって生成がキャンセルされました。',
+    'generation.cancelled': () =>
+      'ユーザーによって生成がキャンセルされました。',
   },
   errorMessages: {
     [EXIT_CODES.NOT_GIT_REPO]: {
@@ -283,7 +290,8 @@ export const jaLocale: LocaleTextBundle = {
       modelDeleted: 'カスタムモデルが削除されました。',
       modelNameConflict: 'このモデルはすでにリストに存在します。',
       fetchingModels: 'エンドポイントからモデルを取得中...',
-      fetchModelsFailed: 'エンドポイントからモデルを取得できませんでした。手動でモデルを追加できます。',
+      fetchModelsFailed:
+        'エンドポイントからモデルを取得できませんでした。手動でモデルを追加できます。',
     },
     descriptions: {
       ollamaFixedToDirectDiff:
@@ -335,6 +343,8 @@ export const jaLocale: LocaleTextBundle = {
       `[ステップ ${String(step)}] プロジェクトを検索中：${keyword}`,
     stepCalling: (step, toolName) =>
       `[ステップ ${String(step)}] ${toolName} を呼び出し中...`,
+    stepWritingCommitMessage: (step) =>
+      `[ステップ ${String(step)}] コミットメッセージを作成中...`,
 
     stepAnalyzingMultipleDiffs: (step, paths) =>
       `[ステップ ${String(step)}] 差分を分析中：${paths}`,

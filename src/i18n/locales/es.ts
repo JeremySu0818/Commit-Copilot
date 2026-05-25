@@ -15,7 +15,10 @@ export const esLocale: LocaleTextBundle = {
         : 'Cuota de API excedida.',
     'api.requestFailed': (args) =>
       args.details?.trim()
-        ? 'Error en la solicitud de API: {details}'.replace('{details}', args.details)
+        ? 'Error en la solicitud de API: {details}'.replace(
+            '{details}',
+            args.details,
+          )
         : 'Error en la solicitud de API.',
     'api.ollamaConnectionFailed': (args) =>
       'No se puede conectar a Ollama. Asegúrese de que Ollama se está ejecutando en {host}.'.replace(
@@ -33,7 +36,10 @@ export const esLocale: LocaleTextBundle = {
         args.model ?? '',
       ),
     'api.emptyResponse': (args) =>
-      'Respuesta vacía de {provider}.'.replace('{provider}', args.provider ?? ''),
+      'Respuesta vacía de {provider}.'.replace(
+        '{provider}',
+        args.provider ?? '',
+      ),
     'api.emptyTextResponse': (args) =>
       'Respuesta de texto vacía de {provider}.'.replace(
         '{provider}',
@@ -287,7 +293,8 @@ export const esLocale: LocaleTextBundle = {
       modelDeleted: 'Modelo personalizado eliminado.',
       modelNameConflict: 'Este modelo ya existe en la lista.',
       fetchingModels: 'Obteniendo modelos del punto final...',
-      fetchModelsFailed: 'No se pudieron obtener los modelos del punto final. Puede agregar modelos manualmente.',
+      fetchModelsFailed:
+        'No se pudieron obtener los modelos del punto final. Puede agregar modelos manualmente.',
     },
     descriptions: {
       ollamaFixedToDirectDiff: 'Ollama está fijado al modo Direct Diff',
@@ -339,6 +346,8 @@ export const esLocale: LocaleTextBundle = {
       `[Paso ${String(step)}] Buscando en el proyecto: ${keyword}`,
     stepCalling: (step, toolName) =>
       `[Paso ${String(step)}] Llamando ${toolName}...`,
+    stepWritingCommitMessage: (step) =>
+      `[Paso ${String(step)}] Escribiendo mensaje de commit...`,
 
     stepAnalyzingMultipleDiffs: (step, paths) =>
       `[Paso ${String(step)}] Analizando diffs: ${paths}`,

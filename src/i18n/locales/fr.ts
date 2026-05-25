@@ -15,7 +15,10 @@ export const frLocale: LocaleTextBundle = {
         : 'Quota API dépassé.',
     'api.requestFailed': (args) =>
       args.details?.trim()
-        ? 'La requête API a échoué : {details}'.replace('{details}', args.details)
+        ? 'La requête API a échoué : {details}'.replace(
+            '{details}',
+            args.details,
+          )
         : 'La requête API a échoué.',
     'api.ollamaConnectionFailed': (args) =>
       'Impossible de se connecter à Ollama. Assurez-vous qu’Ollama fonctionne sur {host}.'.replace(
@@ -286,8 +289,10 @@ export const frLocale: LocaleTextBundle = {
       modelAdded: 'Modèle personnalisé ajouté.',
       modelDeleted: 'Modèle personnalisé supprimé.',
       modelNameConflict: 'Ce modèle existe déjà dans la liste.',
-      fetchingModels: 'Récupération des modèles depuis le point de terminaison...',
-      fetchModelsFailed: 'Impossible de récupérer les modèles depuis le point de terminaison. Vous pouvez ajouter des modèles manuellement.',
+      fetchingModels:
+        'Récupération des modèles depuis le point de terminaison...',
+      fetchModelsFailed:
+        'Impossible de récupérer les modèles depuis le point de terminaison. Vous pouvez ajouter des modèles manuellement.',
     },
     descriptions: {
       ollamaFixedToDirectDiff: 'Ollama est fixé en mode Direct Diff',
@@ -339,6 +344,8 @@ export const frLocale: LocaleTextBundle = {
       `[Étape ${String(step)}] Recherche dans le projet pour : ${keyword}`,
     stepCalling: (step, toolName) =>
       `[Étape ${String(step)}] Appel de ${toolName}...`,
+    stepWritingCommitMessage: (step) =>
+      `[Étape ${String(step)}] Rédaction du message de validation...`,
 
     stepAnalyzingMultipleDiffs: (step, paths) =>
       `[Étape ${String(step)}] Analyse des différences : ${paths}`,

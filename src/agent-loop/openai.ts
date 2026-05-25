@@ -218,8 +218,7 @@ async function handleOpenAIToolCallBatch(params: {
 
   const finalToolCall = params.parsedToolCalls.find(
     (toolCall) =>
-      toolCall.name === FINAL_COMMIT_MESSAGE_TOOL_NAME &&
-      !toolCall.parseError,
+      toolCall.name === FINAL_COMMIT_MESSAGE_TOOL_NAME && !toolCall.parseError,
   );
   if (finalToolCall) {
     const finalMessage = extractFinalCommitMessageFromArgs(finalToolCall.args);
@@ -409,7 +408,9 @@ function createOpenAIRequestCompletionWithTools(params: {
         params.createCompletion({
           model: params.modelName,
           messages: currentMessages,
-          tools: toOpenAITools(params.isStaged) as unknown as ChatCompletionTool[],
+          tools: toOpenAITools(
+            params.isStaged,
+          ) as unknown as ChatCompletionTool[],
           tool_choice: 'auto',
         }),
       params.retryOptions,
@@ -431,12 +432,14 @@ async function requestOpenAIFinalCommitMessage(params: {
       params.createCompletion({
         model: params.modelName,
         messages: params.messages,
-        tools: toOpenAITools(params.isStaged) as unknown as ChatCompletionTool[],
+        tools: toOpenAITools(
+          params.isStaged,
+        ) as unknown as ChatCompletionTool[],
         tool_choice: {
           type: 'function',
           function: { name: FINAL_COMMIT_MESSAGE_TOOL_NAME },
         },
-    }),
+      }),
     params.retryOptions,
   );
   const finalMessage = getAssistantMessage(completion);

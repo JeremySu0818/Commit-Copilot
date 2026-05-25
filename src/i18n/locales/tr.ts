@@ -15,10 +15,13 @@ export const trLocale: LocaleTextBundle = {
         : 'API kotası aşıldı.',
     'api.requestFailed': (args) =>
       args.details?.trim()
-        ? 'API isteği başarısız oldu: {details}'.replace('{details}', args.details)
+        ? 'API isteği başarısız oldu: {details}'.replace(
+            '{details}',
+            args.details,
+          )
         : 'API isteği başarısız oldu.',
     'api.ollamaConnectionFailed': (args) =>
-      'Ollama\'ya bağlanılamıyor. Ollama\'nın {host} üzerinde çalıştığından emin olun.'.replace(
+      "Ollama'ya bağlanılamıyor. Ollama'nın {host} üzerinde çalıştığından emin olun.".replace(
         '{host}',
         args.host ?? '',
       ),
@@ -33,23 +36,26 @@ export const trLocale: LocaleTextBundle = {
         args.model ?? '',
       ),
     'api.emptyResponse': (args) =>
-      '{provider}\'dan boş yanıt alındı.'.replace('{provider}', args.provider ?? ''),
+      "{provider}'dan boş yanıt alındı.".replace(
+        '{provider}',
+        args.provider ?? '',
+      ),
     'api.emptyTextResponse': (args) =>
-      '{provider}\'dan boş metin yanıtı alındı.'.replace(
+      "{provider}'dan boş metin yanıtı alındı.".replace(
         '{provider}',
         args.provider ?? '',
       ),
     'api.emptyFinalResponse': (args) =>
-      '{provider}\'dan boş nihai yanıt alındı.'.replace(
+      "{provider}'dan boş nihai yanıt alındı.".replace(
         '{provider}',
         args.provider ?? '',
       ),
     'api.responseTruncated': (args) =>
-      '{provider}\'ın yanıtı kesildi ({stopReason}).'
+      "{provider}'ın yanıtı kesildi ({stopReason})."
         .replace('{provider}', args.provider ?? '')
         .replace('{stopReason}', args.stopReason ?? ''),
     'api.finalResponseTruncated': (args) =>
-      '{provider}\'ın nihai yanıtı kesildi ({stopReason}).'
+      "{provider}'ın nihai yanıtı kesildi ({stopReason})."
         .replace('{provider}', args.provider ?? '')
         .replace('{stopReason}', args.stopReason ?? ''),
     'git.stageFailed': (args) =>
@@ -67,7 +73,8 @@ export const trLocale: LocaleTextBundle = {
       'Takip edilen değişiklik algılanmadı, yalnızca takip edilmeyen dosyalar mevcut.',
     'generation.mixedChanges': () =>
       'Hem sahnelenen (staged) hem de sahnelenmeyen değişiklikler algılandı.',
-    'generation.cancelled': () => 'Oluşturma işlemi kullanıcı tarafından iptal edildi.',
+    'generation.cancelled': () =>
+      'Oluşturma işlemi kullanıcı tarafından iptal edildi.',
   },
   errorMessages: {
     [EXIT_CODES.NOT_GIT_REPO]: {
@@ -287,7 +294,8 @@ export const trLocale: LocaleTextBundle = {
       modelDeleted: 'Özel model kaldırıldı.',
       modelNameConflict: 'Bu model listede zaten var.',
       fetchingModels: 'Uç noktadan modeller alınıyor...',
-      fetchModelsFailed: 'Uç noktadan modeller alınamadı. Modelleri manuel olarak ekleyebilirsiniz.',
+      fetchModelsFailed:
+        'Uç noktadan modeller alınamadı. Modelleri manuel olarak ekleyebilirsiniz.',
     },
     descriptions: {
       ollamaFixedToDirectDiff:
@@ -340,6 +348,8 @@ export const trLocale: LocaleTextBundle = {
       `[Adım ${String(step)}] Projede aranıyor: ${keyword}`,
     stepCalling: (step, toolName) =>
       `[Adım ${String(step)}] ${toolName} çağrılıyor...`,
+    stepWritingCommitMessage: (step) =>
+      `[${String(step)}. Adım] Commit mesajı yazılıyor...`,
 
     stepAnalyzingMultipleDiffs: (step, paths) =>
       `[Adım ${String(step)}] Diff'ler analiz ediliyor: ${paths}`,

@@ -7,15 +7,24 @@ export const deLocale: LocaleTextBundle = {
       'API-Schlüssel ist nicht konfiguriert. Bitte legen Sie Ihren API-Schlüssel im Commit-Copilot-Panel fest.',
     'api.keyInvalid': (args) =>
       args.details?.trim()
-        ? 'Ungültiger API-Schlüssel: {details}'.replace('{details}', args.details)
+        ? 'Ungültiger API-Schlüssel: {details}'.replace(
+            '{details}',
+            args.details,
+          )
         : 'Ungültiger API-Schlüssel.',
     'api.quotaExceeded': (args) =>
       args.details?.trim()
-        ? 'API-Kontingent überschritten: {details}'.replace('{details}', args.details)
+        ? 'API-Kontingent überschritten: {details}'.replace(
+            '{details}',
+            args.details,
+          )
         : 'API-Kontingent überschritten.',
     'api.requestFailed': (args) =>
       args.details?.trim()
-        ? 'API-Anfrage fehlgeschlagen: {details}'.replace('{details}', args.details)
+        ? 'API-Anfrage fehlgeschlagen: {details}'.replace(
+            '{details}',
+            args.details,
+          )
         : 'API-Anfrage fehlgeschlagen.',
     'api.ollamaConnectionFailed': (args) =>
       'Verbindung zu Ollama nicht möglich. Stellen Sie sicher, dass Ollama auf {host} läuft.'.replace(
@@ -33,7 +42,10 @@ export const deLocale: LocaleTextBundle = {
         args.model ?? '',
       ),
     'api.emptyResponse': (args) =>
-      'Leere Antwort von {provider}.'.replace('{provider}', args.provider ?? ''),
+      'Leere Antwort von {provider}.'.replace(
+        '{provider}',
+        args.provider ?? '',
+      ),
     'api.emptyTextResponse': (args) =>
       'Leere Textantwort von {provider}.'.replace(
         '{provider}',
@@ -288,7 +300,8 @@ export const deLocale: LocaleTextBundle = {
       modelDeleted: 'Benutzerdefiniertes Modell entfernt.',
       modelNameConflict: 'Dieses Modell existiert bereits in der Liste.',
       fetchingModels: 'Modelle vom Endpunkt werden abgerufen...',
-      fetchModelsFailed: 'Modelle konnten nicht vom Endpunkt abgerufen werden. Sie können Modelle manuell hinzufügen.',
+      fetchModelsFailed:
+        'Modelle konnten nicht vom Endpunkt abgerufen werden. Sie können Modelle manuell hinzufügen.',
     },
     descriptions: {
       ollamaFixedToDirectDiff:
@@ -341,6 +354,8 @@ export const deLocale: LocaleTextBundle = {
       `[Schritt ${String(step)}] Durchsuche Projekt nach: ${keyword}`,
     stepCalling: (step, toolName) =>
       `[Schritt ${String(step)}] Rufe ${toolName} auf...`,
+    stepWritingCommitMessage: (step) =>
+      `[Schritt ${String(step)}] Verfassen der Commit-Nachricht...`,
 
     stepAnalyzingMultipleDiffs: (step, paths) =>
       `[Schritt ${String(step)}] Analysiere Diffs: ${paths}`,

@@ -33,7 +33,10 @@ export const koLocale: LocaleTextBundle = {
         args.model ?? '',
       ),
     'api.emptyResponse': (args) =>
-      '{provider}로부터 빈 응답을 받았습니다.'.replace('{provider}', args.provider ?? ''),
+      '{provider}로부터 빈 응답을 받았습니다.'.replace(
+        '{provider}',
+        args.provider ?? '',
+      ),
     'api.emptyTextResponse': (args) =>
       '{provider}로부터 빈 텍스트 응답을 받았습니다.'.replace(
         '{provider}',
@@ -281,7 +284,8 @@ export const koLocale: LocaleTextBundle = {
       modelDeleted: '사용자 지정 모델이 제거되었습니다.',
       modelNameConflict: '이 모델은 이미 목록에 존재합니다.',
       fetchingModels: '엔드포인트에서 모델을 가져오는 중...',
-      fetchModelsFailed: '엔드포인트에서 모델을 가져올 수 없습니다. 모델을 수동으로 추가할 수 있습니다.',
+      fetchModelsFailed:
+        '엔드포인트에서 모델을 가져올 수 없습니다. 모델을 수동으로 추가할 수 있습니다.',
     },
     descriptions: {
       ollamaFixedToDirectDiff:
@@ -334,6 +338,8 @@ export const koLocale: LocaleTextBundle = {
       `[단계 ${String(step)}] 프로젝트에서 <code>${keyword}</code> 검색 중`,
     stepCalling: (step, toolName) =>
       `[단계 ${String(step)}] <code>${toolName}</code> 도구 실행 중...`,
+    stepWritingCommitMessage: (step) =>
+      `[${String(step)}단계] 커밋 메시지 작성 중...`,
 
     stepAnalyzingMultipleDiffs: (step, paths) =>
       `[단계 ${String(step)}] 여러 파일의 변경 사항 분석 중: <code>${paths}</code>`,

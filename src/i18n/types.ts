@@ -238,6 +238,7 @@ export interface ProgressMessages {
   stepFetchingRecentCommits: (step: number, count?: number) => string;
   stepSearchingProject: (step: number, keyword: string) => string;
   stepCalling: (step: number, toolName: string) => string;
+  stepWritingCommitMessage: (step: number) => string;
 
   stepAnalyzingMultipleDiffs: (step: number, paths: string) => string;
   stepAnalyzingDiffsForCount: (step: number, count: number) => string;

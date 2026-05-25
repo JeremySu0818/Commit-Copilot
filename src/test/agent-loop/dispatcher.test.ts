@@ -152,11 +152,17 @@ void test('runAgentLoop routes new built-in OpenAI-compatible providers correctl
 
   const qwenCall = await runDispatcherTest('qwen');
   assert.equal(qwenCall.provider, 'openai');
-  assert.equal(qwenCall.baseUrl, 'https://dashscope.aliyuncs.com/compatible-mode/v1');
+  assert.equal(
+    qwenCall.baseUrl,
+    'https://dashscope.aliyuncs.com/compatible-mode/v1',
+  );
 });
 
 void test('runAgentLoop overrides default base URLs if custom baseUrl is provided', async () => {
-  const customCall = await runDispatcherTest('deepseek', 'https://custom-endpoint.com/v1');
+  const customCall = await runDispatcherTest(
+    'deepseek',
+    'https://custom-endpoint.com/v1',
+  );
   assert.equal(customCall.provider, 'openai');
   assert.equal(customCall.baseUrl, 'https://custom-endpoint.com/v1');
 });

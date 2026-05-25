@@ -391,7 +391,10 @@ async function handleGeminiFunctionCallBatch(params: {
   params.onProgress?.(
     formatBatchProgressMessage(
       params.step + 1,
-      params.functionCalls.map((call) => ({ name: call.name, args: call.args })),
+      params.functionCalls.map((call) => ({
+        name: call.name,
+        args: call.args,
+      })),
       params.language,
     ),
   );
@@ -570,9 +573,7 @@ async function requestGeminiFinalCommitMessage(params: {
       ...params.history,
       {
         role: 'user',
-        parts: [
-          { text: buildFinalOutputReminder(params.commitOutputOptions) },
-        ],
+        parts: [{ text: buildFinalOutputReminder(params.commitOutputOptions) }],
       },
     ],
     params.generationConfig,

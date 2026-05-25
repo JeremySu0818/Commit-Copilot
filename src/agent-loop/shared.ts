@@ -416,6 +416,8 @@ function formatProgressMessage(
         step,
         normalizedArgs.query ?? 'unknown keyword',
       );
+    case 'write_commit_message':
+      return msgs.stepWritingCommitMessage(step);
     default:
       return msgs.stepCalling(step, toolName);
   }

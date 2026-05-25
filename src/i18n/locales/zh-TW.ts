@@ -314,6 +314,8 @@ export const zhTWLocale: LocaleTextBundle = {
       `[步驟 ${String(step)}] 在專案中搜尋：${keyword}`,
     stepCalling: (step, toolName) =>
       `[步驟 ${String(step)}] 呼叫 ${toolName}...`,
+    stepWritingCommitMessage: (step) =>
+      `[步驟 ${String(step)}] 撰寫Commit Message...`,
 
     stepAnalyzingMultipleDiffs: (step, paths) =>
       `[步驟 ${String(step)}] 分析多個 diff：${paths}`,

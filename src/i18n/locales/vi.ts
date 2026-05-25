@@ -11,7 +11,10 @@ export const viLocale: LocaleTextBundle = {
         : 'API Key không hợp lệ.',
     'api.quotaExceeded': (args) =>
       args.details?.trim()
-        ? 'Hạn mức API đã vượt quá: {details}'.replace('{details}', args.details)
+        ? 'Hạn mức API đã vượt quá: {details}'.replace(
+            '{details}',
+            args.details,
+          )
         : 'Hạn mức API đã vượt quá.',
     'api.requestFailed': (args) =>
       args.details?.trim()
@@ -33,7 +36,10 @@ export const viLocale: LocaleTextBundle = {
         args.model ?? '',
       ),
     'api.emptyResponse': (args) =>
-      'Phản hồi trống từ {provider}.'.replace('{provider}', args.provider ?? ''),
+      'Phản hồi trống từ {provider}.'.replace(
+        '{provider}',
+        args.provider ?? '',
+      ),
     'api.emptyTextResponse': (args) =>
       'Phản hồi văn bản trống từ {provider}.'.replace(
         '{provider}',
@@ -283,7 +289,8 @@ export const viLocale: LocaleTextBundle = {
       modelDeleted: 'Đã xóa mô hình tùy chỉnh.',
       modelNameConflict: 'Mô hình này đã tồn tại trong danh sách.',
       fetchingModels: 'Đang tải các mô hình từ điểm cuối...',
-      fetchModelsFailed: 'Không thể tải các mô hình từ điểm cuối. Bạn có thể thêm mô hình thủ công.',
+      fetchModelsFailed:
+        'Không thể tải các mô hình từ điểm cuối. Bạn có thể thêm mô hình thủ công.',
     },
     descriptions: {
       ollamaFixedToDirectDiff: 'Ollama được cố định ở chế độ Direct Diff',
@@ -333,6 +340,8 @@ export const viLocale: LocaleTextBundle = {
       `[Bước ${String(step)}] Đang tìm kiếm dự án cho: ${keyword}`,
     stepCalling: (step, toolName) =>
       `[Bước ${String(step)}] Đang gọi ${toolName}...`,
+    stepWritingCommitMessage: (step) =>
+      `[Bước ${String(step)}] Đang viết tin nhắn commit...`,
 
     stepAnalyzingMultipleDiffs: (step, paths) =>
       `[Bước ${String(step)}] Phân tích diffs: ${paths}`,

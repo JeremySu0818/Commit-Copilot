@@ -7,7 +7,10 @@ export const ruLocale: LocaleTextBundle = {
       'API-ключ не настроен. Пожалуйста, установите API-ключ на панели Commit-Copilot.',
     'api.keyInvalid': (args) =>
       args.details?.trim()
-        ? 'Недействительный API-ключ: {details}'.replace('{details}', args.details)
+        ? 'Недействительный API-ключ: {details}'.replace(
+            '{details}',
+            args.details,
+          )
         : 'Недействительный API-ключ.',
     'api.quotaExceeded': (args) =>
       args.details?.trim()
@@ -285,7 +288,8 @@ export const ruLocale: LocaleTextBundle = {
       modelDeleted: 'Пользовательская модель удалена.',
       modelNameConflict: 'Эта модель уже есть в списке.',
       fetchingModels: 'Получение моделей из конечной точки...',
-      fetchModelsFailed: 'Не удалось получить модели из конечной точки. Вы можете добавить модели вручную.',
+      fetchModelsFailed:
+        'Не удалось получить модели из конечной точки. Вы можете добавить модели вручную.',
     },
     descriptions: {
       ollamaFixedToDirectDiff: 'Ollama зафиксирована в режиме Direct Diff',
@@ -337,6 +341,8 @@ export const ruLocale: LocaleTextBundle = {
       `[Шаг ${String(step)}] Поиск по проекту: ${keyword}`,
     stepCalling: (step, toolName) =>
       `[Шаг ${String(step)}] Вызов ${toolName}...`,
+    stepWritingCommitMessage: (step) =>
+      `[Шаг ${String(step)}] Написание сообщения коммита...`,
 
     stepAnalyzingMultipleDiffs: (step, paths) =>
       `[Шаг ${String(step)}] Анализ diff для: ${paths}`,

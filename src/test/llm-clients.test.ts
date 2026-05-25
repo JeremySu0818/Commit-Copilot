@@ -234,10 +234,26 @@ void test('Gemini direct diff ignores unrelated numeric substrings', async () =>
 void test('createLLMClient creates correct client instances for new built-in providers', () => {
   const cases = [
     { provider: 'grok', url: 'https://api.x.ai/v1', model: 'grok-2-1212' },
-    { provider: 'groq', url: 'https://api.groq.com/openai/v1', model: 'llama-3.3-70b-versatile' },
-    { provider: 'openrouter', url: 'https://openrouter.ai/api/v1', model: 'google/gemini-2.5-flash' },
-    { provider: 'deepseek', url: 'https://api.deepseek.com', model: 'deepseek-chat' },
-    { provider: 'qwen', url: 'https://dashscope.aliyuncs.com/compatible-mode/v1', model: 'qwen-plus' },
+    {
+      provider: 'groq',
+      url: 'https://api.groq.com/openai/v1',
+      model: 'llama-3.3-70b-versatile',
+    },
+    {
+      provider: 'openrouter',
+      url: 'https://openrouter.ai/api/v1',
+      model: 'google/gemini-2.5-flash',
+    },
+    {
+      provider: 'deepseek',
+      url: 'https://api.deepseek.com',
+      model: 'deepseek-chat',
+    },
+    {
+      provider: 'qwen',
+      url: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
+      model: 'qwen-plus',
+    },
   ] as const;
 
   for (const tc of cases) {
@@ -246,9 +262,11 @@ void test('createLLMClient creates correct client instances for new built-in pro
       apiKey: 'test-key',
     });
     assert.ok(client);
-    const clientRecord = client as unknown as { baseURL?: string; model?: string };
+    const clientRecord = client as unknown as {
+      baseURL?: string;
+      model?: string;
+    };
     assert.equal(clientRecord.baseURL, tc.url);
     assert.equal(clientRecord.model, tc.model);
   }
 });
-

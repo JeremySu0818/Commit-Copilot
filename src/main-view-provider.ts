@@ -1453,9 +1453,9 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
           ? getCustomProviderModelsStorageKey(customId)
           : this.getBuiltInProviderModelsStorageKey('ollama');
         const existing = customId
-          ? this._context.globalState.get<{ id: string; alias: string }[]>(
+          ? (this._context.globalState.get<{ id: string; alias: string }[]>(
               storageKey,
-            ) ?? []
+            ) ?? [])
           : await this.getSanitizedOllamaManualModels();
         if (existing.some((m) => m.id === modelName)) {
           this._view?.webview.postMessage({
@@ -1528,9 +1528,9 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
           ? getCustomProviderModelsStorageKey(customId)
           : this.getBuiltInProviderModelsStorageKey('ollama');
         const customModels = customId
-          ? this._context.globalState.get<{ id: string; alias: string }[]>(
+          ? (this._context.globalState.get<{ id: string; alias: string }[]>(
               storageKey,
-            ) ?? []
+            ) ?? [])
           : await this.getSanitizedOllamaManualModels();
         this._view?.webview.postMessage({
           type: 'customModelsList',
@@ -1670,9 +1670,9 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
       : this.getBuiltInProviderModelsStorageKey('ollama');
 
     const existing = customId
-      ? this._context.globalState.get<{ id: string; alias: string }[]>(
+      ? (this._context.globalState.get<{ id: string; alias: string }[]>(
           storageKey,
-        ) ?? []
+        ) ?? [])
       : await this.getSanitizedOllamaManualModels();
 
     const filtered = existing.filter((m) => m.id !== modelId);

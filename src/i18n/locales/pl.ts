@@ -7,7 +7,10 @@ export const plLocale: LocaleTextBundle = {
       'Klucz API nie jest skonfigurowany. Ustaw swój klucz API w panelu Commit-Copilot.',
     'api.keyInvalid': (args) =>
       args.details?.trim()
-        ? 'Nieprawidłowy klucz API: {details}'.replace('{details}', args.details)
+        ? 'Nieprawidłowy klucz API: {details}'.replace(
+            '{details}',
+            args.details,
+          )
         : 'Nieprawidłowy klucz API.',
     'api.quotaExceeded': (args) =>
       args.details?.trim()
@@ -15,7 +18,10 @@ export const plLocale: LocaleTextBundle = {
         : 'Przekroczono limit API.',
     'api.requestFailed': (args) =>
       args.details?.trim()
-        ? 'Żądanie API nie powiodło się: {details}'.replace('{details}', args.details)
+        ? 'Żądanie API nie powiodło się: {details}'.replace(
+            '{details}',
+            args.details,
+          )
         : 'Żądanie API nie powiodło się.',
     'api.ollamaConnectionFailed': (args) =>
       'Nie można połączyć się z Ollama. Upewnij się, że Ollama działa pod adresem {host}.'.replace(
@@ -33,7 +39,10 @@ export const plLocale: LocaleTextBundle = {
         args.model ?? '',
       ),
     'api.emptyResponse': (args) =>
-      'Pusta odpowiedź od {provider}.'.replace('{provider}', args.provider ?? ''),
+      'Pusta odpowiedź od {provider}.'.replace(
+        '{provider}',
+        args.provider ?? '',
+      ),
     'api.emptyTextResponse': (args) =>
       'Pusta odpowiedź tekstowa od {provider}.'.replace(
         '{provider}',
@@ -67,7 +76,8 @@ export const plLocale: LocaleTextBundle = {
       'Nie wykryto żadnych śledzonych zmian, obecne są tylko nieśledzone pliki.',
     'generation.mixedChanges': () =>
       'Wykryto zarówno zmiany przygotowane, jak i nieprzygotowane.',
-    'generation.cancelled': () => 'Generowanie zostało anulowane przez użytkownika.',
+    'generation.cancelled': () =>
+      'Generowanie zostało anulowane przez użytkownika.',
   },
   errorMessages: {
     [EXIT_CODES.NOT_GIT_REPO]: {
@@ -285,7 +295,8 @@ export const plLocale: LocaleTextBundle = {
       modelDeleted: 'Usunięto własny model.',
       modelNameConflict: 'Ten model znajduje się już na liście.',
       fetchingModels: 'Pobieranie modeli z punktu końcowego...',
-      fetchModelsFailed: 'Nie można pobrać modeli z punktu końcowego. Możesz dodać modele ręcznie.',
+      fetchModelsFailed:
+        'Nie można pobrać modeli z punktu końcowego. Możesz dodać modele ręcznie.',
     },
     descriptions: {
       ollamaFixedToDirectDiff:
@@ -338,6 +349,8 @@ export const plLocale: LocaleTextBundle = {
       `[Krok ${String(step)}] Przeszukiwanie projektu pod kątem: ${keyword}`,
     stepCalling: (step, toolName) =>
       `[Krok ${String(step)}] Wywoływanie ${toolName}...`,
+    stepWritingCommitMessage: (step) =>
+      `[Krok ${String(step)}] Pisanie wiadomości zatwierdzenia...`,
 
     stepAnalyzingMultipleDiffs: (step, paths) =>
       `[Krok ${String(step)}] Analizowanie różnic: ${paths}`,

@@ -33,7 +33,10 @@ export const idLocale: LocaleTextBundle = {
         args.model ?? '',
       ),
     'api.emptyResponse': (args) =>
-      'Respons kosong dari {provider}.'.replace('{provider}', args.provider ?? ''),
+      'Respons kosong dari {provider}.'.replace(
+        '{provider}',
+        args.provider ?? '',
+      ),
     'api.emptyTextResponse': (args) =>
       'Respons teks kosong dari {provider}.'.replace(
         '{provider}',
@@ -286,7 +289,8 @@ export const idLocale: LocaleTextBundle = {
       modelDeleted: 'Model kustom dihapus.',
       modelNameConflict: 'Model ini sudah ada dalam daftar.',
       fetchingModels: 'Mengambil model dari titik akhir...',
-      fetchModelsFailed: 'Tidak dapat mengambil model dari titik akhir. Anda dapat menambahkan model secara manual.',
+      fetchModelsFailed:
+        'Tidak dapat mengambil model dari titik akhir. Anda dapat menambahkan model secara manual.',
     },
     descriptions: {
       ollamaFixedToDirectDiff: 'Ollama ditetapkan ke mode Direct Diff',
@@ -338,6 +342,8 @@ export const idLocale: LocaleTextBundle = {
       `[Langkah ${String(step)}] Mencari proyek untuk: ${keyword}`,
     stepCalling: (step, toolName) =>
       `[Langkah ${String(step)}] Memanggil ${toolName}...`,
+    stepWritingCommitMessage: (step) =>
+      `[Langkah ${String(step)}] Menulis pesan commit...`,
 
     stepAnalyzingMultipleDiffs: (step, paths) =>
       `[Langkah ${String(step)}] Menganalisis diff: ${paths}`,

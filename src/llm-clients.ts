@@ -628,7 +628,10 @@ export class OllamaClient implements ILLMClient {
       );
 
       if (onProgress) {
-        onProgress(LOCALES[this.language].progressMessages.generatingMessage, 0);
+        onProgress(
+          LOCALES[this.language].progressMessages.generatingMessage,
+          0,
+        );
       }
 
       const response = await client.chat({

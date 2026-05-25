@@ -33,7 +33,10 @@ export const itLocale: LocaleTextBundle = {
         args.model ?? '',
       ),
     'api.emptyResponse': (args) =>
-      'Risposta vuota da {provider}.'.replace('{provider}', args.provider ?? ''),
+      'Risposta vuota da {provider}.'.replace(
+        '{provider}',
+        args.provider ?? '',
+      ),
     'api.emptyTextResponse': (args) =>
       'Risposta di testo vuota da {provider}.'.replace(
         '{provider}',
@@ -284,9 +287,10 @@ export const itLocale: LocaleTextBundle = {
       modelNameRequired: 'Inserisci il nome del modello prima di generare.',
       modelAdded: 'Modello personalizzato aggiunto.',
       modelDeleted: 'Modello personalizzato rimosso.',
-      modelNameConflict: 'Questo modello esiste già nell\'elenco.',
-      fetchingModels: 'Recupero dei modelli dall\'endpoint...',
-      fetchModelsFailed: 'Impossibile recuperare i modelli dall\'endpoint. È possibile aggiungere modelli manualmente.',
+      modelNameConflict: "Questo modello esiste già nell'elenco.",
+      fetchingModels: "Recupero dei modelli dall'endpoint...",
+      fetchModelsFailed:
+        "Impossibile recuperare i modelli dall'endpoint. È possibile aggiungere modelli manualmente.",
     },
     descriptions: {
       ollamaFixedToDirectDiff: 'Ollama è fissato sulla modalità Direct Diff',
@@ -338,6 +342,8 @@ export const itLocale: LocaleTextBundle = {
       `[Passo ${String(step)}] Ricerca nel progetto per: ${keyword}`,
     stepCalling: (step, toolName) =>
       `[Passo ${String(step)}] Chiamata a ${toolName}...`,
+    stepWritingCommitMessage: (step) =>
+      `[Passaggio ${String(step)}] Scrittura del messaggio di commit...`,
 
     stepAnalyzingMultipleDiffs: (step, paths) =>
       `[Passo ${String(step)}] Analisi differenze: ${paths}`,

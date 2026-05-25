@@ -33,7 +33,10 @@ export const csLocale: LocaleTextBundle = {
         args.model ?? '',
       ),
     'api.emptyResponse': (args) =>
-      'Prázdná odpověď od {provider}.'.replace('{provider}', args.provider ?? ''),
+      'Prázdná odpověď od {provider}.'.replace(
+        '{provider}',
+        args.provider ?? '',
+      ),
     'api.emptyTextResponse': (args) =>
       'Prázdná textová odpověď od {provider}.'.replace(
         '{provider}',
@@ -285,7 +288,8 @@ export const csLocale: LocaleTextBundle = {
       modelDeleted: 'Vlastní model byl odebrán.',
       modelNameConflict: 'Tento model již v seznamu existuje.',
       fetchingModels: 'Načítání modelů z koncového bodu...',
-      fetchModelsFailed: 'Nepodařilo se načíst modely z koncového bodu. Modely můžete přidat ručně.',
+      fetchModelsFailed:
+        'Nepodařilo se načíst modely z koncového bodu. Modely můžete přidat ručně.',
     },
     descriptions: {
       ollamaFixedToDirectDiff: 'Ollama je pevně nastavena na režim Direct Diff',
@@ -337,6 +341,8 @@ export const csLocale: LocaleTextBundle = {
       `[Krok ${String(step)}] Prohledávání projektu na: ${keyword}`,
     stepCalling: (step, toolName) =>
       `[Krok ${String(step)}] Volání ${toolName}...`,
+    stepWritingCommitMessage: (step) =>
+      `[Krok ${String(step)}] Psaní zprávy k potvrzení...`,
 
     stepAnalyzingMultipleDiffs: (step, paths) =>
       `[Krok ${String(step)}] Analýza diffů: ${paths}`,
