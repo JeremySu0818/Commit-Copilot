@@ -5,11 +5,16 @@ Commit-Copilot is an **agentic** VS Code extension that uses a multi-step AI age
 ## Features
 
 - **Multi-Provider Support**: Choose your preferred AI provider:
-  - **Google Gemini**: Support for Gemini 2.5 Flash-Lite/Flash/Pro, Gemini 3 Flash and Gemini 3.1 Flash-Lite/Pro.
+  - **Google Gemini**: Support for Gemini 2.5 Flash-Lite/Flash/Pro, Gemini 3 Flash, Gemini 3.1 Flash-Lite/Pro, and Gemini 3.5 Flash.
   - **OpenAI**: Support for o3/o3-mini, o4-mini, GPT-4o mini/GPT-4o, GPT-4.1 nano/GPT-4.1 mini/GPT-4.1, GPT-5 nano/GPT-5 mini/GPT-5, GPT-5.1, GPT-5.2, GPT-5.4 nano/GPT-5.4 mini/GPT-5.4, and GPT-5.5.
-  - **Anthropic**: Support for Claude Sonnet/Opus 4, Claude Opus 4.1, Claude Haiku/Sonnet/Opus 4.5, Claude Opus 4.6 and Claude Opus 4.7.
+  - **Anthropic**: Support for Claude Sonnet/Opus 4, Claude Opus 4.1, Claude Haiku/Sonnet/Opus 4.5, Claude Opus 4.6, and Claude Opus 4.7.
+  - **xAI (Grok)**: Support for Grok 4.20 (non-reasoning/reasoning) and Grok 4.3.
+  - **Groq**: Support for Llama 3.1 8B, Llama 3.3 70B, Llama 4 Scout, gpt-oss-20B/120B, and Qwen 3 32b.
+  - **OpenRouter**: Access any model via OpenRouter's API, including dynamic model fetching with tool-support filtering.
+  - **DeepSeek**: Support for DeepSeek Chat, DeepSeek R1 (Reasoner), and DeepSeek V4 Flash/Pro.
+  - **Qwen**: Support for Qwen models via DashScope, including dynamic model fetching.
   - **Ollama**: Support for local models. Dynamically fetches your local model list from the Ollama instance and allows manual addition of custom model IDs. Supports any model you have installed, including Gemma 3, Llama 3.3, Phi-4, and Mistral.
-  - **Custom Provider**: Add any OpenAI-compatible endpoint (e.g. DeepSeek, Azure OpenAI, LM Studio) by specifying a display name and Base URL. Custom providers appear alongside built-in providers, use secure API key storage, and can fetch or manually manage provider-specific models.
+  - **Custom Provider**: Add any OpenAI-compatible endpoint (e.g. LM Studio, Azure OpenAI) by specifying a display name and Base URL. Custom providers appear alongside built-in providers, use secure API key storage, and can fetch or manually manage provider-specific models.
 - **Two Generate Modes**:
   - **Agentic** (default): Runs a multi-step agent loop. The AI is given only file names and line counts initially, then autonomously calls tools — `get_diff`, `read_file`, `get_file_outline`, `find_references`, `get_recent_commits`, `search_code` — to investigate changes, understand context, and learn the project's commit style before classifying.
   - **Direct Diff**: Skips the agent loop and feeds the full diff directly to the model in one shot. Faster and better suited for smaller or local models. Ollama always uses this mode.
@@ -65,7 +70,7 @@ Download and install the extension from the VS Code Marketplace or Open VSX Regi
 ### 2. Configuration
 
 1. Click on the **Commit Copilot** icon in the Activity Bar (left side sidebar).
-2. Select your desired **Provider** from the dropdown menu (Google, OpenAI, Anthropic, Ollama, or a custom provider).
+2. Select your desired **Provider** from the dropdown menu (Google, OpenAI, Anthropic, Ollama, Grok, Groq, OpenRouter, DeepSeek, Qwen, or a custom provider).
 3. Enter your **API Key** (or Host URL for Ollama).
    - _Note: Keys are stored securely on your device._
 4. Click **Save**. The extension will validate your key.
@@ -73,7 +78,7 @@ Download and install the extension from the VS Code Marketplace or Open VSX Regi
 
 #### Adding a Custom Provider
 
-To use any OpenAI-compatible endpoint (e.g. DeepSeek, Azure OpenAI, LM Studio):
+To use any OpenAI-compatible endpoint (e.g. Azure OpenAI, LM Studio):
 
 1. Click **"Add Custom Provider"** in the provider settings.
 2. Enter a display **Name** and the **Base URL** for the endpoint.
