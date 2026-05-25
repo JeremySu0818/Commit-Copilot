@@ -4,73 +4,70 @@ import type { LocaleTextBundle } from '../types';
 export const ruLocale: LocaleTextBundle = {
   commitCopilotErrorMessages: {
     'api.keyMissing': () =>
-      'API Key is not configured. Please set your API Key in the Commit-Copilot panel.',
+      'API-ключ не настроен. Пожалуйста, установите API-ключ на панели Commit-Copilot.',
     'api.keyInvalid': (args) =>
       args.details?.trim()
-        ? 'Invalid API Key: {details}'.replace('{details}', args.details)
-        : 'Invalid API Key.',
+        ? 'Недействительный API-ключ: {details}'.replace('{details}', args.details)
+        : 'Недействительный API-ключ.',
     'api.quotaExceeded': (args) =>
       args.details?.trim()
-        ? 'API quota exceeded: {details}'.replace('{details}', args.details)
-        : 'API quota exceeded.',
+        ? 'Лимит API исчерпан: {details}'.replace('{details}', args.details)
+        : 'Лимит API исчерпан.',
     'api.requestFailed': (args) =>
       args.details?.trim()
-        ? 'API request failed: {details}'.replace('{details}', args.details)
-        : 'API request failed.',
+        ? 'Ошибка запроса к API: {details}'.replace('{details}', args.details)
+        : 'Ошибка запроса к API.',
     'api.ollamaConnectionFailed': (args) =>
-      'Cannot connect to Ollama. Make sure Ollama is running at {host}.'.replace(
+      'Не удалось подключиться к Ollama. Убедитесь, что Ollama запущен на {host}.'.replace(
         '{host}',
         args.host ?? '',
       ),
     'api.ollamaModelNotFound': (args) =>
-      'Model "{model}" was not found. Pull it first with: ollama pull {model}'.replace(
+      'Модель "{model}" не найдена. Сначала скачайте ее с помощью: ollama pull {model}'.replace(
         /\{model\}/g,
         args.model ?? '',
       ),
     'api.unknownAnthropicModel': (args) =>
-      'Unknown Anthropic model "{model}". Add it to ANTHROPIC_MODELS with max_tokens.'.replace(
+      'Неизвестная модель Anthropic "{model}". Добавьте ее в ANTHROPIC_MODELS с max_tokens.'.replace(
         '{model}',
         args.model ?? '',
       ),
     'api.emptyResponse': (args) =>
-      'Empty response from {provider}.'.replace(
-        '{provider}',
-        args.provider ?? '',
-      ),
+      'Пустой ответ от {provider}.'.replace('{provider}', args.provider ?? ''),
     'api.emptyTextResponse': (args) =>
-      'Empty text response from {provider}.'.replace(
+      'Пустой текстовый ответ от {provider}.'.replace(
         '{provider}',
         args.provider ?? '',
       ),
     'api.emptyFinalResponse': (args) =>
-      'Empty final response from {provider}.'.replace(
+      'Пустой окончательный ответ от {provider}.'.replace(
         '{provider}',
         args.provider ?? '',
       ),
     'api.responseTruncated': (args) =>
-      'Response from {provider} was truncated ({stopReason}).'
+      'Ответ от {provider} был усечен ({stopReason}).'
         .replace('{provider}', args.provider ?? '')
         .replace('{stopReason}', args.stopReason ?? ''),
     'api.finalResponseTruncated': (args) =>
-      'Final response from {provider} was truncated ({stopReason}).'
+      'Окончательный ответ от {provider} был усечен ({stopReason}).'
         .replace('{provider}', args.provider ?? '')
         .replace('{stopReason}', args.stopReason ?? ''),
     'git.stageFailed': (args) =>
       args.details?.trim()
-        ? 'Failed to stage changes: {details}'.replace(
+        ? 'Не удалось подготовить изменения (stage): {details}'.replace(
             '{details}',
             args.details,
           )
-        : 'Failed to stage changes.',
+        : 'Не удалось подготовить изменения (stage).',
     'generation.noChanges': () =>
-      'No changes detected to generate a commit for.',
+      'Изменения для генерации сообщения коммита не обнаружены.',
     'generation.noChangesButUntracked': () =>
-      'No changes to commit, but untracked files were detected.',
+      'Нет изменений для коммита, но обнаружены неотслеживаемые файлы.',
     'generation.noTrackedChangesButUntracked': () =>
-      'No tracked changes detected, only untracked files are present.',
+      'Отслеживаемые изменения не обнаружены, присутствуют только неотслеживаемые файлы.',
     'generation.mixedChanges': () =>
-      'Both staged and unstaged changes were detected.',
-    'generation.cancelled': () => 'Generation canceled by user.',
+      'Обнаружены как подготовленные, так и неподготовленные изменения.',
+    'generation.cancelled': () => 'Генерация отменена пользователем.',
   },
   errorMessages: {
     [EXIT_CODES.NOT_GIT_REPO]: {
@@ -225,7 +222,7 @@ export const ruLocale: LocaleTextBundle = {
       settings: 'Настройки',
       addProvider: 'Добавить кастомного провайдера',
       editProvider: 'Редактировать кастомного провайдера',
-      addModel: 'Add Custom Model',
+      addModel: 'Добавить пользовательскую модель',
     },
     labels: {
       provider: 'Провайдер',
@@ -242,7 +239,7 @@ export const ruLocale: LocaleTextBundle = {
       providerName: 'Имя провайдера',
       apiBaseUrl: 'Базовый URL-адрес API',
       commitMessage: 'Сообщение коммита',
-      modelName: 'Model Name',
+      modelName: 'Имя модели',
     },
     placeholders: {
       selectProvider: 'Выберите провайдера...',
@@ -253,7 +250,7 @@ export const ruLocale: LocaleTextBundle = {
       enterOpenAIApiKey: 'Введите ваш API-ключ OpenAI',
       enterAnthropicApiKey: 'Введите ваш API-ключ Anthropic',
       enterCustomApiKey: 'Введите ваш API-ключ',
-      enterModelName: 'Enter model name',
+      enterModelName: 'Введите имя модели',
     },
     buttons: {
       save: 'Сохранить',
@@ -264,8 +261,8 @@ export const ruLocale: LocaleTextBundle = {
       editProvider: 'Изменить провайдера',
       addProvider: '+ Добавить провайдера...',
       deleteProvider: 'Удалить провайдера',
-      addModel: '+ Add Model...',
-      deleteModel: 'Delete Model',
+      addModel: '+ Добавить модель...',
+      deleteModel: 'Удалить модель',
       cancel: 'Отмена',
     },
     statuses: {
@@ -284,11 +281,11 @@ export const ruLocale: LocaleTextBundle = {
       providerSaved: 'Кастомный провайдер сохранен!',
       providerDeleted: 'Кастомный провайдер удален.',
       modelNameRequired: 'Пожалуйста, введите имя модели перед генерацией.',
-      modelAdded: 'Custom model added.',
-      modelDeleted: 'Custom model removed.',
-      modelNameConflict: 'This model already exists in the list.',
-      fetchingModels: 'Fetching models from endpoint...',
-      fetchModelsFailed: 'Could not fetch models from endpoint. You can add models manually.',
+      modelAdded: 'Пользовательская модель добавлена.',
+      modelDeleted: 'Пользовательская модель удалена.',
+      modelNameConflict: 'Эта модель уже есть в списке.',
+      fetchingModels: 'Получение моделей из конечной точки...',
+      fetchModelsFailed: 'Не удалось получить модели из конечной точки. Вы можете добавить модели вручную.',
     },
     descriptions: {
       ollamaFixedToDirectDiff: 'Ollama зафиксирована в режиме Direct Diff',

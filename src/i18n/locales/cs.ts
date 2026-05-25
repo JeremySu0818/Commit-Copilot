@@ -4,73 +4,70 @@ import type { LocaleTextBundle } from '../types';
 export const csLocale: LocaleTextBundle = {
   commitCopilotErrorMessages: {
     'api.keyMissing': () =>
-      'API Key is not configured. Please set your API Key in the Commit-Copilot panel.',
+      'API klíč není nakonfigurován. Nastavte prosím svůj API klíč v panelu Commit-Copilot.',
     'api.keyInvalid': (args) =>
       args.details?.trim()
-        ? 'Invalid API Key: {details}'.replace('{details}', args.details)
-        : 'Invalid API Key.',
+        ? 'Neplatný API klíč: {details}'.replace('{details}', args.details)
+        : 'Neplatný API klíč.',
     'api.quotaExceeded': (args) =>
       args.details?.trim()
-        ? 'API quota exceeded: {details}'.replace('{details}', args.details)
-        : 'API quota exceeded.',
+        ? 'Překročen limit API: {details}'.replace('{details}', args.details)
+        : 'Překročen limit API.',
     'api.requestFailed': (args) =>
       args.details?.trim()
-        ? 'API request failed: {details}'.replace('{details}', args.details)
-        : 'API request failed.',
+        ? 'Požadavek API selhal: {details}'.replace('{details}', args.details)
+        : 'Požadavek API selhal.',
     'api.ollamaConnectionFailed': (args) =>
-      'Cannot connect to Ollama. Make sure Ollama is running at {host}.'.replace(
+      'Nelze se připojit k Ollama. Ujistěte se, že Ollama běží na {host}.'.replace(
         '{host}',
         args.host ?? '',
       ),
     'api.ollamaModelNotFound': (args) =>
-      'Model "{model}" was not found. Pull it first with: ollama pull {model}'.replace(
+      'Model "{model}" nebyl nalezen. Stáhněte jej nejprve pomocí: ollama pull {model}'.replace(
         /\{model\}/g,
         args.model ?? '',
       ),
     'api.unknownAnthropicModel': (args) =>
-      'Unknown Anthropic model "{model}". Add it to ANTHROPIC_MODELS with max_tokens.'.replace(
+      'Neznámý Anthropic model "{model}". Přidejte jej do ANTHROPIC_MODELS s max_tokens.'.replace(
         '{model}',
         args.model ?? '',
       ),
     'api.emptyResponse': (args) =>
-      'Empty response from {provider}.'.replace(
-        '{provider}',
-        args.provider ?? '',
-      ),
+      'Prázdná odpověď od {provider}.'.replace('{provider}', args.provider ?? ''),
     'api.emptyTextResponse': (args) =>
-      'Empty text response from {provider}.'.replace(
+      'Prázdná textová odpověď od {provider}.'.replace(
         '{provider}',
         args.provider ?? '',
       ),
     'api.emptyFinalResponse': (args) =>
-      'Empty final response from {provider}.'.replace(
+      'Prázdná finální odpověď od {provider}.'.replace(
         '{provider}',
         args.provider ?? '',
       ),
     'api.responseTruncated': (args) =>
-      'Response from {provider} was truncated ({stopReason}).'
+      'Odpověď od {provider} byla zkrácena ({stopReason}).'
         .replace('{provider}', args.provider ?? '')
         .replace('{stopReason}', args.stopReason ?? ''),
     'api.finalResponseTruncated': (args) =>
-      'Final response from {provider} was truncated ({stopReason}).'
+      'Finální odpověď od {provider} byla zkrácena ({stopReason}).'
         .replace('{provider}', args.provider ?? '')
         .replace('{stopReason}', args.stopReason ?? ''),
     'git.stageFailed': (args) =>
       args.details?.trim()
-        ? 'Failed to stage changes: {details}'.replace(
+        ? 'Nepodařilo se připravit změny k odeslání: {details}'.replace(
             '{details}',
             args.details,
           )
-        : 'Failed to stage changes.',
+        : 'Nepodařilo se připravit změny k odeslání.',
     'generation.noChanges': () =>
-      'No changes detected to generate a commit for.',
+      'Nebyly detekovány žádné změny pro vytvoření commit zprávy.',
     'generation.noChangesButUntracked': () =>
-      'No changes to commit, but untracked files were detected.',
+      'Žádné změny k odeslání, ale byly detekovány nesledované soubory.',
     'generation.noTrackedChangesButUntracked': () =>
-      'No tracked changes detected, only untracked files are present.',
+      'Nebyly detekovány žádné sledované změny, jsou přítomny pouze nesledované soubory.',
     'generation.mixedChanges': () =>
-      'Both staged and unstaged changes were detected.',
-    'generation.cancelled': () => 'Generation canceled by user.',
+      'Byly detekovány jak připravené, tak nepřipravené změny.',
+    'generation.cancelled': () => 'Generování bylo zrušeno uživatelem.',
   },
   errorMessages: {
     [EXIT_CODES.NOT_GIT_REPO]: {
@@ -225,7 +222,7 @@ export const csLocale: LocaleTextBundle = {
       settings: 'Nastavení',
       addProvider: 'Přidat vlastního poskytovatele',
       editProvider: 'Upravit vlastního poskytovatele',
-      addModel: 'Add Custom Model',
+      addModel: 'Přidat vlastní model',
     },
     labels: {
       provider: 'Poskytovatel',
@@ -242,7 +239,7 @@ export const csLocale: LocaleTextBundle = {
       providerName: 'Název poskytovatele',
       apiBaseUrl: 'Základní URL API',
       commitMessage: 'Zpráva commitu',
-      modelName: 'Model Name',
+      modelName: 'Název modelu',
     },
     placeholders: {
       selectProvider: 'Vyberte poskytovatele...',
@@ -253,7 +250,7 @@ export const csLocale: LocaleTextBundle = {
       enterOpenAIApiKey: 'Zadejte svůj OpenAI API klíč',
       enterAnthropicApiKey: 'Zadejte svůj Anthropic API klíč',
       enterCustomApiKey: 'Zadejte svůj API klíč',
-      enterModelName: 'Enter model name',
+      enterModelName: 'Zadejte název modelu',
     },
     buttons: {
       save: 'Uložit',
@@ -264,8 +261,8 @@ export const csLocale: LocaleTextBundle = {
       editProvider: 'Upravit poskytovatele',
       addProvider: '+ Přidat poskytovatele...',
       deleteProvider: 'Smazat poskytovatele',
-      addModel: '+ Add Model...',
-      deleteModel: 'Delete Model',
+      addModel: '+ Přidat model...',
+      deleteModel: 'Smazat model',
       cancel: 'Zrušit',
     },
     statuses: {
@@ -284,11 +281,11 @@ export const csLocale: LocaleTextBundle = {
       providerSaved: 'Vlastní poskytovatel byl uložen!',
       providerDeleted: 'Vlastní poskytovatel byl smazán.',
       modelNameRequired: 'Před generováním zadejte prosím název modelu.',
-      modelAdded: 'Custom model added.',
-      modelDeleted: 'Custom model removed.',
-      modelNameConflict: 'This model already exists in the list.',
-      fetchingModels: 'Fetching models from endpoint...',
-      fetchModelsFailed: 'Could not fetch models from endpoint. You can add models manually.',
+      modelAdded: 'Vlastní model byl přidán.',
+      modelDeleted: 'Vlastní model byl odebrán.',
+      modelNameConflict: 'Tento model již v seznamu existuje.',
+      fetchingModels: 'Načítání modelů z koncového bodu...',
+      fetchModelsFailed: 'Nepodařilo se načíst modely z koncového bodu. Modely můžete přidat ručně.',
     },
     descriptions: {
       ollamaFixedToDirectDiff: 'Ollama je pevně nastavena na režim Direct Diff',

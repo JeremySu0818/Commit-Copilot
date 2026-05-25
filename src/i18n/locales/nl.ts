@@ -4,73 +4,70 @@ import type { LocaleTextBundle } from '../types';
 export const nlLocale: LocaleTextBundle = {
   commitCopilotErrorMessages: {
     'api.keyMissing': () =>
-      'API Key is not configured. Please set your API Key in the Commit-Copilot panel.',
+      'API-sleutel is niet geconfigureerd. Stel uw API-sleutel in het Commit-Copilot-paneel in.',
     'api.keyInvalid': (args) =>
       args.details?.trim()
-        ? 'Invalid API Key: {details}'.replace('{details}', args.details)
-        : 'Invalid API Key.',
+        ? 'Ongeldige API-sleutel: {details}'.replace('{details}', args.details)
+        : 'Ongeldige API-sleutel.',
     'api.quotaExceeded': (args) =>
       args.details?.trim()
-        ? 'API quota exceeded: {details}'.replace('{details}', args.details)
-        : 'API quota exceeded.',
+        ? 'API-quotum overschreden: {details}'.replace('{details}', args.details)
+        : 'API-quotum overschreden.',
     'api.requestFailed': (args) =>
       args.details?.trim()
-        ? 'API request failed: {details}'.replace('{details}', args.details)
-        : 'API request failed.',
+        ? 'API-verzoek mislukt: {details}'.replace('{details}', args.details)
+        : 'API-verzoek mislukt.',
     'api.ollamaConnectionFailed': (args) =>
-      'Cannot connect to Ollama. Make sure Ollama is running at {host}.'.replace(
+      'Kan geen verbinding maken met Ollama. Zorg ervoor dat Ollama draait op {host}.'.replace(
         '{host}',
         args.host ?? '',
       ),
     'api.ollamaModelNotFound': (args) =>
-      'Model "{model}" was not found. Pull it first with: ollama pull {model}'.replace(
+      'Model "{model}" is niet gevonden. Download het eerst met: ollama pull {model}'.replace(
         /\{model\}/g,
         args.model ?? '',
       ),
     'api.unknownAnthropicModel': (args) =>
-      'Unknown Anthropic model "{model}". Add it to ANTHROPIC_MODELS with max_tokens.'.replace(
+      'Onbekend Anthropic-model "{model}". Voeg het toe aan ANTHROPIC_MODELS met max_tokens.'.replace(
         '{model}',
         args.model ?? '',
       ),
     'api.emptyResponse': (args) =>
-      'Empty response from {provider}.'.replace(
-        '{provider}',
-        args.provider ?? '',
-      ),
+      'Lege respons van {provider}.'.replace('{provider}', args.provider ?? ''),
     'api.emptyTextResponse': (args) =>
-      'Empty text response from {provider}.'.replace(
+      'Leere tekstrespons van {provider}.'.replace(
         '{provider}',
         args.provider ?? '',
       ),
     'api.emptyFinalResponse': (args) =>
-      'Empty final response from {provider}.'.replace(
+      'Lege finale respons van {provider}.'.replace(
         '{provider}',
         args.provider ?? '',
       ),
     'api.responseTruncated': (args) =>
-      'Response from {provider} was truncated ({stopReason}).'
+      'Respons van {provider} is afgebroken ({stopReason}).'
         .replace('{provider}', args.provider ?? '')
         .replace('{stopReason}', args.stopReason ?? ''),
     'api.finalResponseTruncated': (args) =>
-      'Final response from {provider} was truncated ({stopReason}).'
+      'Finale respons van {provider} is afgebroken ({stopReason}).'
         .replace('{provider}', args.provider ?? '')
         .replace('{stopReason}', args.stopReason ?? ''),
     'git.stageFailed': (args) =>
       args.details?.trim()
-        ? 'Failed to stage changes: {details}'.replace(
+        ? 'Fout bij het klaarmaken (stagen) van wijzigingen: {details}'.replace(
             '{details}',
             args.details,
           )
-        : 'Failed to stage changes.',
+        : 'Fout bij het klaarmaken (stagen) van wijzigingen.',
     'generation.noChanges': () =>
-      'No changes detected to generate a commit for.',
+      'Geen wijzigingen gedetecteerd om een commit-bericht voor te genereren.',
     'generation.noChangesButUntracked': () =>
-      'No changes to commit, but untracked files were detected.',
+      'Geen wijzigingen om te committen, maar er zijn niet-gevolgde bestanden gedetecteerd.',
     'generation.noTrackedChangesButUntracked': () =>
-      'No tracked changes detected, only untracked files are present.',
+      'Geen gevolgde wijzigingen gedetecteerd, er zijn alleen niet-gevolgde bestanden aanwezig.',
     'generation.mixedChanges': () =>
-      'Both staged and unstaged changes were detected.',
-    'generation.cancelled': () => 'Generation canceled by user.',
+      'Zowel klaargemaakte (staged) als niet-klaargemaakte wijzigingen gedetecteerd.',
+    'generation.cancelled': () => 'Genereren geannuleerd door gebruiker.',
   },
   errorMessages: {
     [EXIT_CODES.NOT_GIT_REPO]: {
@@ -225,7 +222,7 @@ export const nlLocale: LocaleTextBundle = {
       settings: 'Instellingen',
       addProvider: 'Aangepaste Provider Toevoegen',
       editProvider: 'Aangepaste Provider Bewerken',
-      addModel: 'Add Custom Model',
+      addModel: 'Aangepast model toevoegen',
     },
     labels: {
       provider: 'Provider',
@@ -242,7 +239,7 @@ export const nlLocale: LocaleTextBundle = {
       providerName: 'Naam van Provider',
       apiBaseUrl: 'API Basis URL',
       commitMessage: 'Commitbericht',
-      modelName: 'Model Name',
+      modelName: 'Modelnaam',
     },
     placeholders: {
       selectProvider: 'Selecteer een provider...',
@@ -253,7 +250,7 @@ export const nlLocale: LocaleTextBundle = {
       enterOpenAIApiKey: 'Voer uw OpenAI API sleutel in',
       enterAnthropicApiKey: 'Voer uw Anthropic API sleutel in',
       enterCustomApiKey: 'Voer uw API sleutel in',
-      enterModelName: 'Enter model name',
+      enterModelName: 'Voer modelnaam in',
     },
     buttons: {
       save: 'Opslaan',
@@ -264,8 +261,8 @@ export const nlLocale: LocaleTextBundle = {
       editProvider: 'Bewerk Provider',
       addProvider: '+ Provider Toevoegen...',
       deleteProvider: 'Verwijder Provider',
-      addModel: '+ Add Model...',
-      deleteModel: 'Delete Model',
+      addModel: '+ Model toevoegen...',
+      deleteModel: 'Model verwijderen',
       cancel: 'Annuleren',
     },
     statuses: {
@@ -284,11 +281,11 @@ export const nlLocale: LocaleTextBundle = {
       providerSaved: 'Aangepaste provider opgeslagen!',
       providerDeleted: 'Aangepaste provider verwijderd.',
       modelNameRequired: 'Voer een modelnaam in voordat u genereert.',
-      modelAdded: 'Custom model added.',
-      modelDeleted: 'Custom model removed.',
-      modelNameConflict: 'This model already exists in the list.',
-      fetchingModels: 'Fetching models from endpoint...',
-      fetchModelsFailed: 'Could not fetch models from endpoint. You can add models manually.',
+      modelAdded: 'Aangepast model toegevoegd.',
+      modelDeleted: 'Aangepast model verwijderd.',
+      modelNameConflict: 'Dit model bestaat al in de lijst.',
+      fetchingModels: 'Modellen ophalen van eindpunt...',
+      fetchModelsFailed: 'Kon modellen niet ophalen van eindpunt. U kunt modellen handmatig toevoegen.',
     },
     descriptions: {
       ollamaFixedToDirectDiff: 'Ollama staat vast op Direct Diff modus',

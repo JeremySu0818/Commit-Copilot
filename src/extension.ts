@@ -873,7 +873,9 @@ async function executeGenerateCommand(
     }
 
     const progressTitle =
-      providerContext.llmProvider === 'ollama' ? 'Ollama' : providerDisplayName;
+      providerContext.llmProvider === 'ollama'
+        ? PROVIDER_DISPLAY_NAMES['ollama']
+        : providerDisplayName;
     await vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,

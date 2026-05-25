@@ -4,73 +4,70 @@ import type { LocaleTextBundle } from '../types';
 export const trLocale: LocaleTextBundle = {
   commitCopilotErrorMessages: {
     'api.keyMissing': () =>
-      'API Key is not configured. Please set your API Key in the Commit-Copilot panel.',
+      'API Anahtarı yapılandırılmadı. Lütfen API Anahtarınızı Commit-Copilot panelinde ayarlayın.',
     'api.keyInvalid': (args) =>
       args.details?.trim()
-        ? 'Invalid API Key: {details}'.replace('{details}', args.details)
-        : 'Invalid API Key.',
+        ? 'Geçersiz API Anahtarı: {details}'.replace('{details}', args.details)
+        : 'Geçersiz API Anahtarı.',
     'api.quotaExceeded': (args) =>
       args.details?.trim()
-        ? 'API quota exceeded: {details}'.replace('{details}', args.details)
-        : 'API quota exceeded.',
+        ? 'API kotası aşıldı: {details}'.replace('{details}', args.details)
+        : 'API kotası aşıldı.',
     'api.requestFailed': (args) =>
       args.details?.trim()
-        ? 'API request failed: {details}'.replace('{details}', args.details)
-        : 'API request failed.',
+        ? 'API isteği başarısız oldu: {details}'.replace('{details}', args.details)
+        : 'API isteği başarısız oldu.',
     'api.ollamaConnectionFailed': (args) =>
-      'Cannot connect to Ollama. Make sure Ollama is running at {host}.'.replace(
+      'Ollama\'ya bağlanılamıyor. Ollama\'nın {host} üzerinde çalıştığından emin olun.'.replace(
         '{host}',
         args.host ?? '',
       ),
     'api.ollamaModelNotFound': (args) =>
-      'Model "{model}" was not found. Pull it first with: ollama pull {model}'.replace(
+      '"{model}" modeli bulunamadı. Lütfen önce şu komutla indirin: ollama pull {model}'.replace(
         /\{model\}/g,
         args.model ?? '',
       ),
     'api.unknownAnthropicModel': (args) =>
-      'Unknown Anthropic model "{model}". Add it to ANTHROPIC_MODELS with max_tokens.'.replace(
+      'Bilinmeyen Anthropic modeli "{model}". Lütfen max_tokens ile birlikte ANTHROPIC_MODELS\'a ekleyin.'.replace(
         '{model}',
         args.model ?? '',
       ),
     'api.emptyResponse': (args) =>
-      'Empty response from {provider}.'.replace(
-        '{provider}',
-        args.provider ?? '',
-      ),
+      '{provider}\'dan boş yanıt alındı.'.replace('{provider}', args.provider ?? ''),
     'api.emptyTextResponse': (args) =>
-      'Empty text response from {provider}.'.replace(
+      '{provider}\'dan boş metin yanıtı alındı.'.replace(
         '{provider}',
         args.provider ?? '',
       ),
     'api.emptyFinalResponse': (args) =>
-      'Empty final response from {provider}.'.replace(
+      '{provider}\'dan boş nihai yanıt alındı.'.replace(
         '{provider}',
         args.provider ?? '',
       ),
     'api.responseTruncated': (args) =>
-      'Response from {provider} was truncated ({stopReason}).'
+      '{provider}\'ın yanıtı kesildi ({stopReason}).'
         .replace('{provider}', args.provider ?? '')
         .replace('{stopReason}', args.stopReason ?? ''),
     'api.finalResponseTruncated': (args) =>
-      'Final response from {provider} was truncated ({stopReason}).'
+      '{provider}\'ın nihai yanıtı kesildi ({stopReason}).'
         .replace('{provider}', args.provider ?? '')
         .replace('{stopReason}', args.stopReason ?? ''),
     'git.stageFailed': (args) =>
       args.details?.trim()
-        ? 'Failed to stage changes: {details}'.replace(
+        ? 'Değişiklikler sahneye eklenemedi (stage): {details}'.replace(
             '{details}',
             args.details,
           )
-        : 'Failed to stage changes.',
+        : 'Değişiklikler sahneye eklenemedi (stage).',
     'generation.noChanges': () =>
-      'No changes detected to generate a commit for.',
+      'Commit mesajı oluşturmak için herhangi bir değişiklik algılanmadı.',
     'generation.noChangesButUntracked': () =>
-      'No changes to commit, but untracked files were detected.',
+      'Commit edilecek değişiklik yok, ancak takip edilmeyen dosyalar algılandı.',
     'generation.noTrackedChangesButUntracked': () =>
-      'No tracked changes detected, only untracked files are present.',
+      'Takip edilen değişiklik algılanmadı, yalnızca takip edilmeyen dosyalar mevcut.',
     'generation.mixedChanges': () =>
-      'Both staged and unstaged changes were detected.',
-    'generation.cancelled': () => 'Generation canceled by user.',
+      'Hem sahnelenen (staged) hem de sahnelenmeyen değişiklikler algılandı.',
+    'generation.cancelled': () => 'Oluşturma işlemi kullanıcı tarafından iptal edildi.',
   },
   errorMessages: {
     [EXIT_CODES.NOT_GIT_REPO]: {
@@ -227,7 +224,7 @@ export const trLocale: LocaleTextBundle = {
       settings: 'Ayarlar',
       addProvider: 'Özel Sağlayıcı Ekle',
       editProvider: 'Özel Sağlayıcıyı Düzenle',
-      addModel: 'Add Custom Model',
+      addModel: 'Özel Model Ekle',
     },
     labels: {
       provider: 'Sağlayıcı',
@@ -244,7 +241,7 @@ export const trLocale: LocaleTextBundle = {
       providerName: 'Sağlayıcı Adı',
       apiBaseUrl: 'API Temel URL',
       commitMessage: 'Commit Mesajı',
-      modelName: 'Model Name',
+      modelName: 'Model Adı',
     },
     placeholders: {
       selectProvider: 'Bir sağlayıcı seçin...',
@@ -255,7 +252,7 @@ export const trLocale: LocaleTextBundle = {
       enterOpenAIApiKey: 'OpenAI API Anahtarınızı girin',
       enterAnthropicApiKey: 'Anthropic API Anahtarınızı girin',
       enterCustomApiKey: 'API Anahtarınızı girin',
-      enterModelName: 'Enter model name',
+      enterModelName: 'Model adını girin',
     },
     buttons: {
       save: 'Kaydet',
@@ -266,8 +263,8 @@ export const trLocale: LocaleTextBundle = {
       editProvider: 'Sağlayıcıyı Düzenle',
       addProvider: '+ Sağlayıcı Ekle...',
       deleteProvider: 'Sağlayıcıyı Sil',
-      addModel: '+ Add Model...',
-      deleteModel: 'Delete Model',
+      addModel: '+ Model Ekle...',
+      deleteModel: 'Modeli Sil',
       cancel: 'İptal',
     },
     statuses: {
@@ -286,11 +283,11 @@ export const trLocale: LocaleTextBundle = {
       providerSaved: 'Özel sağlayıcı kaydedildi!',
       providerDeleted: 'Özel sağlayıcı silindi.',
       modelNameRequired: 'Lütfen oluşturmadan önce bir model adı girin.',
-      modelAdded: 'Custom model added.',
-      modelDeleted: 'Custom model removed.',
-      modelNameConflict: 'This model already exists in the list.',
-      fetchingModels: 'Fetching models from endpoint...',
-      fetchModelsFailed: 'Could not fetch models from endpoint. You can add models manually.',
+      modelAdded: 'Özel model eklendi.',
+      modelDeleted: 'Özel model kaldırıldı.',
+      modelNameConflict: 'Bu model listede zaten var.',
+      fetchingModels: 'Uç noktadan modeller alınıyor...',
+      fetchModelsFailed: 'Uç noktadan modeller alınamadı. Modelleri manuel olarak ekleyebilirsiniz.',
     },
     descriptions: {
       ollamaFixedToDirectDiff:

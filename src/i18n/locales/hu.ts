@@ -4,73 +4,70 @@ import type { LocaleTextBundle } from '../types';
 export const huLocale: LocaleTextBundle = {
   commitCopilotErrorMessages: {
     'api.keyMissing': () =>
-      'API Key is not configured. Please set your API Key in the Commit-Copilot panel.',
+      'Az API kulcs nincs konfigurálva. Kérjük, állítsa be az API kulcsot a Commit-Copilot panelen.',
     'api.keyInvalid': (args) =>
       args.details?.trim()
-        ? 'Invalid API Key: {details}'.replace('{details}', args.details)
-        : 'Invalid API Key.',
+        ? 'Érvénytelen API kulcs: {details}'.replace('{details}', args.details)
+        : 'Érvénytelen API kulcs.',
     'api.quotaExceeded': (args) =>
       args.details?.trim()
-        ? 'API quota exceeded: {details}'.replace('{details}', args.details)
-        : 'API quota exceeded.',
+        ? 'API kvóta túllépve: {details}'.replace('{details}', args.details)
+        : 'API kvóta túllépve.',
     'api.requestFailed': (args) =>
       args.details?.trim()
-        ? 'API request failed: {details}'.replace('{details}', args.details)
-        : 'API request failed.',
+        ? 'API kérés sikertelen: {details}'.replace('{details}', args.details)
+        : 'API kérés sikertelen.',
     'api.ollamaConnectionFailed': (args) =>
-      'Cannot connect to Ollama. Make sure Ollama is running at {host}.'.replace(
+      'Nem sikerült csatlakozni az Ollama-hoz. Ellenőrizze, hogy az Ollama fut-e a következő címen: {host}.'.replace(
         '{host}',
         args.host ?? '',
       ),
     'api.ollamaModelNotFound': (args) =>
-      'Model "{model}" was not found. Pull it first with: ollama pull {model}'.replace(
+      'A "{model}" modell nem található. Töltse le előbb a következő paranccsal: ollama pull {model}'.replace(
         /\{model\}/g,
         args.model ?? '',
       ),
     'api.unknownAnthropicModel': (args) =>
-      'Unknown Anthropic model "{model}". Add it to ANTHROPIC_MODELS with max_tokens.'.replace(
+      'Ismeretlen Anthropic modell: "{model}". Adja hozzá az ANTHROPIC_MODELS listához max_tokens értékkel.'.replace(
         '{model}',
         args.model ?? '',
       ),
     'api.emptyResponse': (args) =>
-      'Empty response from {provider}.'.replace(
-        '{provider}',
-        args.provider ?? '',
-      ),
+      'Üres válasz érkezett a következőtől: {provider}.'.replace('{provider}', args.provider ?? ''),
     'api.emptyTextResponse': (args) =>
-      'Empty text response from {provider}.'.replace(
+      'Üres szöveges válasz érkezett a következőtől: {provider}.'.replace(
         '{provider}',
         args.provider ?? '',
       ),
     'api.emptyFinalResponse': (args) =>
-      'Empty final response from {provider}.'.replace(
+      'Üres végső válasz érkezett a következőtől: {provider}.'.replace(
         '{provider}',
         args.provider ?? '',
       ),
     'api.responseTruncated': (args) =>
-      'Response from {provider} was truncated ({stopReason}).'
+      'A válasz a következőtől: {provider} csonkolva lett ({stopReason}).'
         .replace('{provider}', args.provider ?? '')
         .replace('{stopReason}', args.stopReason ?? ''),
     'api.finalResponseTruncated': (args) =>
-      'Final response from {provider} was truncated ({stopReason}).'
+      'A végső válasz a következőtől: {provider} csonkolva lett ({stopReason}).'
         .replace('{provider}', args.provider ?? '')
         .replace('{stopReason}', args.stopReason ?? ''),
     'git.stageFailed': (args) =>
       args.details?.trim()
-        ? 'Failed to stage changes: {details}'.replace(
+        ? 'Nem sikerült indexelni a változtatásokat: {details}'.replace(
             '{details}',
             args.details,
           )
-        : 'Failed to stage changes.',
+        : 'Nem sikerült indexelni a változtatásokat.',
     'generation.noChanges': () =>
-      'No changes detected to generate a commit for.',
+      'Nem észlelhető változtatás a commit üzenet létrehozásához.',
     'generation.noChangesButUntracked': () =>
-      'No changes to commit, but untracked files were detected.',
+      'Nincs commitolható változtatás, de nem követett fájlok találhatók.',
     'generation.noTrackedChangesButUntracked': () =>
-      'No tracked changes detected, only untracked files are present.',
+      'Nem észlelhető követett változtatás, csak nem követett fájlok vannak jelen.',
     'generation.mixedChanges': () =>
-      'Both staged and unstaged changes were detected.',
-    'generation.cancelled': () => 'Generation canceled by user.',
+      'Indexelt és nem indexelt változtatások egyaránt észlelhetők.',
+    'generation.cancelled': () => 'A generálást a felhasználó megszakította.',
   },
   errorMessages: {
     [EXIT_CODES.NOT_GIT_REPO]: {
@@ -227,7 +224,7 @@ export const huLocale: LocaleTextBundle = {
       settings: 'Beállítások',
       addProvider: 'Egyéni szolgáltató hozzáadása',
       editProvider: 'Egyéni szolgáltató szerkesztése',
-      addModel: 'Add Custom Model',
+      addModel: 'Egyedi modell hozzáadása',
     },
     labels: {
       provider: 'Szolgáltató',
@@ -244,7 +241,7 @@ export const huLocale: LocaleTextBundle = {
       providerName: 'Szolgáltató neve',
       apiBaseUrl: 'API Base URL',
       commitMessage: 'Commit üzenet',
-      modelName: 'Model Name',
+      modelName: 'Modell neve',
     },
     placeholders: {
       selectProvider: 'Válasszon szolgáltatót...',
@@ -255,7 +252,7 @@ export const huLocale: LocaleTextBundle = {
       enterOpenAIApiKey: 'Adja meg az OpenAI API kulcsot',
       enterAnthropicApiKey: 'Adja meg az Anthropic API kulcsot',
       enterCustomApiKey: 'Adja meg az API kulcsot',
-      enterModelName: 'Enter model name',
+      enterModelName: 'Írja be a modell nevét',
     },
     buttons: {
       save: 'Mentés',
@@ -266,8 +263,8 @@ export const huLocale: LocaleTextBundle = {
       editProvider: 'Szolgáltató szerkesztése',
       addProvider: '+ Szolgáltató hozzáadása...',
       deleteProvider: 'Szolgáltató törlése',
-      addModel: '+ Add Model...',
-      deleteModel: 'Delete Model',
+      addModel: '+ Modell hozzáadása...',
+      deleteModel: 'Modell törlése',
       cancel: 'Mégse',
     },
     statuses: {
@@ -286,11 +283,11 @@ export const huLocale: LocaleTextBundle = {
       providerSaved: 'Egyéni szolgáltató mentve!',
       providerDeleted: 'Egyéni szolgáltató törölve.',
       modelNameRequired: 'Kérjük, adjon meg egy modellnevet a generálás előtt.',
-      modelAdded: 'Custom model added.',
-      modelDeleted: 'Custom model removed.',
-      modelNameConflict: 'This model already exists in the list.',
-      fetchingModels: 'Fetching models from endpoint...',
-      fetchModelsFailed: 'Could not fetch models from endpoint. You can add models manually.',
+      modelAdded: 'Egyedi modell hozzáadva.',
+      modelDeleted: 'Egyedi modell eltávolítva.',
+      modelNameConflict: 'Ez a modell már szerepel a listában.',
+      fetchingModels: 'Modellek lekérése a végpontról...',
+      fetchModelsFailed: 'Nem sikerült lekérni a modelleket a végpontról. Hozzáadhat modelleket manuálisan.',
     },
     descriptions: {
       ollamaFixedToDirectDiff: 'Az Ollama rögzítve van a Direct Diff módhoz',

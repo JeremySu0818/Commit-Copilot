@@ -4,73 +4,70 @@ import type { LocaleTextBundle } from '../types';
 export const idLocale: LocaleTextBundle = {
   commitCopilotErrorMessages: {
     'api.keyMissing': () =>
-      'API Key is not configured. Please set your API Key in the Commit-Copilot panel.',
+      'API Key belum dikonfigurasi. Silakan atur API Key Anda di panel Commit-Copilot.',
     'api.keyInvalid': (args) =>
       args.details?.trim()
-        ? 'Invalid API Key: {details}'.replace('{details}', args.details)
-        : 'Invalid API Key.',
+        ? 'API Key tidak valid: {details}'.replace('{details}', args.details)
+        : 'API Key tidak valid.',
     'api.quotaExceeded': (args) =>
       args.details?.trim()
-        ? 'API quota exceeded: {details}'.replace('{details}', args.details)
-        : 'API quota exceeded.',
+        ? 'Kuota API habis: {details}'.replace('{details}', args.details)
+        : 'Kuota API telah terlampaui.',
     'api.requestFailed': (args) =>
       args.details?.trim()
-        ? 'API request failed: {details}'.replace('{details}', args.details)
-        : 'API request failed.',
+        ? 'Permintaan API gagal: {details}'.replace('{details}', args.details)
+        : 'Permintaan API gagal.',
     'api.ollamaConnectionFailed': (args) =>
-      'Cannot connect to Ollama. Make sure Ollama is running at {host}.'.replace(
+      'Tidak dapat terhubung ke Ollama. Pastikan Ollama berjalan di {host}.'.replace(
         '{host}',
         args.host ?? '',
       ),
     'api.ollamaModelNotFound': (args) =>
-      'Model "{model}" was not found. Pull it first with: ollama pull {model}'.replace(
+      'Model "{model}" tidak ditemukan. Unduh terlebih dahulu dengan: ollama pull {model}'.replace(
         /\{model\}/g,
         args.model ?? '',
       ),
     'api.unknownAnthropicModel': (args) =>
-      'Unknown Anthropic model "{model}". Add it to ANTHROPIC_MODELS with max_tokens.'.replace(
+      'Model Anthropic tidak dikenal "{model}". Tambahkan ke ANTHROPIC_MODELS dengan max_tokens.'.replace(
         '{model}',
         args.model ?? '',
       ),
     'api.emptyResponse': (args) =>
-      'Empty response from {provider}.'.replace(
-        '{provider}',
-        args.provider ?? '',
-      ),
+      'Respons kosong dari {provider}.'.replace('{provider}', args.provider ?? ''),
     'api.emptyTextResponse': (args) =>
-      'Empty text response from {provider}.'.replace(
+      'Respons teks kosong dari {provider}.'.replace(
         '{provider}',
         args.provider ?? '',
       ),
     'api.emptyFinalResponse': (args) =>
-      'Empty final response from {provider}.'.replace(
+      'Respons akhir kosong dari {provider}.'.replace(
         '{provider}',
         args.provider ?? '',
       ),
     'api.responseTruncated': (args) =>
-      'Response from {provider} was truncated ({stopReason}).'
+      'Respons dari {provider} terpotong ({stopReason}).'
         .replace('{provider}', args.provider ?? '')
         .replace('{stopReason}', args.stopReason ?? ''),
     'api.finalResponseTruncated': (args) =>
-      'Final response from {provider} was truncated ({stopReason}).'
+      'Respons akhir dari {provider} terpotong ({stopReason}).'
         .replace('{provider}', args.provider ?? '')
         .replace('{stopReason}', args.stopReason ?? ''),
     'git.stageFailed': (args) =>
       args.details?.trim()
-        ? 'Failed to stage changes: {details}'.replace(
+        ? 'Gagal melakukan staging perubahan: {details}'.replace(
             '{details}',
             args.details,
           )
-        : 'Failed to stage changes.',
+        : 'Gagal melakukan staging perubahan.',
     'generation.noChanges': () =>
-      'No changes detected to generate a commit for.',
+      'Tidak ada perubahan yang terdeteksi untuk membuat pesan commit.',
     'generation.noChangesButUntracked': () =>
-      'No changes to commit, but untracked files were detected.',
+      'Tidak ada perubahan untuk di-commit, tetapi terdeteksi file yang belum dilacak.',
     'generation.noTrackedChangesButUntracked': () =>
-      'No tracked changes detected, only untracked files are present.',
+      'Tidak ada perubahan terlacak yang terdeteksi, hanya ada file yang belum dilacak.',
     'generation.mixedChanges': () =>
-      'Both staged and unstaged changes were detected.',
-    'generation.cancelled': () => 'Generation canceled by user.',
+      'Terdeteksi perubahan baik yang di-stage maupun tidak di-stage.',
+    'generation.cancelled': () => 'Pembuatan dibatalkan oleh pengguna.',
   },
   errorMessages: {
     [EXIT_CODES.NOT_GIT_REPO]: {
@@ -226,7 +223,7 @@ export const idLocale: LocaleTextBundle = {
       settings: 'Pengaturan',
       addProvider: 'Tambahkan Penyedia Kustom',
       editProvider: 'Edit Penyedia Kustom',
-      addModel: 'Add Custom Model',
+      addModel: 'Tambah Model Kustom',
     },
     labels: {
       provider: 'Penyedia',
@@ -243,7 +240,7 @@ export const idLocale: LocaleTextBundle = {
       providerName: 'Nama Penyedia',
       apiBaseUrl: 'URL Dasar API',
       commitMessage: 'Pesan Commit',
-      modelName: 'Model Name',
+      modelName: 'Nama Model',
     },
     placeholders: {
       selectProvider: 'Pilih penyedia...',
@@ -254,7 +251,7 @@ export const idLocale: LocaleTextBundle = {
       enterOpenAIApiKey: 'Masukkan API Key OpenAI Anda',
       enterAnthropicApiKey: 'Masukkan API Key Anthropic Anda',
       enterCustomApiKey: 'Masukkan API Key Anda',
-      enterModelName: 'Enter model name',
+      enterModelName: 'Masukkan nama model',
     },
     buttons: {
       save: 'Simpan',
@@ -265,8 +262,8 @@ export const idLocale: LocaleTextBundle = {
       editProvider: 'Edit Penyedia',
       addProvider: '+ Tambah Penyedia...',
       deleteProvider: 'Hapus Penyedia',
-      addModel: '+ Add Model...',
-      deleteModel: 'Delete Model',
+      addModel: '+ Tambah Model...',
+      deleteModel: 'Hapus Model',
       cancel: 'Batal',
     },
     statuses: {
@@ -285,11 +282,11 @@ export const idLocale: LocaleTextBundle = {
       providerSaved: 'Penyedia kustom disimpan!',
       providerDeleted: 'Penyedia kustom dihapus.',
       modelNameRequired: 'Silakan masukkan nama model sebelum menghasilkan.',
-      modelAdded: 'Custom model added.',
-      modelDeleted: 'Custom model removed.',
-      modelNameConflict: 'This model already exists in the list.',
-      fetchingModels: 'Fetching models from endpoint...',
-      fetchModelsFailed: 'Could not fetch models from endpoint. You can add models manually.',
+      modelAdded: 'Model kustom ditambahkan.',
+      modelDeleted: 'Model kustom dihapus.',
+      modelNameConflict: 'Model ini sudah ada dalam daftar.',
+      fetchingModels: 'Mengambil model dari titik akhir...',
+      fetchModelsFailed: 'Tidak dapat mengambil model dari titik akhir. Anda dapat menambahkan model secara manual.',
     },
     descriptions: {
       ollamaFixedToDirectDiff: 'Ollama ditetapkan ke mode Direct Diff',

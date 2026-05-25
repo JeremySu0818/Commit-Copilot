@@ -574,6 +574,7 @@ async function generateMessageWithProvider(params: {
     ollamaHost: params.provider === 'ollama' ? params.apiKey : undefined,
     model: resolvedModel,
     commitOutputOptions: resolvedCommitOutputOptions,
+    language: params.language,
   }).generateCommitMessage(
     params.diff,
     params.onProgress,

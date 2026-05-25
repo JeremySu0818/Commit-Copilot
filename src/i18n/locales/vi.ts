@@ -4,73 +4,70 @@ import type { LocaleTextBundle } from '../types';
 export const viLocale: LocaleTextBundle = {
   commitCopilotErrorMessages: {
     'api.keyMissing': () =>
-      'API Key is not configured. Please set your API Key in the Commit-Copilot panel.',
+      'API Key chưa được cấu hình. Vui lòng thiết lập API Key của bạn trong bảng điều khiển Commit-Copilot.',
     'api.keyInvalid': (args) =>
       args.details?.trim()
-        ? 'Invalid API Key: {details}'.replace('{details}', args.details)
-        : 'Invalid API Key.',
+        ? 'API Key không hợp lệ: {details}'.replace('{details}', args.details)
+        : 'API Key không hợp lệ.',
     'api.quotaExceeded': (args) =>
       args.details?.trim()
-        ? 'API quota exceeded: {details}'.replace('{details}', args.details)
-        : 'API quota exceeded.',
+        ? 'Hạn mức API đã vượt quá: {details}'.replace('{details}', args.details)
+        : 'Hạn mức API đã vượt quá.',
     'api.requestFailed': (args) =>
       args.details?.trim()
-        ? 'API request failed: {details}'.replace('{details}', args.details)
-        : 'API request failed.',
+        ? 'Yêu cầu API thất bại: {details}'.replace('{details}', args.details)
+        : 'Yêu cầu API thất bại.',
     'api.ollamaConnectionFailed': (args) =>
-      'Cannot connect to Ollama. Make sure Ollama is running at {host}.'.replace(
+      'Không thể kết nối đến Ollama. Hãy đảm bảo Ollama đang chạy tại {host}.'.replace(
         '{host}',
         args.host ?? '',
       ),
     'api.ollamaModelNotFound': (args) =>
-      'Model "{model}" was not found. Pull it first with: ollama pull {model}'.replace(
+      'Không tìm thấy mô hình "{model}". Vui lòng tải về trước bằng: ollama pull {model}'.replace(
         /\{model\}/g,
         args.model ?? '',
       ),
     'api.unknownAnthropicModel': (args) =>
-      'Unknown Anthropic model "{model}". Add it to ANTHROPIC_MODELS with max_tokens.'.replace(
+      'Không xác định được mô hình Anthropic "{model}". Hãy thêm vào ANTHROPIC_MODELS kèm theo max_tokens.'.replace(
         '{model}',
         args.model ?? '',
       ),
     'api.emptyResponse': (args) =>
-      'Empty response from {provider}.'.replace(
-        '{provider}',
-        args.provider ?? '',
-      ),
+      'Phản hồi trống từ {provider}.'.replace('{provider}', args.provider ?? ''),
     'api.emptyTextResponse': (args) =>
-      'Empty text response from {provider}.'.replace(
+      'Phản hồi văn bản trống từ {provider}.'.replace(
         '{provider}',
         args.provider ?? '',
       ),
     'api.emptyFinalResponse': (args) =>
-      'Empty final response from {provider}.'.replace(
+      'Phản hồi cuối cùng trống từ {provider}.'.replace(
         '{provider}',
         args.provider ?? '',
       ),
     'api.responseTruncated': (args) =>
-      'Response from {provider} was truncated ({stopReason}).'
+      'Phản hồi từ {provider} đã bị cắt bớt ({stopReason}).'
         .replace('{provider}', args.provider ?? '')
         .replace('{stopReason}', args.stopReason ?? ''),
     'api.finalResponseTruncated': (args) =>
-      'Final response from {provider} was truncated ({stopReason}).'
+      'Phản hồi cuối cùng từ {provider} đã bị cắt bớt ({stopReason}).'
         .replace('{provider}', args.provider ?? '')
         .replace('{stopReason}', args.stopReason ?? ''),
     'git.stageFailed': (args) =>
       args.details?.trim()
-        ? 'Failed to stage changes: {details}'.replace(
+        ? 'Không thể chuẩn bị (stage) các thay đổi: {details}'.replace(
             '{details}',
             args.details,
           )
-        : 'Failed to stage changes.',
+        : 'Không thể chuẩn bị (stage) các thay đổi.',
     'generation.noChanges': () =>
-      'No changes detected to generate a commit for.',
+      'Không phát hiện thay đổi nào để tạo thông điệp commit.',
     'generation.noChangesButUntracked': () =>
-      'No changes to commit, but untracked files were detected.',
+      'Không có thay đổi nào để commit, nhưng phát hiện các tệp tin chưa được theo dõi.',
     'generation.noTrackedChangesButUntracked': () =>
-      'No tracked changes detected, only untracked files are present.',
+      'Không phát hiện thay đổi nào được theo dõi, chỉ có các tệp tin chưa được theo dõi.',
     'generation.mixedChanges': () =>
-      'Both staged and unstaged changes were detected.',
-    'generation.cancelled': () => 'Generation canceled by user.',
+      'Phát hiện cả thay đổi đã chuẩn bị (staged) và chưa chuẩn bị.',
+    'generation.cancelled': () => 'Người dùng đã hủy quá trình tạo.',
   },
   errorMessages: {
     [EXIT_CODES.NOT_GIT_REPO]: {
@@ -223,7 +220,7 @@ export const viLocale: LocaleTextBundle = {
       settings: 'Cài đặt',
       addProvider: 'Thêm nhà cung cấp tùy chỉnh',
       editProvider: 'Chỉnh sửa nhà cung cấp tùy chỉnh',
-      addModel: 'Add Custom Model',
+      addModel: 'Thêm mô hình tùy chỉnh',
     },
     labels: {
       provider: 'Nhà cung cấp',
@@ -240,7 +237,7 @@ export const viLocale: LocaleTextBundle = {
       providerName: 'Tên Nhà cung cấp',
       apiBaseUrl: 'API Base URL',
       commitMessage: 'Thông báo commit',
-      modelName: 'Model Name',
+      modelName: 'Tên mô hình',
     },
     placeholders: {
       selectProvider: 'Chọn một nhà cung cấp...',
@@ -251,7 +248,7 @@ export const viLocale: LocaleTextBundle = {
       enterOpenAIApiKey: 'Nhập OpenAI API Key của bạn',
       enterAnthropicApiKey: 'Nhập Anthropic API Key của bạn',
       enterCustomApiKey: 'Nhập API Key của bạn',
-      enterModelName: 'Enter model name',
+      enterModelName: 'Nhập tên mô hình',
     },
     buttons: {
       save: 'Lưu',
@@ -262,8 +259,8 @@ export const viLocale: LocaleTextBundle = {
       editProvider: 'Chỉnh sửa Nhà cung cấp',
       addProvider: '+ Thêm Nhà cung cấp...',
       deleteProvider: 'Xóa Nhà cung cấp',
-      addModel: '+ Add Model...',
-      deleteModel: 'Delete Model',
+      addModel: '+ Thêm mô hình...',
+      deleteModel: 'Xóa mô hình',
       cancel: 'Hủy',
     },
     statuses: {
@@ -282,11 +279,11 @@ export const viLocale: LocaleTextBundle = {
       providerSaved: 'Đã lưu nhà cung cấp tùy chỉnh!',
       providerDeleted: 'Đã xóa nhà cung cấp tùy chỉnh.',
       modelNameRequired: 'Vui lòng nhập tên mô hình trước khi tạo.',
-      modelAdded: 'Custom model added.',
-      modelDeleted: 'Custom model removed.',
-      modelNameConflict: 'This model already exists in the list.',
-      fetchingModels: 'Fetching models from endpoint...',
-      fetchModelsFailed: 'Could not fetch models from endpoint. You can add models manually.',
+      modelAdded: 'Đã thêm mô hình tùy chỉnh.',
+      modelDeleted: 'Đã xóa mô hình tùy chỉnh.',
+      modelNameConflict: 'Mô hình này đã tồn tại trong danh sách.',
+      fetchingModels: 'Đang tải các mô hình từ điểm cuối...',
+      fetchModelsFailed: 'Không thể tải các mô hình từ điểm cuối. Bạn có thể thêm mô hình thủ công.',
     },
     descriptions: {
       ollamaFixedToDirectDiff: 'Ollama được cố định ở chế độ Direct Diff',

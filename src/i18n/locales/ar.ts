@@ -4,73 +4,70 @@ import type { LocaleTextBundle } from '../types';
 export const arLocale: LocaleTextBundle = {
   commitCopilotErrorMessages: {
     'api.keyMissing': () =>
-      'API Key is not configured. Please set your API Key in the Commit-Copilot panel.',
+      'مفتاح API غير مكون. يرجى إعداد مفتاح API الخاص بك في لوحة Commit-Copilot.',
     'api.keyInvalid': (args) =>
       args.details?.trim()
-        ? 'Invalid API Key: {details}'.replace('{details}', args.details)
-        : 'Invalid API Key.',
+        ? 'مفتاح API غير صالح: {details}'.replace('{details}', args.details)
+        : 'مفتاح API غير صالح.',
     'api.quotaExceeded': (args) =>
       args.details?.trim()
-        ? 'API quota exceeded: {details}'.replace('{details}', args.details)
-        : 'API quota exceeded.',
+        ? 'تم تجاوز حصة API: {details}'.replace('{details}', args.details)
+        : 'تم تجاوز حصة API.',
     'api.requestFailed': (args) =>
       args.details?.trim()
-        ? 'API request failed: {details}'.replace('{details}', args.details)
-        : 'API request failed.',
+        ? 'فشل طلب API: {details}'.replace('{details}', args.details)
+        : 'فشل طلب API.',
     'api.ollamaConnectionFailed': (args) =>
-      'Cannot connect to Ollama. Make sure Ollama is running at {host}.'.replace(
+      'تعذر الاتصال بـ Ollama. تأكد من أن Ollama يعمل على {host}.'.replace(
         '{host}',
         args.host ?? '',
       ),
     'api.ollamaModelNotFound': (args) =>
-      'Model "{model}" was not found. Pull it first with: ollama pull {model}'.replace(
+      'لم يتم العثور على النموذج "{model}". قم بتنزيله أولاً باستخدام: ollama pull {model}'.replace(
         /\{model\}/g,
         args.model ?? '',
       ),
     'api.unknownAnthropicModel': (args) =>
-      'Unknown Anthropic model "{model}". Add it to ANTHROPIC_MODELS with max_tokens.'.replace(
+      'نموذج Anthropic غير معروف "{model}". أضفه إلى ANTHROPIC_MODELS مع max_tokens.'.replace(
         '{model}',
         args.model ?? '',
       ),
     'api.emptyResponse': (args) =>
-      'Empty response from {provider}.'.replace(
-        '{provider}',
-        args.provider ?? '',
-      ),
+      'استجابة فارغة من {provider}.'.replace('{provider}', args.provider ?? ''),
     'api.emptyTextResponse': (args) =>
-      'Empty text response from {provider}.'.replace(
+      'استجابة نصية فارغة من {provider}.'.replace(
         '{provider}',
         args.provider ?? '',
       ),
     'api.emptyFinalResponse': (args) =>
-      'Empty final response from {provider}.'.replace(
+      'استجابة نهائية فارغة من {provider}.'.replace(
         '{provider}',
         args.provider ?? '',
       ),
     'api.responseTruncated': (args) =>
-      'Response from {provider} was truncated ({stopReason}).'
+      'تم اقتطاع الاستجابة من {provider} ({stopReason}).'
         .replace('{provider}', args.provider ?? '')
         .replace('{stopReason}', args.stopReason ?? ''),
     'api.finalResponseTruncated': (args) =>
-      'Final response from {provider} was truncated ({stopReason}).'
+      'تم اقتطاع الاستجابة النهائية من {provider} ({stopReason}).'
         .replace('{provider}', args.provider ?? '')
         .replace('{stopReason}', args.stopReason ?? ''),
     'git.stageFailed': (args) =>
       args.details?.trim()
-        ? 'Failed to stage changes: {details}'.replace(
+        ? 'فشل في تجهيز التغييرات: {details}'.replace(
             '{details}',
             args.details,
           )
-        : 'Failed to stage changes.',
+        : 'فشل في تجهيز التغييرات.',
     'generation.noChanges': () =>
-      'No changes detected to generate a commit for.',
+      'لم يتم اكتشاف أي تغييرات لإنشاء كود التزام لها.',
     'generation.noChangesButUntracked': () =>
-      'No changes to commit, but untracked files were detected.',
+      'لا توجد تغييرات للالتزام بها، ولكن تم اكتشاف ملفات غير متتبعة.',
     'generation.noTrackedChangesButUntracked': () =>
-      'No tracked changes detected, only untracked files are present.',
+      'لم يتم اكتشاف أي تغييرات متتبعة، تتوفر فقط ملفات غير متتبعة.',
     'generation.mixedChanges': () =>
-      'Both staged and unstaged changes were detected.',
-    'generation.cancelled': () => 'Generation canceled by user.',
+      'تم اكتشاف تغييرات مجهزة وغير مجهزة معًا.',
+    'generation.cancelled': () => 'تم إلغاء الإنشاء بواسطة المستخدم.',
   },
   errorMessages: {
     [EXIT_CODES.NOT_GIT_REPO]: {
@@ -214,7 +211,7 @@ export const arLocale: LocaleTextBundle = {
       settings: 'الإعدادات',
       addProvider: 'إضافة مزود مخصص',
       editProvider: 'تعديل مزود مخصص',
-      addModel: 'Add Custom Model',
+      addModel: 'إضافة نموذج مخصص',
     },
     labels: {
       provider: 'المزود',
@@ -231,7 +228,7 @@ export const arLocale: LocaleTextBundle = {
       providerName: 'اسم المزود',
       apiBaseUrl: 'الرابط الأساسي لـ API',
       commitMessage: 'رسالة Commit',
-      modelName: 'Model Name',
+      modelName: 'اسم النموذج',
     },
     placeholders: {
       selectProvider: 'حدد مزوداً...',
@@ -242,7 +239,7 @@ export const arLocale: LocaleTextBundle = {
       enterOpenAIApiKey: 'أدخل مفتاح OpenAI API الخاص بك',
       enterAnthropicApiKey: 'أدخل مفتاح Anthropic API الخاص بك',
       enterCustomApiKey: 'أدخل مفتاح API الخاص بك',
-      enterModelName: 'Enter model name',
+      enterModelName: 'أدخل اسم النموذج',
     },
     buttons: {
       save: 'حفظ',
@@ -253,8 +250,8 @@ export const arLocale: LocaleTextBundle = {
       editProvider: 'تعديل المزود',
       addProvider: '+ إضافة مزود...',
       deleteProvider: 'حذف المزود',
-      addModel: '+ Add Model...',
-      deleteModel: 'Delete Model',
+      addModel: '+ إضافة نموذج...',
+      deleteModel: 'حذف النموذج',
       cancel: 'إلغاء',
     },
     statuses: {
@@ -273,11 +270,11 @@ export const arLocale: LocaleTextBundle = {
       providerSaved: 'تم حفظ المزود المخصص!',
       providerDeleted: 'تم حذف المزود المخصص.',
       modelNameRequired: 'يرجى إدخال اسم النموذج قبل التوليد.',
-      modelAdded: 'Custom model added.',
-      modelDeleted: 'Custom model removed.',
-      modelNameConflict: 'This model already exists in the list.',
-      fetchingModels: 'Fetching models from endpoint...',
-      fetchModelsFailed: 'Could not fetch models from endpoint. You can add models manually.',
+      modelAdded: 'تم إضافة النموذج المخصص.',
+      modelDeleted: 'تم إزالة النموذج المخصص.',
+      modelNameConflict: 'هذا النموذج موجود بالفعل في القائمة.',
+      fetchingModels: 'جاري جلب النماذج من نقطة النهاية...',
+      fetchModelsFailed: 'تعذر جلب النماذج من نقطة النهاية. يمكنك إضافة النماذج يدويًا.',
     },
     descriptions: {
       ollamaFixedToDirectDiff: 'Ollama مثبت على وضع Direct Diff',

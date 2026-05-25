@@ -4,73 +4,70 @@ import type { LocaleTextBundle } from '../types';
 export const esLocale: LocaleTextBundle = {
   commitCopilotErrorMessages: {
     'api.keyMissing': () =>
-      'API Key is not configured. Please set your API Key in the Commit-Copilot panel.',
+      'El API Key no está configurado. Configure su API Key en el panel de Commit-Copilot.',
     'api.keyInvalid': (args) =>
       args.details?.trim()
-        ? 'Invalid API Key: {details}'.replace('{details}', args.details)
-        : 'Invalid API Key.',
+        ? 'API Key no válido: {details}'.replace('{details}', args.details)
+        : 'API Key no válido.',
     'api.quotaExceeded': (args) =>
       args.details?.trim()
-        ? 'API quota exceeded: {details}'.replace('{details}', args.details)
-        : 'API quota exceeded.',
+        ? 'Cuota de API excedida: {details}'.replace('{details}', args.details)
+        : 'Cuota de API excedida.',
     'api.requestFailed': (args) =>
       args.details?.trim()
-        ? 'API request failed: {details}'.replace('{details}', args.details)
-        : 'API request failed.',
+        ? 'Error en la solicitud de API: {details}'.replace('{details}', args.details)
+        : 'Error en la solicitud de API.',
     'api.ollamaConnectionFailed': (args) =>
-      'Cannot connect to Ollama. Make sure Ollama is running at {host}.'.replace(
+      'No se puede conectar a Ollama. Asegúrese de que Ollama se está ejecutando en {host}.'.replace(
         '{host}',
         args.host ?? '',
       ),
     'api.ollamaModelNotFound': (args) =>
-      'Model "{model}" was not found. Pull it first with: ollama pull {model}'.replace(
+      'No se encontró el modelo "{model}". Descárguelo primero con: ollama pull {model}'.replace(
         /\{model\}/g,
         args.model ?? '',
       ),
     'api.unknownAnthropicModel': (args) =>
-      'Unknown Anthropic model "{model}". Add it to ANTHROPIC_MODELS with max_tokens.'.replace(
+      'Modelo de Anthropic desconocido "{model}". Agréguelo a ANTHROPIC_MODELS con max_tokens.'.replace(
         '{model}',
         args.model ?? '',
       ),
     'api.emptyResponse': (args) =>
-      'Empty response from {provider}.'.replace(
-        '{provider}',
-        args.provider ?? '',
-      ),
+      'Respuesta vacía de {provider}.'.replace('{provider}', args.provider ?? ''),
     'api.emptyTextResponse': (args) =>
-      'Empty text response from {provider}.'.replace(
+      'Respuesta de texto vacía de {provider}.'.replace(
         '{provider}',
         args.provider ?? '',
       ),
     'api.emptyFinalResponse': (args) =>
-      'Empty final response from {provider}.'.replace(
+      'Respuesta final vacía de {provider}.'.replace(
         '{provider}',
         args.provider ?? '',
       ),
     'api.responseTruncated': (args) =>
-      'Response from {provider} was truncated ({stopReason}).'
+      'La respuesta de {provider} fue truncada ({stopReason}).'
         .replace('{provider}', args.provider ?? '')
         .replace('{stopReason}', args.stopReason ?? ''),
     'api.finalResponseTruncated': (args) =>
-      'Final response from {provider} was truncated ({stopReason}).'
+      'La respuesta final de {provider} fue truncada ({stopReason}).'
         .replace('{provider}', args.provider ?? '')
         .replace('{stopReason}', args.stopReason ?? ''),
     'git.stageFailed': (args) =>
       args.details?.trim()
-        ? 'Failed to stage changes: {details}'.replace(
+        ? 'Error al preparar los cambios (stage): {details}'.replace(
             '{details}',
             args.details,
           )
-        : 'Failed to stage changes.',
+        : 'Error al preparar los cambios (stage).',
     'generation.noChanges': () =>
-      'No changes detected to generate a commit for.',
+      'No se detectaron cambios para generar un mensaje de commit.',
     'generation.noChangesButUntracked': () =>
-      'No changes to commit, but untracked files were detected.',
+      'No hay cambios para hacer commit, pero se detectaron archivos no rastreados.',
     'generation.noTrackedChangesButUntracked': () =>
-      'No tracked changes detected, only untracked files are present.',
+      'No se detectaron cambios rastreados, solo hay archivos no rastreados presentes.',
     'generation.mixedChanges': () =>
-      'Both staged and unstaged changes were detected.',
-    'generation.cancelled': () => 'Generation canceled by user.',
+      'Se detectaron tanto cambios preparados como no preparados.',
+    'generation.cancelled': () => 'Generación cancelada por el usuario.',
   },
   errorMessages: {
     [EXIT_CODES.NOT_GIT_REPO]: {
@@ -226,7 +223,7 @@ export const esLocale: LocaleTextBundle = {
       settings: 'Ajustes',
       addProvider: 'Añadir Proveedor Personalizado',
       editProvider: 'Editar Proveedor Personalizado',
-      addModel: 'Add Custom Model',
+      addModel: 'Agregar modelo personalizado',
     },
     labels: {
       provider: 'Proveedor',
@@ -243,7 +240,7 @@ export const esLocale: LocaleTextBundle = {
       providerName: 'Nombre del Proveedor',
       apiBaseUrl: 'URL Base de API',
       commitMessage: 'Mensaje de commit',
-      modelName: 'Model Name',
+      modelName: 'Nombre del modelo',
     },
     placeholders: {
       selectProvider: 'Selecciona un proveedor...',
@@ -254,7 +251,7 @@ export const esLocale: LocaleTextBundle = {
       enterOpenAIApiKey: 'Introduce tu OpenAI API Key',
       enterAnthropicApiKey: 'Introduce tu Anthropic API Key',
       enterCustomApiKey: 'Introduce tu Clave API',
-      enterModelName: 'Enter model name',
+      enterModelName: 'Ingrese el nombre del modelo',
     },
     buttons: {
       save: 'Guardar',
@@ -265,8 +262,8 @@ export const esLocale: LocaleTextBundle = {
       editProvider: 'Editar Proveedor',
       addProvider: '+ Añadir Proveedor...',
       deleteProvider: 'Borrar Proveedor',
-      addModel: '+ Add Model...',
-      deleteModel: 'Delete Model',
+      addModel: '+ Agregar modelo...',
+      deleteModel: 'Eliminar modelo',
       cancel: 'Cancelar',
     },
     statuses: {
@@ -286,11 +283,11 @@ export const esLocale: LocaleTextBundle = {
       providerDeleted: 'Proveedor personalizado borrado.',
       modelNameRequired:
         'Por favor, introduce un nombre de modelo antes de generar.',
-      modelAdded: 'Custom model added.',
-      modelDeleted: 'Custom model removed.',
-      modelNameConflict: 'This model already exists in the list.',
-      fetchingModels: 'Fetching models from endpoint...',
-      fetchModelsFailed: 'Could not fetch models from endpoint. You can add models manually.',
+      modelAdded: 'Modelo personalizado agregado.',
+      modelDeleted: 'Modelo personalizado eliminado.',
+      modelNameConflict: 'Este modelo ya existe en la lista.',
+      fetchingModels: 'Obteniendo modelos del punto final...',
+      fetchModelsFailed: 'No se pudieron obtener los modelos del punto final. Puede agregar modelos manualmente.',
     },
     descriptions: {
       ollamaFixedToDirectDiff: 'Ollama está fijado al modo Direct Diff',

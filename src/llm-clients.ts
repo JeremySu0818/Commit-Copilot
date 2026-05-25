@@ -15,6 +15,8 @@ import {
   createOllamaModelNotFoundError,
   createUnknownAnthropicModelError,
 } from './errors';
+import { LOCALES } from './i18n/locales';
+import type { EffectiveDisplayLanguage } from './i18n/types';
 import {
   APIProvider,
   CommitOutputOptions,
@@ -33,6 +35,7 @@ export interface LLMClientOptions {
   baseUrl?: string;
   model?: string;
   commitOutputOptions?: CommitOutputOptions;
+  language?: EffectiveDisplayLanguage;
 }
 
 export type ProgressCallback = (message: string, increment?: number) => void;
@@ -173,6 +176,7 @@ async function reportOllamaPullProgress(
   modelName: string,
   onProgress: ProgressCallback | undefined,
   cancellationToken: CancellationSignal | undefined,
+  language: EffectiveDisplayLanguage,
 ): Promise<void> {
   let lastPercent = 0;
   for await (const part of pullStream) {
@@ -185,7 +189,11 @@ async function reportOllamaPullProgress(
         const increment = percent - lastPercent;
         lastPercent = percent;
         onProgress?.(
-          `Pulling ${modelName}: ${part.status ?? ''} (${String(percent)}%)`,
+          LOCALES[language].progressMessages.pulling(
+            modelName,
+            part.status ?? '',
+            percent,
+          ),
           increment,
         );
       }
@@ -193,7 +201,9 @@ async function reportOllamaPullProgress(
     }
 
     if (part.status) {
-      onProgress?.(`Pulling ${modelName}: ${part.status}`);
+      onProgress?.(
+        LOCALES[language].progressMessages.pulling(modelName, part.status),
+      );
     }
   }
 }
@@ -576,14 +586,17 @@ export class OllamaClient implements ILLMClient {
   private readonly host: string;
   private readonly model: string;
   private readonly systemPrompt: string;
+  private readonly language: EffectiveDisplayLanguage;
 
   constructor(
     host?: string,
     model?: string,
     commitOutputOptions: CommitOutputOptions = DEFAULT_COMMIT_OUTPUT_OPTIONS,
+    language: EffectiveDisplayLanguage = 'en',
   ) {
     this.host = pickNonEmpty(host, OLLAMA_DEFAULT_HOST);
     this.model = pickNonEmpty(model, DEFAULT_MODELS.ollama);
+    this.language = language;
     this.systemPrompt = buildAgentSystemPrompt({
       includeFindReferences: false,
       enableTools: false,
@@ -611,10 +624,11 @@ export class OllamaClient implements ILLMClient {
         this.model,
         onProgress,
         cancellationToken,
+        this.language,
       );
 
       if (onProgress) {
-        onProgress('Generating commit message...', 0);
+        onProgress(LOCALES[this.language].progressMessages.generatingMessage, 0);
       }
 
       const response = await client.chat({
@@ -679,6 +693,7 @@ export function createLLMClient(options: LLMClientOptions): ILLMClient {
         resolvedOllamaHost,
         model,
         resolvedCommitOutputOptions,
+        options.language,
       );
     }
     case 'grok':

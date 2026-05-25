@@ -1693,8 +1693,10 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
     const escapedStyleUri = escapeHtmlAttribute(styleUri.toString());
     const escapedScriptUri = escapeHtmlAttribute(scriptUri.toString());
 
+    const htmlLang = escapeHtmlAttribute(this.getEffectiveDisplayLanguage());
+
     return `<!doctype html>
-<html lang="en">
+<html lang="${htmlLang}">
   <head>
     <meta charset="UTF-8" />
     <meta

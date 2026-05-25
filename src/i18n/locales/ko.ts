@@ -4,73 +4,70 @@ import type { LocaleTextBundle } from '../types';
 export const koLocale: LocaleTextBundle = {
   commitCopilotErrorMessages: {
     'api.keyMissing': () =>
-      'API Key is not configured. Please set your API Key in the Commit-Copilot panel.',
+      'API 키가 구성되지 않았습니다. Commit-Copilot 패널에서 API 키를 설정해 주세요.',
     'api.keyInvalid': (args) =>
       args.details?.trim()
-        ? 'Invalid API Key: {details}'.replace('{details}', args.details)
-        : 'Invalid API Key.',
+        ? '잘못된 API 키: {details}'.replace('{details}', args.details)
+        : '잘못된 API 키입니다.',
     'api.quotaExceeded': (args) =>
       args.details?.trim()
-        ? 'API quota exceeded: {details}'.replace('{details}', args.details)
-        : 'API quota exceeded.',
+        ? 'API 할당량 초과: {details}'.replace('{details}', args.details)
+        : 'API 할당량이 초과되었습니다.',
     'api.requestFailed': (args) =>
       args.details?.trim()
-        ? 'API request failed: {details}'.replace('{details}', args.details)
-        : 'API request failed.',
+        ? 'API 요청 실패: {details}'.replace('{details}', args.details)
+        : 'API 요청에 실패했습니다.',
     'api.ollamaConnectionFailed': (args) =>
-      'Cannot connect to Ollama. Make sure Ollama is running at {host}.'.replace(
+      'Ollama에 연결할 수 없습니다. Ollama가 {host}에서 실행 중인지 확인하세요.'.replace(
         '{host}',
         args.host ?? '',
       ),
     'api.ollamaModelNotFound': (args) =>
-      'Model "{model}" was not found. Pull it first with: ollama pull {model}'.replace(
+      '모델 "{model}"을(를) 찾을 수 없습니다. 다음 명령어로 먼저 다운로드하세요: ollama pull {model}'.replace(
         /\{model\}/g,
         args.model ?? '',
       ),
     'api.unknownAnthropicModel': (args) =>
-      'Unknown Anthropic model "{model}". Add it to ANTHROPIC_MODELS with max_tokens.'.replace(
+      '알 수 없는 Anthropic 모델 "{model}"입니다. max_tokens와 함께 ANTHROPIC_MODELS에 추가하세요.'.replace(
         '{model}',
         args.model ?? '',
       ),
     'api.emptyResponse': (args) =>
-      'Empty response from {provider}.'.replace(
-        '{provider}',
-        args.provider ?? '',
-      ),
+      '{provider}로부터 빈 응답을 받았습니다.'.replace('{provider}', args.provider ?? ''),
     'api.emptyTextResponse': (args) =>
-      'Empty text response from {provider}.'.replace(
+      '{provider}로부터 빈 텍스트 응답을 받았습니다.'.replace(
         '{provider}',
         args.provider ?? '',
       ),
     'api.emptyFinalResponse': (args) =>
-      'Empty final response from {provider}.'.replace(
+      '{provider}로부터 빈 최종 응답을 받았습니다.'.replace(
         '{provider}',
         args.provider ?? '',
       ),
     'api.responseTruncated': (args) =>
-      'Response from {provider} was truncated ({stopReason}).'
+      '{provider}의 응답이 잘렸습니다 ({stopReason}).'
         .replace('{provider}', args.provider ?? '')
         .replace('{stopReason}', args.stopReason ?? ''),
     'api.finalResponseTruncated': (args) =>
-      'Final response from {provider} was truncated ({stopReason}).'
+      '{provider}의 최종 응답이 잘렸습니다 ({stopReason}).'
         .replace('{provider}', args.provider ?? '')
         .replace('{stopReason}', args.stopReason ?? ''),
     'git.stageFailed': (args) =>
       args.details?.trim()
-        ? 'Failed to stage changes: {details}'.replace(
+        ? '변경 사항을 스테이징하지 못했습니다: {details}'.replace(
             '{details}',
             args.details,
           )
-        : 'Failed to stage changes.',
+        : '변경 사항을 스테이징하지 못했습니다.',
     'generation.noChanges': () =>
-      'No changes detected to generate a commit for.',
+      '커밋을 생성할 변경 사항이 감지되지 않았습니다.',
     'generation.noChangesButUntracked': () =>
-      'No changes to commit, but untracked files were detected.',
+      '커밋할 변경 사항은 없으나, 추적되지 않은 파일이 감지되었습니다.',
     'generation.noTrackedChangesButUntracked': () =>
-      'No tracked changes detected, only untracked files are present.',
+      '추적된 변경 사항이 감지되지 않았습니다. 현재 추적되지 않은 파일만 존재합니다.',
     'generation.mixedChanges': () =>
-      'Both staged and unstaged changes were detected.',
-    'generation.cancelled': () => 'Generation canceled by user.',
+      '스테이징된 변경 사항과 스테이징되지 않은 변경 사항이 모두 감지되었습니다.',
+    'generation.cancelled': () => '사용자에 의해 생성이 취소되었습니다.',
   },
   errorMessages: {
     [EXIT_CODES.NOT_GIT_REPO]: {
@@ -221,7 +218,7 @@ export const koLocale: LocaleTextBundle = {
       settings: '설정',
       addProvider: '사용자 지정 프로바이더 추가',
       editProvider: '사용자 지정 프로바이더 편집',
-      addModel: 'Add Custom Model',
+      addModel: '사용자 지정 모델 추가',
     },
     labels: {
       provider: '프로바이더',
@@ -238,7 +235,7 @@ export const koLocale: LocaleTextBundle = {
       providerName: '프로바이더 이름',
       apiBaseUrl: 'API 베이스 URL',
       commitMessage: '커밋 메시지',
-      modelName: 'Model Name',
+      modelName: '모델 이름',
     },
     placeholders: {
       selectProvider: '프로바이더 선택...',
@@ -249,7 +246,7 @@ export const koLocale: LocaleTextBundle = {
       enterOpenAIApiKey: 'OpenAI API 키 입력',
       enterAnthropicApiKey: 'Anthropic API 키 입력',
       enterCustomApiKey: 'API 키 입력',
-      enterModelName: 'Enter model name',
+      enterModelName: '모델 이름 입력',
     },
     buttons: {
       save: '저장',
@@ -260,8 +257,8 @@ export const koLocale: LocaleTextBundle = {
       editProvider: '프로바이더 편집',
       addProvider: '+ 프로바이더 추가...',
       deleteProvider: '프로바이더 삭제',
-      addModel: '+ Add Model...',
-      deleteModel: 'Delete Model',
+      addModel: '+ 모델 추가...',
+      deleteModel: '모델 삭제',
       cancel: '취소',
     },
     statuses: {
@@ -280,11 +277,11 @@ export const koLocale: LocaleTextBundle = {
       providerSaved: '사용자 지정 프로바이더가 저장되었습니다!',
       providerDeleted: '사용자 지정 프로바이더가 삭제되었습니다.',
       modelNameRequired: '생성하기 전에 모델 이름을 입력하십시오.',
-      modelAdded: 'Custom model added.',
-      modelDeleted: 'Custom model removed.',
-      modelNameConflict: 'This model already exists in the list.',
-      fetchingModels: 'Fetching models from endpoint...',
-      fetchModelsFailed: 'Could not fetch models from endpoint. You can add models manually.',
+      modelAdded: '사용자 지정 모델이 추가되었습니다.',
+      modelDeleted: '사용자 지정 모델이 제거되었습니다.',
+      modelNameConflict: '이 모델은 이미 목록에 존재합니다.',
+      fetchingModels: '엔드포인트에서 모델을 가져오는 중...',
+      fetchModelsFailed: '엔드포인트에서 모델을 가져올 수 없습니다. 모델을 수동으로 추가할 수 있습니다.',
     },
     descriptions: {
       ollamaFixedToDirectDiff:

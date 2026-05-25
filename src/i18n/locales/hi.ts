@@ -4,73 +4,70 @@ import type { LocaleTextBundle } from '../types';
 export const hiLocale: LocaleTextBundle = {
   commitCopilotErrorMessages: {
     'api.keyMissing': () =>
-      'API Key is not configured. Please set your API Key in the Commit-Copilot panel.',
+      'API की कॉन्फ़िगर नहीं है। कृपया Commit-Copilot पैनल में अपनी API की सेट करें।',
     'api.keyInvalid': (args) =>
       args.details?.trim()
-        ? 'Invalid API Key: {details}'.replace('{details}', args.details)
-        : 'Invalid API Key.',
+        ? 'अमान्य API की: {details}'.replace('{details}', args.details)
+        : 'अमान्य API की।',
     'api.quotaExceeded': (args) =>
       args.details?.trim()
-        ? 'API quota exceeded: {details}'.replace('{details}', args.details)
-        : 'API quota exceeded.',
+        ? 'API कोटा समाप्त: {details}'.replace('{details}', args.details)
+        : 'API कोटा समाप्त हो गया है।',
     'api.requestFailed': (args) =>
       args.details?.trim()
-        ? 'API request failed: {details}'.replace('{details}', args.details)
-        : 'API request failed.',
+        ? 'API अनुरोध विफल: {details}'.replace('{details}', args.details)
+        : 'API अनुरोध विफल रहा।',
     'api.ollamaConnectionFailed': (args) =>
-      'Cannot connect to Ollama. Make sure Ollama is running at {host}.'.replace(
+      'Ollama से कनेक्ट नहीं हो पा रहा है। सुनिश्चित करें कि Ollama {host} पर चल रहा है।'.replace(
         '{host}',
         args.host ?? '',
       ),
     'api.ollamaModelNotFound': (args) =>
-      'Model "{model}" was not found. Pull it first with: ollama pull {model}'.replace(
+      'मॉडल "{model}" नहीं मिला। पहले इसे इसके साथ डाउनलोड करें: ollama pull {model}'.replace(
         /\{model\}/g,
         args.model ?? '',
       ),
     'api.unknownAnthropicModel': (args) =>
-      'Unknown Anthropic model "{model}". Add it to ANTHROPIC_MODELS with max_tokens.'.replace(
+      'अज्ञात Anthropic मॉडल "{model}"। इसे max_tokens के साथ ANTHROPIC_MODELS में जोड़ें।'.replace(
         '{model}',
         args.model ?? '',
       ),
     'api.emptyResponse': (args) =>
-      'Empty response from {provider}.'.replace(
-        '{provider}',
-        args.provider ?? '',
-      ),
+      '{provider} से खाली प्रतिक्रिया मिली।'.replace('{provider}', args.provider ?? ''),
     'api.emptyTextResponse': (args) =>
-      'Empty text response from {provider}.'.replace(
+      '{provider} से खाली टेक्स्ट प्रतिक्रिया मिली।'.replace(
         '{provider}',
         args.provider ?? '',
       ),
     'api.emptyFinalResponse': (args) =>
-      'Empty final response from {provider}.'.replace(
+      '{provider} से खाली अंतिम प्रतिक्रिया मिली।'.replace(
         '{provider}',
         args.provider ?? '',
       ),
     'api.responseTruncated': (args) =>
-      'Response from {provider} was truncated ({stopReason}).'
+      '{provider} से प्रतिक्रिया अधूरी रह गई ({stopReason})।'
         .replace('{provider}', args.provider ?? '')
         .replace('{stopReason}', args.stopReason ?? ''),
     'api.finalResponseTruncated': (args) =>
-      'Final response from {provider} was truncated ({stopReason}).'
+      '{provider} से अंतिम प्रतिक्रिया अधूरी रह गई ({stopReason})।'
         .replace('{provider}', args.provider ?? '')
         .replace('{stopReason}', args.stopReason ?? ''),
     'git.stageFailed': (args) =>
       args.details?.trim()
-        ? 'Failed to stage changes: {details}'.replace(
+        ? 'परिवर्तनों को स्टेज करने में विफल: {details}'.replace(
             '{details}',
             args.details,
           )
-        : 'Failed to stage changes.',
+        : 'परिवर्तनों को स्टेज करने में विफल।',
     'generation.noChanges': () =>
-      'No changes detected to generate a commit for.',
+      'कमिट संदेश उत्पन्न करने के लिए कोई परिवर्तन नहीं मिला।',
     'generation.noChangesButUntracked': () =>
-      'No changes to commit, but untracked files were detected.',
+      'कमिट करने के लिए कोई परिवर्तन नहीं है, लेकिन अनट्रैक्ड फाइलें मिली हैं।',
     'generation.noTrackedChangesButUntracked': () =>
-      'No tracked changes detected, only untracked files are present.',
+      'कोई ट्रैक किया गया परिवर्तन नहीं मिला, केवल अनट्रैक्ड फाइलें मौजूद हैं।',
     'generation.mixedChanges': () =>
-      'Both staged and unstaged changes were detected.',
-    'generation.cancelled': () => 'Generation canceled by user.',
+      'स्टेज्ड और अनस्टेज्ड दोनों तरह के परिवर्तन पाए गए हैं।',
+    'generation.cancelled': () => 'उपयोगकर्ता द्वारा निर्माण रद्द कर दिया गया।',
   },
   errorMessages: {
     [EXIT_CODES.NOT_GIT_REPO]: {
@@ -224,7 +221,7 @@ export const hiLocale: LocaleTextBundle = {
       settings: 'सेटिंग्स',
       addProvider: 'कस्टम प्रदाता जोड़ें',
       editProvider: 'कस्टम प्रदाता संपादित करें',
-      addModel: 'Add Custom Model',
+      addModel: 'कस्टम मॉडल जोड़ें',
     },
     labels: {
       provider: 'प्रदाता',
@@ -241,7 +238,7 @@ export const hiLocale: LocaleTextBundle = {
       providerName: 'प्रदाता का नाम',
       apiBaseUrl: 'एपीआई बेस URL',
       commitMessage: 'Commit Message',
-      modelName: 'Model Name',
+      modelName: 'मॉडल का नाम',
     },
     placeholders: {
       selectProvider: 'प्रदाता का चयन करें...',
@@ -252,7 +249,7 @@ export const hiLocale: LocaleTextBundle = {
       enterOpenAIApiKey: 'अपनी OpenAI एपीआई कुंजी दर्ज करें',
       enterAnthropicApiKey: 'अपनी Anthropic एपीआई कुंजी दर्ज करें',
       enterCustomApiKey: 'अपनी एपीआई कुंजी दर्ज करें',
-      enterModelName: 'Enter model name',
+      enterModelName: 'मॉडल का नाम दर्ज करें',
     },
     buttons: {
       save: 'सहेजें',
@@ -263,8 +260,8 @@ export const hiLocale: LocaleTextBundle = {
       editProvider: 'प्रदाता संपादित करें',
       addProvider: '+ प्रदाता जोड़ें...',
       deleteProvider: 'प्रदाता हटाएं',
-      addModel: '+ Add Model...',
-      deleteModel: 'Delete Model',
+      addModel: '+ मॉडल जोड़ें...',
+      deleteModel: 'मॉडल हटाएं',
       cancel: 'रद्द करें',
     },
     statuses: {
@@ -283,11 +280,11 @@ export const hiLocale: LocaleTextBundle = {
       providerSaved: 'कस्टम प्रदाता सहेजा गया!',
       providerDeleted: 'कस्टम प्रदाता हटा दिया गया।',
       modelNameRequired: 'कृपया उत्पन्न करने से पहले एक मॉडल नाम दर्ज करें।',
-      modelAdded: 'Custom model added.',
-      modelDeleted: 'Custom model removed.',
-      modelNameConflict: 'This model already exists in the list.',
-      fetchingModels: 'Fetching models from endpoint...',
-      fetchModelsFailed: 'Could not fetch models from endpoint. You can add models manually.',
+      modelAdded: 'कस्टम मॉडल जोड़ा गया।',
+      modelDeleted: 'कस्टम model हटा दिया गया।',
+      modelNameConflict: 'यह मॉडल पहले से ही सूची में है।',
+      fetchingModels: 'एंडपॉइंट से मॉडल प्राप्त किए जा रहे हैं...',
+      fetchModelsFailed: 'एंडपॉइंट से मॉडल प्राप्त नहीं किए जा सके। आप मैन्युअल रूप से मॉडल जोड़ सकते हैं।',
     },
     descriptions: {
       ollamaFixedToDirectDiff: 'Ollama डायरेक्ट डिफ मोड पर निश्चित है',

@@ -4,73 +4,70 @@ import type { LocaleTextBundle } from '../types';
 export const jaLocale: LocaleTextBundle = {
   commitCopilotErrorMessages: {
     'api.keyMissing': () =>
-      'API Key is not configured. Please set your API Key in the Commit-Copilot panel.',
+      'APIキーが設定されていません。Commit-CopilotパネルでAPIキーを設定してください。',
     'api.keyInvalid': (args) =>
       args.details?.trim()
-        ? 'Invalid API Key: {details}'.replace('{details}', args.details)
-        : 'Invalid API Key.',
+        ? '無効なAPIキーです: {details}'.replace('{details}', args.details)
+        : '無効なAPIキーです。',
     'api.quotaExceeded': (args) =>
       args.details?.trim()
-        ? 'API quota exceeded: {details}'.replace('{details}', args.details)
-        : 'API quota exceeded.',
+        ? 'APIクォータを超過しました: {details}'.replace('{details}', args.details)
+        : 'APIクォータを超過しました。',
     'api.requestFailed': (args) =>
       args.details?.trim()
-        ? 'API request failed: {details}'.replace('{details}', args.details)
-        : 'API request failed.',
+        ? 'APIリクエストが失敗しました: {details}'.replace('{details}', args.details)
+        : 'APIリクエストが失敗しました。',
     'api.ollamaConnectionFailed': (args) =>
-      'Cannot connect to Ollama. Make sure Ollama is running at {host}.'.replace(
+      'Ollamaに接続できません。Ollamaが {host} で実行されていることを確認してください。'.replace(
         '{host}',
         args.host ?? '',
       ),
     'api.ollamaModelNotFound': (args) =>
-      'Model "{model}" was not found. Pull it first with: ollama pull {model}'.replace(
+      'モデル "{model}" が見つかりませんでした。まず次のコマンドでプルしてください: ollama pull {model}'.replace(
         /\{model\}/g,
         args.model ?? '',
       ),
     'api.unknownAnthropicModel': (args) =>
-      'Unknown Anthropic model "{model}". Add it to ANTHROPIC_MODELS with max_tokens.'.replace(
+      '不明なAnthropicモデル "{model}" です。max_tokensを指定してANTHROPIC_MODELSに追加してください。'.replace(
         '{model}',
         args.model ?? '',
       ),
     'api.emptyResponse': (args) =>
-      'Empty response from {provider}.'.replace(
-        '{provider}',
-        args.provider ?? '',
-      ),
+      '{provider} からの空の応答。'.replace('{provider}', args.provider ?? ''),
     'api.emptyTextResponse': (args) =>
-      'Empty text response from {provider}.'.replace(
+      '{provider} からの空のテキスト応答。'.replace(
         '{provider}',
         args.provider ?? '',
       ),
     'api.emptyFinalResponse': (args) =>
-      'Empty final response from {provider}.'.replace(
+      '{provider} からの空の最終応答。'.replace(
         '{provider}',
         args.provider ?? '',
       ),
     'api.responseTruncated': (args) =>
-      'Response from {provider} was truncated ({stopReason}).'
+      '{provider} からの応答が途切れていました ({stopReason})。'
         .replace('{provider}', args.provider ?? '')
         .replace('{stopReason}', args.stopReason ?? ''),
     'api.finalResponseTruncated': (args) =>
-      'Final response from {provider} was truncated ({stopReason}).'
+      '{provider} からの最終応答が途切れていました ({stopReason})。'
         .replace('{provider}', args.provider ?? '')
         .replace('{stopReason}', args.stopReason ?? ''),
     'git.stageFailed': (args) =>
       args.details?.trim()
-        ? 'Failed to stage changes: {details}'.replace(
+        ? '変更のステージングに失敗しました: {details}'.replace(
             '{details}',
             args.details,
           )
-        : 'Failed to stage changes.',
+        : '変更のステージングに失敗しました。',
     'generation.noChanges': () =>
-      'No changes detected to generate a commit for.',
+      'コミットメッセージを生成する変更が検出されませんでした。',
     'generation.noChangesButUntracked': () =>
-      'No changes to commit, but untracked files were detected.',
+      'コミットする変更はありませんが、追跡されていないファイルが検出されました。',
     'generation.noTrackedChangesButUntracked': () =>
-      'No tracked changes detected, only untracked files are present.',
+      '追跡された変更は検出されませんでした。追跡されていないファイルのみが存在します。',
     'generation.mixedChanges': () =>
-      'Both staged and unstaged changes were detected.',
-    'generation.cancelled': () => 'Generation canceled by user.',
+      'ステージングされた変更とステージングされていない変更の両方が検出されました。',
+    'generation.cancelled': () => 'ユーザーによって生成がキャンセルされました。',
   },
   errorMessages: {
     [EXIT_CODES.NOT_GIT_REPO]: {
@@ -223,7 +220,7 @@ export const jaLocale: LocaleTextBundle = {
       settings: '設定',
       addProvider: 'カスタムプロバイダーを追加',
       editProvider: 'カスタムプロバイダーを編集',
-      addModel: 'Add Custom Model',
+      addModel: 'カスタムモデルの追加',
     },
     labels: {
       provider: 'プロバイダー',
@@ -240,7 +237,7 @@ export const jaLocale: LocaleTextBundle = {
       providerName: 'プロバイダー名',
       apiBaseUrl: 'API ベース URL',
       commitMessage: 'コミットメッセージ',
-      modelName: 'Model Name',
+      modelName: 'モデル名',
     },
     placeholders: {
       selectProvider: 'プロバイダーを選択...',
@@ -251,7 +248,7 @@ export const jaLocale: LocaleTextBundle = {
       enterOpenAIApiKey: 'OpenAI API キーを入力',
       enterAnthropicApiKey: 'Anthropic API キーを入力',
       enterCustomApiKey: 'API キーを入力',
-      enterModelName: 'Enter model name',
+      enterModelName: 'モデル名を入力',
     },
     buttons: {
       save: '保存',
@@ -262,8 +259,8 @@ export const jaLocale: LocaleTextBundle = {
       editProvider: 'プロバイダーを編集',
       addProvider: '+ プロバイダーを追加...',
       deleteProvider: 'プロバイダーを削除',
-      addModel: '+ Add Model...',
-      deleteModel: 'Delete Model',
+      addModel: '+ モデルを追加...',
+      deleteModel: 'モデルを削除',
       cancel: 'キャンセル',
     },
     statuses: {
@@ -282,11 +279,11 @@ export const jaLocale: LocaleTextBundle = {
       providerSaved: 'カスタムプロバイダーを保存しました！',
       providerDeleted: 'カスタムプロバイダーを削除しました。',
       modelNameRequired: '生成する前にモデル名を入力してください。',
-      modelAdded: 'Custom model added.',
-      modelDeleted: 'Custom model removed.',
-      modelNameConflict: 'This model already exists in the list.',
-      fetchingModels: 'Fetching models from endpoint...',
-      fetchModelsFailed: 'Could not fetch models from endpoint. You can add models manually.',
+      modelAdded: 'カスタムモデルが追加されました。',
+      modelDeleted: 'カスタムモデルが削除されました。',
+      modelNameConflict: 'このモデルはすでにリストに存在します。',
+      fetchingModels: 'エンドポイントからモデルを取得中...',
+      fetchModelsFailed: 'エンドポイントからモデルを取得できませんでした。手動でモデルを追加できます。',
     },
     descriptions: {
       ollamaFixedToDirectDiff:
