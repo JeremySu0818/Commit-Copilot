@@ -2,6 +2,8 @@ export {
   ToolDefinition,
   ToolCallRequest,
   ToolCallResult,
+  FINAL_COMMIT_MESSAGE_TOOL,
+  FINAL_COMMIT_MESSAGE_TOOL_NAME,
   AGENT_TOOLS,
   toGeminiFunctionDeclarations,
   toOpenAITools,

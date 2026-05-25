@@ -1,5 +1,9 @@
 import { GitOperations } from '../../commit-copilot';
-import { ToolCallRequest, ToolCallResult } from '../definitions';
+import {
+  FINAL_COMMIT_MESSAGE_TOOL_NAME,
+  ToolCallRequest,
+  ToolCallResult,
+} from '../definitions';
 
 import { executeFindReferences } from './find-references';
 import { executeGetDiff } from './get-diff';
@@ -72,6 +76,9 @@ export async function executeToolCall(
           gitOps,
           isStaged,
         );
+        break;
+      case FINAL_COMMIT_MESSAGE_TOOL_NAME:
+        content = 'Final commit message received.';
         break;
       default:
         content = `Unknown tool: ${toolCall.name}`;

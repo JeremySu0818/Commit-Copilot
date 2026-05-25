@@ -15,6 +15,25 @@ export interface ToolCallResult {
   error?: boolean;
 }
 
+export const FINAL_COMMIT_MESSAGE_TOOL_NAME = 'write_commit_message';
+
+export const FINAL_COMMIT_MESSAGE_TOOL: ToolDefinition = {
+  name: FINAL_COMMIT_MESSAGE_TOOL_NAME,
+  description:
+    'Submit the final commit message after you have finished investigating. Use this only when the commit message is complete and ready to return. The message argument must contain only the commit message, with no analysis, commentary, markdown fences, or surrounding text.',
+  parameters: {
+    type: 'object',
+    properties: {
+      message: {
+        type: 'string',
+        description:
+          'Required. The completed commit message only. Include body/footer text only when required by the output options.',
+      },
+    },
+    required: ['message'],
+  },
+};
+
 export const AGENT_TOOLS: ToolDefinition[] = [
   {
     name: 'get_diff',
@@ -147,6 +166,7 @@ export const AGENT_TOOLS: ToolDefinition[] = [
       required: ['query'],
     },
   },
+  FINAL_COMMIT_MESSAGE_TOOL,
 ];
 
 function getAvailableTools(_isStaged: boolean): ToolDefinition[] {

@@ -162,3 +162,80 @@ void test('runOpenAIAgentLoop continues when one tool call has malformed JSON ar
   assert.equal(toolMessages[1].tool_call_id, 'tool-call-good');
   assert.equal(toolMessages[1].content, 'tool ok');
 });
+
+void test('runOpenAIAgentLoop returns write_commit_message argument without executing it', async () => {
+  const completionRequests: unknown[] = [];
+  const executedCalls: ToolCallShape[] = [];
+  const progressMessages: string[] = [];
+
+  class OpenAIMock {
+    chat = {
+      completions: {
+        create: (params: unknown) => {
+          completionRequests.push(params);
+          return Promise.resolve({
+            choices: [
+              {
+                message: {
+                  tool_calls: [
+                    {
+                      id: 'tool-call-final',
+                      type: 'function',
+                      function: {
+                        name: 'write_commit_message',
+                        arguments:
+                          '{"message":"feat(agent): submit structured final message"}',
+                      },
+                    },
+                  ],
+                },
+              },
+            ],
+          });
+        },
+      },
+    };
+  }
+
+  const agentToolsMock = {
+    buildInitialContext: () => Promise.resolve('mocked initial context'),
+    executeToolCall: (toolCall: unknown) => {
+      const call = asToolCallShape(toolCall);
+      if (!call) {
+        throw new Error('Invalid tool call shape');
+      }
+      executedCalls.push(call);
+      return Promise.resolve({ name: call.name, content: 'tool ok' });
+    },
+    toOpenAITools: () => [],
+  };
+
+  try {
+    const result = await withOpenAIModule(
+      OpenAIMock,
+      agentToolsMock,
+      async ({ runOpenAIAgentLoop }) =>
+        runOpenAIAgentLoop(
+          'openai-test-key',
+          'gpt-test',
+          'diff --git a/a.ts b/a.ts\n+line',
+          process.cwd(),
+          (message) => {
+            progressMessages.push(message);
+          },
+        ),
+    );
+
+    assert.equal(result, 'feat(agent): submit structured final message');
+  } finally {
+    clearRequireCache(MODULE_PATH);
+  }
+
+  assert.deepEqual(executedCalls, []);
+  assert.equal(completionRequests.length, 1);
+  assert.ok(
+    progressMessages.some((message) =>
+      message.includes('write_commit_message'),
+    ),
+  );
+});

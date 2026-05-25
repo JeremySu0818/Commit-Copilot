@@ -156,6 +156,78 @@ void test('runAnthropicAgentLoop executes tool_use blocks and sends tool_result 
   ]);
 });
 
+void test('runAnthropicAgentLoop returns write_commit_message input without tool_result', async () => {
+  const streamRequests: unknown[] = [];
+  const executedCalls: ToolCallShape[] = [];
+  const progressMessages: string[] = [];
+
+  class AnthropicMock {
+    messages = {
+      stream: (params: unknown) => {
+        streamRequests.push(params);
+        return {
+          finalMessage: () =>
+            Promise.resolve({
+              content: [
+                {
+                  type: 'tool_use',
+                  id: 'tool-final',
+                  name: 'write_commit_message',
+                  input: {
+                    message: 'chore(agent): submit structured message',
+                  },
+                },
+              ],
+              stop_reason: 'tool_use',
+            }),
+        };
+      },
+    };
+  }
+
+  const agentToolsMock = {
+    buildInitialContext: () => Promise.resolve('initial context'),
+    executeToolCall: (toolCall: unknown) => {
+      const call = asToolCallShape(toolCall);
+      if (!call) {
+        throw new Error('Invalid tool call shape');
+      }
+      executedCalls.push(call);
+      return Promise.resolve({ name: call.name, content: 'tool result ok' });
+    },
+    toAnthropicTools: () => [],
+  };
+
+  try {
+    const result = await withAnthropicModule(
+      AnthropicMock,
+      agentToolsMock,
+      async ({ runAnthropicAgentLoop }) =>
+        runAnthropicAgentLoop(
+          'anthropic-test-key',
+          DEFAULT_MODELS.anthropic,
+          'diff --git a/a.ts b/a.ts\n+line',
+          process.cwd(),
+          (message) => {
+            progressMessages.push(message);
+          },
+        ),
+    );
+
+    assert.equal(result, 'chore(agent): submit structured message');
+  } finally {
+    clearRequireCache(MODULE_PATH);
+  }
+
+  assert.deepEqual(executedCalls, []);
+  assert.equal(streamRequests.length, 1);
+  assert.ok(
+    progressMessages.some((message) =>
+      message.includes('write_commit_message'),
+    ),
+  );
+});
+
 void test('runAnthropicAgentLoop maps 401 errors to APIKeyInvalidError', async () => {
   class AnthropicErrorMock {
     messages = {

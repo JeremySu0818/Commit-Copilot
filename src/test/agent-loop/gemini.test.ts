@@ -157,6 +157,83 @@ void test('runGeminiAgentLoop handles functionCall parts and sends functionRespo
   ]);
 });
 
+void test('runGeminiAgentLoop returns write_commit_message argument without functionResponse', async () => {
+  const generateRequests: unknown[] = [];
+  const executedCalls: ToolCallShape[] = [];
+  const progressMessages: string[] = [];
+
+  class GoogleGenAIMock {
+    models = {
+      generateContent: (params: unknown) => {
+        generateRequests.push(params);
+        return Promise.resolve({
+          candidates: [
+            {
+              content: {
+                role: 'model',
+                parts: [
+                  {
+                    functionCall: {
+                      id: 'fc-final',
+                      name: 'write_commit_message',
+                      args: {
+                        message: 'fix(gemini): submit structured message',
+                      },
+                    },
+                  },
+                ],
+              },
+            },
+          ],
+          text: '',
+        });
+      },
+    };
+  }
+
+  const agentToolsMock = {
+    buildInitialContext: () => Promise.resolve('initial context'),
+    executeToolCall: (toolCall: unknown) => {
+      const call = asToolCallShape(toolCall);
+      if (!call) {
+        throw new Error('Invalid tool call shape');
+      }
+      executedCalls.push(call);
+      return Promise.resolve({ name: call.name, content: 'tool response ok' });
+    },
+    toGeminiFunctionDeclarations: () => [],
+  };
+
+  try {
+    const result = await withGeminiModule(
+      { GoogleGenAI: GoogleGenAIMock },
+      agentToolsMock,
+      async ({ runGeminiAgentLoop }) =>
+        runGeminiAgentLoop(
+          'gemini-test-key',
+          'models/gemini-2.5-pro',
+          'diff --git a/a.ts b/a.ts\n+line',
+          process.cwd(),
+          (message) => {
+            progressMessages.push(message);
+          },
+        ),
+    );
+
+    assert.equal(result, 'fix(gemini): submit structured message');
+  } finally {
+    clearRequireCache(MODULE_PATH);
+  }
+
+  assert.deepEqual(executedCalls, []);
+  assert.equal(generateRequests.length, 1);
+  assert.ok(
+    progressMessages.some((message) =>
+      message.includes('write_commit_message'),
+    ),
+  );
+});
+
 void test('runGeminiAgentLoop maps API_KEY_INVALID to APIKeyInvalidError', async () => {
   class GoogleGenAIErrorMock {
     models = {

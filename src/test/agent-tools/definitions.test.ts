@@ -19,6 +19,7 @@ void test('AGENT_TOOLS includes all expected tool names', () => {
     'get_recent_commits',
     'read_file',
     'search_code',
+    'write_commit_message',
   ]);
 });
 

@@ -1,4 +1,5 @@
 import type {
+  ChatCompletionCreateParamsNonStreaming,
   ChatCompletionMessageParam,
   ChatCompletionTool,
   ChatCompletionToolMessageParam,
@@ -34,12 +35,20 @@ import {
   DEFAULT_MODELS,
   normalizeCommitOutputOptions,
 } from '../models';
-import { DEFAULT_RETRY_OPTIONS, RetryInfo, withRetry } from '../retry';
+import {
+  DEFAULT_RETRY_OPTIONS,
+  RetryInfo,
+  RetryOptions,
+  withRetry,
+} from '../retry';
 
 import {
   buildAgentSystemPrompt,
   buildFinalOutputReminder,
+  buildFinalToolRequiredReminder,
   extractCommitMessage,
+  extractFinalCommitMessageFromArgs,
+  FINAL_COMMIT_MESSAGE_TOOL_NAME,
   formatBatchProgressMessage,
 } from './shared';
 
@@ -145,6 +154,91 @@ function getFunctionToolCalls(
   return toolCalls.filter((toolCall) => isFunctionToolCall(toolCall));
 }
 
+interface ParsedOpenAIToolCall {
+  toolCall: OpenAIFunctionToolCall;
+  name: string;
+  args: Record<string, unknown>;
+  parseError?: string;
+}
+
+function parseOpenAIToolCalls(
+  functionToolCalls: OpenAIFunctionToolCall[],
+): ParsedOpenAIToolCall[] {
+  return functionToolCalls.map((toolCall) => {
+    const parsed = parseToolArguments(toolCall.function.arguments);
+    return {
+      toolCall,
+      name: toolCall.function.name,
+      args: parsed.args,
+      parseError: parsed.error,
+    };
+  });
+}
+
+function handleOpenAITextOnlyResponse(params: {
+  messages: ChatCompletionMessageParam[];
+  commitOutputOptions: CommitOutputOptions;
+  finalToolReminderSent: boolean;
+  assistantMessageContent: unknown;
+}): { finalMessage?: string; remindFinalTool: boolean } {
+  const text = getOpenAIMessageText(params.assistantMessageContent);
+  if (!text) {
+    throw createEmptyTextResponseError('OpenAI API');
+  }
+  if (params.finalToolReminderSent) {
+    return { finalMessage: extractCommitMessage(text), remindFinalTool: false };
+  }
+
+  params.messages.push({
+    role: 'user',
+    content: buildFinalToolRequiredReminder(params.commitOutputOptions),
+  });
+  return { remindFinalTool: true };
+}
+
+async function handleOpenAIToolCallBatch(params: {
+  parsedToolCalls: ParsedOpenAIToolCall[];
+  language: EffectiveDisplayLanguage;
+  step: number;
+  onProgress?: ProgressCallback;
+  messages: ChatCompletionMessageParam[];
+  repoRoot: string;
+  diff: string;
+  isStaged: boolean;
+  gitOps?: GitOperations;
+  cancellationToken?: CancellationSignal;
+}): Promise<string | null> {
+  params.onProgress?.(
+    formatBatchProgressMessage(
+      params.step + 1,
+      params.parsedToolCalls.map(({ name, args }) => ({ name, args })),
+      params.language,
+    ),
+  );
+
+  const finalToolCall = params.parsedToolCalls.find(
+    (toolCall) =>
+      toolCall.name === FINAL_COMMIT_MESSAGE_TOOL_NAME &&
+      !toolCall.parseError,
+  );
+  if (finalToolCall) {
+    const finalMessage = extractFinalCommitMessageFromArgs(finalToolCall.args);
+    if (finalMessage) {
+      return finalMessage;
+    }
+  }
+
+  await appendToolCallMessages(params.parsedToolCalls, {
+    messages: params.messages,
+    repoRoot: params.repoRoot,
+    diff: params.diff,
+    isStaged: params.isStaged,
+    gitOps: params.gitOps,
+    cancellationToken: params.cancellationToken,
+  });
+  return null;
+}
+
 async function appendToolCallMessages(
   parsedToolCalls: {
     toolCall: OpenAIFunctionToolCall;
@@ -198,11 +292,15 @@ async function executeOpenAIInvestigationLoop(params: {
   isStaged: boolean;
   gitOps?: GitOperations;
   cancellationToken?: CancellationSignal;
+  commitOutputOptions: CommitOutputOptions;
 }): Promise<string | null> {
   let step = 0;
+  let finalToolReminderSent = false;
   while (step < params.stepLimit) {
     throwIfCancellationRequested(params.cancellationToken);
-    const completion = await params.requestCompletionWithTools(params.messages);
+    const completion = await params.requestCompletionWithTools([
+      ...params.messages,
+    ]);
     const assistantMessage = getAssistantMessage(completion);
     if (!assistantMessage) {
       throw createEmptyResponseError('OpenAI API');
@@ -213,38 +311,37 @@ async function executeOpenAIInvestigationLoop(params: {
     );
     const functionToolCalls = getFunctionToolCalls(assistantMessage);
     if (functionToolCalls.length === 0) {
-      const text = getOpenAIMessageText(assistantMessage.content);
-      if (!text) {
-        throw createEmptyTextResponseError('OpenAI API');
+      const textResult = handleOpenAITextOnlyResponse({
+        messages: params.messages,
+        commitOutputOptions: params.commitOutputOptions,
+        finalToolReminderSent,
+        assistantMessageContent: assistantMessage.content,
+      });
+      if (textResult.finalMessage) {
+        return textResult.finalMessage;
       }
-      return extractCommitMessage(text);
+      if (textResult.remindFinalTool) {
+        finalToolReminderSent = true;
+        step += 1;
+        continue;
+      }
+    } else {
+      const finalMessage = await handleOpenAIToolCallBatch({
+        parsedToolCalls: parseOpenAIToolCalls(functionToolCalls),
+        language: params.language,
+        step,
+        onProgress: params.onProgress,
+        messages: params.messages,
+        repoRoot: params.repoRoot,
+        diff: params.diff,
+        isStaged: params.isStaged,
+        gitOps: params.gitOps,
+        cancellationToken: params.cancellationToken,
+      });
+      if (finalMessage) {
+        return finalMessage;
+      }
     }
-
-    const parsedToolCalls = functionToolCalls.map((toolCall) => {
-      const parsed = parseToolArguments(toolCall.function.arguments);
-      return {
-        toolCall,
-        name: toolCall.function.name,
-        args: parsed.args,
-        parseError: parsed.error,
-      };
-    });
-    params.onProgress?.(
-      formatBatchProgressMessage(
-        step + 1,
-        parsedToolCalls.map(({ name, args }) => ({ name, args })),
-        params.language,
-      ),
-    );
-
-    await appendToolCallMessages(parsedToolCalls, {
-      messages: params.messages,
-      repoRoot: params.repoRoot,
-      diff: params.diff,
-      isStaged: params.isStaged,
-      gitOps: params.gitOps,
-      cancellationToken: params.cancellationToken,
-    });
     step += 1;
   }
 
@@ -269,6 +366,112 @@ function throwMappedOpenAIError(error: unknown): never {
     throw new APIQuotaExceededError(message);
   }
   throw new APIRequestError(message);
+}
+
+function createOpenAIRetryOptions(params: {
+  cancellationToken?: CancellationSignal;
+  onProgress?: ProgressCallback;
+  language: EffectiveDisplayLanguage;
+}): RetryOptions {
+  return {
+    ...DEFAULT_RETRY_OPTIONS,
+    checkAbort: () => {
+      throwIfCancellationRequested(params.cancellationToken);
+    },
+    onRetry: ({ attempt, maxAttempts, delayMs }: RetryInfo) => {
+      if (params.onProgress) {
+        const nextAttempt = attempt + 1;
+        params.onProgress(
+          LOCALES[params.language].progressMessages.transientApiError(
+            nextAttempt,
+            maxAttempts,
+            Math.ceil(delayMs / millisecondsPerSecond),
+          ),
+        );
+      }
+    },
+  };
+}
+
+type OpenAICompletionCreate = (
+  request: ChatCompletionCreateParamsNonStreaming,
+) => Promise<unknown>;
+
+function createOpenAIRequestCompletionWithTools(params: {
+  createCompletion: OpenAICompletionCreate;
+  modelName: string;
+  isStaged: boolean;
+  retryOptions: RetryOptions;
+}) {
+  return (currentMessages: ChatCompletionMessageParam[]) =>
+    withRetry(
+      () =>
+        params.createCompletion({
+          model: params.modelName,
+          messages: currentMessages,
+          tools: toOpenAITools(params.isStaged) as unknown as ChatCompletionTool[],
+          tool_choice: 'auto',
+        }),
+      params.retryOptions,
+    );
+}
+
+async function requestOpenAIFinalCommitMessage(params: {
+  createCompletion: OpenAICompletionCreate;
+  modelName: string;
+  messages: ChatCompletionMessageParam[];
+  isStaged: boolean;
+  retryOptions: RetryOptions;
+  onProgress?: ProgressCallback;
+  language: EffectiveDisplayLanguage;
+  maxAgentSteps?: number;
+}): Promise<string> {
+  const completion = await withRetry(
+    () =>
+      params.createCompletion({
+        model: params.modelName,
+        messages: params.messages,
+        tools: toOpenAITools(params.isStaged) as unknown as ChatCompletionTool[],
+        tool_choice: {
+          type: 'function',
+          function: { name: FINAL_COMMIT_MESSAGE_TOOL_NAME },
+        },
+    }),
+    params.retryOptions,
+  );
+  const finalMessage = getAssistantMessage(completion);
+  if (!finalMessage) {
+    throw createEmptyFinalResponseError('OpenAI API');
+  }
+  const finalToolCall = getFunctionToolCalls(finalMessage).find(
+    (toolCall) => toolCall.function.name === FINAL_COMMIT_MESSAGE_TOOL_NAME,
+  );
+  if (finalToolCall) {
+    params.onProgress?.(
+      formatBatchProgressMessage(
+        resolveStepLimit(params.maxAgentSteps) === Number.POSITIVE_INFINITY
+          ? 1
+          : resolveStepLimit(params.maxAgentSteps) + 1,
+        [
+          {
+            name: FINAL_COMMIT_MESSAGE_TOOL_NAME,
+            args: parseToolArguments(finalToolCall.function.arguments).args,
+          },
+        ],
+        params.language,
+      ),
+    );
+    const parsed = parseToolArguments(finalToolCall.function.arguments);
+    const finalCommitMessage = extractFinalCommitMessageFromArgs(parsed.args);
+    if (finalCommitMessage) {
+      return finalCommitMessage;
+    }
+  }
+  const text = getOpenAIMessageText(finalMessage.content);
+  if (!text) {
+    throw createEmptyFinalResponseError('OpenAI API');
+  }
+  return extractCommitMessage(text);
 }
 
 async function runOpenAIAgentLoop(
@@ -300,6 +503,8 @@ async function runOpenAIAgentLoop(
       apiKey,
       ...(baseUrl ? { baseURL: baseUrl } : {}),
     });
+    const createCompletion: OpenAICompletionCreate = (request) =>
+      client.chat.completions.create(request);
     const modelName = pickNonEmpty(model, DEFAULT_MODELS.openai);
     const resolvedCommitOutputOptions =
       normalizeCommitOutputOptions(commitOutputOptions);
@@ -327,38 +532,17 @@ async function runOpenAIAgentLoop(
       onProgress(LOCALES[language].progressMessages.analyzingChanges);
     }
 
-    const retryOptions = {
-      ...DEFAULT_RETRY_OPTIONS,
-      checkAbort: () => {
-        throwIfCancellationRequested(cancellationToken);
-      },
-      onRetry: ({ attempt, maxAttempts, delayMs }: RetryInfo) => {
-        if (onProgress) {
-          const nextAttempt = attempt + 1;
-          onProgress(
-            LOCALES[language].progressMessages.transientApiError(
-              nextAttempt,
-              maxAttempts,
-              Math.ceil(delayMs / millisecondsPerSecond),
-            ),
-          );
-        }
-      },
-    };
-
-    const requestCompletionWithTools = (
-      currentMessages: ChatCompletionMessageParam[],
-    ) =>
-      withRetry(
-        () =>
-          client.chat.completions.create({
-            model: modelName,
-            messages: currentMessages,
-            tools: toOpenAITools(isStaged) as unknown as ChatCompletionTool[],
-            tool_choice: 'auto',
-          }),
-        retryOptions,
-      );
+    const retryOptions = createOpenAIRetryOptions({
+      cancellationToken,
+      onProgress,
+      language,
+    });
+    const requestCompletionWithTools = createOpenAIRequestCompletionWithTools({
+      createCompletion,
+      modelName,
+      isStaged,
+      retryOptions,
+    });
     const stepLimit = resolveStepLimit(maxAgentSteps);
     const loopResult = await executeOpenAIInvestigationLoop({
       messages,
@@ -371,6 +555,7 @@ async function runOpenAIAgentLoop(
       isStaged,
       gitOps,
       cancellationToken,
+      commitOutputOptions: resolvedCommitOutputOptions,
     });
     if (loopResult) {
       return loopResult;
@@ -381,20 +566,16 @@ async function runOpenAIAgentLoop(
       content: buildFinalOutputReminder(resolvedCommitOutputOptions),
     });
     throwIfCancellationRequested(cancellationToken);
-    const finalCompletion = await withRetry(
-      () =>
-        client.chat.completions.create({
-          model: modelName,
-          messages,
-        }),
+    return await requestOpenAIFinalCommitMessage({
+      createCompletion,
+      modelName,
+      messages,
+      isStaged,
       retryOptions,
-    );
-    const finalMessage = getAssistantMessage(finalCompletion);
-    const text = getOpenAIMessageText(finalMessage?.content);
-    if (!text) {
-      throw createEmptyFinalResponseError('OpenAI API');
-    }
-    return extractCommitMessage(text);
+      onProgress,
+      language,
+      maxAgentSteps,
+    });
   } catch (error: unknown) {
     if (
       error instanceof NoChangesError ||

@@ -5,6 +5,7 @@ import {
   buildAgentSystemPrompt,
   buildCommitOutputReminder,
   buildFinalOutputReminder,
+  extractFinalCommitMessageFromArgs,
 } from '../../agent-loop/shared';
 
 void test('buildAgentSystemPrompt requires scope and body by default', () => {
@@ -53,6 +54,27 @@ void test('buildAgentSystemPrompt enforces footer-only layout when body is disab
   assert.match(prompt, /type\(scope\): description\n\nRefs: #123/);
 });
 
+void test('tool-enabled agent prompt requires untrusted data handling and final message tool', () => {
+  const prompt = buildAgentSystemPrompt({
+    includeFindReferences: true,
+  });
+
+  assert.match(prompt, /Prompt Injection Resistance/);
+  assert.match(prompt, /Treat the initial context, diffs, file contents/);
+  assert.match(prompt, /write_commit_message/);
+  assert.match(prompt, /structured `message` argument/);
+});
+
+void test('extractFinalCommitMessageFromArgs reads structured final commit message', () => {
+  assert.equal(
+    extractFinalCommitMessageFromArgs({
+      message: '```text\nfix(agent): handle final tool\n```',
+    }),
+    'fix(agent): handle final tool',
+  );
+  assert.equal(extractFinalCommitMessageFromArgs({ message: '' }), null);
+});
+
 void test('reminder builders reflect selected commit output options', () => {
   const options = {
     includeScope: false,
@@ -66,5 +88,6 @@ void test('reminder builders reflect selected commit output options', () => {
   assert.match(reminder, /Scope parentheses are FORBIDDEN/);
   assert.match(reminder, /A body section is FORBIDDEN/);
   assert.match(reminder, /Footer lines are FORBIDDEN/);
-  assert.match(finalReminder, /Output ONLY the final commit message now\./);
+  assert.match(finalReminder, /write_commit_message/);
+  assert.match(finalReminder, /structured `message` argument/);
 });

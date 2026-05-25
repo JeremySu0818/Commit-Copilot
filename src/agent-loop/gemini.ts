@@ -28,12 +28,20 @@ import {
   DEFAULT_MODELS,
   normalizeCommitOutputOptions,
 } from '../models';
-import { DEFAULT_RETRY_OPTIONS, RetryInfo, withRetry } from '../retry';
+import {
+  DEFAULT_RETRY_OPTIONS,
+  RetryInfo,
+  RetryOptions,
+  withRetry,
+} from '../retry';
 
 import {
   buildAgentSystemPrompt,
   buildFinalOutputReminder,
+  buildFinalToolRequiredReminder,
   extractCommitMessage,
+  extractFinalCommitMessageFromArgs,
+  FINAL_COMMIT_MESSAGE_TOOL_NAME,
   formatBatchProgressMessage,
 } from './shared';
 
@@ -337,6 +345,86 @@ async function buildToolResultParts(params: {
   return toolResults;
 }
 
+function handleGeminiTextResponse(params: {
+  response: unknown;
+  history: UnknownRecord[];
+  commitOutputOptions: CommitOutputOptions;
+  finalToolReminderSent: boolean;
+}): { finalMessage?: string; remindFinalTool: boolean } {
+  const text = getGeminiResponseText(params.response);
+  if (!text) {
+    throw createEmptyTextResponseError('Gemini API');
+  }
+  if (params.finalToolReminderSent) {
+    return { finalMessage: extractCommitMessage(text), remindFinalTool: false };
+  }
+  params.history.push(
+    getGeminiCandidateContent(params.response) ?? {
+      role: 'model',
+      parts: [{ text }],
+    },
+  );
+  params.history.push({
+    role: 'user',
+    parts: [
+      {
+        text: buildFinalToolRequiredReminder(params.commitOutputOptions),
+      },
+    ],
+  });
+  return { remindFinalTool: true };
+}
+
+async function handleGeminiFunctionCallBatch(params: {
+  functionCalls: GeminiFunctionCall[];
+  response: unknown;
+  history: UnknownRecord[];
+  step: number;
+  onProgress?: ProgressCallback;
+  language: EffectiveDisplayLanguage;
+  repoRoot: string;
+  diff: string;
+  isStaged: boolean;
+  gitOps?: GitOperations;
+  cancellationToken?: CancellationSignal;
+}): Promise<string | null> {
+  params.onProgress?.(
+    formatBatchProgressMessage(
+      params.step + 1,
+      params.functionCalls.map((call) => ({ name: call.name, args: call.args })),
+      params.language,
+    ),
+  );
+
+  const finalFunctionCall = params.functionCalls.find(
+    (call) => call.name === FINAL_COMMIT_MESSAGE_TOOL_NAME,
+  );
+  if (finalFunctionCall) {
+    const finalMessage = extractFinalCommitMessageFromArgs(
+      finalFunctionCall.args,
+    );
+    if (finalMessage) {
+      return finalMessage;
+    }
+  }
+
+  params.history.push(
+    getGeminiCandidateContent(params.response) ??
+      toGeminiModelResponsePart(params.functionCalls),
+  );
+
+  const toolResults = await buildToolResultParts({
+    functionCalls: params.functionCalls,
+    repoRoot: params.repoRoot,
+    diff: params.diff,
+    isStaged: params.isStaged,
+    gitOps: params.gitOps,
+    cancellationToken: params.cancellationToken,
+  });
+  params.history.push({ role: 'user', parts: toolResults });
+  return null;
+}
+
 async function executeGeminiInvestigationLoop(params: {
   history: UnknownRecord[];
   stepLimit: number;
@@ -351,48 +439,51 @@ async function executeGeminiInvestigationLoop(params: {
   isStaged: boolean;
   gitOps?: GitOperations;
   cancellationToken?: CancellationSignal;
+  commitOutputOptions: CommitOutputOptions;
 }): Promise<string | null> {
   let step = 0;
+  let finalToolReminderSent = false;
   while (step < params.stepLimit) {
     throwIfCancellationRequested(params.cancellationToken);
-    const response = await params.requestGeminiResponse(params.history);
+    const response = await params.requestGeminiResponse([...params.history]);
     if (!getGeminiFirstCandidate(response)) {
       throw createEmptyResponseError('Gemini API');
     }
 
     const functionCalls = normalizeGeminiFunctionCalls(response);
     if (functionCalls.length === 0) {
-      const text = getGeminiResponseText(response);
-      if (!text) {
-        throw createEmptyTextResponseError('Gemini API');
+      const textResult = handleGeminiTextResponse({
+        response,
+        history: params.history,
+        commitOutputOptions: params.commitOutputOptions,
+        finalToolReminderSent,
+      });
+      if (textResult.finalMessage) {
+        return textResult.finalMessage;
       }
-      return extractCommitMessage(text);
+      if (textResult.remindFinalTool) {
+        finalToolReminderSent = true;
+        step += 1;
+        continue;
+      }
+    } else {
+      const finalMessage = await handleGeminiFunctionCallBatch({
+        functionCalls,
+        response,
+        history: params.history,
+        step,
+        onProgress: params.onProgress,
+        language: params.language,
+        repoRoot: params.repoRoot,
+        diff: params.diff,
+        isStaged: params.isStaged,
+        gitOps: params.gitOps,
+        cancellationToken: params.cancellationToken,
+      });
+      if (finalMessage) {
+        return finalMessage;
+      }
     }
-
-    params.history.push(
-      getGeminiCandidateContent(response) ??
-        toGeminiModelResponsePart(functionCalls),
-    );
-
-    if (params.onProgress) {
-      params.onProgress(
-        formatBatchProgressMessage(
-          step + 1,
-          functionCalls.map((call) => ({ name: call.name, args: call.args })),
-          params.language,
-        ),
-      );
-    }
-
-    const toolResults = await buildToolResultParts({
-      functionCalls,
-      repoRoot: params.repoRoot,
-      diff: params.diff,
-      isStaged: params.isStaged,
-      gitOps: params.gitOps,
-      cancellationToken: params.cancellationToken,
-    });
-    params.history.push({ role: 'user', parts: toolResults });
     step += 1;
   }
 
@@ -408,6 +499,114 @@ function throwMappedGeminiError(error: unknown): never {
     throw new APIQuotaExceededError(message);
   }
   throw new APIRequestError(message);
+}
+
+interface GeminiClientLike {
+  models: {
+    generateContent: (request: {
+      model: string;
+      contents: UnknownRecord[];
+      config: UnknownRecord;
+    }) => Promise<unknown>;
+  };
+}
+
+function createGeminiRetryOptions(params: {
+  cancellationToken?: CancellationSignal;
+  onProgress?: ProgressCallback;
+  language: EffectiveDisplayLanguage;
+}): RetryOptions {
+  return {
+    ...DEFAULT_RETRY_OPTIONS,
+    checkAbort: () => {
+      throwIfCancellationRequested(params.cancellationToken);
+    },
+    onRetry: ({ attempt, maxAttempts, delayMs }: RetryInfo) => {
+      if (params.onProgress) {
+        const nextAttempt = attempt + 1;
+        params.onProgress(
+          LOCALES[params.language].progressMessages.transientApiError(
+            nextAttempt,
+            maxAttempts,
+            Math.ceil(delayMs / millisecondsPerSecond),
+          ),
+        );
+      }
+    },
+  };
+}
+
+function createGeminiResponseRequester(params: {
+  client: GeminiClientLike;
+  modelName: string;
+  retryOptions: ReturnType<typeof createGeminiRetryOptions>;
+}) {
+  return (contents: UnknownRecord[], config: UnknownRecord) =>
+    withRetry(
+      () =>
+        params.client.models.generateContent({
+          model: params.modelName,
+          contents,
+          config,
+        }),
+      params.retryOptions,
+    );
+}
+
+async function requestGeminiFinalCommitMessage(params: {
+  requestGeminiResponse: (
+    contents: UnknownRecord[],
+    config?: UnknownRecord,
+  ) => Promise<unknown>;
+  history: UnknownRecord[];
+  generationConfig: UnknownRecord;
+  onProgress?: ProgressCallback;
+  language: EffectiveDisplayLanguage;
+  maxAgentSteps?: number;
+  commitOutputOptions: CommitOutputOptions;
+}): Promise<string> {
+  const finalResponse = await params.requestGeminiResponse(
+    [
+      ...params.history,
+      {
+        role: 'user',
+        parts: [
+          { text: buildFinalOutputReminder(params.commitOutputOptions) },
+        ],
+      },
+    ],
+    params.generationConfig,
+  );
+  const finalFunctionCall = normalizeGeminiFunctionCalls(finalResponse).find(
+    (call) => call.name === FINAL_COMMIT_MESSAGE_TOOL_NAME,
+  );
+  if (finalFunctionCall) {
+    params.onProgress?.(
+      formatBatchProgressMessage(
+        resolveStepLimit(params.maxAgentSteps) === Number.POSITIVE_INFINITY
+          ? 1
+          : resolveStepLimit(params.maxAgentSteps) + 1,
+        [
+          {
+            name: FINAL_COMMIT_MESSAGE_TOOL_NAME,
+            args: finalFunctionCall.args,
+          },
+        ],
+        params.language,
+      ),
+    );
+    const finalCommitMessage = extractFinalCommitMessageFromArgs(
+      finalFunctionCall.args,
+    );
+    if (finalCommitMessage) {
+      return finalCommitMessage;
+    }
+  }
+  const text = getGeminiResponseText(finalResponse);
+  if (!text) {
+    throw createEmptyFinalResponseError('Gemini API');
+  }
+  return extractCommitMessage(text);
 }
 
 async function runGeminiAgentLoop(
@@ -457,9 +656,6 @@ async function runGeminiAgentLoop(
         },
       ],
     };
-    const finalGenerationConfig = {
-      systemInstruction: systemPrompt,
-    };
 
     const initialContext = await buildInitialContext(
       diff,
@@ -480,50 +676,20 @@ async function runGeminiAgentLoop(
       onProgress(LOCALES[language].progressMessages.analyzingChanges);
     }
 
-    const retryOptions = {
-      ...DEFAULT_RETRY_OPTIONS,
-      checkAbort: () => {
-        throwIfCancellationRequested(cancellationToken);
-      },
-      onRetry: ({ attempt, maxAttempts, delayMs }: RetryInfo) => {
-        if (onProgress) {
-          const nextAttempt = attempt + 1;
-          onProgress(
-            LOCALES[language].progressMessages.transientApiError(
-              nextAttempt,
-              maxAttempts,
-              Math.ceil(delayMs / millisecondsPerSecond),
-            ),
-          );
-        }
-      },
-    };
-
-    const requestGeminiResponse = async (
+    const retryOptions = createGeminiRetryOptions({
+      cancellationToken,
+      onProgress,
+      language,
+    });
+    const requestGeminiResponseWithConfig = createGeminiResponseRequester({
+      client,
+      modelName,
+      retryOptions,
+    });
+    const requestGeminiResponse = (
       contents: UnknownRecord[],
       config: UnknownRecord = generationConfig,
-    ) => {
-      throwIfCancellationRequested(cancellationToken);
-      const result = await withRetry(
-        () => {
-          throwIfCancellationRequested(cancellationToken);
-          return client.models.generateContent({
-            model: modelName,
-            contents,
-            config,
-          });
-        },
-        {
-          ...retryOptions,
-          onRetry: (info: RetryInfo) => {
-            throwIfCancellationRequested(cancellationToken);
-            retryOptions.onRetry(info);
-          },
-        },
-      );
-      throwIfCancellationRequested(cancellationToken);
-      return result;
-    };
+    ) => requestGeminiResponseWithConfig(contents, config);
 
     const loopResult = await executeGeminiInvestigationLoop({
       history,
@@ -536,28 +702,21 @@ async function runGeminiAgentLoop(
       isStaged,
       gitOps,
       cancellationToken,
+      commitOutputOptions: resolvedCommitOutputOptions,
     });
     if (loopResult) {
       return loopResult;
     }
 
-    const finalResponse = await requestGeminiResponse(
-      [
-        ...history,
-        {
-          role: 'user',
-          parts: [
-            { text: buildFinalOutputReminder(resolvedCommitOutputOptions) },
-          ],
-        },
-      ],
-      finalGenerationConfig,
-    );
-    const text = getGeminiResponseText(finalResponse);
-    if (!text) {
-      throw createEmptyFinalResponseError('Gemini API');
-    }
-    return extractCommitMessage(text);
+    return await requestGeminiFinalCommitMessage({
+      requestGeminiResponse,
+      history,
+      generationConfig,
+      onProgress,
+      language,
+      maxAgentSteps,
+      commitOutputOptions: resolvedCommitOutputOptions,
+    });
   } catch (error: unknown) {
     if (
       error instanceof NoChangesError ||
