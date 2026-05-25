@@ -8,7 +8,7 @@ Commit-Copilot is an **agentic** VS Code extension that uses a multi-step AI age
   - **Google Gemini**: Support for Gemini 2.5 Flash-Lite/Flash/Pro, Gemini 3 Flash and Gemini 3.1 Flash-Lite/Pro.
   - **OpenAI**: Support for o3/o3-mini, o4-mini, GPT-4o mini/GPT-4o, GPT-4.1 nano/GPT-4.1 mini/GPT-4.1, GPT-5 nano/GPT-5 mini/GPT-5, GPT-5.1, GPT-5.2, GPT-5.4 nano/GPT-5.4 mini/GPT-5.4, and GPT-5.5.
   - **Anthropic**: Support for Claude Sonnet/Opus 4, Claude Opus 4.1, Claude Haiku/Sonnet/Opus 4.5, Claude Opus 4.6 and Claude Opus 4.7.
-  - **Ollama**: Support for local models like Gemma 3 1B/4B/12B/27B, gpt-oss-20B/120B, Llama 3.3 8B/70B, Phi-4 14B and Mistral 7B.
+  - **Ollama**: Support for local models. Dynamically fetches your local model list from the Ollama instance and allows manual addition of custom model IDs. Supports any model you have installed, including Gemma 3, Llama 3.3, Phi-4, and Mistral.
   - **Custom Provider**: Add any OpenAI-compatible endpoint (e.g. DeepSeek, Azure OpenAI, LM Studio) by specifying a display name and Base URL. Custom providers appear alongside built-in providers, use secure API key storage, and can fetch or manually manage provider-specific models.
 - **Two Generate Modes**:
   - **Agentic** (default): Runs a multi-step agent loop. The AI is given only file names and line counts initially, then autonomously calls tools — `get_diff`, `read_file`, `get_file_outline`, `find_references`, `get_recent_commits`, `search_code` — to investigate changes, understand context, and learn the project's commit style before classifying.
@@ -28,7 +28,7 @@ Commit-Copilot is an **agentic** VS Code extension that uses a multi-step AI age
 - **Automatic Retries**: Automatically retries failed API requests due to temporary network issues or rate limits, making the generation process more resilient.
 - **Secure Key Storage**: API keys are stored securely using VS Code's Secret Storage.
 - **Flexible Commit Output Structure**: Individually toggle whether the generated message includes a **Scope**, a **Body**, and a **Footer**. All three are optional — defaults are scope on, body on, footer off.
-- **Model Selection**: Customize which model you want to use for each provider. Custom providers can fetch models from their endpoint, and you can manually add or remove custom model IDs when needed.
+- **Model Selection**: Customize which model you want to use for each provider. Custom providers and Ollama can fetch models from their respective endpoints, and you can manually add or remove custom model IDs when needed.
 - **Localization**: The UI follows VS Code's display language automatically, or you can manually pin it to any of 20 supported languages: العربية, Čeština, Deutsch, English, Español, Français, हिन्दी, Magyar, Bahasa Indonesia, Italiano, 日本語, 한국어, Nederlands, Polski, Português (Brasil), Русский, Türkçe, Tiếng Việt, 简体中文, 繁體中文.
 - **Preview & Edit**: Review the generated message in the Source Control input box before committing.
 
@@ -79,7 +79,7 @@ To use any OpenAI-compatible endpoint (e.g. DeepSeek, Azure OpenAI, LM Studio):
 2. Enter a display **Name** and the **Base URL** for the endpoint.
 3. Save and enter the API key for that endpoint.
 
-The custom provider will appear in the provider list alongside the built-in ones. After validation, Commit-Copilot tries to fetch the provider's model list from the endpoint. If the endpoint does not expose the model you need, choose **"Add Model"** from the model dropdown to add a custom model ID manually. Manually added models are stored per custom provider and can be deleted from the Add Model view.
+The custom provider will appear in the provider list alongside the built-in ones. After validation, Commit-Copilot tries to fetch the provider's model list from the endpoint. For both custom providers and Ollama, if the endpoint does not expose the model you need, choose **"Add Model"** from the model dropdown to add a custom model ID manually. Manually added models are stored per provider and can be deleted from the Add Model view.
 
 #### Additional Options
 
