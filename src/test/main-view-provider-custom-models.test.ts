@@ -34,6 +34,7 @@ interface ProviderWithFetcher {
     baseUrl: string | undefined,
     customProviderId: string,
   ): Promise<ModelConfig[]>;
+  fetchOllamaModels(host: string | undefined): Promise<ModelConfig[]>;
 }
 
 interface Harness {
@@ -55,6 +56,7 @@ function toPostedMessage(value: unknown): PostedMessage | null {
 async function createHarness(
   initialState: Record<string, unknown> = {},
   fetchedModels: ModelConfig[] = [],
+  fetchedOllamaModels: ModelConfig[] = [],
 ): Promise<Harness> {
   clearRequireCache(MODULE_PATH);
 
@@ -151,6 +153,7 @@ async function createHarness(
     context,
   ) as unknown as ProviderWithFetcher;
   provider.fetchCustomProviderModels = () => Promise.resolve(fetchedModels);
+  provider.fetchOllamaModels = () => Promise.resolve(fetchedOllamaModels);
   provider.resolveWebviewView(
     webviewView as unknown as vscode.WebviewView,
     {} as vscode.WebviewViewResolveContext,
@@ -262,6 +265,60 @@ void test('deleteCustomModel clears saved selection when deleting the last avail
       harness.state.get(getCustomProviderModelsStorageKey(customId)),
       [],
     );
+    const message = findPostedMessage(
+      harness.postedMessages,
+      'customModelDeleted',
+    );
+    assert.equal(message.currentModel, '');
+    assert.deepEqual(message.models, []);
+    assert.deepEqual(message.customModels, []);
+  } finally {
+    harness.dispose();
+  }
+});
+
+void test('addCustomModel persists the first manual model selection for ollama', async () => {
+  const harness = await createHarness();
+
+  try {
+    await harness.sendMessage({
+      type: 'addCustomModel',
+      provider: 'ollama',
+      modelName: 'llama3.2:3b',
+    });
+
+    assert.equal(harness.state.get('OLLAMA_MODEL'), 'llama3.2:3b');
+    assert.deepEqual(harness.state.get('OLLAMA_MODELS'), [
+      { id: 'llama3.2:3b', alias: 'llama3.2:3b' },
+    ]);
+    const message = findPostedMessage(
+      harness.postedMessages,
+      'customModelAdded',
+    );
+    assert.equal(message.currentModel, 'llama3.2:3b');
+    assert.deepEqual(message.models, [
+      { id: 'llama3.2:3b', alias: 'llama3.2:3b' },
+    ]);
+  } finally {
+    harness.dispose();
+  }
+});
+
+void test('deleteCustomModel clears ollama selection when deleting the last available model', async () => {
+  const harness = await createHarness({
+    OLLAMA_MODEL: 'llama3.2:3b',
+    OLLAMA_MODELS: [{ id: 'llama3.2:3b', alias: 'llama3.2:3b' }],
+  });
+
+  try {
+    await harness.sendMessage({
+      type: 'deleteCustomModel',
+      provider: 'ollama',
+      modelId: 'llama3.2:3b',
+    });
+
+    assert.equal(harness.state.get('OLLAMA_MODEL'), undefined);
+    assert.deepEqual(harness.state.get('OLLAMA_MODELS'), []);
     const message = findPostedMessage(
       harness.postedMessages,
       'customModelDeleted',

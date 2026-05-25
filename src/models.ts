@@ -186,18 +186,7 @@ export const ANTHROPIC_MODELS: ModelConfig[] = [
   },
 ];
 
-export const OLLAMA_MODELS: ModelConfig[] = [
-  { id: 'gemma3:1b', alias: 'Gemma 3 1B' },
-  { id: 'gemma3:4b', alias: 'Gemma 3 4B' },
-  { id: 'gemma3:12b', alias: 'Gemma 3 12B' },
-  { id: 'gemma3:27b', alias: 'Gemma 3 27B' },
-  { id: 'gpt-oss:20b', alias: 'gpt-oss-20B' },
-  { id: 'gpt-oss:120b', alias: 'gpt-oss-120B' },
-  { id: 'llama3.3:8b', alias: 'Llama 3.3 8B' },
-  { id: 'llama3.3:70b', alias: 'Llama 3.3 70B' },
-  { id: 'phi4:14b', alias: 'Phi-4 14B' },
-  { id: 'mistral:7b', alias: 'Mistral 7B' },
-];
+export const OLLAMA_MODELS: ModelConfig[] = [];
 
 export const GROK_MODELS: ModelConfig[] = [
   { id: 'grok-4.20-0309-non-reasoning', alias: 'Grok 4.20 (non-reasoning)' },
@@ -385,7 +374,7 @@ export const DEFAULT_MODELS: Record<APIProvider, string> = {
   google: 'gemini-3.5-flash',
   openai: 'gpt-5.5',
   anthropic: 'claude-sonnet-4-6',
-  ollama: 'gemma3:12b',
+  ollama: '',
   grok: 'grok-2-1212',
   groq: 'llama-3.3-70b-versatile',
   openrouter: 'google/gemini-2.5-flash',

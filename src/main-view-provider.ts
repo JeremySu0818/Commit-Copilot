@@ -54,6 +54,18 @@ const unauthorizedStatus = 401;
 const forbiddenStatus = 403;
 const tooManyRequestsStatus = 429;
 const nonceByteLength = 16;
+const LEGACY_OLLAMA_BUILTIN_MODEL_IDS = new Set([
+  'gemma3:1b',
+  'gemma3:4b',
+  'gemma3:12b',
+  'gemma3:27b',
+  'gpt-oss:20b',
+  'gpt-oss:120b',
+  'llama3.3:8b',
+  'llama3.3:70b',
+  'phi4:14b',
+  'mistral:7b',
+]);
 
 interface IncomingMessage extends UnknownRecord {
   type: string;
@@ -97,6 +109,10 @@ interface GitExtensionExports {
   getAPI(version: 1): GitApi;
 }
 
+interface OllamaTagsResponse {
+  models?: unknown[];
+}
+
 function isRecord(value: unknown): value is UnknownRecord {
   return typeof value === 'object' && value !== null;
 }
@@ -114,6 +130,19 @@ function asMessage(data: unknown): IncomingMessage | null {
 
 function isGitExtensionExports(value: unknown): value is GitExtensionExports {
   return isRecord(value) && typeof value.getAPI === 'function';
+}
+
+function toOllamaModelConfig(value: unknown): ModelConfig | null {
+  if (!isRecord(value)) {
+    return null;
+  }
+  const name = asString(value.name);
+  const model = asString(value.model);
+  const id = name && name.length > 0 ? name : model;
+  if (!id || id.length === 0) {
+    return null;
+  }
+  return { id, alias: id };
 }
 
 function isAPIProvider(value: string): value is APIProvider {
@@ -185,6 +214,62 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
         this.getCustomProviderModelStorageKey(customId),
       ) ?? ''
     );
+  }
+
+  private getBuiltInProviderModelStorageKey(provider: APIProvider): string {
+    return `${provider.toUpperCase()}_MODEL`;
+  }
+
+  private getSavedBuiltInProviderModel(provider: APIProvider): string {
+    return (
+      this._context.globalState.get<string>(
+        this.getBuiltInProviderModelStorageKey(provider),
+      ) ?? ''
+    );
+  }
+
+  private getBuiltInProviderModelsStorageKey(provider: APIProvider): string {
+    return `${provider.toUpperCase()}_MODELS`;
+  }
+
+  private async getSanitizedOllamaManualModels(): Promise<ModelConfig[]> {
+    const storageKey = this.getBuiltInProviderModelsStorageKey('ollama');
+    const raw = this._context.globalState.get<unknown>(storageKey);
+    const source = Array.isArray(raw) ? raw : [];
+    const seenIds = new Set<string>();
+    const sanitized: ModelConfig[] = [];
+
+    for (const item of source) {
+      if (!isRecord(item)) {
+        continue;
+      }
+      const id = asString(item.id)?.trim();
+      if (!id || seenIds.has(id)) {
+        continue;
+      }
+      if (LEGACY_OLLAMA_BUILTIN_MODEL_IDS.has(id)) {
+        continue;
+      }
+      const alias = asString(item.alias)?.trim() || id;
+      sanitized.push({ id, alias });
+      seenIds.add(id);
+    }
+
+    if (
+      !Array.isArray(raw) ||
+      source.length !== sanitized.length ||
+      source.some((item, index) => {
+        const model = sanitized[index];
+        if (!isRecord(item) || !model) {
+          return true;
+        }
+        return item.id !== model.id || item.alias !== model.alias;
+      })
+    ) {
+      await this._context.globalState.update(storageKey, sanitized);
+    }
+
+    return sanitized;
   }
 
   private includeModelIfMissing(
@@ -534,6 +619,41 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
     return merged;
   }
 
+  private async fetchOllamaModels(
+    host: string | undefined,
+  ): Promise<ModelConfig[]> {
+    const manualModels = await this.getSanitizedOllamaManualModels();
+
+    let apiModels: ModelConfig[] = [];
+    const resolvedHost =
+      host && host.length > 0 ? host.trim() : OLLAMA_DEFAULT_HOST;
+    try {
+      const response = await fetch(`${resolvedHost}/api/tags`, {
+        method: 'GET',
+      });
+      if (response.ok) {
+        const payload = (await response.json()) as OllamaTagsResponse;
+        const rawModels = Array.isArray(payload.models) ? payload.models : [];
+        const parsedModels = rawModels
+          .map(toOllamaModelConfig)
+          .filter((model): model is ModelConfig => model !== null)
+          .sort((a, b) => a.id.localeCompare(b.id));
+        apiModels = parsedModels;
+      }
+    } catch (error) {
+      console.error('Error fetching Ollama models:', error);
+    }
+
+    const allModelIds = new Set(apiModels.map((m) => m.id));
+    const merged = [...apiModels];
+    for (const manual of manualModels) {
+      if (!allModelIds.has(manual.id)) {
+        merged.push(manual);
+      }
+    }
+    return merged;
+  }
+
   private async getBuiltInProviderModels(
     provider: APIProvider,
     apiKey?: string,
@@ -551,6 +671,9 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
       } catch {
         return [];
       }
+    }
+    if (provider === 'ollama') {
+      return this.fetchOllamaModels(apiKey);
     }
     return MODELS_BY_PROVIDER[provider];
   }
@@ -867,9 +990,7 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
       vscode.window.showInformationMessage(
         text.saveConfigSuccess(PROVIDER_DISPLAY_NAMES[builtIn]),
       );
-      const savedModel = this._context.globalState.get<string>(
-        `${builtIn.toUpperCase()}_MODEL`,
-      );
+      const savedModel = this.getSavedBuiltInProviderModel(builtIn);
       const models = await this.getBuiltInProviderModels(
         builtIn,
         resolvedApiValue,
@@ -878,9 +999,9 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
         models: this.includeBuiltInModelIfMissing(
           builtIn,
           models,
-          savedModel ?? DEFAULT_MODELS[builtIn],
+          savedModel || DEFAULT_MODELS[builtIn],
         ),
-        currentModel: savedModel ?? DEFAULT_MODELS[builtIn],
+        currentModel: savedModel || DEFAULT_MODELS[builtIn],
       });
       this._view?.webview.postMessage({
         type: 'keyStatus',
@@ -1137,18 +1258,16 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
           API_KEY_STORAGE_KEYS[builtIn],
         );
         if (key || builtIn === 'ollama') {
-          const savedModel = this._context.globalState.get<string>(
-            `${builtIn.toUpperCase()}_MODEL`,
-          );
+          const savedModel = this.getSavedBuiltInProviderModel(builtIn);
           const models = await this.getBuiltInProviderModels(builtIn, key);
           this._view?.webview.postMessage({
             type: 'modelsList',
             models: this.includeBuiltInModelIfMissing(
               builtIn,
               models,
-              savedModel ?? DEFAULT_MODELS[builtIn],
+              savedModel || DEFAULT_MODELS[builtIn],
             ),
-            currentModel: savedModel ?? DEFAULT_MODELS[builtIn],
+            currentModel: savedModel || DEFAULT_MODELS[builtIn],
             provider,
           });
         }
@@ -1165,10 +1284,12 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
           );
           return;
         }
-        await this._context.globalState.update(
-          `${provider.toUpperCase()}_MODEL`,
-          modelValue,
-        );
+        if (isAPIProvider(provider)) {
+          await this._context.globalState.update(
+            this.getBuiltInProviderModelStorageKey(provider),
+            modelValue,
+          );
+        }
       },
       saveProvider: async (message) => {
         await this._context.globalState.update(
@@ -1317,19 +1438,25 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
       },
       addCustomModel: async (message) => {
         const provider = toProvider(message.provider);
-        if (!isCustomProvider(provider)) {
+        const customId = isCustomProvider(provider)
+          ? getCustomProviderId(provider)
+          : null;
+        const isOllamaProvider = provider === 'ollama';
+        if (!customId && !isOllamaProvider) {
           return;
         }
-        const customId = getCustomProviderId(provider);
         const modelName = (asString(message.modelName) ?? '').trim();
         if (!modelName) {
           return;
         }
-        const storageKey = getCustomProviderModelsStorageKey(customId);
-        const existing =
-          this._context.globalState.get<{ id: string; alias: string }[]>(
-            storageKey,
-          ) ?? [];
+        const storageKey = customId
+          ? getCustomProviderModelsStorageKey(customId)
+          : this.getBuiltInProviderModelsStorageKey('ollama');
+        const existing = customId
+          ? this._context.globalState.get<{ id: string; alias: string }[]>(
+              storageKey,
+            ) ?? []
+          : await this.getSanitizedOllamaManualModels();
         if (existing.some((m) => m.id === modelName)) {
           this._view?.webview.postMessage({
             type: 'customModelAddFailed',
@@ -1339,19 +1466,24 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
         }
         existing.push({ id: modelName, alias: modelName });
         await this._context.globalState.update(storageKey, existing);
-        let currentModel = this.getSavedCustomProviderModel(customId);
+        const modelStorageKey = customId
+          ? this.getCustomProviderModelStorageKey(customId)
+          : this.getBuiltInProviderModelStorageKey('ollama');
+        let currentModel = customId
+          ? this.getSavedCustomProviderModel(customId)
+          : this.getSavedBuiltInProviderModel('ollama');
         if (!currentModel) {
           currentModel = modelName;
-          await this._context.globalState.update(
-            this.getCustomProviderModelStorageKey(customId),
-            modelName,
-          );
+          await this._context.globalState.update(modelStorageKey, modelName);
         }
 
-        const apiKey = await this._context.secrets.get(
-          getCustomProviderStorageKey(customId),
-        );
-        if (apiKey) {
+        if (customId) {
+          const apiKey = await this._context.secrets.get(
+            getCustomProviderStorageKey(customId),
+          );
+          if (!apiKey) {
+            return;
+          }
           const models = await this.fetchCustomProviderModels(
             apiKey,
             undefined,
@@ -1364,37 +1496,61 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
             provider,
             customModels: existing,
           });
+          return;
         }
+
+        const host =
+          (await this._context.secrets.get(API_KEY_STORAGE_KEYS.ollama)) ??
+          OLLAMA_DEFAULT_HOST;
+        const models = await this.fetchOllamaModels(host);
+        this._view?.webview.postMessage({
+          type: 'customModelAdded',
+          models: this.includeModelIfMissing(models, currentModel),
+          currentModel,
+          provider,
+          customModels: existing,
+        });
       },
       deleteCustomModel: async (message) => {
         const provider = toProvider(message.provider);
-        if (!isCustomProvider(provider)) {
+        const customId = isCustomProvider(provider)
+          ? getCustomProviderId(provider)
+          : null;
+        const isOllamaProvider = provider === 'ollama';
+        if (!customId && !isOllamaProvider) {
           return;
         }
-        const customId = getCustomProviderId(provider);
         const modelId = (asString(message.modelId) ?? '').trim();
         if (!modelId) {
           return;
         }
-        const storageKey = getCustomProviderModelsStorageKey(customId);
-        const existing =
-          this._context.globalState.get<{ id: string; alias: string }[]>(
-            storageKey,
-          ) ?? [];
+        const storageKey = customId
+          ? getCustomProviderModelsStorageKey(customId)
+          : this.getBuiltInProviderModelsStorageKey('ollama');
+        const existing = customId
+          ? this._context.globalState.get<{ id: string; alias: string }[]>(
+              storageKey,
+            ) ?? []
+          : await this.getSanitizedOllamaManualModels();
         const filtered = existing.filter((m) => m.id !== modelId);
         await this._context.globalState.update(storageKey, filtered);
-        const savedModel = this.getSavedCustomProviderModel(customId);
+        const modelStorageKey = customId
+          ? this.getCustomProviderModelStorageKey(customId)
+          : this.getBuiltInProviderModelStorageKey('ollama');
+        const savedModel = customId
+          ? this.getSavedCustomProviderModel(customId)
+          : this.getSavedBuiltInProviderModel('ollama');
 
-        const apiKey = await this._context.secrets.get(
-          getCustomProviderStorageKey(customId),
-        );
-        if (!apiKey && savedModel === modelId) {
-          await this._context.globalState.update(
-            this.getCustomProviderModelStorageKey(customId),
-            undefined,
+        if (customId) {
+          const apiKey = await this._context.secrets.get(
+            getCustomProviderStorageKey(customId),
           );
-        }
-        if (apiKey) {
+          if (!apiKey && savedModel === modelId) {
+            await this._context.globalState.update(modelStorageKey, undefined);
+          }
+          if (!apiKey) {
+            return;
+          }
           const fetchedModels = await this.fetchCustomProviderModels(
             apiKey,
             undefined,
@@ -1408,10 +1564,7 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
               ? ''
               : savedModel;
           if (savedModel && !currentModel) {
-            await this._context.globalState.update(
-              this.getCustomProviderModelStorageKey(customId),
-              undefined,
-            );
+            await this._context.globalState.update(modelStorageKey, undefined);
           }
           const models = this.includeModelIfMissing(
             fetchedModels,
@@ -1424,19 +1577,46 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
             provider,
             customModels: filtered,
           });
-        }
-      },
-      getCustomModels: (message) => {
-        const provider = toProvider(message.provider);
-        if (!isCustomProvider(provider)) {
           return;
         }
-        const customId = getCustomProviderId(provider);
-        const storageKey = getCustomProviderModelsStorageKey(customId);
-        const customModels =
-          this._context.globalState.get<{ id: string; alias: string }[]>(
-            storageKey,
-          ) ?? [];
+
+        const host =
+          (await this._context.secrets.get(API_KEY_STORAGE_KEYS.ollama)) ??
+          OLLAMA_DEFAULT_HOST;
+        const fetchedModels = await this.fetchOllamaModels(host);
+        const savedModelStillAvailable = fetchedModels.some(
+          (model) => model.id === savedModel,
+        );
+        const currentModel =
+          savedModel === modelId && !savedModelStillAvailable ? '' : savedModel;
+        if (savedModel && !currentModel) {
+          await this._context.globalState.update(modelStorageKey, undefined);
+        }
+        const models = this.includeModelIfMissing(fetchedModels, currentModel);
+        this._view?.webview.postMessage({
+          type: 'customModelDeleted',
+          models,
+          currentModel,
+          provider,
+          customModels: filtered,
+        });
+      },
+      getCustomModels: async (message) => {
+        const provider = toProvider(message.provider);
+        const customId = isCustomProvider(provider)
+          ? getCustomProviderId(provider)
+          : null;
+        if (!customId && provider !== 'ollama') {
+          return;
+        }
+        const storageKey = customId
+          ? getCustomProviderModelsStorageKey(customId)
+          : this.getBuiltInProviderModelsStorageKey('ollama');
+        const customModels = customId
+          ? this._context.globalState.get<{ id: string; alias: string }[]>(
+              storageKey,
+            ) ?? []
+          : await this.getSanitizedOllamaManualModels();
         this._view?.webview.postMessage({
           type: 'customModelsList',
           customModels,

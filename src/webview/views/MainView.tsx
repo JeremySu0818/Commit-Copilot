@@ -143,7 +143,7 @@ export function MainView() {
       <ModelSection
         pack={pack}
         modelState={modelState}
-        isCustomProvider={isCustom}
+        isManagedModelProvider={isCustom || isOllama}
         onModelChange={handleModelChange}
         onCustomModelChange={handleCustomModelChange}
         onCustomModelBlur={handleCustomModelBlur}
