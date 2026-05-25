@@ -241,23 +241,20 @@ void test('executeGetFileOutline infers language for staged new files', async ()
         openInputs.push(input);
 
         if (input instanceof MockUri) {
-          return Promise.reject(
-            new Error('Document is not available on disk.'),
+          return Promise.resolve(
+            new MockTextDocument(
+              input,
+              fs.existsSync(input.fsPath)
+                ? fs.readFileSync(input.fsPath, 'utf-8')
+                : '',
+              'plaintext',
+            ),
           );
         }
 
         if (input && typeof input === 'object' && 'content' in input) {
-          const options = input as { content?: unknown; language?: unknown };
-          const languageId =
-            typeof options.language === 'string'
-              ? options.language
-              : 'plaintext';
-          return Promise.resolve(
-            new MockTextDocument(
-              new MockUri('untitled://staged', 'untitled'),
-              toText(options.content),
-              languageId,
-            ),
+          return Promise.reject(
+            new Error('Staged outline should not open an untitled document.'),
           );
         }
 
@@ -289,15 +286,20 @@ void test('executeGetFileOutline infers language for staged new files', async ()
 
     assert.match(output, /language "typescript"/);
 
-    const stagedOpen = openInputs.find(
+    const contentOpen = openInputs.find(
       (value) =>
         value &&
         typeof value === 'object' &&
         'content' in (value as Record<string, unknown>),
-    ) as { language?: unknown } | undefined;
+    );
+    assert.equal(contentOpen, undefined);
 
+    const stagedOpen = openInputs.find(
+      (value) =>
+        value instanceof MockUri &&
+        path.basename(value.fsPath) === 'new-file.ts',
+    );
     assert.ok(stagedOpen);
-    assert.equal(stagedOpen.language, 'typescript');
   } finally {
     cleanupTempDir(repoRoot);
   }

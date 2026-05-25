@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import * as os from 'os';
 import * as path from 'path';
 
 import * as vscode from 'vscode';
@@ -111,19 +112,6 @@ async function resolveLanguageId(
     return diskDoc.languageId;
   }
 
-  let untitledLanguageId: string | undefined;
-  try {
-    const untitledUri = vscode.Uri.file(absPath).with({ scheme: 'untitled' });
-    const untitledDoc = await vscode.workspace.openTextDocument(untitledUri);
-    untitledLanguageId = untitledDoc.languageId;
-  } catch {
-    untitledLanguageId = undefined;
-  }
-
-  if (untitledLanguageId) {
-    return untitledLanguageId;
-  }
-
   const baseName = path.basename(absPath).toLowerCase();
   const byName = LANGUAGE_ID_BY_FILENAME[baseName];
   if (byName) {
@@ -226,21 +214,60 @@ async function resolveOutlineContent(
   return { content: fs.readFileSync(absPath, 'utf-8') };
 }
 
+interface OutlineDocumentHandle {
+  document: vscode.TextDocument;
+  dispose?: () => void;
+}
+
 async function openOutlineDocument(
   repoRoot: string,
   absPath: string,
   content: string,
   isStaged: boolean,
-): Promise<vscode.TextDocument> {
+): Promise<OutlineDocumentHandle> {
   if (isStaged) {
     const languageId = await resolveLanguageId(repoRoot, absPath);
-    return vscode.workspace.openTextDocument({
-      content,
-      language: languageId,
-    });
+    const tempDir = fs.mkdtempSync(
+      path.join(os.tmpdir(), 'commit-copilot-outline-'),
+    );
+    const tempPath = path.join(tempDir, path.basename(absPath));
+
+    fs.writeFileSync(tempPath, content, 'utf-8');
+
+    let document: vscode.TextDocument;
+    try {
+      document = await vscode.workspace.openTextDocument(
+        vscode.Uri.file(tempPath),
+      );
+    } catch (error) {
+      fs.rmSync(tempDir, { recursive: true, force: true });
+      throw error;
+    }
+
+    if (languageId && document.languageId !== languageId) {
+      const typedDocument = await vscode.languages.setTextDocumentLanguage(
+        document,
+        languageId,
+      );
+      return {
+        document: typedDocument,
+        dispose: () => {
+          fs.rmSync(tempDir, { recursive: true, force: true });
+        },
+      };
+    }
+
+    return {
+      document,
+      dispose: () => {
+        fs.rmSync(tempDir, { recursive: true, force: true });
+      },
+    };
   }
 
-  return vscode.workspace.openTextDocument(vscode.Uri.file(absPath));
+  return {
+    document: await vscode.workspace.openTextDocument(vscode.Uri.file(absPath)),
+  };
 }
 
 function appendOutlineFromSymbols(
@@ -303,28 +330,33 @@ async function executeGetFileOutline(
     outlineLines.push(`File: ${relPath} (${String(lines.length)} total lines)`);
     outlineLines.push('');
 
-    const document = await openOutlineDocument(
+    const outlineDocument = await openOutlineDocument(
       repoRoot,
       absPath,
       content,
       isStaged,
     );
 
-    const symbolResult = await vscode.commands.executeCommand<
-      vscode.DocumentSymbol[] | vscode.SymbolInformation[] | undefined
-    >('vscode.executeDocumentSymbolProvider', document.uri);
+    try {
+      const { document } = outlineDocument;
+      const symbolResult = await vscode.commands.executeCommand<
+        vscode.DocumentSymbol[] | vscode.SymbolInformation[] | undefined
+      >('vscode.executeDocumentSymbolProvider', document.uri);
 
-    if (!symbolResult || symbolResult.length === 0) {
-      outlineLines.push(
-        `No document symbols available for language "${document.languageId}".`,
-      );
-      outlineLines.push('Consider using read_file for details.');
+      if (!symbolResult || symbolResult.length === 0) {
+        outlineLines.push(
+          `No document symbols available for language "${document.languageId}".`,
+        );
+        outlineLines.push('Consider using read_file for details.');
+        return outlineLines.join('\n');
+      }
+
+      appendOutlineFromSymbols(symbolResult, outlineLines);
+
       return outlineLines.join('\n');
+    } finally {
+      outlineDocument.dispose?.();
     }
-
-    appendOutlineFromSymbols(symbolResult, outlineLines);
-
-    return outlineLines.join('\n');
   } catch (err: unknown) {
     return `Error generating outline: ${getErrorMessage(err)}`;
   }

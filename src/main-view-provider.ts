@@ -520,8 +520,8 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
       }
       models.sort((a, b) => a.id.localeCompare(b.id));
       apiModels = models;
-    } catch {
-      // If fetch fails, still return manual models
+    } catch (error) {
+      console.error('Error fetching OpenAI-compatible provider models:', error);
     }
 
     const allModelIds = new Set(apiModels.map((m) => m.id));
@@ -1347,7 +1347,7 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
             modelName,
           );
         }
-        // Re-fetch full model list to send back
+
         const apiKey = await this._context.secrets.get(
           getCustomProviderStorageKey(customId),
         );
@@ -1384,7 +1384,7 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
         const filtered = existing.filter((m) => m.id !== modelId);
         await this._context.globalState.update(storageKey, filtered);
         const savedModel = this.getSavedCustomProviderModel(customId);
-        // Re-fetch full model list to send back
+
         const apiKey = await this._context.secrets.get(
           getCustomProviderStorageKey(customId),
         );
