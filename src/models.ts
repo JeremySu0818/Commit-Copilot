@@ -184,6 +184,11 @@ export const ANTHROPIC_MODELS: ModelConfig[] = [
     alias: 'Claude Opus 4.7',
     max_tokens: 128000,
   },
+  {
+    id: 'claude-opus-4-8',
+    alias: 'Claude Opus 4.8',
+    max_tokens: 128000,
+  },
 ];
 
 export const OLLAMA_MODELS: ModelConfig[] = [];
