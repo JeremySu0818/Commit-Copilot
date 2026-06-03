@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { fetchOpenRouterModels, fetchQwenModels } from '../models';
+import {
+  DEFAULT_MODELS,
+  fetchOpenRouterModels,
+  fetchQwenModels,
+  resolveDefaultModel,
+} from '../models';
 
 function toRequestUrl(input: unknown): string {
   if (typeof input === 'string') {
@@ -133,4 +138,41 @@ void test('fetchQwenModels fetches endpoint models and keeps Qwen text generatio
   } finally {
     global.fetch = originalFetch;
   }
+});
+
+void test('resolveDefaultModel keeps saved model when it is available', () => {
+  const models = [
+    { id: 'gpt-5-mini', alias: 'GPT-5 mini' },
+    { id: DEFAULT_MODELS.openai, alias: 'GPT-5.5' },
+  ];
+
+  assert.equal(
+    resolveDefaultModel('openai', models, 'gpt-5-mini'),
+    'gpt-5-mini',
+  );
+});
+
+void test('resolveDefaultModel falls back to provider default when saved model is unavailable', () => {
+  const models = [
+    { id: 'gpt-5-mini', alias: 'GPT-5 mini' },
+    { id: DEFAULT_MODELS.openai, alias: 'GPT-5.5' },
+  ];
+
+  assert.equal(
+    resolveDefaultModel('openai', models, 'missing-model'),
+    DEFAULT_MODELS.openai,
+  );
+});
+
+void test('resolveDefaultModel falls back to first model when provider default is unavailable', () => {
+  const models = [
+    { id: 'provider/model-a', alias: 'Model A' },
+    { id: 'provider/model-b', alias: 'Model B' },
+  ];
+
+  assert.equal(resolveDefaultModel('openrouter', models), 'provider/model-a');
+});
+
+void test('resolveDefaultModel returns empty string when no models are available', () => {
+  assert.equal(resolveDefaultModel('openrouter', []), '');
 });

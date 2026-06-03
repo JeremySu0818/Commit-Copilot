@@ -43,6 +43,7 @@ import {
   getCustomProviderModelsStorageKey,
   normalizeCommitOutputOptions,
   normalizeMaxAgentStepsValue,
+  resolveDefaultModel,
 } from './models';
 import { GenerationStateManager, ValidationStateManager } from './state';
 
@@ -995,13 +996,14 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
         builtIn,
         resolvedApiValue,
       );
+      const currentModel = resolveDefaultModel(builtIn, models, savedModel);
       postValidationResult(provider, true, {
         models: this.includeBuiltInModelIfMissing(
           builtIn,
           models,
-          savedModel || DEFAULT_MODELS[builtIn],
+          currentModel,
         ),
-        currentModel: savedModel || DEFAULT_MODELS[builtIn],
+        currentModel,
       });
       this._view?.webview.postMessage({
         type: 'keyStatus',
@@ -1260,14 +1262,15 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
         if (key || builtIn === 'ollama') {
           const savedModel = this.getSavedBuiltInProviderModel(builtIn);
           const models = await this.getBuiltInProviderModels(builtIn, key);
+          const currentModel = resolveDefaultModel(builtIn, models, savedModel);
           this._view?.webview.postMessage({
             type: 'modelsList',
             models: this.includeBuiltInModelIfMissing(
               builtIn,
               models,
-              savedModel || DEFAULT_MODELS[builtIn],
+              currentModel,
             ),
-            currentModel: savedModel || DEFAULT_MODELS[builtIn],
+            currentModel,
             provider,
           });
         }

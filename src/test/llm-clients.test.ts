@@ -3,7 +3,7 @@ import test from 'node:test';
 
 import { APIRequestError, EXIT_CODES } from '../errors';
 import { createLLMClient } from '../llm-clients';
-import { OLLAMA_DEFAULT_HOST } from '../models';
+import { DEFAULT_MODELS, OLLAMA_DEFAULT_HOST } from '../models';
 
 import { withModuleMock } from './helpers/module-mock';
 
@@ -233,7 +233,7 @@ void test('Gemini direct diff ignores unrelated numeric substrings', async () =>
 
 void test('createLLMClient creates correct client instances for new built-in providers', () => {
   const cases = [
-    { provider: 'grok', url: 'https://api.x.ai/v1', model: 'grok-2-1212' },
+    { provider: 'grok', url: 'https://api.x.ai/v1', model: DEFAULT_MODELS.grok },
     {
       provider: 'groq',
       url: 'https://api.groq.com/openai/v1',

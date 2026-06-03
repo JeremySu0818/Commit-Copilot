@@ -380,11 +380,11 @@ export const DEFAULT_MODELS: Record<APIProvider, string> = {
   openai: 'gpt-5.5',
   anthropic: 'claude-sonnet-4-6',
   ollama: '',
-  grok: 'grok-2-1212',
-  groq: 'llama-3.3-70b-versatile',
-  openrouter: 'google/gemini-2.5-flash',
-  deepseek: 'deepseek-chat',
-  qwen: 'qwen-plus',
+  grok: 'grok-4.3',
+  groq: 'openai/gpt-oss-120b',
+  openrouter: 'google/gemini-3.5-flash',
+  deepseek: 'deepseek-v4-flash',
+  qwen: 'qwen3.7-plus',
 };
 export function getAnthropicModelMaxTokens(
   modelId?: string,
@@ -395,6 +395,26 @@ export function getAnthropicModelMaxTokens(
 }
 export const DEFAULT_PROVIDER: APIProvider = 'google';
 export const DEFAULT_MODEL = DEFAULT_MODELS[DEFAULT_PROVIDER];
+
+export function resolveDefaultModel(
+  provider: APIProvider,
+  models: ModelConfig[],
+  savedModel?: string,
+): string {
+  const modelIds = new Set(models.map((model) => model.id));
+
+  if (savedModel && modelIds.has(savedModel)) {
+    return savedModel;
+  }
+
+  const defaultModel = DEFAULT_MODELS[provider];
+  if (defaultModel && modelIds.has(defaultModel)) {
+    return defaultModel;
+  }
+
+  return models[0]?.id ?? '';
+}
+
 export const API_KEY_STORAGE_KEYS: Record<APIProvider, string> = {
   google: 'GEMINI_API_KEY',
   openai: 'OPENAI_API_KEY',
