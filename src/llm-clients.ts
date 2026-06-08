@@ -283,7 +283,7 @@ function buildDirectDiffUserPrompt(
   draftCommitMessage?: string,
 ): string {
   const draftSection = formatDraftCommitMessageSection(draftCommitMessage);
-  return `${draftSection ? `${draftSection}\n\n` : ''}Here is the git diff:\n\n${diff}`;
+  return `${draftSection ? draftSection + '\n\n' : ''}Here is the git diff:\n\n${diff}`;
 }
 
 export class GeminiClient implements ILLMClient {
