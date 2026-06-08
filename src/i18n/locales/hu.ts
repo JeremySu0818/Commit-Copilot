@@ -166,8 +166,7 @@ export const huLocale: LocaleTextBundle = {
       generationError: (errorCode, message) =>
         `Hiba: ${errorCode} - ${message}`,
       unexpectedError: (message) => `Váratlan hiba: ${message}`,
-      openingLanguageSettings:
-        'Nyelvi beállítások megnyitása a tevékenység nézetben...',
+      openingSettings: 'Beállítások megnyitása...',
     },
     notification: {
       gitExtensionMissing:

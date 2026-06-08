@@ -166,8 +166,7 @@ export const viLocale: LocaleTextBundle = {
       generatedMessage: (message) => `Thông báo đã tạo: ${message}`,
       generationError: (errorCode, message) => `Lỗi: ${errorCode} - ${message}`,
       unexpectedError: (message) => `Lỗi không mong muốn: ${message}`,
-      openingLanguageSettings:
-        'Mở cài đặt ngôn ngữ trong chế độ xem hoạt động...',
+      openingSettings: 'Đang mở cài đặt...',
     },
     notification: {
       gitExtensionMissing:

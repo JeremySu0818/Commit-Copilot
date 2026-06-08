@@ -171,8 +171,7 @@ export const plLocale: LocaleTextBundle = {
       generationError: (errorCode, message) =>
         `Błąd: ${errorCode} - ${message}`,
       unexpectedError: (message) => `Nieoczekiwany błąd: ${message}`,
-      openingLanguageSettings:
-        'Otwieranie ustawień języka w widoku aktywności...',
+      openingSettings: 'Otwieranie ustawień...',
     },
     notification: {
       gitExtensionMissing:

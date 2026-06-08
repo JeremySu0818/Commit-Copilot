@@ -146,7 +146,7 @@ export const zhTWLocale: LocaleTextBundle = {
       generationError: (errorCode, message) =>
         `錯誤：${errorCode} - ${message}`,
       unexpectedError: (message) => `未預期錯誤：${message}`,
-      openingLanguageSettings: '正在開啟 Activity View 的語言設定...',
+      openingSettings: '正在開啟設定...',
     },
     notification: {
       gitExtensionMissing:

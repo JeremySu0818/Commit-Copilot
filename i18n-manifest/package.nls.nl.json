@@ -3,7 +3,7 @@
   "extension.description": "Genereer conventionele commitberichten met behulp van LLM's.",
   "command.generate.title": "Genereer Commitbericht",
   "command.cancelGeneration.title": "Annuleer Generatie",
-  "command.openLanguageSettings.title": "Open Taalinstellingen",
+  "command.openSettings.title": "Instellingen openen",
   "viewsContainer.title": "Commit Copilot",
   "view.name": "Commit Copilot",
   "command.openGitHub.title": "GitHub"

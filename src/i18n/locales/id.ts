@@ -165,8 +165,7 @@ export const idLocale: LocaleTextBundle = {
       generationError: (errorCode, message) =>
         `Kesalahan: ${errorCode} - ${message}`,
       unexpectedError: (message) => `Kesalahan tidak terduga: ${message}`,
-      openingLanguageSettings:
-        'Membuka pengaturan bahasa di tampilan aktivitas...',
+      openingSettings: 'Membuka pengaturan...',
     },
     notification: {
       gitExtensionMissing:

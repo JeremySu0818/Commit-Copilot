@@ -3,7 +3,7 @@
   "extension.description": "Hasilkan pesan komit konvensional menggunakan LLMs.",
   "command.generate.title": "Hasilkan Pesan Komit",
   "command.cancelGeneration.title": "Batalkan Pembuatan",
-  "command.openLanguageSettings.title": "Buka Pengaturan Bahasa",
+  "command.openSettings.title": "Buka Pengaturan",
   "viewsContainer.title": "Commit Copilot",
   "view.name": "Commit Copilot",
   "command.openGitHub.title": "GitHub"

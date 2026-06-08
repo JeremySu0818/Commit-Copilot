@@ -165,8 +165,7 @@ export const ruLocale: LocaleTextBundle = {
       generationError: (errorCode, message) =>
         `Ошибка: ${errorCode} - ${message}`,
       unexpectedError: (message) => `Непредвиденная ошибка: ${message}`,
-      openingLanguageSettings:
-        'Открытие языковых настроек на панели активности...',
+      openingSettings: 'Открытие настроек...',
     },
     notification: {
       gitExtensionMissing:

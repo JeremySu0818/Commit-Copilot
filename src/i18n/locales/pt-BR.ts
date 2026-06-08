@@ -170,8 +170,7 @@ export const ptBRLocale: LocaleTextBundle = {
       generationError: (errorCode, message) =>
         `Erro: ${errorCode} - ${message}`,
       unexpectedError: (message) => `Erro inesperado: ${message}`,
-      openingLanguageSettings:
-        'Abrindo configurações de idioma na Activity View...',
+      openingSettings: 'Abrindo configurações...',
     },
     notification: {
       gitExtensionMissing:

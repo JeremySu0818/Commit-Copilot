@@ -164,8 +164,7 @@ export const nlLocale: LocaleTextBundle = {
       generationError: (errorCode, message) =>
         `Fout: ${errorCode} - ${message}`,
       unexpectedError: (message) => `Onverwachte fout: ${message}`,
-      openingLanguageSettings:
-        'Taalinstellingen openen in activiteitsweergave...',
+      openingSettings: 'Instellingen openen...',
     },
     notification: {
       gitExtensionMissing:

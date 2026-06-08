@@ -166,8 +166,7 @@ export const itLocale: LocaleTextBundle = {
       generationError: (errorCode, message) =>
         `Errore: ${errorCode} - ${message}`,
       unexpectedError: (message) => `Errore imprevisto: ${message}`,
-      openingLanguageSettings:
-        'Apertura delle impostazioni della lingua nella vista attività...',
+      openingSettings: 'Apertura delle impostazioni...',
     },
     notification: {
       gitExtensionMissing:

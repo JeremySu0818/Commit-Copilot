@@ -176,7 +176,7 @@ export const deLocale: LocaleTextBundle = {
       generationError: (errorCode, message) =>
         `Fehler: ${errorCode} - ${message}`,
       unexpectedError: (message) => `Unerwarteter Fehler: ${message}`,
-      openingLanguageSettings: 'Öffne Spracheinstellungen in Activity-View...',
+      openingSettings: 'Öffne Einstellungen...',
     },
     notification: {
       gitExtensionMissing:

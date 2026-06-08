@@ -170,8 +170,7 @@ export const trLocale: LocaleTextBundle = {
       generationError: (errorCode, message) =>
         `Hata: ${errorCode} - ${message}`,
       unexpectedError: (message) => `Beklenmeyen hata: ${message}`,
-      openingLanguageSettings:
-        'Dil ayarları activity view üzerinde açılıyor...',
+      openingSettings: 'Ayarlar açılıyor...',
     },
     notification: {
       gitExtensionMissing:

@@ -3,7 +3,7 @@
   "extension.description": "使用 LLM 產生符合慣例的 Commit 訊息。",
   "command.generate.title": "產生 Commit 訊息",
   "command.cancelGeneration.title": "取消產生",
-  "command.openLanguageSettings.title": "開啟語言設定",
+  "command.openSettings.title": "開啟設定",
   "command.openGitHub.title": "GitHub",
   "viewsContainer.title": "Commit Copilot",
   "view.name": "Commit Copilot"

@@ -168,8 +168,7 @@ export const jaLocale: LocaleTextBundle = {
       generationError: (errorCode, message) =>
         `エラー: ${errorCode} - ${message}`,
       unexpectedError: (message) => `予期せぬエラー: ${message}`,
-      openingLanguageSettings:
-        'アクティビティビューで言語設定を開いています...',
+      openingSettings: '設定を開いています...',
     },
     notification: {
       gitExtensionMissing:

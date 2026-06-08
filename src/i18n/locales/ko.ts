@@ -162,7 +162,7 @@ export const koLocale: LocaleTextBundle = {
       generationError: (errorCode, message) =>
         `오류: ${errorCode} - ${message}`,
       unexpectedError: (message) => `예기치 않은 오류: ${message}`,
-      openingLanguageSettings: '활동 뷰에서 언어 설정 열기...',
+      openingSettings: '설정 열기...',
     },
     notification: {
       gitExtensionMissing:

@@ -166,8 +166,7 @@ export const frLocale: LocaleTextBundle = {
       generationError: (errorCode, message) =>
         `Erreur : ${errorCode} - ${message}`,
       unexpectedError: (message) => `Erreur inattendue : ${message}`,
-      openingLanguageSettings:
-        "Ouverture des paramètres de langue dans la vue d'activité...",
+      openingSettings: 'Ouverture des paramètres...',
     },
     notification: {
       gitExtensionMissing:

@@ -151,7 +151,7 @@ export const arLocale: LocaleTextBundle = {
       generatedMessage: (message) => `الرسالة المولدة: ${message}`,
       generationError: (errorCode, message) => `خطأ: ${errorCode} - ${message}`,
       unexpectedError: (message) => `خطأ غير متوقع: ${message}`,
-      openingLanguageSettings: 'جاري فتح إعدادات اللغة في عرض النشاط...',
+      openingSettings: 'جاري فتح الإعدادات...',
     },
     notification: {
       gitExtensionMissing:

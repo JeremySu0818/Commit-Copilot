@@ -165,8 +165,7 @@ export const csLocale: LocaleTextBundle = {
       generationError: (errorCode, message) =>
         `Chyba: ${errorCode} - ${message}`,
       unexpectedError: (message) => `Neočekávaná chyba: ${message}`,
-      openingLanguageSettings:
-        'Otevírání nastavení jazyka v zobrazení aktivity...',
+      openingSettings: 'Otevírání nastavení...',
     },
     notification: {
       gitExtensionMissing:

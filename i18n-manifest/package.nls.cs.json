@@ -3,7 +3,7 @@
   "extension.description": "Generování konvenčních zpráv o potvrzení (commit) pomocí LLM.",
   "command.generate.title": "Generovat zprávu o potvrzení",
   "command.cancelGeneration.title": "Zrušit generování",
-  "command.openLanguageSettings.title": "Otevřít nastavení jazyka",
+  "command.openSettings.title": "Otevřít nastavení",
   "viewsContainer.title": "Commit Copilot",
   "view.name": "Commit Copilot",
   "command.openGitHub.title": "GitHub"

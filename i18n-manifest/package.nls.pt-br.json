@@ -3,7 +3,7 @@
   "extension.description": "Gere mensagens de commit convencionais usando LLMs.",
   "command.generate.title": "Gerar Mensagem de Commit",
   "command.cancelGeneration.title": "Cancelar Geração",
-  "command.openLanguageSettings.title": "Abrir Configurações de Idioma",
+  "command.openSettings.title": "Abrir Configurações",
   "viewsContainer.title": "Commit Copilot",
   "view.name": "Commit Copilot",
   "command.openGitHub.title": "GitHub"

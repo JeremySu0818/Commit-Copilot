@@ -197,7 +197,7 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
     );
   }
 
-  public openLanguageSettingsView() {
+  public openSettingsView() {
     this.updateCurrentScreen('settings');
     if (this._view) {
       this._view.show(true);

@@ -164,7 +164,7 @@ export const enLocale: LocaleTextBundle = {
       generationError: (errorCode, message) =>
         `Error: ${errorCode} - ${message}`,
       unexpectedError: (message) => `Unexpected error: ${message}`,
-      openingLanguageSettings: 'Opening language settings in activity view...',
+      openingSettings: 'Opening settings...',
     },
     notification: {
       gitExtensionMissing:

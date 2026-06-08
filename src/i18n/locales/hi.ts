@@ -164,7 +164,7 @@ export const hiLocale: LocaleTextBundle = {
       generationError: (errorCode, message) =>
         `त्रुटि: ${errorCode} - ${message}`,
       unexpectedError: (message) => `अप्रत्याशित त्रुटि: ${message}`,
-      openingLanguageSettings: 'गतिविधि दृश्य में भाषा सेटिंग्स खोल रहा है...',
+      openingSettings: 'सेटिंग्स खोल रहा है...',
     },
     notification: {
       gitExtensionMissing:

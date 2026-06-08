@@ -88,7 +88,7 @@ export interface ExtensionText {
     generatedMessage: (message: string) => string;
     generationError: (errorCode: string, message: string) => string;
     unexpectedError: (message: string) => string;
-    openingLanguageSettings: string;
+    openingSettings: string;
   };
   notification: {
     gitExtensionMissing: string;

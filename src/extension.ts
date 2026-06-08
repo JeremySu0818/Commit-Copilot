@@ -1002,11 +1002,11 @@ export function activate(context: vscode.ExtensionContext) {
     ),
   );
 
-  const openLanguageSettingsDisposable = vscode.commands.registerCommand(
-    'commit-copilot.openLanguageSettings',
+  const openSettingsDisposable = vscode.commands.registerCommand(
+    'commit-copilot.openSettings',
     async () => {
       await vscode.commands.executeCommand('commit-copilot.view.focus');
-      provider.openLanguageSettingsView();
+      provider.openSettingsView();
     },
   );
 
@@ -1035,7 +1035,7 @@ export function activate(context: vscode.ExtensionContext) {
     },
   );
 
-  context.subscriptions.push(openLanguageSettingsDisposable);
+  context.subscriptions.push(openSettingsDisposable);
   context.subscriptions.push(openGitHubDisposable);
   context.subscriptions.push(generateDisposable);
   context.subscriptions.push(cancelDisposable);
