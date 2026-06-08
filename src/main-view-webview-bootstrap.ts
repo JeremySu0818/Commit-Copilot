@@ -13,7 +13,12 @@ import type {
   ModelConfig,
 } from './models';
 
-export type MainViewScreen = 'main' | 'settings' | 'addProvider' | 'addModel' | 'about';
+export type MainViewScreen =
+  | 'main'
+  | 'settings'
+  | 'addProvider'
+  | 'addModel'
+  | 'about';
 
 export interface WebviewBootstrapData {
   providers: Record<APIProvider, string>;

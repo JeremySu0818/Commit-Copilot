@@ -36,20 +36,44 @@ export function AboutView() {
       </div>
       <div className="config-section">
         <div className="section-title">{pack.sections.about}</div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '15px' }}>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '12px',
+            marginTop: '15px',
+          }}
+        >
           <div>
-            <div style={{ fontSize: '0.85em', color: 'var(--vscode-descriptionForeground)', marginBottom: '4px' }}>{pack.labels.version}</div>
-            <div style={{ fontSize: '1.1em', fontWeight: 'bold' }}>{version}</div>
+            <div
+              style={{
+                fontSize: '0.85em',
+                color: 'var(--vscode-descriptionForeground)',
+                marginBottom: '4px',
+              }}
+            >
+              {pack.labels.version}
+            </div>
+            <div style={{ fontSize: '1.1em', fontWeight: 'bold' }}>
+              {version}
+            </div>
           </div>
           <div>
-            <div style={{ fontSize: '0.85em', color: 'var(--vscode-descriptionForeground)', marginBottom: '4px' }}>{pack.labels.author}</div>
-            <div style={{ fontSize: '1.1em', fontWeight: 'bold' }}>{author}</div>
+            <div
+              style={{
+                fontSize: '0.85em',
+                color: 'var(--vscode-descriptionForeground)',
+                marginBottom: '4px',
+              }}
+            >
+              {pack.labels.author}
+            </div>
+            <div style={{ fontSize: '1.1em', fontWeight: 'bold' }}>
+              {author}
+            </div>
           </div>
           <div style={{ marginTop: '15px' }}>
-            <button
-              style={{ width: '100%' }}
-              onClick={handleShowUpdateNotes}
-            >
+            <button style={{ width: '100%' }} onClick={handleShowUpdateNotes}>
               {pack.buttons.showUpdateNotes}
             </button>
           </div>

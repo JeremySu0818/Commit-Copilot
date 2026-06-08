@@ -227,7 +227,7 @@ export const itLocale: LocaleTextBundle = {
       editProvider: 'Modifica Provider Personalizzato',
       addModel: 'Aggiungi modello personalizzato',
       about: 'Informazioni',
-      updateInfo: 'Informazioni sull\'aggiornamento',
+      updateInfo: "Informazioni sull'aggiornamento",
     },
     labels: {
       provider: 'Provider',

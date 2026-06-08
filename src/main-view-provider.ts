@@ -187,7 +187,10 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
 
   private updateCurrentScreen(screen: unknown): void {
     const normalizedScreen: MainViewScreen =
-      screen === 'settings' || screen === 'addProvider' || screen === 'addModel' || screen === 'about'
+      screen === 'settings' ||
+      screen === 'addProvider' ||
+      screen === 'addModel' ||
+      screen === 'about'
         ? screen
         : 'main';
     this._currentScreen = normalizedScreen;
@@ -232,10 +235,20 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
       mdContent = `# Update\n\nNo update info available for language "${lang}".`;
     }
 
-    const extension = this._context.extension as vscode.Extension<unknown> | undefined;
-    const packageJson = (extension ? extension.packageJSON : undefined) as Record<string, unknown> | undefined;
-    const extName = typeof packageJson?.name === 'string' ? packageJson.name : 'commit-copilot';
-    const extensionName = extName.split('-').map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+    const extension = this._context.extension as
+      | vscode.Extension<unknown>
+      | undefined;
+    const packageJson = (extension ? extension.packageJSON : undefined) as
+      | Record<string, unknown>
+      | undefined;
+    const extName =
+      typeof packageJson?.name === 'string'
+        ? packageJson.name
+        : 'commit-copilot';
+    const extensionName = extName
+      .split('-')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
     const updateInfoText = WEBVIEW_LANGUAGE_PACKS[lang].sections.updateInfo;
     const title = `${extensionName} ${updateInfoText}`;
 
@@ -246,10 +259,13 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
       {
         enableScripts: true,
         retainContextWhenHidden: true,
-      }
+      },
     );
 
-    panel.webview.html = getUpdateInfoHtml(title, parseMarkdownToHtml(mdContent));
+    panel.webview.html = getUpdateInfoHtml(
+      title,
+      parseMarkdownToHtml(mdContent),
+    );
   }
 
   private getCustomProviders(): CustomProviderConfig[] {
@@ -1679,9 +1695,14 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
 
   private getWebviewBootstrapData(): WebviewBootstrapData {
     const languagePayload = this.getWebviewLanguagePayload();
-    const extension = this._context.extension as vscode.Extension<unknown> | undefined;
-    const packageJson = (extension ? extension.packageJSON : undefined) as Record<string, unknown> | undefined;
-    const extensionVersion = typeof packageJson?.version === 'string' ? packageJson.version : '';
+    const extension = this._context.extension as
+      | vscode.Extension<unknown>
+      | undefined;
+    const packageJson = (extension ? extension.packageJSON : undefined) as
+      | Record<string, unknown>
+      | undefined;
+    const extensionVersion =
+      typeof packageJson?.version === 'string' ? packageJson.version : '';
 
     let extensionAuthor = '';
     if (packageJson) {

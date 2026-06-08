@@ -32,7 +32,12 @@ void test('MainViewProvider.showUpdateInfo reads and renders update info markdow
       executeCommand: () => Promise.resolve(undefined),
     },
     window: {
-      createWebviewPanel: (_viewType: string, title: string, _viewColumn: number, _options: unknown) => {
+      createWebviewPanel: (
+        _viewType: string,
+        title: string,
+        _viewColumn: number,
+        _options: unknown,
+      ) => {
         webviewPanelCreated = true;
         webviewTitle = title;
         const panel = {
@@ -140,7 +145,12 @@ void test('MainViewProvider.showUpdateInfo falls back to en.md when requested la
       executeCommand: () => Promise.resolve(undefined),
     },
     window: {
-      createWebviewPanel: (_viewType: string, title: string, _viewColumn: number, _options: unknown) => {
+      createWebviewPanel: (
+        _viewType: string,
+        title: string,
+        _viewColumn: number,
+        _options: unknown,
+      ) => {
         webviewPanelCreated = true;
         webviewTitle = title;
         const panel = {
@@ -226,7 +236,10 @@ void test('MainViewProvider.showUpdateInfo falls back to en.md when requested la
   assert.ok((readFileCalledUri as string).endsWith('en.md'));
   assert.ok(webviewPanelCreated);
   assert.match(webviewTitle, /Commit Copilot/);
-  assert.match(webviewHtml, /<h1>Mock Release Notes \(JA Fallback to EN\)<\/h1>/);
+  assert.match(
+    webviewHtml,
+    /<h1>Mock Release Notes \(JA Fallback to EN\)<\/h1>/,
+  );
 });
 
 void test('MainViewProvider.openAboutView updates screen to about and posts message to webview', async () => {
@@ -252,7 +265,9 @@ void test('MainViewProvider.openAboutView updates screen to about and posts mess
   const mod = await withModuleMock('vscode', vscodeMock, () => {
     clearRequireCache(MODULE_PATH);
     const dynamicRequire = createRequire(__filename);
-    return dynamicRequire(MODULE_PATH) as typeof import('../main-view-provider');
+    return dynamicRequire(
+      MODULE_PATH,
+    ) as typeof import('../main-view-provider');
   });
 
   const state = new Map<string, unknown>();
@@ -324,7 +339,8 @@ void test('MainViewProvider.openAboutView updates screen to about and posts mess
 void test('MainViewProvider webview handles showUpdateNotes message by showing update info', async () => {
   clearRequireCache(MODULE_PATH);
 
-  let messageHandler: ((message: unknown) => void | Promise<void>) | null = null;
+  let messageHandler: ((message: unknown) => void | Promise<void>) | null =
+    null;
   let webviewPanelCreated = false;
 
   const vscodeMock = {
@@ -341,7 +357,12 @@ void test('MainViewProvider webview handles showUpdateNotes message by showing u
       executeCommand: () => Promise.resolve(undefined),
     },
     window: {
-      createWebviewPanel: (_viewType: string, _title: string, _viewColumn: number, _options: unknown) => {
+      createWebviewPanel: (
+        _viewType: string,
+        _title: string,
+        _viewColumn: number,
+        _options: unknown,
+      ) => {
         webviewPanelCreated = true;
         const panel = {
           webview: {
@@ -370,7 +391,9 @@ void test('MainViewProvider webview handles showUpdateNotes message by showing u
   const mod = await withModuleMock('vscode', vscodeMock, () => {
     clearRequireCache(MODULE_PATH);
     const dynamicRequire = createRequire(__filename);
-    return dynamicRequire(MODULE_PATH) as typeof import('../main-view-provider');
+    return dynamicRequire(
+      MODULE_PATH,
+    ) as typeof import('../main-view-provider');
   });
 
   const state = new Map<string, unknown>();

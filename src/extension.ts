@@ -1054,7 +1054,8 @@ export function activate(context: vscode.ExtensionContext) {
   const updateInfoShownKey = 'UPDATE_INFO_SHOWN';
 
   const packageJson = context.extension.packageJSON as Record<string, unknown>;
-  const currentVersion = typeof packageJson.version === 'string' ? packageJson.version : '';
+  const currentVersion =
+    typeof packageJson.version === 'string' ? packageJson.version : '';
   const lastVersion = context.globalState.get<string>(lastVersionKey);
 
   const semverGt = (v1: string, v2: string): boolean => {
@@ -1074,7 +1075,8 @@ export function activate(context: vscode.ExtensionContext) {
     void context.globalState.update(updateInfoShownKey, false);
   }
 
-  const updateInfoShown = context.globalState.get<boolean>(updateInfoShownKey) ?? false;
+  const updateInfoShown =
+    context.globalState.get<boolean>(updateInfoShownKey) ?? false;
   if (!updateInfoShown) {
     void provider.showUpdateInfo().then(() => {
       void context.globalState.update(updateInfoShownKey, true);
