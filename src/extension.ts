@@ -22,16 +22,20 @@ import {
   CommitOutputOptions,
   CustomProviderConfig,
   CUSTOM_PROVIDERS_STATE_KEY,
+  DEFAULT_HYBRID_GENERATION_OPTIONS,
   DEFAULT_COMMIT_OUTPUT_OPTIONS,
   DEFAULT_GENERATE_MODE,
   DEFAULT_PROVIDER,
   GenerateMode,
+  HybridGenerationOptions,
+  HYBRID_GENERATION_OPTIONS_STATE_KEY,
   MAX_AGENT_STEPS_STATE_KEY,
   PROVIDER_DISPLAY_NAMES,
   isCustomProvider,
   getCustomProviderId,
   getCustomProviderStorageKey,
   normalizeCommitOutputOptions,
+  normalizeHybridGenerationOptions,
   normalizeMaxAgentStepsValue,
 } from './models';
 import { GenerationStateManager } from './state';
@@ -42,6 +46,7 @@ type GenerateCommandArg =
       sourceControl?: vscode.SourceControl;
       generateMode?: GenerateMode;
       commitOutputOptions?: CommitOutputOptions;
+      hybridGenerationOptions?: HybridGenerationOptions;
     };
 
 interface GitApi {
@@ -87,6 +92,15 @@ function parseCommitOutputOptions(
   return normalizeCommitOutputOptions(value);
 }
 
+function parseHybridGenerationOptions(
+  value: unknown,
+): HybridGenerationOptions | undefined {
+  if (typeof value === 'undefined') {
+    return undefined;
+  }
+  return normalizeHybridGenerationOptions(value);
+}
+
 function getCurrentLanguage(context: vscode.ExtensionContext) {
   const displayLanguage = normalizeDisplayLanguage(
     context.globalState.get(DISPLAY_LANGUAGE_STATE_KEY),
@@ -111,6 +125,7 @@ interface ParsedGenerateCommandArg {
   scm?: vscode.SourceControl;
   requestedGenerateMode?: GenerateMode;
   requestedCommitOutputOptions?: CommitOutputOptions;
+  requestedHybridGenerationOptions?: HybridGenerationOptions;
 }
 
 type RepositorySelectionResult =
@@ -152,6 +167,9 @@ function parseGenerateCommandArg(
     requestedGenerateMode: parseGenerateMode(arg.generateMode),
     requestedCommitOutputOptions: parseCommitOutputOptions(
       arg.commitOutputOptions,
+    ),
+    requestedHybridGenerationOptions: parseHybridGenerationOptions(
+      arg.hybridGenerationOptions,
     ),
   };
 }
@@ -317,6 +335,29 @@ function resolveCommitOutputOptions(
   return requestedCommitOutputOptions ?? savedCommitOutputOptions;
 }
 
+function resolveHybridGenerationOptions(
+  context: vscode.ExtensionContext,
+  requestedHybridGenerationOptions: HybridGenerationOptions | undefined,
+): HybridGenerationOptions {
+  const savedHybridGenerationOptions = normalizeHybridGenerationOptions(
+    context.globalState.get<HybridGenerationOptions>(
+      HYBRID_GENERATION_OPTIONS_STATE_KEY,
+    ) ?? DEFAULT_HYBRID_GENERATION_OPTIONS,
+  );
+  return requestedHybridGenerationOptions ?? savedHybridGenerationOptions;
+}
+
+function readScmDraftCommitMessage(
+  repository: GitRepository,
+  hybridGenerationOptions: HybridGenerationOptions,
+): string | undefined {
+  if (!hybridGenerationOptions.enabled) {
+    return undefined;
+  }
+  const draft = repository.inputBox.value.trim();
+  return draft.length > 0 ? draft : undefined;
+}
+
 function resolveMaxAgentSteps(
   context: vscode.ExtensionContext,
 ): number | undefined {
@@ -422,6 +463,7 @@ function createBaseGenerateOptions(args: {
   currentGenerateMode: GenerateMode;
   currentCommitOutputOptions: CommitOutputOptions;
   maxAgentSteps: number | undefined;
+  draftCommitMessage: string | undefined;
   savedModel: string | undefined;
   cancellationSource: vscode.CancellationTokenSource;
   language: ReturnType<typeof getCurrentLanguage>;
@@ -440,6 +482,7 @@ function createBaseGenerateOptions(args: {
     generateMode: args.currentGenerateMode,
     commitOutputOptions: args.currentCommitOutputOptions,
     maxAgentSteps: args.maxAgentSteps,
+    draftCommitMessage: args.draftCommitMessage,
     model: args.savedModel,
     onProgress: reportProgress,
     cancellationToken: args.cancellationSource.token,
@@ -692,6 +735,7 @@ async function runGenerationProgress(args: {
   currentGenerateMode: GenerateMode;
   currentCommitOutputOptions: CommitOutputOptions;
   maxAgentSteps: number | undefined;
+  draftCommitMessage: string | undefined;
   cancellationSource: vscode.CancellationTokenSource;
   language: ReturnType<typeof getCurrentLanguage>;
 }): Promise<void> {
@@ -715,6 +759,7 @@ async function runGenerationProgress(args: {
     currentGenerateMode: args.currentGenerateMode,
     currentCommitOutputOptions: args.currentCommitOutputOptions,
     maxAgentSteps: args.maxAgentSteps,
+    draftCommitMessage: args.draftCommitMessage,
     savedModel: args.savedModel,
     cancellationSource: args.cancellationSource,
     language: args.language,
@@ -839,6 +884,14 @@ async function executeGenerateCommand(
       context,
       parsedArg.requestedCommitOutputOptions,
     );
+    const currentHybridGenerationOptions = resolveHybridGenerationOptions(
+      context,
+      parsedArg.requestedHybridGenerationOptions,
+    );
+    const draftCommitMessage = readScmDraftCommitMessage(
+      repositoryResult.repository,
+      currentHybridGenerationOptions,
+    );
     const maxAgentSteps = resolveMaxAgentSteps(context);
     const apiKey = await resolveProviderApiKey(context, providerContext);
     const providerDisplayName = getProviderDisplayName(providerContext);
@@ -895,6 +948,7 @@ async function executeGenerateCommand(
           currentGenerateMode,
           currentCommitOutputOptions,
           maxAgentSteps,
+          draftCommitMessage,
           cancellationSource,
           language,
         }),

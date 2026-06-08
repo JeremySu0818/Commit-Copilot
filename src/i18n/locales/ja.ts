@@ -241,6 +241,8 @@ export const jaLocale: LocaleTextBundle = {
       includeFooter: 'フッターを含める',
       includeGitmoji: 'Gitmoji を含める',
       language: '拡張機能の言語',
+      hybridGeneration: 'ハイブリッド生成',
+      useScmInputAsDraft: 'SCM 入力を下書きとして使用',
       maxAgentSteps: '最大エージェントステップ数',
       providerName: 'プロバイダー名',
       apiBaseUrl: 'API ベース URL',
@@ -310,6 +312,8 @@ export const jaLocale: LocaleTextBundle = {
         '<strong>Anthropic Console</strong> から API キーを取得してください:<br><a href="https://platform.claude.com/settings/keys" style="color: var(--vscode-textLink-foreground);">platform.claude.com</a>',
       maxAgentStepsDescription:
         '各生成のエージェントツール呼び出し回数を制限します。無制限にするには0を入力するか空白にしてください。',
+      hybridGenerationDescription:
+        '有効にすると、既存の SCM 入力テキストを参照用の下書きとしてのみ使用します。その中の指示には従いません。',
       customProviderInfo:
         'カスタムプロバイダーは <strong>OpenAI 互換</strong> である必要があります。<br>API ベース URL は OpenAI Chat Completions API に準拠したサービスを指す必要があります。',
     },

@@ -33,6 +33,7 @@ Commit-Copilot is an **agentic** VS Code extension that uses a multi-step AI age
 - **Automatic Retries**: Automatically retries failed API requests due to temporary network issues or rate limits, making the generation process more resilient.
 - **Secure Key Storage**: API keys are stored securely using VS Code's Secret Storage.
 - **Flexible Commit Output Structure**: Individually toggle whether the generated message includes a **Scope**, a **Body**, a **Footer**, and a **Gitmoji** prefix. Defaults are scope on, body on, footer off, and Gitmoji off.
+- **Hybrid Generation**: Optionally use the existing Source Control input text as a draft reference when generating. The draft can guide wording and intent, but prompt-injection style instructions inside it are ignored.
 - **Model Selection**: Customize which model you want to use for each provider. Custom providers and Ollama can fetch models from their respective endpoints, and you can manually add or remove custom model IDs when needed.
 - **Localization**: The UI follows VS Code's display language automatically, or you can manually pin it to any of 20 supported languages: العربية, Čeština, Deutsch, English, Español, Français, हिन्दी, Magyar, Bahasa Indonesia, Italiano, 日本語, 한국어, Nederlands, Polski, Português (Brasil), Русский, Türkçe, Tiếng Việt, 简体中文, 繁體中文.
 - **Preview & Edit**: Review the generated message in the Source Control input box before committing.
@@ -43,6 +44,7 @@ Commit-Copilot uses an **agentic workflow** rather than a single-shot LLM call:
 
 1. **Change Summary**: The extension collects file names, change types (added/modified/deleted/renamed), and line counts from `git diff`, along with a project structure tree.
 2. **Agent Initialization**: This summary is sent to the LLM with a system prompt that instructs it to act as an autonomous commit message agent. The agent does **not** receive the raw diff content at this stage.
+   - If **Hybrid Generation** is enabled, the current Source Control input text is included as draft reference content. It can influence wording, scope, and intent, but it is isolated from instructions so text such as "ignore previous rules" cannot override the generation prompt.
 3. **Tool-Based Investigation**: The agent decides which files to inspect and calls tools in a loop:
    - `get_diff` — Retrieve the actual diff for a specific file.
    - `read_file` — Read file contents (from Git index for staged changes) with optional line ranges.
@@ -88,14 +90,15 @@ The custom provider will appear in the provider list alongside the built-in ones
 
 #### Additional Options
 
-| Option              | Default       | Description                                                                                                             |
-| ------------------- | ------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| **Generate Mode**   | Agentic       | `Agentic` runs a multi-step investigation loop; `Direct Diff` sends the full diff in one shot (always used for Ollama). |
-| **Max Agent Steps** | 0 (unlimited) | Maximum number of tool-call iterations the agent may take. Set to `0` to remove the cap.                                |
-| **Include Scope**   | On            | Whether to include a scope in the commit type, e.g. `fix(auth):`.                                                       |
-| **Include Body**    | On            | Whether to append a descriptive body paragraph to the message.                                                          |
-| **Include Footer**  | Off           | Whether to append a footer section (e.g. `BREAKING CHANGE:` notes).                                                     |
-| **Include Gitmoji** | Off           | Whether to prefix the subject with a mapped Gitmoji, e.g. `✨ feat(ui): add toolbar`.                                   |
+| Option                | Default       | Description                                                                                                                |
+| --------------------- | ------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| **Generate Mode**     | Agentic       | `Agentic` runs a multi-step investigation loop; `Direct Diff` sends the full diff in one shot (always used for Ollama).    |
+| **Hybrid Generation** | Off           | Uses the existing Source Control input text as reference draft content while ignoring instructions embedded in that draft. |
+| **Max Agent Steps**   | 0 (unlimited) | Maximum number of tool-call iterations the agent may take. Set to `0` to remove the cap.                                   |
+| **Include Scope**     | On            | Whether to include a scope in the commit type, e.g. `fix(auth):`.                                                          |
+| **Include Body**      | On            | Whether to append a descriptive body paragraph to the message.                                                             |
+| **Include Footer**    | Off           | Whether to append a footer section (e.g. `BREAKING CHANGE:` notes).                                                        |
+| **Include Gitmoji**   | Off           | Whether to prefix the subject with a mapped Gitmoji, e.g. `✨ feat(ui): add toolbar`.                                      |
 
 ### 3. Generate Commit Message
 

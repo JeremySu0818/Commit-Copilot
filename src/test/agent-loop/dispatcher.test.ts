@@ -65,6 +65,7 @@ async function runDispatcherTest(
     _commitOutputOptions: unknown,
     _cancellationToken: unknown,
     _maxAgentSteps: number | undefined,
+    _draftCommitMessage: string | undefined,
     baseUrl: string | undefined,
     _language: string,
   ) => {

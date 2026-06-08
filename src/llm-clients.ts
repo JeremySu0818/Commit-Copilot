@@ -1,4 +1,5 @@
 import { buildAgentSystemPrompt } from './agent-loop/shared';
+import { formatDraftCommitMessageSection } from './agent-tools/context';
 import {
   CancellationSignal,
   throwIfCancellationRequested,
@@ -271,9 +272,18 @@ function isGeminiQuotaError(error: unknown, message: string): boolean {
 export interface ILLMClient {
   generateCommitMessage(
     diff: string,
+    draftCommitMessage?: string,
     onProgress?: ProgressCallback,
     cancellationToken?: CancellationSignal,
   ): Promise<string>;
+}
+
+function buildDirectDiffUserPrompt(
+  diff: string,
+  draftCommitMessage?: string,
+): string {
+  const draftSection = formatDraftCommitMessageSection(draftCommitMessage);
+  return `${draftSection ? `${draftSection}\n\n` : ''}Here is the git diff:\n\n${diff}`;
 }
 
 export class GeminiClient implements ILLMClient {
@@ -303,6 +313,7 @@ export class GeminiClient implements ILLMClient {
 
   async generateCommitMessage(
     diff: string,
+    draftCommitMessage?: string,
     _onProgress?: ProgressCallback,
     cancellationToken?: CancellationSignal,
   ): Promise<string> {
@@ -329,7 +340,9 @@ export class GeminiClient implements ILLMClient {
             contents: [
               {
                 role: 'user',
-                parts: [{ text: `Here is the git diff:\n\n${diff}` }],
+                parts: [
+                  { text: buildDirectDiffUserPrompt(diff, draftCommitMessage) },
+                ],
               },
             ],
             config: {
@@ -402,6 +415,7 @@ export class OpenAIClient implements ILLMClient {
 
   async generateCommitMessage(
     diff: string,
+    draftCommitMessage?: string,
     _onProgress?: ProgressCallback,
     cancellationToken?: CancellationSignal,
   ): Promise<string> {
@@ -428,7 +442,10 @@ export class OpenAIClient implements ILLMClient {
             model: this.model,
             messages: [
               { role: 'system', content: this.systemPrompt },
-              { role: 'user', content: `Here is the git diff:\n\n${diff}` },
+              {
+                role: 'user',
+                content: buildDirectDiffUserPrompt(diff, draftCommitMessage),
+              },
             ],
           }),
         retryOptions,
@@ -505,6 +522,7 @@ export class AnthropicClient implements ILLMClient {
 
   async generateCommitMessage(
     diff: string,
+    draftCommitMessage?: string,
     _onProgress?: ProgressCallback,
     cancellationToken?: CancellationSignal,
   ): Promise<string> {
@@ -530,7 +548,10 @@ export class AnthropicClient implements ILLMClient {
               max_tokens: this.maxTokens,
               system: this.systemPrompt,
               messages: [
-                { role: 'user', content: `Here is the git diff:\n\n${diff}` },
+                {
+                  role: 'user',
+                  content: buildDirectDiffUserPrompt(diff, draftCommitMessage),
+                },
               ],
             })
             .finalMessage(),
@@ -606,6 +627,7 @@ export class OllamaClient implements ILLMClient {
 
   async generateCommitMessage(
     diff: string,
+    draftCommitMessage?: string,
     onProgress?: ProgressCallback,
     cancellationToken?: CancellationSignal,
   ): Promise<string> {
@@ -638,7 +660,10 @@ export class OllamaClient implements ILLMClient {
         model: this.model,
         messages: [
           { role: 'system', content: this.systemPrompt },
-          { role: 'user', content: `Here is the git diff:\n\n${diff}` },
+          {
+            role: 'user',
+            content: buildDirectDiffUserPrompt(diff, draftCommitMessage),
+          },
         ],
         options: {
           temperature: 0.7,

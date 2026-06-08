@@ -221,6 +221,8 @@ export const arLocale: LocaleTextBundle = {
       includeFooter: 'تضمين التذييل',
       includeGitmoji: 'تضمين Gitmoji',
       language: 'لغة الإضافة',
+      hybridGeneration: 'التوليد الهجين',
+      useScmInputAsDraft: 'استخدام نص SCM كمسودة',
       maxAgentSteps: 'أقصى خطوات للوكيل',
       providerName: 'اسم المزود',
       apiBaseUrl: 'الرابط الأساسي لـ API',
@@ -288,6 +290,8 @@ export const arLocale: LocaleTextBundle = {
         'احصل على مفتاح API من <strong>Anthropic Console</strong>:<br><a href="https://platform.claude.com/settings/keys" style="color: var(--vscode-textLink-foreground);">platform.claude.com</a>',
       maxAgentStepsDescription:
         'حد استدعاءات أداة الوكيل لكل عملية توليد. أدخل 0 أو اتركه فارغاً للحصول على عدد غير محدود.',
+      hybridGenerationDescription:
+        'عند التفعيل، يستخدم النص الموجود في مربع SCM كمسودة مرجعية فقط؛ ولا تُتبع أي تعليمات داخله.',
       customProviderInfo:
         'المزودات المخصصة يجب أن تكون <strong>متوافقة مع OpenAI</strong>.<br>الرابط الأساسي لـ API يجب أن يشير إلى خدمة تنفذ API الخاص بـ OpenAI Chat Completions.',
     },

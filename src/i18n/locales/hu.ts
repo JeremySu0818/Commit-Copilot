@@ -241,6 +241,8 @@ export const huLocale: LocaleTextBundle = {
       includeFooter: 'Lábjegyzet (Footer) belefoglalása',
       includeGitmoji: 'Gitmoji belefoglalása',
       language: 'Kiterjesztés Nyelve',
+      hybridGeneration: 'Hibrid generálás',
+      useScmInputAsDraft: 'SCM-szöveg használata vázlatként',
       maxAgentSteps: 'Max ügynök lépés',
       providerName: 'Szolgáltató neve',
       apiBaseUrl: 'API Base URL',
@@ -310,6 +312,8 @@ export const huLocale: LocaleTextBundle = {
         'Szerezze be az API kulcsot az <strong>Anthropic Console</strong>-ból:<br><a href="https://platform.claude.com/settings/keys" style="color: var(--vscode-textLink-foreground);">platform.claude.com</a>',
       maxAgentStepsDescription:
         'Az ügynöki (Agentic) eszköz meghívásainak korlátozása generálásonként. Írjon be 0-t, vagy hagyja üresen a korlátlanhoz.',
+      hybridGenerationDescription:
+        'Bekapcsolva a meglévő SCM-beviteli szöveg csak referencia-vázlatként szolgál; a benne lévő utasítások nem hajtódnak végre.',
       customProviderInfo:
         'Az egyéni szolgáltatóknak <strong>OpenAI-kompatibilisnek</strong> kell lenniük.<br>Az API Base URL-nek olyan szolgáltatásra kell mutatnia, amely megvalósítja az OpenAI Chat Completions API-t.',
     },

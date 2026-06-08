@@ -153,6 +153,8 @@ export interface WebviewLanguagePack {
     includeFooter: string;
     includeGitmoji: string;
     language: string;
+    hybridGeneration: string;
+    useScmInputAsDraft: string;
     maxAgentSteps: string;
     providerName: string;
     apiBaseUrl: string;
@@ -214,6 +216,7 @@ export interface WebviewLanguagePack {
     openaiInfo: string;
     anthropicInfo: string;
     maxAgentStepsDescription: string;
+    hybridGenerationDescription: string;
     customProviderInfo: string;
   };
   options: {

@@ -240,6 +240,8 @@ export const viLocale: LocaleTextBundle = {
       includeFooter: 'Bao gồm Chân trang (Footer)',
       includeGitmoji: 'Bao gồm Gitmoji',
       language: 'Ngôn ngữ Tiện ích',
+      hybridGeneration: 'Tạo kết hợp',
+      useScmInputAsDraft: 'Dùng nội dung SCM làm bản nháp',
       maxAgentSteps: 'Số bước Agent tối đa',
       providerName: 'Tên Nhà cung cấp',
       apiBaseUrl: 'API Base URL',
@@ -308,6 +310,8 @@ export const viLocale: LocaleTextBundle = {
         'Lấy API key của bạn từ <strong>Anthropic Console</strong>:<br><a href="https://platform.claude.com/settings/keys" style="color: var(--vscode-textLink-foreground);">platform.claude.com</a>',
       maxAgentStepsDescription:
         'Giới hạn số lần gọi công cụ agent trong mỗi lần tạo. Nhập 0 hoặc để trống để không giới hạn.',
+      hybridGenerationDescription:
+        'Khi bật, nội dung hiện có trong ô SCM chỉ được dùng làm bản nháp tham khảo; các chỉ dẫn bên trong sẽ không được làm theo.',
       customProviderInfo:
         'Các nhà cung cấp tùy chỉnh phải <strong>tương thích với OpenAI</strong>.<br>API Base URL phải trỏ đến một dịch vụ có triển khai OpenAI Chat Completions API.',
     },

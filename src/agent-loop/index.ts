@@ -22,6 +22,7 @@ interface AgentLoopOptions {
   commitOutputOptions: CommitOutputOptions;
   cancellationToken?: CancellationSignal;
   maxAgentSteps?: number;
+  draftCommitMessage?: string;
   language: EffectiveDisplayLanguage;
 }
 
@@ -39,6 +40,7 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
     commitOutputOptions,
     cancellationToken,
     maxAgentSteps,
+    draftCommitMessage,
     language,
   } = options;
 
@@ -54,6 +56,7 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
       commitOutputOptions,
       cancellationToken,
       maxAgentSteps,
+      draftCommitMessage,
       baseUrl,
       language,
     );
@@ -72,6 +75,7 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
         commitOutputOptions,
         cancellationToken,
         maxAgentSteps,
+        draftCommitMessage,
         language,
       );
     case 'openai':
@@ -86,6 +90,7 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
         commitOutputOptions,
         cancellationToken,
         maxAgentSteps,
+        draftCommitMessage,
         undefined,
         language,
       );
@@ -101,6 +106,7 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
         commitOutputOptions,
         cancellationToken,
         maxAgentSteps,
+        draftCommitMessage,
         language,
       );
     case 'ollama':
@@ -114,6 +120,7 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
         gitOps,
         commitOutputOptions,
         cancellationToken,
+        draftCommitMessage,
         language,
       );
     case 'grok':
@@ -128,6 +135,7 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
         commitOutputOptions,
         cancellationToken,
         maxAgentSteps,
+        draftCommitMessage,
         'https://api.x.ai/v1',
         language,
       );
@@ -143,6 +151,7 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
         commitOutputOptions,
         cancellationToken,
         maxAgentSteps,
+        draftCommitMessage,
         'https://api.groq.com/openai/v1',
         language,
       );
@@ -158,6 +167,7 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
         commitOutputOptions,
         cancellationToken,
         maxAgentSteps,
+        draftCommitMessage,
         'https://openrouter.ai/api/v1',
         language,
       );
@@ -173,6 +183,7 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
         commitOutputOptions,
         cancellationToken,
         maxAgentSteps,
+        draftCommitMessage,
         'https://api.deepseek.com',
         language,
       );
@@ -188,6 +199,7 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
         commitOutputOptions,
         cancellationToken,
         maxAgentSteps,
+        draftCommitMessage,
         'https://dashscope.aliyuncs.com/compatible-mode/v1',
         language,
       );

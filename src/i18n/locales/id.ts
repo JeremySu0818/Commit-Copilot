@@ -240,6 +240,8 @@ export const idLocale: LocaleTextBundle = {
       includeFooter: 'Sertakan Footer',
       includeGitmoji: 'Sertakan Gitmoji',
       language: 'Bahasa Ekstensi',
+      hybridGeneration: 'Pembuatan Hibrida',
+      useScmInputAsDraft: 'Gunakan teks SCM sebagai draf',
       maxAgentSteps: 'Maks. Langkah Agen',
       providerName: 'Nama Penyedia',
       apiBaseUrl: 'URL Dasar API',
@@ -309,6 +311,8 @@ export const idLocale: LocaleTextBundle = {
         'Dapatkan API key Anda dari <strong>Anthropic Console</strong>:<br><a href="https://platform.claude.com/settings/keys" style="color: var(--vscode-textLink-foreground);">platform.claude.com</a>',
       maxAgentStepsDescription:
         'Batasi panggilan alat agenik per pembuatan. Masukkan 0 atau biarkan kosong untuk tidak terbatas.',
+      hybridGenerationDescription:
+        'Jika aktif, teks input SCM yang ada hanya digunakan sebagai draf referensi; instruksi di dalamnya tidak diikuti.',
       customProviderInfo:
         'Penyedia kustom harus <strong>Kompatibel dengan OpenAI</strong>.<br>URL Dasar API harus mengarah ke layanan yang menerapkan API Chat Completions OpenAI.',
     },

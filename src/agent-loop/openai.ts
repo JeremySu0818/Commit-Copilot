@@ -486,6 +486,7 @@ async function runOpenAIAgentLoop(
   commitOutputOptions: CommitOutputOptions = DEFAULT_COMMIT_OUTPUT_OPTIONS,
   cancellationToken?: CancellationSignal,
   maxAgentSteps?: number,
+  draftCommitMessage?: string,
   baseUrl?: string,
   language: EffectiveDisplayLanguage = 'en',
 ): Promise<string> {
@@ -517,6 +518,7 @@ async function runOpenAIAgentLoop(
       isStaged,
       true,
       resolvedCommitOutputOptions,
+      draftCommitMessage,
     );
     const systemPrompt = buildAgentSystemPrompt({
       includeFindReferences: true,

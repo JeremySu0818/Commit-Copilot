@@ -9,6 +9,7 @@ import type {
   CommitOutputOptions,
   CustomProviderConfig,
   GenerateMode,
+  HybridGenerationOptions,
   ModelConfig,
 } from './models';
 
@@ -22,6 +23,7 @@ export interface WebviewBootstrapData {
   defaultProvider: APIProvider;
   defaultGenerateMode: GenerateMode;
   defaultCommitOutputOptions: CommitOutputOptions;
+  defaultHybridGenerationOptions: HybridGenerationOptions;
   ollamaDefaultHost: string;
   languagePacks: Record<EffectiveDisplayLanguage, WebviewLanguagePack>;
   initialDisplayLanguage: DisplayLanguage;

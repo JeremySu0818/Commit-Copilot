@@ -44,10 +44,17 @@ export interface CommitOutputOptions {
   includeFooter: boolean;
   includeGitmoji: boolean;
 }
+export interface HybridGenerationOptions {
+  enabled: boolean;
+}
 export const GENERATE_MODE_DISPLAY_NAMES: Record<GenerateMode, string> = {
   agentic: 'Agentic Generate',
   'direct-diff': 'Direct Diff',
 };
+export const DEFAULT_HYBRID_GENERATION_OPTIONS: HybridGenerationOptions = {
+  enabled: false,
+};
+export const HYBRID_GENERATION_OPTIONS_STATE_KEY = 'HYBRID_GENERATION_OPTIONS';
 export const PROVIDER_DISPLAY_NAMES: Record<APIProvider, string> = {
   google: 'Google (Gemini)',
   openai: 'OpenAI (ChatGPT)',
@@ -463,6 +470,22 @@ export function normalizeCommitOutputOptions(
       typeof candidate.includeGitmoji === 'boolean'
         ? candidate.includeGitmoji
         : DEFAULT_COMMIT_OUTPUT_OPTIONS.includeGitmoji,
+  };
+}
+
+export function normalizeHybridGenerationOptions(
+  options: unknown,
+): HybridGenerationOptions {
+  const candidate =
+    options && typeof options === 'object'
+      ? (options as Partial<HybridGenerationOptions>)
+      : {};
+
+  return {
+    enabled:
+      typeof candidate.enabled === 'boolean'
+        ? candidate.enabled
+        : DEFAULT_HYBRID_GENERATION_OPTIONS.enabled,
   };
 }
 

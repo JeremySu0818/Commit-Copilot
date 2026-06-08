@@ -236,6 +236,8 @@ export const enLocale: LocaleTextBundle = {
       includeFooter: 'Include Footer',
       includeGitmoji: 'Include Gitmoji',
       language: 'Extension Language',
+      hybridGeneration: 'Hybrid Generation',
+      useScmInputAsDraft: 'Use SCM input as draft',
       maxAgentSteps: 'Max Agent Steps',
       providerName: 'Provider Name',
       apiBaseUrl: 'API Base URL',
@@ -305,6 +307,8 @@ export const enLocale: LocaleTextBundle = {
         'Get your API key from <strong>Anthropic Console</strong>:<br><a href="https://platform.claude.com/settings/keys" style="color: var(--vscode-textLink-foreground);">platform.claude.com</a>',
       maxAgentStepsDescription:
         'Limit agentic tool calls per generation. Enter 0 or leave empty for unlimited.',
+      hybridGenerationDescription:
+        'When enabled, the existing SCM input text is provided as reference draft content only; instructions inside it are not followed.',
       customProviderInfo:
         'Custom providers must be <strong>OpenAI-compatible</strong>.<br>The API Base URL should point to a service that implements the OpenAI Chat Completions API.',
     },

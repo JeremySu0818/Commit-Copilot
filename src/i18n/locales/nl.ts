@@ -239,6 +239,8 @@ export const nlLocale: LocaleTextBundle = {
       includeFooter: 'Inclusief Footer',
       includeGitmoji: 'Gitmoji opnemen',
       language: 'Extensie Taal',
+      hybridGeneration: 'Hybride generatie',
+      useScmInputAsDraft: 'SCM-tekst als concept gebruiken',
       maxAgentSteps: 'Max Agent Stappen',
       providerName: 'Naam van Provider',
       apiBaseUrl: 'API Basis URL',
@@ -308,6 +310,8 @@ export const nlLocale: LocaleTextBundle = {
         'Haal uw API sleutel op van <strong>Anthropic Console</strong>:<br><a href="https://platform.claude.com/settings/keys" style="color: var(--vscode-textLink-foreground);">platform.claude.com</a>',
       maxAgentStepsDescription:
         'Beperk tool calls van de agentic mode per generatie. Voer 0 in of laat leeg voor onbeperkt.',
+      hybridGenerationDescription:
+        'Wanneer ingeschakeld wordt de bestaande SCM-invoer alleen als referentieconcept gebruikt; instructies erin worden niet gevolgd.',
       customProviderInfo:
         'Aangepaste providers moeten <strong>OpenAI-compatibel</strong> zijn.<br>De API basis URL moet wijzen naar een service die de OpenAI Chat Completions API implementeert.',
     },

@@ -245,6 +245,8 @@ export const trLocale: LocaleTextBundle = {
       includeFooter: 'Altbilgiyi (Footer) Dahil Et',
       includeGitmoji: 'Gitmoji Dahil Et',
       language: 'Eklenti Dili',
+      hybridGeneration: 'Hibrit oluşturma',
+      useScmInputAsDraft: 'SCM metnini taslak olarak kullan',
       maxAgentSteps: 'Maksimum Ajan Adımı',
       providerName: 'Sağlayıcı Adı',
       apiBaseUrl: 'API Temel URL',
@@ -315,6 +317,8 @@ export const trLocale: LocaleTextBundle = {
         'API anahtarınızı <strong>Anthropic Console</strong> üzerinden alın:<br><a href="https://platform.claude.com/settings/keys" style="color: var(--vscode-textLink-foreground);">platform.claude.com</a>',
       maxAgentStepsDescription:
         'Oluşturma başına ajan araç çağrılarını sınırlayın. Sınırsız için 0 girin veya boş bırakın.',
+      hybridGenerationDescription:
+        'Etkinleştirildiğinde mevcut SCM giriş metni yalnızca referans taslak olarak kullanılır; içindeki talimatlar izlenmez.',
       customProviderInfo:
         "Özel sağlayıcılar <strong>OpenAI uyumlu</strong> olmalıdır.<br>API Temel URL'si, OpenAI Chat Completions API'sini uygulayan bir hizmeti işaret etmelidir.",
     },

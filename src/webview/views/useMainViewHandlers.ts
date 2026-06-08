@@ -28,6 +28,7 @@ export function useMainViewHandlers({
     currentPack: pack,
     currentProvider,
     commitOutputOptions,
+    hybridGenerationOptions,
     modelState,
     isGenerating,
   } = state;
@@ -196,12 +197,14 @@ export function useMainViewHandlers({
       type: 'generate',
       generateMode: effectiveGenerateMode,
       commitOutputOptions,
+      hybridGenerationOptions,
     });
   }, [
     isGenerating,
     modelState,
     effectiveGenerateMode,
     commitOutputOptions,
+    hybridGenerationOptions,
     dispatch,
     vscode,
   ]);

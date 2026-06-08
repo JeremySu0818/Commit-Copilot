@@ -34,6 +34,7 @@ type CreateLLMClient = (options: {
 }) => {
   generateCommitMessage: (
     diff: string,
+    draftCommitMessage?: string,
     onProgress?: (message: string, increment?: number) => void,
     cancellationToken?: { isCancellationRequested: boolean },
   ) => Promise<string> | string;
@@ -44,6 +45,7 @@ interface AgentInputSummary {
   model: string;
   repoRoot: string;
   commitOutputOptions: CommitOutputOptions;
+  draftCommitMessage?: string;
 }
 
 interface ClientOptionsSummary {
@@ -92,6 +94,10 @@ function toAgentInputSummary(value: unknown): AgentInputSummary | null {
       includeFooter: commitOutputOptions.includeFooter,
       includeGitmoji: commitOutputOptions.includeGitmoji,
     },
+    draftCommitMessage:
+      typeof value.draftCommitMessage === 'string'
+        ? value.draftCommitMessage
+        : undefined,
   };
 }
 
@@ -180,6 +186,7 @@ async function runGenerate(options: {
   provider: APIProvider;
   generateMode?: GenerateMode;
   commitOutputOptions?: CommitOutputOptions;
+  draftCommitMessage?: string;
   runAgentLoop: RunAgentLoop;
   createLLMClient: CreateLLMClient;
   cancellationToken?: { isCancellationRequested: boolean };
@@ -204,6 +211,7 @@ async function runGenerate(options: {
     apiKey: 'token',
     generateMode: options.generateMode,
     commitOutputOptions: options.commitOutputOptions,
+    draftCommitMessage: options.draftCommitMessage,
     cancellationToken: options.cancellationToken,
     language: 'en',
   });
@@ -258,6 +266,38 @@ void test('generateCommitMessage uses agent loop in agentic mode', async () => {
       includeFooter: true,
       includeGitmoji: true,
     });
+    assert.equal(agentInput.draftCommitMessage, undefined);
+  } finally {
+    cleanupTempDir(repoRoot);
+  }
+});
+
+void test('generateCommitMessage passes draft commit message to agent mode', async () => {
+  let capturedAgentInput: unknown;
+
+  const { result, repoRoot } = await runGenerate({
+    provider: 'openai',
+    generateMode: 'agentic',
+    draftCommitMessage: 'feat(settings): add draft-aware generation',
+    runAgentLoop: (input) => {
+      capturedAgentInput = input;
+      return Promise.resolve('feat(settings): add draft-aware generation');
+    },
+    createLLMClient: () => ({
+      generateCommitMessage: () => Promise.resolve('should not be used'),
+    }),
+  });
+
+  try {
+    assert.equal(result.success, true);
+    const agentInput = toAgentInputSummary(capturedAgentInput);
+    if (!agentInput) {
+      throw new Error('capturedAgentInput not set');
+    }
+    assert.equal(
+      agentInput.draftCommitMessage,
+      'feat(settings): add draft-aware generation',
+    );
   } finally {
     cleanupTempDir(repoRoot);
   }
@@ -266,11 +306,13 @@ void test('generateCommitMessage uses agent loop in agentic mode', async () => {
 void test('generateCommitMessage uses direct diff client in direct-diff mode', async () => {
   let capturedClientOptions: unknown;
   let capturedDirectDiff = '';
+  let capturedDraftCommitMessage: string | undefined;
   let agentCallCount = 0;
 
   const { result, repoRoot } = await runGenerate({
     provider: 'openai',
     generateMode: 'direct-diff',
+    draftCommitMessage: 'fix(ui): keep user wording',
     commitOutputOptions: {
       includeScope: true,
       includeBody: false,
@@ -284,8 +326,9 @@ void test('generateCommitMessage uses direct diff client in direct-diff mode', a
     createLLMClient: (clientOptions) => {
       capturedClientOptions = clientOptions;
       return {
-        generateCommitMessage: (diff) => {
+        generateCommitMessage: (diff, draftCommitMessage) => {
           capturedDirectDiff = diff;
+          capturedDraftCommitMessage = draftCommitMessage;
           return Promise.resolve(
             'fix(ui): use direct diff mode\n\nBypass agent tools for this run.',
           );
@@ -314,6 +357,7 @@ void test('generateCommitMessage uses direct diff client in direct-diff mode', a
       includeGitmoji: false,
     });
     assert.match(capturedDirectDiff, /diff --git a\/a\.ts b\/a\.ts/);
+    assert.equal(capturedDraftCommitMessage, 'fix(ui): keep user wording');
   } finally {
     cleanupTempDir(repoRoot);
   }

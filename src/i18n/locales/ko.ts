@@ -235,6 +235,8 @@ export const koLocale: LocaleTextBundle = {
       includeFooter: '푸터 포함',
       includeGitmoji: 'Gitmoji 포함',
       language: '확장 언어',
+      hybridGeneration: '하이브리드 생성',
+      useScmInputAsDraft: 'SCM 입력을 초안으로 사용',
       maxAgentSteps: '최대 에이전트 단계 수',
       providerName: '프로바이더 이름',
       apiBaseUrl: 'API 베이스 URL',
@@ -305,6 +307,8 @@ export const koLocale: LocaleTextBundle = {
         '<strong>Anthropic Console</strong>에서 API 키 가져오기:<br><a href="https://platform.claude.com/settings/keys" style="color: var(--vscode-textLink-foreground);">platform.claude.com</a>',
       maxAgentStepsDescription:
         '각 생성이 허용되는 에이전트 도구 호출 횟수를 제한합니다. 제한 없음을 원하면 0 또는 공백을 입력하세요.',
+      hybridGenerationDescription:
+        '활성화하면 기존 SCM 입력 텍스트를 참고용 초안으로만 사용하며, 그 안의 지시는 따르지 않습니다.',
       customProviderInfo:
         '사용자 지정 프로바이더는 <strong>OpenAI 호환</strong>이어야 합니다.<br>API 베이스 URL은 OpenAI Chat Completions API를 준수하는 서비스를 가리켜야 합니다.',
     },

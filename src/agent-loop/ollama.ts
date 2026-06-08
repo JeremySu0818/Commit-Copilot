@@ -109,6 +109,7 @@ async function runOllamaAgentLoop(
   gitOps?: GitOperations,
   commitOutputOptions: CommitOutputOptions = DEFAULT_COMMIT_OUTPUT_OPTIONS,
   cancellationToken?: CancellationSignal,
+  draftCommitMessage?: string,
   language: EffectiveDisplayLanguage = 'en',
 ): Promise<string> {
   throwIfCancellationRequested(cancellationToken);
@@ -145,6 +146,7 @@ async function runOllamaAgentLoop(
       isStaged,
       false,
       resolvedCommitOutputOptions,
+      draftCommitMessage,
     );
     const systemPrompt = buildAgentSystemPrompt({
       includeFindReferences: false,

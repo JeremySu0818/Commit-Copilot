@@ -239,6 +239,8 @@ export const ruLocale: LocaleTextBundle = {
       includeFooter: 'Включить подвал (Footer)',
       includeGitmoji: 'Включить Gitmoji',
       language: 'Язык расширения',
+      hybridGeneration: 'Гибридная генерация',
+      useScmInputAsDraft: 'Использовать текст SCM как черновик',
       maxAgentSteps: 'Макс. количество шагов агента',
       providerName: 'Имя провайдера',
       apiBaseUrl: 'Базовый URL-адрес API',
@@ -308,6 +310,8 @@ export const ruLocale: LocaleTextBundle = {
         'Получите ваш API-ключ в консоли <strong>Anthropic</strong>:<br><a href="https://platform.claude.com/settings/keys" style="color: var(--vscode-textLink-foreground);">platform.claude.com</a>',
       maxAgentStepsDescription:
         'Ограничить количество вызовов инструментов агентом за сеанс. Введите 0 или оставьте пустым для снятия ограничения.',
+      hybridGenerationDescription:
+        'Если включено, текущий текст в SCM используется только как справочный черновик; инструкции внутри него не выполняются.',
       customProviderInfo:
         'Кастомные провайдеры должны быть совместимы с <strong>OpenAI</strong>.<br>Базовый URL-адрес API должен указывать на сервис, который реализует API Chat Completions от OpenAI.',
     },

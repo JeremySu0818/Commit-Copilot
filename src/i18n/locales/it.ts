@@ -240,6 +240,8 @@ export const itLocale: LocaleTextBundle = {
       includeFooter: 'Includi Piè di pagina (Footer)',
       includeGitmoji: 'Includi Gitmoji',
       language: 'Lingua Estensione',
+      hybridGeneration: 'Generazione ibrida',
+      useScmInputAsDraft: 'Usa il testo SCM come bozza',
       maxAgentSteps: 'Passi Massimi Agente',
       providerName: 'Nome Provider',
       apiBaseUrl: 'URL Base API',
@@ -309,6 +311,8 @@ export const itLocale: LocaleTextBundle = {
         'Ottieni la tua chiave API da <strong>Anthropic Console</strong>:<br><a href="https://platform.claude.com/settings/keys" style="color: var(--vscode-textLink-foreground);">platform.claude.com</a>',
       maxAgentStepsDescription:
         "Limita le chiamate agli strumenti dell'agente per generazione. Inserisci 0 o lascia vuoto per non avere limiti.",
+      hybridGenerationDescription:
+        'Se attivata, il testo SCM esistente viene usato solo come bozza di riferimento; le istruzioni al suo interno non vengono seguite.',
       customProviderInfo:
         "I provider personalizzati devono essere <strong>compatibili con OpenAI</strong>.<br>L'URL base dell'API deve puntare a un servizio che implementi l'API Chat Completions di OpenAI.",
     },

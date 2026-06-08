@@ -8,6 +8,7 @@ import type * as vscode from 'vscode';
 import {
   API_KEY_STORAGE_KEYS,
   DEFAULT_COMMIT_OUTPUT_OPTIONS,
+  DEFAULT_HYBRID_GENERATION_OPTIONS,
   OLLAMA_DEFAULT_HOST,
 } from '../models';
 
@@ -37,6 +38,11 @@ interface CurrentGenerateModeMessage extends PostedMessage {
 interface CurrentCommitOutputOptionsMessage extends PostedMessage {
   type: 'currentCommitOutputOptions';
   commitOutputOptions: unknown;
+}
+
+interface CurrentHybridGenerationOptionsMessage extends PostedMessage {
+  type: 'currentHybridGenerationOptions';
+  hybridGenerationOptions: unknown;
 }
 
 interface AllKeyStatusesMessage extends PostedMessage {
@@ -72,6 +78,12 @@ function isCurrentCommitOutputOptionsMessage(
   message: PostedMessage,
 ): message is CurrentCommitOutputOptionsMessage {
   return message.type === 'currentCommitOutputOptions';
+}
+
+function isCurrentHybridGenerationOptionsMessage(
+  message: PostedMessage,
+): message is CurrentHybridGenerationOptionsMessage {
+  return message.type === 'currentHybridGenerationOptions';
 }
 
 function isAllKeyStatusesMessage(
@@ -274,6 +286,9 @@ void test('generate forwards normalized generateMode to command payload', async 
         includeFooter: true,
         includeGitmoji: true,
       },
+      hybridGenerationOptions: {
+        enabled: true,
+      },
     });
     await harness.sendMessage({ type: 'generate', generateMode: 'unknown' });
 
@@ -291,6 +306,9 @@ void test('generate forwards normalized generateMode to command payload', async 
           includeFooter: true,
           includeGitmoji: true,
         },
+        hybridGenerationOptions: {
+          enabled: true,
+        },
       },
     ]);
     assert.deepEqual(generateCalls[1], [
@@ -298,6 +316,7 @@ void test('generate forwards normalized generateMode to command payload', async 
       {
         generateMode: 'agentic',
         commitOutputOptions: DEFAULT_COMMIT_OUTPUT_OPTIONS,
+        hybridGenerationOptions: DEFAULT_HYBRID_GENERATION_OPTIONS,
       },
     ]);
 
@@ -388,6 +407,51 @@ void test('saveCommitOutputOptions persists normalized values', async () => {
       includeFooter: DEFAULT_COMMIT_OUTPUT_OPTIONS.includeFooter,
       includeGitmoji: DEFAULT_COMMIT_OUTPUT_OPTIONS.includeGitmoji,
     });
+  } finally {
+    harness.dispose();
+  }
+});
+
+void test('getHybridGenerationOptions returns defaults when unset', async () => {
+  const harness = await createHarness();
+
+  try {
+    await harness.sendMessage({ type: 'getHybridGenerationOptions' });
+    const optionsMessage = harness.postedMessages.find((message) =>
+      isCurrentHybridGenerationOptionsMessage(message),
+    );
+    if (!optionsMessage) {
+      throw new Error('currentHybridGenerationOptions message not found');
+    }
+    assert.deepEqual(
+      optionsMessage.hybridGenerationOptions,
+      DEFAULT_HYBRID_GENERATION_OPTIONS,
+    );
+  } finally {
+    harness.dispose();
+  }
+});
+
+void test('saveHybridGenerationOptions persists normalized values', async () => {
+  const harness = await createHarness();
+
+  try {
+    await harness.sendMessage({
+      type: 'saveHybridGenerationOptions',
+      value: { enabled: true },
+    });
+    assert.deepEqual(harness.state.get('HYBRID_GENERATION_OPTIONS'), {
+      enabled: true,
+    });
+
+    await harness.sendMessage({
+      type: 'saveHybridGenerationOptions',
+      value: { enabled: 'yes' },
+    });
+    assert.deepEqual(
+      harness.state.get('HYBRID_GENERATION_OPTIONS'),
+      DEFAULT_HYBRID_GENERATION_OPTIONS,
+    );
   } finally {
     harness.dispose();
   }

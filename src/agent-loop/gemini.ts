@@ -621,6 +621,7 @@ async function runGeminiAgentLoop(
   commitOutputOptions: CommitOutputOptions = DEFAULT_COMMIT_OUTPUT_OPTIONS,
   cancellationToken?: CancellationSignal,
   maxAgentSteps?: number,
+  draftCommitMessage?: string,
   language: EffectiveDisplayLanguage = 'en',
 ): Promise<string> {
   throwIfCancellationRequested(cancellationToken);
@@ -665,6 +666,7 @@ async function runGeminiAgentLoop(
       isStaged,
       true,
       resolvedCommitOutputOptions,
+      draftCommitMessage,
     );
     const history: UnknownRecord[] = [
       {

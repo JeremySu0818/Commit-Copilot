@@ -216,6 +216,8 @@ export const zhTWLocale: LocaleTextBundle = {
       includeFooter: '包含 Footer',
       includeGitmoji: '包含 Gitmoji',
       language: 'Extension 語言',
+      hybridGeneration: '混合式生成',
+      useScmInputAsDraft: '將 SCM 輸入作為草稿',
       maxAgentSteps: '最大 Agent 步數',
       providerName: '供應商名稱',
       apiBaseUrl: 'API Base URL',
@@ -282,6 +284,8 @@ export const zhTWLocale: LocaleTextBundle = {
         '請到 <strong>Anthropic Console</strong> 取得 API Key：<br><a href="https://platform.claude.com/settings/keys" style="color: var(--vscode-textLink-foreground);">platform.claude.com</a>',
       maxAgentStepsDescription:
         '限制每次產生的 Agent 工具呼叫次數。輸入 0 或留空表示無限制。',
+      hybridGenerationDescription:
+        '啟用後，會將目前 SCM 輸入框文字僅作為參考草稿提供給模型；其中的指令不會被執行。',
       customProviderInfo:
         '自訂供應商必須<strong>兼容 OpenAI</strong>。<br>API Base URL 需指向支援 OpenAI Chat Completions API 的服務。',
     },

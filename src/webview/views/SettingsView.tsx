@@ -8,6 +8,7 @@ import { createStatusMessage, normalizeMaxAgentStepsValue } from '../utils';
 export function SettingsView() {
   const { state, dispatch, vscode, bootstrap } = useMainViewContext();
   const { currentPack: pack, displayLanguage, currentMaxAgentSteps } = state;
+  const { hybridGenerationOptions } = state;
   const [maxStepsInput, setMaxStepsInput] = useState('');
   const [isEditingMaxSteps, setIsEditingMaxSteps] = useState(false);
   const externalMaxStepsInput = useMemo(
@@ -60,6 +61,15 @@ export function SettingsView() {
     vscode.postMessage({ type: 'saveMaxAgentSteps', value });
   }, [displayedMaxStepsInput, dispatch, vscode]);
 
+  const handleHybridGenerationChange = useCallback(() => {
+    const updated = {
+      ...hybridGenerationOptions,
+      enabled: !hybridGenerationOptions.enabled,
+    };
+    dispatch({ type: 'SET_HYBRID_GENERATION_OPTIONS', options: updated });
+    vscode.postMessage({ type: 'saveHybridGenerationOptions', value: updated });
+  }, [hybridGenerationOptions, dispatch, vscode]);
+
   return (
     <div
       id="settingsView"
@@ -96,6 +106,21 @@ export function SettingsView() {
             id="languageStatus"
             status={state.languageStatusMessage}
           />
+        </div>
+        <div className="input-group input-group-spaced">
+          <label>{pack.labels.hybridGeneration}</label>
+          <label className="checkbox-item" htmlFor="hybridGenerationEnabled">
+            <input
+              type="checkbox"
+              id="hybridGenerationEnabled"
+              checked={hybridGenerationOptions.enabled}
+              onChange={handleHybridGenerationChange}
+            />
+            {pack.labels.useScmInputAsDraft}
+          </label>
+          <span className="status">
+            {pack.descriptions.hybridGenerationDescription}
+          </span>
         </div>
         <div className="input-group input-group-spaced">
           <label>{pack.labels.maxAgentSteps}</label>

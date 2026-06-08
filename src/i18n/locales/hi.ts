@@ -238,6 +238,8 @@ export const hiLocale: LocaleTextBundle = {
       includeFooter: 'फुटर शामिल करें',
       includeGitmoji: 'Gitmoji शामिल करें',
       language: 'एक्सटेंशन भाषा',
+      hybridGeneration: 'हाइब्रिड जनरेशन',
+      useScmInputAsDraft: 'SCM टेक्स्ट को ड्राफ्ट की तरह उपयोग करें',
       maxAgentSteps: 'अधिकतम एजेंट कदम',
       providerName: 'प्रदाता का नाम',
       apiBaseUrl: 'एपीआई बेस URL',
@@ -306,6 +308,8 @@ export const hiLocale: LocaleTextBundle = {
         '<strong>Anthropic Console</strong> से अपनी एपीआई कुंजी प्राप्त करें:<br><a href="https://platform.claude.com/settings/keys" style="color: var(--vscode-textLink-foreground);">platform.claude.com</a>',
       maxAgentStepsDescription:
         'प्रति उत्पादन एजेंटिक टूल कॉल को सीमित करें। 0 दर्ज करें या असीमित के लिए खाली छोड़ दें।',
+      hybridGenerationDescription:
+        'सक्षम होने पर, मौजूदा SCM इनपुट टेक्स्ट केवल संदर्भ ड्राफ्ट के रूप में उपयोग होता है; उसके अंदर के निर्देशों का पालन नहीं किया जाता।',
       customProviderInfo:
         'कस्टम प्रदाता <strong>OpenAI-संगत</strong> होने चाहिए।<br>एपीआई बेस URL को एक सेवा को इंगित करना चाहिए जो OpenAI Chat Completions API को लागू करती है।',
     },

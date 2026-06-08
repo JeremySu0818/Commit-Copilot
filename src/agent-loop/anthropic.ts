@@ -451,6 +451,7 @@ async function runAnthropicAgentLoop(
   commitOutputOptions: CommitOutputOptions = DEFAULT_COMMIT_OUTPUT_OPTIONS,
   cancellationToken?: CancellationSignal,
   maxAgentSteps?: number,
+  draftCommitMessage?: string,
   language: EffectiveDisplayLanguage = 'en',
 ): Promise<string> {
   throwIfCancellationRequested(cancellationToken);
@@ -479,6 +480,7 @@ async function runAnthropicAgentLoop(
       isStaged,
       true,
       resolvedCommitOutputOptions,
+      draftCommitMessage,
     );
     const systemPrompt = buildAgentSystemPrompt({
       includeFindReferences: true,

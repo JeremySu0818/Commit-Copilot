@@ -239,6 +239,8 @@ export const csLocale: LocaleTextBundle = {
       includeFooter: 'Zahrnout patičku (footer)',
       includeGitmoji: 'Zahrnout Gitmoji',
       language: 'Jazyk rozšíření',
+      hybridGeneration: 'Hybridní generování',
+      useScmInputAsDraft: 'Použít text SCM jako koncept',
       maxAgentSteps: 'Max. počet kroků agenta',
       providerName: 'Název poskytovatele',
       apiBaseUrl: 'Základní URL API',
@@ -308,6 +310,8 @@ export const csLocale: LocaleTextBundle = {
         'Získejte API klíč v <strong>Anthropic Console</strong>:<br><a href="https://platform.claude.com/settings/keys" style="color: var(--vscode-textLink-foreground);">platform.claude.com</a>',
       maxAgentStepsDescription:
         'Omezí volání nástrojů agenta za jedno generování. Zadejte 0 nebo nechte prázdné pro neomezený počet.',
+      hybridGenerationDescription:
+        'Je-li zapnuto, aktuální text v poli SCM se použije jen jako referenční koncept; pokyny v něm se neprovádějí.',
       customProviderInfo:
         'Vlastní poskytovatelé musí být kompatibilní s <strong>OpenAI</strong>.<br>Základní adresa URL rozhraní API by měla ukazovat na službu, která implementuje rozhraní OpenAI Chat Completions API.',
     },

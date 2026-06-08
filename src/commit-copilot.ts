@@ -463,6 +463,7 @@ export interface GenerateCommitMessageOptions {
   onProgress?: ProgressCallback;
   proceedWithStagedOnly?: boolean;
   maxAgentSteps?: number;
+  draftCommitMessage?: string;
   language: EffectiveDisplayLanguage;
 }
 
@@ -533,6 +534,7 @@ async function generateMessageWithProvider(params: {
   onProgress?: ProgressCallback;
   cancellationToken?: CancellationSignal;
   maxAgentSteps?: number;
+  draftCommitMessage?: string;
   language: EffectiveDisplayLanguage;
   diff: string;
   isStaged: boolean;
@@ -563,6 +565,7 @@ async function generateMessageWithProvider(params: {
       commitOutputOptions: resolvedCommitOutputOptions,
       cancellationToken: params.cancellationToken,
       maxAgentSteps: params.maxAgentSteps,
+      draftCommitMessage: params.draftCommitMessage,
       language: params.language,
     });
   }
@@ -577,6 +580,7 @@ async function generateMessageWithProvider(params: {
     language: params.language,
   }).generateCommitMessage(
     params.diff,
+    params.draftCommitMessage,
     params.onProgress,
     params.cancellationToken,
   );
@@ -599,6 +603,7 @@ export async function generateCommitMessage(
     onProgress,
     proceedWithStagedOnly = false,
     maxAgentSteps,
+    draftCommitMessage,
     language,
   } = options;
   try {
@@ -636,6 +641,7 @@ export async function generateCommitMessage(
       onProgress,
       cancellationToken,
       maxAgentSteps,
+      draftCommitMessage,
       language,
       diff,
       isStaged,

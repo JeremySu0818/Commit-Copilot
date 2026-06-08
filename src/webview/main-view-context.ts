@@ -14,6 +14,7 @@ import type {
   CommitOutputOptions,
   CustomProviderConfig,
   GenerateMode,
+  HybridGenerationOptions,
   ModelConfig,
 } from '../models';
 
@@ -52,6 +53,7 @@ export interface MainViewState {
   pendingStatusCheck: boolean;
   hasChanges: boolean;
   commitOutputOptions: CommitOutputOptions;
+  hybridGenerationOptions: HybridGenerationOptions;
   displayLanguage: DisplayLanguage;
   effectiveLanguage: EffectiveDisplayLanguage;
   currentPack: WebviewLanguagePack;
@@ -79,6 +81,10 @@ export type MainViewAction =
   | { type: 'SET_PENDING_STATUS_CHECK'; value: boolean }
   | { type: 'SET_HAS_CHANGES'; value: boolean }
   | { type: 'SET_COMMIT_OUTPUT_OPTIONS'; options: CommitOutputOptions }
+  | {
+      type: 'SET_HYBRID_GENERATION_OPTIONS';
+      options: HybridGenerationOptions;
+    }
   | {
       type: 'SET_LANGUAGE';
       displayLanguage: DisplayLanguage;
@@ -121,6 +127,7 @@ export function createInitialState(
     pendingStatusCheck: true,
     hasChanges: false,
     commitOutputOptions: bootstrap.defaultCommitOutputOptions,
+    hybridGenerationOptions: bootstrap.defaultHybridGenerationOptions,
     displayLanguage: bootstrap.initialDisplayLanguage,
     effectiveLanguage: effectiveLang,
     currentPack: pack,
@@ -179,6 +186,8 @@ export function mainViewStateReducer(
       return { ...state, hasChanges: action.value };
     case 'SET_COMMIT_OUTPUT_OPTIONS':
       return { ...state, commitOutputOptions: action.options };
+    case 'SET_HYBRID_GENERATION_OPTIONS':
+      return { ...state, hybridGenerationOptions: action.options };
     case 'SET_LANGUAGE':
       return {
         ...state,

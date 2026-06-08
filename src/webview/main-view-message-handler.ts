@@ -5,6 +5,7 @@ import type { WebviewBootstrapData } from '../main-view-webview-bootstrap';
 import type {
   CommitOutputOptions,
   CustomProviderConfig,
+  HybridGenerationOptions,
   ModelConfig,
 } from '../models';
 
@@ -163,6 +164,17 @@ function normalizeCommitOutputOptions(
   };
 }
 
+function normalizeHybridGenerationOptions(
+  value: unknown,
+  defaults: HybridGenerationOptions,
+): HybridGenerationOptions {
+  const options = isRecord(value) ? value : {};
+  return {
+    enabled:
+      typeof options.enabled === 'boolean' ? options.enabled : defaults.enabled,
+  };
+}
+
 function normalizeScreen(value: unknown): MainViewState['screen'] {
   if (value === 'settings' || value === 'addProvider' || value === 'addModel') {
     return value;
@@ -181,6 +193,7 @@ export function useMainViewMessageHandler(
     vscode.postMessage({ type: 'getCustomProviders' });
     vscode.postMessage({ type: 'getGenerateMode' });
     vscode.postMessage({ type: 'getCommitOutputOptions' });
+    vscode.postMessage({ type: 'getHybridGenerationOptions' });
     vscode.postMessage({ type: 'getMaxAgentSteps' });
     vscode.postMessage({ type: 'checkGit' });
     vscode.postMessage({ type: 'getAllKeys' });
@@ -318,6 +331,15 @@ export function useMainViewMessageHandler(
             options: normalizeCommitOutputOptions(
               message.commitOutputOptions,
               bootstrap.defaultCommitOutputOptions,
+            ),
+          });
+        },
+        currentHybridGenerationOptions: (message) => {
+          dispatch({
+            type: 'SET_HYBRID_GENERATION_OPTIONS',
+            options: normalizeHybridGenerationOptions(
+              message.hybridGenerationOptions,
+              bootstrap.defaultHybridGenerationOptions,
             ),
           });
         },
