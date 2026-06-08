@@ -5,5 +5,6 @@
   "command.cancelGeneration.title": "Generierung abbrechen",
   "command.openLanguageSettings.title": "Spracheinstellungen öffnen",
   "viewsContainer.title": "Commit Copilot",
-  "view.name": "Commit Copilot"
+  "view.name": "Commit Copilot",
+  "command.openGitHub.title": "GitHub"
 }

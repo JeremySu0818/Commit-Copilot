@@ -40,6 +40,12 @@
         "title": "%command.openLanguageSettings.title%",
         "category": "Commit-Copilot",
         "icon": "$(settings-gear)"
+      },
+      {
+        "command": "commit-copilot.openGitHub",
+        "title": "%command.openGitHub.title%",
+        "category": "Commit-Copilot",
+        "icon": "$(github)"
       }
     ],
     "menus": {
@@ -57,8 +63,13 @@
       ],
       "view/title": [
         {
+          "command": "commit-copilot.openGitHub",
+          "group": "navigation@5",
+          "when": "view == commit-copilot.view && commit-copilot.currentScreen == main"
+        },
+        {
           "command": "commit-copilot.openLanguageSettings",
-          "group": "navigation",
+          "group": "navigation@10",
           "when": "view == commit-copilot.view && commit-copilot.currentScreen == main"
         }
       ]

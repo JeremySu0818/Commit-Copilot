@@ -1010,6 +1010,15 @@ export function activate(context: vscode.ExtensionContext) {
     },
   );
 
+  const openGitHubDisposable = vscode.commands.registerCommand(
+    'commit-copilot.openGitHub',
+    async () => {
+      await vscode.env.openExternal(
+        vscode.Uri.parse('https://github.com/JeremySu0818/Commit-Copilot'),
+      );
+    },
+  );
+
   const generateDisposable = vscode.commands.registerCommand(
     'commit-copilot.generate',
     async (arg?: GenerateCommandArg) => {
@@ -1027,6 +1036,7 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   context.subscriptions.push(openLanguageSettingsDisposable);
+  context.subscriptions.push(openGitHubDisposable);
   context.subscriptions.push(generateDisposable);
   context.subscriptions.push(cancelDisposable);
 }

@@ -4,6 +4,7 @@
   "command.generate.title": "產生 Commit 訊息",
   "command.cancelGeneration.title": "取消產生",
   "command.openLanguageSettings.title": "開啟語言設定",
+  "command.openGitHub.title": "GitHub",
   "viewsContainer.title": "Commit Copilot",
   "view.name": "Commit Copilot"
 }

@@ -5,5 +5,6 @@
   "command.cancelGeneration.title": "उत्पादन रद्द करें",
   "command.openLanguageSettings.title": "भाषा सेटिंग्स खोलें",
   "viewsContainer.title": "Commit Copilot",
-  "view.name": "Commit Copilot"
+  "view.name": "Commit Copilot",
+  "command.openGitHub.title": "GitHub"
 }
