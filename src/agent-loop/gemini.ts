@@ -349,6 +349,7 @@ function handleGeminiTextResponse(params: {
   response: unknown;
   history: UnknownRecord[];
   commitOutputOptions: CommitOutputOptions;
+  commitMessageLanguage: EffectiveDisplayLanguage;
   finalToolReminderSent: boolean;
 }): { finalMessage?: string; remindFinalTool: boolean } {
   const text = getGeminiResponseText(params.response);
@@ -368,7 +369,10 @@ function handleGeminiTextResponse(params: {
     role: 'user',
     parts: [
       {
-        text: buildFinalToolRequiredReminder(params.commitOutputOptions),
+        text: buildFinalToolRequiredReminder(
+          params.commitOutputOptions,
+          params.commitMessageLanguage,
+        ),
       },
     ],
   });
@@ -443,6 +447,7 @@ async function executeGeminiInvestigationLoop(params: {
   gitOps?: GitOperations;
   cancellationToken?: CancellationSignal;
   commitOutputOptions: CommitOutputOptions;
+  commitMessageLanguage: EffectiveDisplayLanguage;
 }): Promise<string | null> {
   let step = 0;
   let finalToolReminderSent = false;
@@ -459,6 +464,7 @@ async function executeGeminiInvestigationLoop(params: {
         response,
         history: params.history,
         commitOutputOptions: params.commitOutputOptions,
+        commitMessageLanguage: params.commitMessageLanguage,
         finalToolReminderSent,
       });
       if (textResult.finalMessage) {
@@ -567,13 +573,21 @@ async function requestGeminiFinalCommitMessage(params: {
   language: EffectiveDisplayLanguage;
   maxAgentSteps?: number;
   commitOutputOptions: CommitOutputOptions;
+  commitMessageLanguage: EffectiveDisplayLanguage;
 }): Promise<string> {
   const finalResponse = await params.requestGeminiResponse(
     [
       ...params.history,
       {
         role: 'user',
-        parts: [{ text: buildFinalOutputReminder(params.commitOutputOptions) }],
+        parts: [
+          {
+            text: buildFinalOutputReminder(
+              params.commitOutputOptions,
+              params.commitMessageLanguage,
+            ),
+          },
+        ],
       },
     ],
     params.generationConfig,
@@ -623,6 +637,7 @@ async function runGeminiAgentLoop(
   maxAgentSteps?: number,
   draftCommitMessage?: string,
   language: EffectiveDisplayLanguage = 'en',
+  commitMessageLanguage: EffectiveDisplayLanguage = 'en',
 ): Promise<string> {
   throwIfCancellationRequested(cancellationToken);
   if (!apiKey) {
@@ -647,6 +662,7 @@ async function runGeminiAgentLoop(
       includeFindReferences: true,
       commitOutputOptions: resolvedCommitOutputOptions,
       maxAgentSteps,
+      language: commitMessageLanguage,
     });
     const generationConfig = {
       systemInstruction: systemPrompt,
@@ -667,6 +683,7 @@ async function runGeminiAgentLoop(
       true,
       resolvedCommitOutputOptions,
       draftCommitMessage,
+      commitMessageLanguage,
     );
     const history: UnknownRecord[] = [
       {
@@ -706,6 +723,7 @@ async function runGeminiAgentLoop(
       gitOps,
       cancellationToken,
       commitOutputOptions: resolvedCommitOutputOptions,
+      commitMessageLanguage,
     });
     if (loopResult) {
       return loopResult;
@@ -719,6 +737,7 @@ async function runGeminiAgentLoop(
       language,
       maxAgentSteps,
       commitOutputOptions: resolvedCommitOutputOptions,
+      commitMessageLanguage,
     });
   } catch (error: unknown) {
     if (

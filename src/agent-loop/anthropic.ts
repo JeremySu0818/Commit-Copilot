@@ -187,6 +187,7 @@ function handleAnthropicTextResponse(params: {
   textBlocks: AnthropicTextBlock[];
   messages: MessageParam[];
   commitOutputOptions: CommitOutputOptions;
+  commitMessageLanguage: EffectiveDisplayLanguage;
   finalToolReminderSent: boolean;
 }): { finalMessage?: string; remindFinalTool: boolean } {
   const text = params.textBlocks.map((block) => block.text).join('');
@@ -205,7 +206,10 @@ function handleAnthropicTextResponse(params: {
     content: [
       {
         type: 'text',
-        text: buildFinalToolRequiredReminder(params.commitOutputOptions),
+        text: buildFinalToolRequiredReminder(
+          params.commitOutputOptions,
+          params.commitMessageLanguage,
+        ),
       },
     ],
   });
@@ -278,6 +282,7 @@ async function executeAnthropicInvestigationLoop(params: {
   gitOps?: GitOperations;
   cancellationToken?: CancellationSignal;
   commitOutputOptions: CommitOutputOptions;
+  commitMessageLanguage: EffectiveDisplayLanguage;
 }): Promise<string | null> {
   let step = 0;
   let finalToolReminderSent = false;
@@ -296,6 +301,7 @@ async function executeAnthropicInvestigationLoop(params: {
         textBlocks,
         messages: params.messages,
         commitOutputOptions: params.commitOutputOptions,
+        commitMessageLanguage: params.commitMessageLanguage,
         finalToolReminderSent,
       });
       if (textResult.finalMessage) {
@@ -453,6 +459,7 @@ async function runAnthropicAgentLoop(
   maxAgentSteps?: number,
   draftCommitMessage?: string,
   language: EffectiveDisplayLanguage = 'en',
+  commitMessageLanguage: EffectiveDisplayLanguage = 'en',
 ): Promise<string> {
   throwIfCancellationRequested(cancellationToken);
   if (!apiKey) {
@@ -481,11 +488,13 @@ async function runAnthropicAgentLoop(
       true,
       resolvedCommitOutputOptions,
       draftCommitMessage,
+      commitMessageLanguage,
     );
     const systemPrompt = buildAgentSystemPrompt({
       includeFindReferences: true,
       commitOutputOptions: resolvedCommitOutputOptions,
       maxAgentSteps,
+      language: commitMessageLanguage,
     });
 
     const messages: MessageParam[] = [
@@ -534,6 +543,7 @@ async function runAnthropicAgentLoop(
       gitOps,
       cancellationToken,
       commitOutputOptions: resolvedCommitOutputOptions,
+      commitMessageLanguage,
     });
     if (loopResult) {
       return loopResult;
@@ -544,7 +554,10 @@ async function runAnthropicAgentLoop(
       content: [
         {
           type: 'text',
-          text: buildFinalOutputReminder(resolvedCommitOutputOptions),
+          text: buildFinalOutputReminder(
+            resolvedCommitOutputOptions,
+            commitMessageLanguage,
+          ),
         },
       ],
     });

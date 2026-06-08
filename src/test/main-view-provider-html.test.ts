@@ -5,12 +5,16 @@ import * as path from 'path';
 
 import type * as vscode from 'vscode';
 
-import { DISPLAY_LANGUAGE_STATE_KEY } from '../i18n';
+import {
+  COMMIT_MESSAGE_LANGUAGE_STATE_KEY,
+  DISPLAY_LANGUAGE_STATE_KEY,
+} from '../i18n';
 import { CUSTOM_PROVIDERS_STATE_KEY } from '../models';
 
 import { clearRequireCache, withModuleMock } from './helpers/module-mock';
 
 const MODULE_PATH = path.resolve(__dirname, '..', 'main-view-provider');
+const supportedLanguageCount = 20;
 
 interface BootstrapPayload extends Record<string, unknown> {
   initialDisplayLanguage: string;
@@ -22,6 +26,8 @@ interface BootstrapPayload extends Record<string, unknown> {
   generateModes: Record<string, unknown>;
   modelsByProvider: Record<string, unknown>;
   displayLanguageOptions: unknown[];
+  initialCommitMessageLanguage: string;
+  commitMessageLanguageOptions: unknown[];
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -41,7 +47,9 @@ function toBootstrapPayload(value: unknown): BootstrapPayload | null {
     !isRecord(value.providers) ||
     !isRecord(value.generateModes) ||
     !isRecord(value.modelsByProvider) ||
-    !Array.isArray(value.displayLanguageOptions)
+    !Array.isArray(value.displayLanguageOptions) ||
+    typeof value.initialCommitMessageLanguage !== 'string' ||
+    !Array.isArray(value.commitMessageLanguageOptions)
   ) {
     return null;
   }
@@ -84,6 +92,7 @@ void test('webview html shell includes nonce/csp/assets and bootstrap payload', 
       [{ id: 'acme', name: 'Acme Provider', baseUrl: 'https://acme.example' }],
     ],
     [DISPLAY_LANGUAGE_STATE_KEY, 'ja'],
+    [COMMIT_MESSAGE_LANGUAGE_STATE_KEY, 'zh-TW'],
   ]);
 
   const noop = (): void => {
@@ -184,6 +193,11 @@ void test('webview html shell includes nonce/csp/assets and bootstrap payload', 
 
   assert.equal(bootstrap.initialDisplayLanguage, 'ja');
   assert.equal(bootstrap.initialEffectiveLanguage, 'ja');
+  assert.equal(bootstrap.initialCommitMessageLanguage, 'zh-TW');
+  assert.equal(
+    bootstrap.commitMessageLanguageOptions.length,
+    supportedLanguageCount,
+  );
   assert.equal(bootstrap.initialScreen, 'main');
   assert.equal(bootstrap.customProviderPrefix, 'custom:');
   assert.deepEqual(bootstrap.customProviders, [

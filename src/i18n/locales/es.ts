@@ -243,6 +243,7 @@ export const esLocale: LocaleTextBundle = {
       includeFooter: 'Incluir Pie',
       includeGitmoji: 'Incluir Gitmoji',
       language: 'Idioma de Extensión',
+      commitMessageLanguage: 'Idioma de los mensajes de commit',
       hybridGeneration: 'Generación híbrida',
       useScmInputAsDraft: 'Usar texto de SCM como borrador',
       maxAgentSteps: 'Pasos Máximos del Agente',
@@ -284,6 +285,8 @@ export const esLocale: LocaleTextBundle = {
       noChangesDetected: 'No se detectaron cambios',
       cancelCurrentGeneration: 'Cancelar generación actual',
       languageSaved: 'Idioma actualizado.',
+      commitMessageLanguageSaved:
+        'Idioma de los mensajes de commit actualizado.',
       providerNameConflict: 'Ya existe un proveedor con este nombre.',
       providerNameRequired: 'El nombre del proveedor es obligatorio.',
       baseUrlRequired: 'La URL Base de API es obligatoria.',

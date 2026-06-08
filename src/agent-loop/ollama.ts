@@ -13,6 +13,7 @@ import {
   createOllamaModelNotFoundError,
 } from '../errors';
 import { LOCALES } from '../i18n/locales';
+import { buildOllamaEnhancedPrompt } from '../i18n/prompts';
 import type { EffectiveDisplayLanguage } from '../i18n/types';
 import { ProgressCallback } from '../llm-clients';
 import {
@@ -111,6 +112,7 @@ async function runOllamaAgentLoop(
   cancellationToken?: CancellationSignal,
   draftCommitMessage?: string,
   language: EffectiveDisplayLanguage = 'en',
+  commitMessageLanguage: EffectiveDisplayLanguage = 'en',
 ): Promise<string> {
   throwIfCancellationRequested(cancellationToken);
   if (!diff.trim()) {
@@ -147,13 +149,19 @@ async function runOllamaAgentLoop(
       false,
       resolvedCommitOutputOptions,
       draftCommitMessage,
+      commitMessageLanguage,
     );
     const systemPrompt = buildAgentSystemPrompt({
       includeFindReferences: false,
       enableTools: false,
       commitOutputOptions: resolvedCommitOutputOptions,
+      language: commitMessageLanguage,
     });
-    const enhancedPrompt = `${initialContext}\n\n## Full Diff (provided inline for local model)\n\n${diff}`;
+    const enhancedPrompt = buildOllamaEnhancedPrompt(
+      initialContext,
+      diff,
+      commitMessageLanguage,
+    );
 
     const response = await client.chat({
       model: modelName,

@@ -86,6 +86,16 @@ void test('tool-enabled agent prompt requires untrusted data handling and final 
   assert.match(prompt, /structured `message` argument/);
 });
 
+void test('agent prompt applies the selected commit message language', () => {
+  const prompt = buildAgentSystemPrompt({
+    includeFindReferences: false,
+    language: 'zh-TW',
+  });
+
+  assert.match(prompt, /用繁體中文編寫 commit 訊息/);
+  assert.doesNotMatch(prompt, /English only/);
+});
+
 void test('extractFinalCommitMessageFromArgs reads structured final commit message', () => {
   assert.equal(
     extractFinalCommitMessageFromArgs({

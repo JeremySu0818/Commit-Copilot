@@ -24,6 +24,7 @@ interface AgentLoopOptions {
   maxAgentSteps?: number;
   draftCommitMessage?: string;
   language: EffectiveDisplayLanguage;
+  commitMessageLanguage?: EffectiveDisplayLanguage;
 }
 
 export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
@@ -42,6 +43,7 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
     maxAgentSteps,
     draftCommitMessage,
     language,
+    commitMessageLanguage = 'en',
   } = options;
 
   if (baseUrl) {
@@ -59,6 +61,7 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
       draftCommitMessage,
       baseUrl,
       language,
+      commitMessageLanguage,
     );
   }
 
@@ -77,6 +80,7 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
         maxAgentSteps,
         draftCommitMessage,
         language,
+        commitMessageLanguage,
       );
     case 'openai':
       return runOpenAIAgentLoop(
@@ -93,6 +97,7 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
         draftCommitMessage,
         undefined,
         language,
+        commitMessageLanguage,
       );
     case 'anthropic':
       return runAnthropicAgentLoop(
@@ -108,6 +113,7 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
         maxAgentSteps,
         draftCommitMessage,
         language,
+        commitMessageLanguage,
       );
     case 'ollama':
       return runOllamaAgentLoop(
@@ -122,6 +128,7 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
         cancellationToken,
         draftCommitMessage,
         language,
+        commitMessageLanguage,
       );
     case 'grok':
       return runOpenAIAgentLoop(
@@ -138,6 +145,7 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
         draftCommitMessage,
         'https://api.x.ai/v1',
         language,
+        commitMessageLanguage,
       );
     case 'groq':
       return runOpenAIAgentLoop(
@@ -154,6 +162,7 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
         draftCommitMessage,
         'https://api.groq.com/openai/v1',
         language,
+        commitMessageLanguage,
       );
     case 'openrouter':
       return runOpenAIAgentLoop(
@@ -170,6 +179,7 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
         draftCommitMessage,
         'https://openrouter.ai/api/v1',
         language,
+        commitMessageLanguage,
       );
     case 'deepseek':
       return runOpenAIAgentLoop(
@@ -186,6 +196,7 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
         draftCommitMessage,
         'https://api.deepseek.com',
         language,
+        commitMessageLanguage,
       );
     case 'qwen':
       return runOpenAIAgentLoop(
@@ -202,6 +213,7 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
         draftCommitMessage,
         'https://dashscope.aliyuncs.com/compatible-mode/v1',
         language,
+        commitMessageLanguage,
       );
     default:
       throw new Error(

@@ -465,6 +465,7 @@ export interface GenerateCommitMessageOptions {
   maxAgentSteps?: number;
   draftCommitMessage?: string;
   language: EffectiveDisplayLanguage;
+  commitMessageLanguage?: EffectiveDisplayLanguage;
 }
 
 export interface GenerateCommitMessageResult {
@@ -536,6 +537,7 @@ async function generateMessageWithProvider(params: {
   maxAgentSteps?: number;
   draftCommitMessage?: string;
   language: EffectiveDisplayLanguage;
+  commitMessageLanguage: EffectiveDisplayLanguage;
   diff: string;
   isStaged: boolean;
   gitOps: GitOperations;
@@ -567,6 +569,7 @@ async function generateMessageWithProvider(params: {
       maxAgentSteps: params.maxAgentSteps,
       draftCommitMessage: params.draftCommitMessage,
       language: params.language,
+      commitMessageLanguage: params.commitMessageLanguage,
     });
   }
 
@@ -578,6 +581,7 @@ async function generateMessageWithProvider(params: {
     model: resolvedModel,
     commitOutputOptions: resolvedCommitOutputOptions,
     language: params.language,
+    commitMessageLanguage: params.commitMessageLanguage,
   }).generateCommitMessage(
     params.diff,
     params.draftCommitMessage,
@@ -605,6 +609,7 @@ export async function generateCommitMessage(
     maxAgentSteps,
     draftCommitMessage,
     language,
+    commitMessageLanguage = 'en',
   } = options;
   try {
     throwIfCancellationRequested(cancellationToken);
@@ -643,6 +648,7 @@ export async function generateCommitMessage(
       maxAgentSteps,
       draftCommitMessage,
       language,
+      commitMessageLanguage,
       diff,
       isStaged,
       gitOps,

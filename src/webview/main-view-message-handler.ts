@@ -200,6 +200,7 @@ export function useMainViewMessageHandler(
     vscode.postMessage({ type: 'checkGenerationStatus' });
     vscode.postMessage({ type: 'checkValidationStatus' });
     vscode.postMessage({ type: 'getDisplayLanguage' });
+    vscode.postMessage({ type: 'getCommitMessageLanguage' });
     const effectiveScreen = normalizeScreen(bootstrap.initialScreen);
     vscode.postMessage({ type: 'setCurrentScreen', value: effectiveScreen });
   }, [vscode, bootstrap]);
@@ -556,6 +557,19 @@ export function useMainViewMessageHandler(
               'success',
               nextPack.statuses.languageSaved,
             ),
+          });
+        },
+        commitMessageLanguageUpdated: (message) => {
+          const rawLanguage = toString(message.commitMessageLanguage);
+          if (
+            !rawLanguage ||
+            !isEffectiveDisplayLanguage(rawLanguage, bootstrap)
+          ) {
+            return;
+          }
+          dispatch({
+            type: 'SET_COMMIT_MESSAGE_LANGUAGE',
+            language: rawLanguage,
           });
         },
         currentMaxAgentSteps: (message) => {

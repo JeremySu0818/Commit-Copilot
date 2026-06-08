@@ -56,6 +56,7 @@ export interface MainViewState {
   hybridGenerationOptions: HybridGenerationOptions;
   displayLanguage: DisplayLanguage;
   effectiveLanguage: EffectiveDisplayLanguage;
+  commitMessageLanguage: EffectiveDisplayLanguage;
   currentPack: WebviewLanguagePack;
   providerKeyStatuses: Record<string, boolean>;
   ollamaStoredHost: string;
@@ -90,6 +91,10 @@ export type MainViewAction =
       displayLanguage: DisplayLanguage;
       effectiveLanguage: EffectiveDisplayLanguage;
       pack: WebviewLanguagePack;
+    }
+  | {
+      type: 'SET_COMMIT_MESSAGE_LANGUAGE';
+      language: EffectiveDisplayLanguage;
     }
   | { type: 'SET_KEY_STATUS'; provider: string; hasKey: boolean }
   | { type: 'SET_ALL_KEY_STATUSES'; statuses: Record<string, boolean> }
@@ -130,6 +135,7 @@ export function createInitialState(
     hybridGenerationOptions: bootstrap.defaultHybridGenerationOptions,
     displayLanguage: bootstrap.initialDisplayLanguage,
     effectiveLanguage: effectiveLang,
+    commitMessageLanguage: bootstrap.initialCommitMessageLanguage,
     currentPack: pack,
     providerKeyStatuses: {},
     ollamaStoredHost: bootstrap.ollamaDefaultHost,
@@ -195,6 +201,8 @@ export function mainViewStateReducer(
         effectiveLanguage: action.effectiveLanguage,
         currentPack: action.pack,
       };
+    case 'SET_COMMIT_MESSAGE_LANGUAGE':
+      return { ...state, commitMessageLanguage: action.language };
     case 'SET_KEY_STATUS':
       return {
         ...state,

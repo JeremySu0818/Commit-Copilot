@@ -250,6 +250,7 @@ export const deLocale: LocaleTextBundle = {
       includeFooter: 'Fußzeile (Footer) einschließen',
       includeGitmoji: 'Gitmoji einschließen',
       language: 'Erweiterungssprache',
+      commitMessageLanguage: 'Sprache der Commit-Nachrichten',
       hybridGeneration: 'Hybride Generierung',
       useScmInputAsDraft: 'SCM-Text als Entwurf verwenden',
       maxAgentSteps: 'Max. Agentenschritte',
@@ -291,6 +292,8 @@ export const deLocale: LocaleTextBundle = {
       noChangesDetected: 'Keine Änderungen erkannt',
       cancelCurrentGeneration: 'Aktuelle Generierung abbrechen',
       languageSaved: 'Sprache aktualisiert.',
+      commitMessageLanguageSaved:
+        'Sprache der Commit-Nachrichten wurde aktualisiert.',
       providerNameConflict: 'Ein Anbieter mit diesem Namen existiert bereits.',
       providerNameRequired: 'Anbietername ist erforderlich.',
       baseUrlRequired: 'API Basis-URL ist erforderlich.',

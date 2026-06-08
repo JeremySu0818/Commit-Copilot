@@ -53,6 +53,16 @@ export function SettingsView() {
     [],
   );
 
+  const handleCommitMessageLanguageChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      vscode.postMessage({
+        type: 'saveCommitMessageLanguage',
+        value: e.target.value,
+      });
+    },
+    [vscode],
+  );
+
   const handleSaveMaxSteps = useCallback(() => {
     const value = normalizeMaxAgentStepsValue(displayedMaxStepsInput);
     setMaxStepsInput(value > 0 ? String(value) : '');
@@ -106,6 +116,20 @@ export function SettingsView() {
             id="languageStatus"
             status={state.languageStatusMessage}
           />
+        </div>
+        <div className="input-group input-group-spaced">
+          <label>{pack.labels.commitMessageLanguage}</label>
+          <select
+            id="commitMessageLanguageSelect"
+            value={state.commitMessageLanguage}
+            onChange={handleCommitMessageLanguageChange}
+          >
+            {bootstrap.commitMessageLanguageOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label ?? option.value}
+              </option>
+            ))}
+          </select>
         </div>
         <div className="input-group input-group-spaced">
           <label>{pack.labels.hybridGeneration}</label>

@@ -176,6 +176,7 @@ function parseOpenAIToolCalls(
 function handleOpenAITextOnlyResponse(params: {
   messages: ChatCompletionMessageParam[];
   commitOutputOptions: CommitOutputOptions;
+  commitMessageLanguage: EffectiveDisplayLanguage;
   finalToolReminderSent: boolean;
   assistantMessageContent: unknown;
 }): { finalMessage?: string; remindFinalTool: boolean } {
@@ -189,7 +190,10 @@ function handleOpenAITextOnlyResponse(params: {
 
   params.messages.push({
     role: 'user',
-    content: buildFinalToolRequiredReminder(params.commitOutputOptions),
+    content: buildFinalToolRequiredReminder(
+      params.commitOutputOptions,
+      params.commitMessageLanguage,
+    ),
   });
   return { remindFinalTool: true };
 }
@@ -290,6 +294,7 @@ async function executeOpenAIInvestigationLoop(params: {
   gitOps?: GitOperations;
   cancellationToken?: CancellationSignal;
   commitOutputOptions: CommitOutputOptions;
+  commitMessageLanguage: EffectiveDisplayLanguage;
 }): Promise<string | null> {
   let step = 0;
   let finalToolReminderSent = false;
@@ -311,6 +316,7 @@ async function executeOpenAIInvestigationLoop(params: {
       const textResult = handleOpenAITextOnlyResponse({
         messages: params.messages,
         commitOutputOptions: params.commitOutputOptions,
+        commitMessageLanguage: params.commitMessageLanguage,
         finalToolReminderSent,
         assistantMessageContent: assistantMessage.content,
       });
@@ -489,6 +495,7 @@ async function runOpenAIAgentLoop(
   draftCommitMessage?: string,
   baseUrl?: string,
   language: EffectiveDisplayLanguage = 'en',
+  commitMessageLanguage: EffectiveDisplayLanguage = 'en',
 ): Promise<string> {
   throwIfCancellationRequested(cancellationToken);
   if (!apiKey) {
@@ -519,11 +526,13 @@ async function runOpenAIAgentLoop(
       true,
       resolvedCommitOutputOptions,
       draftCommitMessage,
+      commitMessageLanguage,
     );
     const systemPrompt = buildAgentSystemPrompt({
       includeFindReferences: true,
       commitOutputOptions: resolvedCommitOutputOptions,
       maxAgentSteps,
+      language: commitMessageLanguage,
     });
 
     const messages: ChatCompletionMessageParam[] = [
@@ -559,6 +568,7 @@ async function runOpenAIAgentLoop(
       gitOps,
       cancellationToken,
       commitOutputOptions: resolvedCommitOutputOptions,
+      commitMessageLanguage,
     });
     if (loopResult) {
       return loopResult;
@@ -566,7 +576,10 @@ async function runOpenAIAgentLoop(
 
     messages.push({
       role: 'user',
-      content: buildFinalOutputReminder(resolvedCommitOutputOptions),
+      content: buildFinalOutputReminder(
+        resolvedCommitOutputOptions,
+        commitMessageLanguage,
+      ),
     });
     throwIfCancellationRequested(cancellationToken);
     return await requestOpenAIFinalCommitMessage({

@@ -153,6 +153,7 @@ export interface WebviewLanguagePack {
     includeFooter: string;
     includeGitmoji: string;
     language: string;
+    commitMessageLanguage: string;
     hybridGeneration: string;
     useScmInputAsDraft: string;
     maxAgentSteps: string;
@@ -194,6 +195,7 @@ export interface WebviewLanguagePack {
     noChangesDetected: string;
     cancelCurrentGeneration: string;
     languageSaved: string;
+    commitMessageLanguageSaved: string;
     providerNameConflict: string;
     providerNameRequired: string;
     baseUrlRequired: string;

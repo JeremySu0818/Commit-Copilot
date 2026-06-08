@@ -30,6 +30,8 @@ export interface WebviewBootstrapData {
   initialEffectiveLanguage: EffectiveDisplayLanguage;
   initialVSCodeLanguage?: string;
   displayLanguageOptions: LanguageOption[];
+  initialCommitMessageLanguage: EffectiveDisplayLanguage;
+  commitMessageLanguageOptions: LanguageOption[];
   initialScreen: MainViewScreen;
   customProviderPrefix: string;
   customProviders: CustomProviderConfig[];

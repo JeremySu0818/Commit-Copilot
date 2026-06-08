@@ -246,6 +246,7 @@ export const plLocale: LocaleTextBundle = {
       includeFooter: 'Uwzględnij stopkę (footer)',
       includeGitmoji: 'Uwzględnij Gitmoji',
       language: 'Język rozszerzenia',
+      commitMessageLanguage: 'Język wiadomości commita',
       hybridGeneration: 'Generowanie hybrydowe',
       useScmInputAsDraft: 'Użyj tekstu SCM jako szkicu',
       maxAgentSteps: 'Maks. kroków agenta',
@@ -287,6 +288,8 @@ export const plLocale: LocaleTextBundle = {
       noChangesDetected: 'Nie wykryto zmian',
       cancelCurrentGeneration: 'Anuluj bieżące generowanie',
       languageSaved: 'Język zaktualizowany.',
+      commitMessageLanguageSaved:
+        'Język wiadomości commita został zaktualizowany.',
       providerNameConflict: 'Dostawca o tej nazwie już istnieje.',
       providerNameRequired: 'Nazwa dostawcy jest wymagana.',
       baseUrlRequired: 'Podstawowy adres URL API jest wymagany.',

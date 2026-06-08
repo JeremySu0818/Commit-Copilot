@@ -3,6 +3,9 @@ import { randomBytes } from 'crypto';
 import * as vscode from 'vscode';
 
 import {
+  COMMIT_MESSAGE_LANGUAGE_OPTIONS,
+  COMMIT_MESSAGE_LANGUAGE_STATE_KEY,
+  DEFAULT_COMMIT_MESSAGE_LANGUAGE,
   DISPLAY_LANGUAGE_OPTIONS,
   DISPLAY_LANGUAGE_STATE_KEY,
   DisplayLanguage,
@@ -11,6 +14,7 @@ import {
   getDisplayLanguageLabel,
   getMainViewText,
   normalizeDisplayLanguage,
+  normalizeCommitMessageLanguage,
   resolveEffectiveDisplayLanguage,
 } from './i18n';
 import {
@@ -322,6 +326,15 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
     return resolveEffectiveDisplayLanguage(
       this.getDisplayLanguage(),
       this.getVSCodeLanguage(),
+    );
+  }
+
+  private getCommitMessageLanguage(): EffectiveDisplayLanguage {
+    return normalizeCommitMessageLanguage(
+      this._context.globalState.get(
+        COMMIT_MESSAGE_LANGUAGE_STATE_KEY,
+        DEFAULT_COMMIT_MESSAGE_LANGUAGE,
+      ),
     );
   }
 
@@ -1416,6 +1429,27 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
           ...this.getWebviewLanguagePayload(),
         });
       },
+      saveCommitMessageLanguage: async (message) => {
+        const language = normalizeCommitMessageLanguage(message.value);
+        await this._context.globalState.update(
+          COMMIT_MESSAGE_LANGUAGE_STATE_KEY,
+          language,
+        );
+        const pack = WEBVIEW_LANGUAGE_PACKS[this.getEffectiveDisplayLanguage()];
+        vscode.window.showInformationMessage(
+          pack.statuses.commitMessageLanguageSaved,
+        );
+        this._view?.webview.postMessage({
+          type: 'commitMessageLanguageUpdated',
+          commitMessageLanguage: language,
+        });
+      },
+      getCommitMessageLanguage: () => {
+        this._view?.webview.postMessage({
+          type: 'commitMessageLanguageUpdated',
+          commitMessageLanguage: this.getCommitMessageLanguage(),
+        });
+      },
       getDisplayLanguage: () => {
         this._view?.webview.postMessage({
           type: 'displayLanguageUpdated',
@@ -1610,6 +1644,8 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
       initialEffectiveLanguage: languagePayload.effectiveLanguage,
       initialVSCodeLanguage: languagePayload.vscodeLanguage,
       displayLanguageOptions: languagePayload.languageOptions,
+      initialCommitMessageLanguage: this.getCommitMessageLanguage(),
+      commitMessageLanguageOptions: COMMIT_MESSAGE_LANGUAGE_OPTIONS,
       initialScreen: this._currentScreen,
       customProviderPrefix: CUSTOM_PROVIDER_PREFIX,
       customProviders: this.getCustomProviders(),

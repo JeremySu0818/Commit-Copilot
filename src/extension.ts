@@ -7,12 +7,15 @@ import {
   GitRepository,
 } from './commit-copilot';
 import {
+  COMMIT_MESSAGE_LANGUAGE_STATE_KEY,
+  DEFAULT_COMMIT_MESSAGE_LANGUAGE,
   DISPLAY_LANGUAGE_STATE_KEY,
   getExtensionText,
   getLocalizedCommitCopilotErrorMessage,
   getLocalizedErrorInfo,
   getModelNameRequiredText,
   normalizeDisplayLanguage,
+  normalizeCommitMessageLanguage,
   resolveEffectiveDisplayLanguage,
 } from './i18n';
 import { MainViewProvider } from './main-view-provider';
@@ -106,6 +109,15 @@ function getCurrentLanguage(context: vscode.ExtensionContext) {
     context.globalState.get(DISPLAY_LANGUAGE_STATE_KEY),
   );
   return resolveEffectiveDisplayLanguage(displayLanguage, vscode.env.language);
+}
+
+function getCommitMessageLanguage(context: vscode.ExtensionContext) {
+  return normalizeCommitMessageLanguage(
+    context.globalState.get(
+      COMMIT_MESSAGE_LANGUAGE_STATE_KEY,
+      DEFAULT_COMMIT_MESSAGE_LANGUAGE,
+    ),
+  );
 }
 
 type ExtensionText = ReturnType<typeof getExtensionText>;
@@ -467,6 +479,7 @@ function createBaseGenerateOptions(args: {
   savedModel: string | undefined;
   cancellationSource: vscode.CancellationTokenSource;
   language: ReturnType<typeof getCurrentLanguage>;
+  commitMessageLanguage: ReturnType<typeof getCommitMessageLanguage>;
   outputChannel: vscode.OutputChannel;
   progress: vscode.Progress<{ message?: string; increment?: number }>;
 }): GenerateCommitMessageOptions {
@@ -487,6 +500,7 @@ function createBaseGenerateOptions(args: {
     onProgress: reportProgress,
     cancellationToken: args.cancellationSource.token,
     language: args.language,
+    commitMessageLanguage: args.commitMessageLanguage,
   };
 }
 
@@ -738,6 +752,7 @@ async function runGenerationProgress(args: {
   draftCommitMessage: string | undefined;
   cancellationSource: vscode.CancellationTokenSource;
   language: ReturnType<typeof getCurrentLanguage>;
+  commitMessageLanguage: ReturnType<typeof getCommitMessageLanguage>;
 }): Promise<void> {
   const cancelSubscription = args.progressToken.onCancellationRequested(() => {
     args.outputChannel.appendLine(args.text.output.cancelRequestedFromProgress);
@@ -763,6 +778,7 @@ async function runGenerationProgress(args: {
     savedModel: args.savedModel,
     cancellationSource: args.cancellationSource,
     language: args.language,
+    commitMessageLanguage: args.commitMessageLanguage,
     outputChannel: args.outputChannel,
     progress: args.progress,
   });
@@ -833,6 +849,7 @@ async function executeGenerateCommand(
   outputChannel: vscode.OutputChannel,
 ): Promise<void> {
   const language = getCurrentLanguage(context);
+  const commitMessageLanguage = getCommitMessageLanguage(context);
   const text = getExtensionText(language);
   if (GenerationStateManager.isGenerating) {
     outputChannel.appendLine(text.output.generationIgnored);
@@ -951,6 +968,7 @@ async function executeGenerateCommand(
           draftCommitMessage,
           cancellationSource,
           language,
+          commitMessageLanguage,
         }),
     );
     if (cancellationSource.token.isCancellationRequested) {

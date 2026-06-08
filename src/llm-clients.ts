@@ -1,5 +1,3 @@
-import { buildAgentSystemPrompt } from './agent-loop/shared';
-import { formatDraftCommitMessageSection } from './agent-tools/context';
 import {
   CancellationSignal,
   throwIfCancellationRequested,
@@ -17,6 +15,10 @@ import {
   createUnknownAnthropicModelError,
 } from './errors';
 import { LOCALES } from './i18n/locales';
+import {
+  buildAgentSystemPrompt,
+  buildDirectDiffUserPrompt,
+} from './i18n/prompts';
 import type { EffectiveDisplayLanguage } from './i18n/types';
 import {
   APIProvider,
@@ -37,6 +39,7 @@ export interface LLMClientOptions {
   model?: string;
   commitOutputOptions?: CommitOutputOptions;
   language?: EffectiveDisplayLanguage;
+  commitMessageLanguage?: EffectiveDisplayLanguage;
 }
 
 export type ProgressCallback = (message: string, increment?: number) => void;
@@ -278,28 +281,23 @@ export interface ILLMClient {
   ): Promise<string>;
 }
 
-function buildDirectDiffUserPrompt(
-  diff: string,
-  draftCommitMessage?: string,
-): string {
-  const draftSection = formatDraftCommitMessageSection(draftCommitMessage);
-  return `${draftSection ? draftSection + '\n\n' : ''}Here is the git diff:\n\n${diff}`;
-}
-
 export class GeminiClient implements ILLMClient {
   private readonly apiKey: string;
   private readonly model: string;
   private readonly systemPrompt: string;
+  private readonly commitMessageLanguage: EffectiveDisplayLanguage;
 
   constructor(
     apiKey: string,
     model?: string,
     commitOutputOptions: CommitOutputOptions = DEFAULT_COMMIT_OUTPUT_OPTIONS,
+    commitMessageLanguage: EffectiveDisplayLanguage = 'en',
   ) {
     if (!apiKey) {
       throw new APIKeyMissingError();
     }
     this.apiKey = apiKey;
+    this.commitMessageLanguage = commitMessageLanguage;
     this.model = pickNonEmpty(model, DEFAULT_MODELS.google).replace(
       /^models\//,
       '',
@@ -308,6 +306,7 @@ export class GeminiClient implements ILLMClient {
       includeFindReferences: false,
       enableTools: false,
       commitOutputOptions: normalizeCommitOutputOptions(commitOutputOptions),
+      language: commitMessageLanguage,
     });
   }
 
@@ -341,7 +340,13 @@ export class GeminiClient implements ILLMClient {
               {
                 role: 'user',
                 parts: [
-                  { text: buildDirectDiffUserPrompt(diff, draftCommitMessage) },
+                  {
+                    text: buildDirectDiffUserPrompt(
+                      diff,
+                      draftCommitMessage,
+                      this.commitMessageLanguage,
+                    ),
+                  },
                 ],
               },
             ],
@@ -393,23 +398,27 @@ export class OpenAIClient implements ILLMClient {
   private readonly model: string;
   private readonly baseURL?: string;
   private readonly systemPrompt: string;
+  private readonly commitMessageLanguage: EffectiveDisplayLanguage;
 
   constructor(
     apiKey: string,
     model?: string,
     commitOutputOptions: CommitOutputOptions = DEFAULT_COMMIT_OUTPUT_OPTIONS,
     baseURL?: string,
+    commitMessageLanguage: EffectiveDisplayLanguage = 'en',
   ) {
     if (!apiKey) {
       throw new APIKeyMissingError();
     }
     this.apiKey = apiKey;
+    this.commitMessageLanguage = commitMessageLanguage;
     this.model = pickNonEmpty(model, DEFAULT_MODELS.openai);
     this.baseURL = baseURL;
     this.systemPrompt = buildAgentSystemPrompt({
       includeFindReferences: false,
       enableTools: false,
       commitOutputOptions: normalizeCommitOutputOptions(commitOutputOptions),
+      language: commitMessageLanguage,
     });
   }
 
@@ -444,7 +453,11 @@ export class OpenAIClient implements ILLMClient {
               { role: 'system', content: this.systemPrompt },
               {
                 role: 'user',
-                content: buildDirectDiffUserPrompt(diff, draftCommitMessage),
+                content: buildDirectDiffUserPrompt(
+                  diff,
+                  draftCommitMessage,
+                  this.commitMessageLanguage,
+                ),
               },
             ],
           }),
@@ -497,16 +510,19 @@ export class AnthropicClient implements ILLMClient {
   private readonly model: string;
   private readonly maxTokens: number;
   private readonly systemPrompt: string;
+  private readonly commitMessageLanguage: EffectiveDisplayLanguage;
 
   constructor(
     apiKey: string,
     model?: string,
     commitOutputOptions: CommitOutputOptions = DEFAULT_COMMIT_OUTPUT_OPTIONS,
+    commitMessageLanguage: EffectiveDisplayLanguage = 'en',
   ) {
     if (!apiKey) {
       throw new APIKeyMissingError();
     }
     this.apiKey = apiKey;
+    this.commitMessageLanguage = commitMessageLanguage;
     this.model = pickNonEmpty(model, DEFAULT_MODELS.anthropic);
     const maxTokens = getAnthropicModelMaxTokens(this.model);
     if (maxTokens === undefined) {
@@ -517,6 +533,7 @@ export class AnthropicClient implements ILLMClient {
       includeFindReferences: false,
       enableTools: false,
       commitOutputOptions: normalizeCommitOutputOptions(commitOutputOptions),
+      language: commitMessageLanguage,
     });
   }
 
@@ -550,7 +567,11 @@ export class AnthropicClient implements ILLMClient {
               messages: [
                 {
                   role: 'user',
-                  content: buildDirectDiffUserPrompt(diff, draftCommitMessage),
+                  content: buildDirectDiffUserPrompt(
+                    diff,
+                    draftCommitMessage,
+                    this.commitMessageLanguage,
+                  ),
                 },
               ],
             })
@@ -608,20 +629,24 @@ export class OllamaClient implements ILLMClient {
   private readonly model: string;
   private readonly systemPrompt: string;
   private readonly language: EffectiveDisplayLanguage;
+  private readonly commitMessageLanguage: EffectiveDisplayLanguage;
 
   constructor(
     host?: string,
     model?: string,
     commitOutputOptions: CommitOutputOptions = DEFAULT_COMMIT_OUTPUT_OPTIONS,
     language: EffectiveDisplayLanguage = 'en',
+    commitMessageLanguage: EffectiveDisplayLanguage = 'en',
   ) {
     this.host = pickNonEmpty(host, OLLAMA_DEFAULT_HOST);
     this.model = pickNonEmpty(model, DEFAULT_MODELS.ollama);
     this.language = language;
+    this.commitMessageLanguage = commitMessageLanguage;
     this.systemPrompt = buildAgentSystemPrompt({
       includeFindReferences: false,
       enableTools: false,
       commitOutputOptions: normalizeCommitOutputOptions(commitOutputOptions),
+      language: commitMessageLanguage,
     });
   }
 
@@ -662,7 +687,11 @@ export class OllamaClient implements ILLMClient {
           { role: 'system', content: this.systemPrompt },
           {
             role: 'user',
-            content: buildDirectDiffUserPrompt(diff, draftCommitMessage),
+            content: buildDirectDiffUserPrompt(
+              diff,
+              draftCommitMessage,
+              this.commitMessageLanguage,
+            ),
           },
         ],
         options: {
@@ -705,16 +734,33 @@ export function createLLMClient(options: LLMClientOptions): ILLMClient {
       model,
       resolvedCommitOutputOptions,
       baseUrl,
+      options.commitMessageLanguage,
     );
   }
 
   switch (provider) {
     case 'google':
-      return new GeminiClient(apiKey, model, resolvedCommitOutputOptions);
+      return new GeminiClient(
+        apiKey,
+        model,
+        resolvedCommitOutputOptions,
+        options.commitMessageLanguage,
+      );
     case 'openai':
-      return new OpenAIClient(apiKey, model, resolvedCommitOutputOptions);
+      return new OpenAIClient(
+        apiKey,
+        model,
+        resolvedCommitOutputOptions,
+        undefined,
+        options.commitMessageLanguage,
+      );
     case 'anthropic':
-      return new AnthropicClient(apiKey, model, resolvedCommitOutputOptions);
+      return new AnthropicClient(
+        apiKey,
+        model,
+        resolvedCommitOutputOptions,
+        options.commitMessageLanguage,
+      );
     case 'ollama': {
       const resolvedOllamaHost = pickNonEmpty(ollamaHost, apiKey);
       return new OllamaClient(
@@ -722,6 +768,7 @@ export function createLLMClient(options: LLMClientOptions): ILLMClient {
         model,
         resolvedCommitOutputOptions,
         options.language,
+        options.commitMessageLanguage,
       );
     }
     case 'grok':
@@ -730,6 +777,7 @@ export function createLLMClient(options: LLMClientOptions): ILLMClient {
         model ?? DEFAULT_MODELS.grok,
         resolvedCommitOutputOptions,
         'https://api.x.ai/v1',
+        options.commitMessageLanguage,
       );
     case 'groq':
       return new OpenAIClient(
@@ -737,6 +785,7 @@ export function createLLMClient(options: LLMClientOptions): ILLMClient {
         model ?? DEFAULT_MODELS.groq,
         resolvedCommitOutputOptions,
         'https://api.groq.com/openai/v1',
+        options.commitMessageLanguage,
       );
     case 'openrouter':
       return new OpenAIClient(
@@ -744,6 +793,7 @@ export function createLLMClient(options: LLMClientOptions): ILLMClient {
         model ?? DEFAULT_MODELS.openrouter,
         resolvedCommitOutputOptions,
         'https://openrouter.ai/api/v1',
+        options.commitMessageLanguage,
       );
     case 'deepseek':
       return new OpenAIClient(
@@ -751,6 +801,7 @@ export function createLLMClient(options: LLMClientOptions): ILLMClient {
         model ?? DEFAULT_MODELS.deepseek,
         resolvedCommitOutputOptions,
         'https://api.deepseek.com',
+        options.commitMessageLanguage,
       );
     case 'qwen':
       return new OpenAIClient(
@@ -758,6 +809,7 @@ export function createLLMClient(options: LLMClientOptions): ILLMClient {
         model ?? DEFAULT_MODELS.qwen,
         resolvedCommitOutputOptions,
         'https://dashscope.aliyuncs.com/compatible-mode/v1',
+        options.commitMessageLanguage,
       );
     default:
       throw new Error(`Unsupported provider: ${String(provider)}`);

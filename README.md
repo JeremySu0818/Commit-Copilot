@@ -36,6 +36,7 @@ Commit-Copilot is an **agentic** VS Code extension that uses a multi-step AI age
 - **Hybrid Generation**: Optionally use the existing Source Control input text as a draft reference when generating. The draft can guide wording and intent, but prompt-injection style instructions inside it are ignored.
 - **Model Selection**: Customize which model you want to use for each provider. Custom providers and Ollama can fetch models from their respective endpoints, and you can manually add or remove custom model IDs when needed.
 - **Localization**: The UI follows VS Code's display language automatically, or you can manually pin it to any of 20 supported languages: العربية, Čeština, Deutsch, English, Español, Français, हिन्दी, Magyar, Bahasa Indonesia, Italiano, 日本語, 한국어, Nederlands, Polski, Português (Brasil), Русский, Türkçe, Tiếng Việt, 简体中文, 繁體中文.
+- **Commit Message Language**: Choose the generated commit message language independently from the extension UI language. The same 20 languages are supported, with English as the default.
 - **Preview & Edit**: Review the generated message in the Source Control input box before committing.
 
 ## How It Works
@@ -90,15 +91,17 @@ The custom provider will appear in the provider list alongside the built-in ones
 
 #### Additional Options
 
-| Option                | Default       | Description                                                                                                                |
-| --------------------- | ------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| **Generate Mode**     | Agentic       | `Agentic` runs a multi-step investigation loop; `Direct Diff` sends the full diff in one shot (always used for Ollama).    |
-| **Hybrid Generation** | Off           | Uses the existing Source Control input text as reference draft content while ignoring instructions embedded in that draft. |
-| **Max Agent Steps**   | 0 (unlimited) | Maximum number of tool-call iterations the agent may take. Set to `0` to remove the cap.                                   |
-| **Include Scope**     | On            | Whether to include a scope in the commit type, e.g. `fix(auth):`.                                                          |
-| **Include Body**      | On            | Whether to append a descriptive body paragraph to the message.                                                             |
-| **Include Footer**    | Off           | Whether to append a footer section (e.g. `BREAKING CHANGE:` notes).                                                        |
-| **Include Gitmoji**   | Off           | Whether to prefix the subject with a mapped Gitmoji, e.g. `✨ feat(ui): add toolbar`.                                      |
+| Option                      | Default       | Description                                                                                                                |
+| --------------------------- | ------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| **Generate Mode**           | Agentic       | `Agentic` runs a multi-step investigation loop; `Direct Diff` sends the full diff in one shot (always used for Ollama).    |
+| **Hybrid Generation**       | Off           | Uses the existing Source Control input text as reference draft content while ignoring instructions embedded in that draft. |
+| **Max Agent Steps**         | 0 (unlimited) | Maximum number of tool-call iterations the agent may take. Set to `0` to remove the cap.                                   |
+| **Include Scope**           | On            | Whether to include a scope in the commit type, e.g. `fix(auth):`.                                                          |
+| **Include Body**            | On            | Whether to append a descriptive body paragraph to the message.                                                             |
+| **Include Footer**          | Off           | Whether to append a footer section (e.g. `BREAKING CHANGE:` notes).                                                        |
+| **Include Gitmoji**         | Off           | Whether to prefix the subject with a mapped Gitmoji, e.g. `✨ feat(ui): add toolbar`.                                      |
+| **Extension Language**      | Auto          | Language used by the Commit-Copilot UI. Auto follows VS Code's display language.                                           |
+| **Commit Message Language** | English       | Language used for generated commit message subjects, bodies, and footers.                                                  |
 
 ### 3. Generate Commit Message
 

@@ -21,6 +21,8 @@ export type {
 
 export const DISPLAY_LANGUAGE_STATE_KEY = 'DISPLAY_LANGUAGE';
 export const DEFAULT_DISPLAY_LANGUAGE: DisplayLanguage = 'auto';
+export const COMMIT_MESSAGE_LANGUAGE_STATE_KEY = 'COMMIT_MESSAGE_LANGUAGE';
+export const DEFAULT_COMMIT_MESSAGE_LANGUAGE: EffectiveDisplayLanguage = 'en';
 
 export const DISPLAY_LANGUAGE_OPTIONS: LanguageOption[] = [
   {
@@ -69,6 +71,9 @@ export const DISPLAY_LANGUAGE_OPTIONS: LanguageOption[] = [
   { value: 'zh-CN', label: '简体中文' },
   { value: 'zh-TW', label: '繁體中文' },
 ];
+
+export const COMMIT_MESSAGE_LANGUAGE_OPTIONS: LanguageOption[] =
+  DISPLAY_LANGUAGE_OPTIONS.filter((option) => option.value !== 'auto');
 
 export const WEBVIEW_LANGUAGE_PACKS: Record<
   EffectiveDisplayLanguage,
@@ -123,6 +128,13 @@ export function normalizeDisplayLanguage(value: unknown): DisplayLanguage {
     return value;
   }
   return DEFAULT_DISPLAY_LANGUAGE;
+}
+
+export function normalizeCommitMessageLanguage(
+  value: unknown,
+): EffectiveDisplayLanguage {
+  const normalized = normalizeDisplayLanguage(value);
+  return normalized === 'auto' ? DEFAULT_COMMIT_MESSAGE_LANGUAGE : normalized;
 }
 
 export function resolveEffectiveDisplayLanguage(
