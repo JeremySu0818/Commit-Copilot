@@ -67,8 +67,14 @@ export function normalizeCommitOutputOptions(
     includeScope: boolean;
     includeBody: boolean;
     includeFooter: boolean;
+    includeGitmoji: boolean;
   },
-): { includeScope: boolean; includeBody: boolean; includeFooter: boolean } {
+): {
+  includeScope: boolean;
+  includeBody: boolean;
+  includeFooter: boolean;
+  includeGitmoji: boolean;
+} {
   const candidate =
     options && typeof options === 'object'
       ? (options as Record<string, unknown>)
@@ -86,6 +92,10 @@ export function normalizeCommitOutputOptions(
       typeof candidate.includeFooter === 'boolean'
         ? candidate.includeFooter
         : defaults.includeFooter,
+    includeGitmoji:
+      typeof candidate.includeGitmoji === 'boolean'
+        ? candidate.includeGitmoji
+        : defaults.includeGitmoji,
   };
 }
 

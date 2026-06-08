@@ -233,26 +233,30 @@ void test('Gemini direct diff ignores unrelated numeric substrings', async () =>
 
 void test('createLLMClient creates correct client instances for new built-in providers', () => {
   const cases = [
-    { provider: 'grok', url: 'https://api.x.ai/v1', model: DEFAULT_MODELS.grok },
+    {
+      provider: 'grok',
+      url: 'https://api.x.ai/v1',
+      model: DEFAULT_MODELS.grok,
+    },
     {
       provider: 'groq',
       url: 'https://api.groq.com/openai/v1',
-      model: 'llama-3.3-70b-versatile',
+      model: DEFAULT_MODELS.groq,
     },
     {
       provider: 'openrouter',
       url: 'https://openrouter.ai/api/v1',
-      model: 'google/gemini-2.5-flash',
+      model: DEFAULT_MODELS.openrouter,
     },
     {
       provider: 'deepseek',
       url: 'https://api.deepseek.com',
-      model: 'deepseek-chat',
+      model: DEFAULT_MODELS.deepseek,
     },
     {
       provider: 'qwen',
       url: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
-      model: 'qwen-plus',
+      model: DEFAULT_MODELS.qwen,
     },
   ] as const;
 

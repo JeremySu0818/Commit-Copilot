@@ -42,6 +42,7 @@ export interface CommitOutputOptions {
   includeScope: boolean;
   includeBody: boolean;
   includeFooter: boolean;
+  includeGitmoji: boolean;
 }
 export const GENERATE_MODE_DISPLAY_NAMES: Record<GenerateMode, string> = {
   agentic: 'Agentic Generate',
@@ -434,6 +435,7 @@ export const DEFAULT_COMMIT_OUTPUT_OPTIONS: CommitOutputOptions = {
   includeScope: true,
   includeBody: true,
   includeFooter: false,
+  includeGitmoji: false,
 };
 
 export function normalizeCommitOutputOptions(
@@ -457,6 +459,10 @@ export function normalizeCommitOutputOptions(
       typeof candidate.includeFooter === 'boolean'
         ? candidate.includeFooter
         : DEFAULT_COMMIT_OUTPUT_OPTIONS.includeFooter,
+    includeGitmoji:
+      typeof candidate.includeGitmoji === 'boolean'
+        ? candidate.includeGitmoji
+        : DEFAULT_COMMIT_OUTPUT_OPTIONS.includeGitmoji,
   };
 }
 

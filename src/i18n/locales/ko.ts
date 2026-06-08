@@ -233,6 +233,7 @@ export const koLocale: LocaleTextBundle = {
       includeScope: '스코프 포함',
       includeBody: '본문 포함',
       includeFooter: '푸터 포함',
+      includeGitmoji: 'Gitmoji 포함',
       language: '확장 언어',
       maxAgentSteps: '최대 에이전트 단계 수',
       providerName: '프로바이더 이름',

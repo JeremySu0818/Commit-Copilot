@@ -237,6 +237,7 @@ export const ruLocale: LocaleTextBundle = {
       includeScope: 'Включить область (Scope)',
       includeBody: 'Включить тело (Body)',
       includeFooter: 'Включить подвал (Footer)',
+      includeGitmoji: 'Включить Gitmoji',
       language: 'Язык расширения',
       maxAgentSteps: 'Макс. количество шагов агента',
       providerName: 'Имя провайдера',

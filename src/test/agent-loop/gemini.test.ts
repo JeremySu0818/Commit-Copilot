@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import test from 'node:test';
 
+import { DEFAULT_MODELS } from '../../models';
 import { clearRequireCache, withModuleMock } from '../helpers/module-mock';
 
 const MODULE_PATH = '../../agent-loop/gemini';
@@ -120,7 +121,7 @@ void test('runGeminiAgentLoop handles functionCall parts and sends functionRespo
       async ({ runGeminiAgentLoop }) =>
         runGeminiAgentLoop(
           'gemini-test-key',
-          'models/gemini-2.5-pro',
+          `models/${DEFAULT_MODELS.google}`,
           'diff --git a/a.ts b/a.ts\n+line',
           process.cwd(),
         ),
@@ -211,7 +212,7 @@ void test('runGeminiAgentLoop returns write_commit_message argument without func
       async ({ runGeminiAgentLoop }) =>
         runGeminiAgentLoop(
           'gemini-test-key',
-          'models/gemini-2.5-pro',
+          `models/${DEFAULT_MODELS.google}`,
           'diff --git a/a.ts b/a.ts\n+line',
           process.cwd(),
           (message) => {

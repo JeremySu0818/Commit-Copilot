@@ -237,6 +237,7 @@ export const csLocale: LocaleTextBundle = {
       includeScope: 'Zahrnout rozsah (scope)',
       includeBody: 'Zahrnout tělo (body)',
       includeFooter: 'Zahrnout patičku (footer)',
+      includeGitmoji: 'Zahrnout Gitmoji',
       language: 'Jazyk rozšíření',
       maxAgentSteps: 'Max. počet kroků agenta',
       providerName: 'Název poskytovatele',

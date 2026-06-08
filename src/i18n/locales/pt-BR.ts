@@ -243,6 +243,7 @@ export const ptBRLocale: LocaleTextBundle = {
       includeScope: 'Incluir Escopo',
       includeBody: 'Incluir Corpo',
       includeFooter: 'Incluir Rodapé',
+      includeGitmoji: 'Incluir Gitmoji',
       language: 'Idioma da Extensão',
       maxAgentSteps: 'Número Máximo de Passos do Agente',
       providerName: 'Nome do Provedor',

@@ -32,7 +32,7 @@ Commit-Copilot is an **agentic** VS Code extension that uses a multi-step AI age
 - **Cancellable Agent Loop**: Stop the agent at any point during its investigation loop directly from the UI. Perfect for when you change your mind or notice the agent is taking an unexpected path.
 - **Automatic Retries**: Automatically retries failed API requests due to temporary network issues or rate limits, making the generation process more resilient.
 - **Secure Key Storage**: API keys are stored securely using VS Code's Secret Storage.
-- **Flexible Commit Output Structure**: Individually toggle whether the generated message includes a **Scope**, a **Body**, and a **Footer**. All three are optional — defaults are scope on, body on, footer off.
+- **Flexible Commit Output Structure**: Individually toggle whether the generated message includes a **Scope**, a **Body**, a **Footer**, and a **Gitmoji** prefix. Defaults are scope on, body on, footer off, and Gitmoji off.
 - **Model Selection**: Customize which model you want to use for each provider. Custom providers and Ollama can fetch models from their respective endpoints, and you can manually add or remove custom model IDs when needed.
 - **Localization**: The UI follows VS Code's display language automatically, or you can manually pin it to any of 20 supported languages: العربية, Čeština, Deutsch, English, Español, Français, हिन्दी, Magyar, Bahasa Indonesia, Italiano, 日本語, 한국어, Nederlands, Polski, Português (Brasil), Русский, Türkçe, Tiếng Việt, 简体中文, 繁體中文.
 - **Preview & Edit**: Review the generated message in the Source Control input box before committing.
@@ -95,6 +95,7 @@ The custom provider will appear in the provider list alongside the built-in ones
 | **Include Scope**   | On            | Whether to include a scope in the commit type, e.g. `fix(auth):`.                                                       |
 | **Include Body**    | On            | Whether to append a descriptive body paragraph to the message.                                                          |
 | **Include Footer**  | Off           | Whether to append a footer section (e.g. `BREAKING CHANGE:` notes).                                                     |
+| **Include Gitmoji** | Off           | Whether to prefix the subject with a mapped Gitmoji, e.g. `✨ feat(ui): add toolbar`.                                   |
 
 ### 3. Generate Commit Message
 

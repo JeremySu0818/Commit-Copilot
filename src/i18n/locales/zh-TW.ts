@@ -214,6 +214,7 @@ export const zhTWLocale: LocaleTextBundle = {
       includeScope: '包含 Scope',
       includeBody: '包含 Body',
       includeFooter: '包含 Footer',
+      includeGitmoji: '包含 Gitmoji',
       language: 'Extension 語言',
       maxAgentSteps: '最大 Agent 步數',
       providerName: '供應商名稱',

@@ -239,6 +239,7 @@ export const huLocale: LocaleTextBundle = {
       includeScope: 'Hatáskör (Scope) belefoglalása',
       includeBody: 'Törzs (Body) belefoglalása',
       includeFooter: 'Lábjegyzet (Footer) belefoglalása',
+      includeGitmoji: 'Gitmoji belefoglalása',
       language: 'Kiterjesztés Nyelve',
       maxAgentSteps: 'Max ügynök lépés',
       providerName: 'Szolgáltató neve',

@@ -236,6 +236,7 @@ export const hiLocale: LocaleTextBundle = {
       includeScope: 'स्कोप शामिल करें',
       includeBody: 'बॉडी शामिल करें',
       includeFooter: 'फुटर शामिल करें',
+      includeGitmoji: 'Gitmoji शामिल करें',
       language: 'एक्सटेंशन भाषा',
       maxAgentSteps: 'अधिकतम एजेंट कदम',
       providerName: 'प्रदाता का नाम',

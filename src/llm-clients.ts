@@ -90,7 +90,7 @@ function isRecord(value: unknown): value is UnknownRecord {
 }
 
 function toErrorLike(error: unknown): ErrorLike {
-  return isRecord(error) ? (error as ErrorLike) : {};
+  return isRecord(error) ? error : {};
 }
 
 function pickNonEmpty(primary: string | undefined, fallback: string): string {

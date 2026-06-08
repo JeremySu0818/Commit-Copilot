@@ -65,9 +65,7 @@ const forbiddenStatus = 403;
 const tooManyRequestsStatus = 429;
 
 function toErrorLike(error: unknown): ErrorLike {
-  return typeof error === 'object' && error !== null
-    ? (error as ErrorLike)
-    : {};
+  return typeof error === 'object' && error !== null ? error : {};
 }
 
 function pickNonEmpty(primary: string | undefined, fallback: string): string {

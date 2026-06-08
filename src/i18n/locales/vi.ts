@@ -238,6 +238,7 @@ export const viLocale: LocaleTextBundle = {
       includeScope: 'Bao gồm Phạm vi (Scope)',
       includeBody: 'Bao gồm Nội dung (Body)',
       includeFooter: 'Bao gồm Chân trang (Footer)',
+      includeGitmoji: 'Bao gồm Gitmoji',
       language: 'Ngôn ngữ Tiện ích',
       maxAgentSteps: 'Số bước Agent tối đa',
       providerName: 'Tên Nhà cung cấp',

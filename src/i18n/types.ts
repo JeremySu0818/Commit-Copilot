@@ -151,6 +151,7 @@ export interface WebviewLanguagePack {
     includeScope: string;
     includeBody: string;
     includeFooter: string;
+    includeGitmoji: string;
     language: string;
     maxAgentSteps: string;
     providerName: string;

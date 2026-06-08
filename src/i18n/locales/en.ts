@@ -234,6 +234,7 @@ export const enLocale: LocaleTextBundle = {
       includeScope: 'Include Scope',
       includeBody: 'Include Body',
       includeFooter: 'Include Footer',
+      includeGitmoji: 'Include Gitmoji',
       language: 'Extension Language',
       maxAgentSteps: 'Max Agent Steps',
       providerName: 'Provider Name',

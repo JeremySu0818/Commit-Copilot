@@ -248,6 +248,7 @@ export const deLocale: LocaleTextBundle = {
       includeScope: 'Kontext (Scope) einschließen',
       includeBody: 'Nachrichtenkörper (Body) einschließen',
       includeFooter: 'Fußzeile (Footer) einschließen',
+      includeGitmoji: 'Gitmoji einschließen',
       language: 'Erweiterungssprache',
       maxAgentSteps: 'Max. Agentenschritte',
       providerName: 'Anbietername',

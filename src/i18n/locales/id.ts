@@ -238,6 +238,7 @@ export const idLocale: LocaleTextBundle = {
       includeScope: 'Sertakan Scope',
       includeBody: 'Sertakan Body',
       includeFooter: 'Sertakan Footer',
+      includeGitmoji: 'Sertakan Gitmoji',
       language: 'Bahasa Ekstensi',
       maxAgentSteps: 'Maks. Langkah Agen',
       providerName: 'Nama Penyedia',

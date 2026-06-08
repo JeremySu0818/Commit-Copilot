@@ -100,7 +100,7 @@ function pickNonEmpty(primary: string | undefined, fallback: string): string {
 }
 
 function toErrorLike(error: unknown): ErrorLike {
-  return isRecord(error) ? (error as ErrorLike) : {};
+  return isRecord(error) ? error : {};
 }
 
 function isAnthropicTextBlock(block: unknown): block is AnthropicTextBlock {

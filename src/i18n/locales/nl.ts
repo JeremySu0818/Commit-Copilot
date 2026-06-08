@@ -237,6 +237,7 @@ export const nlLocale: LocaleTextBundle = {
       includeScope: 'Inclusief Scope',
       includeBody: 'Inclusief Body',
       includeFooter: 'Inclusief Footer',
+      includeGitmoji: 'Gitmoji opnemen',
       language: 'Extensie Taal',
       maxAgentSteps: 'Max Agent Stappen',
       providerName: 'Naam van Provider',

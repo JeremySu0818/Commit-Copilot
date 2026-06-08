@@ -262,6 +262,17 @@ export function GenerateConfigurationSection({
             />
             <span>{pack.labels.includeFooter}</span>
           </label>
+          <label className="checkbox-item" htmlFor="includeGitmojiCheckbox">
+            <input
+              type="checkbox"
+              id="includeGitmojiCheckbox"
+              checked={commitOutputOptions.includeGitmoji}
+              onChange={() => {
+                onCheckboxChange('includeGitmoji');
+              }}
+            />
+            <span>{pack.labels.includeGitmoji}</span>
+          </label>
         </div>
       </div>
     </div>

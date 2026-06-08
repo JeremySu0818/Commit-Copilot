@@ -272,6 +272,7 @@ void test('generate forwards normalized generateMode to command payload', async 
         includeScope: false,
         includeBody: false,
         includeFooter: true,
+        includeGitmoji: true,
       },
     });
     await harness.sendMessage({ type: 'generate', generateMode: 'unknown' });
@@ -288,6 +289,7 @@ void test('generate forwards normalized generateMode to command payload', async 
           includeScope: false,
           includeBody: false,
           includeFooter: true,
+          includeGitmoji: true,
         },
       },
     ]);
@@ -364,12 +366,14 @@ void test('saveCommitOutputOptions persists normalized values', async () => {
         includeScope: false,
         includeBody: false,
         includeFooter: true,
+        includeGitmoji: true,
       },
     });
     assert.deepEqual(harness.state.get('COMMIT_OUTPUT_OPTIONS'), {
       includeScope: false,
       includeBody: false,
       includeFooter: true,
+      includeGitmoji: true,
     });
 
     await harness.sendMessage({
@@ -382,6 +386,7 @@ void test('saveCommitOutputOptions persists normalized values', async () => {
       includeScope: DEFAULT_COMMIT_OUTPUT_OPTIONS.includeScope,
       includeBody: DEFAULT_COMMIT_OUTPUT_OPTIONS.includeBody,
       includeFooter: DEFAULT_COMMIT_OUTPUT_OPTIONS.includeFooter,
+      includeGitmoji: DEFAULT_COMMIT_OUTPUT_OPTIONS.includeGitmoji,
     });
   } finally {
     harness.dispose();

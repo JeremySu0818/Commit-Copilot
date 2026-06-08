@@ -41,6 +41,7 @@ void test('inline script serialization escapes html terminators and unicode sepa
       includeScope: true,
       includeBody: false,
       includeFooter: false,
+      includeGitmoji: false,
     },
     DEFAULT_GENERATE_MODE: 'agentic',
     PROVIDER_DISPLAY_NAMES: {

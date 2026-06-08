@@ -239,6 +239,7 @@ export const frLocale: LocaleTextBundle = {
       includeScope: 'Inclure la portée (scope)',
       includeBody: 'Inclure le corps (body)',
       includeFooter: 'Inclure le pied de page (footer)',
+      includeGitmoji: 'Inclure Gitmoji',
       language: "Langue de l'extension",
       maxAgentSteps: "Nombre maximal d'étapes de l'agent",
       providerName: 'Nom du fournisseur',

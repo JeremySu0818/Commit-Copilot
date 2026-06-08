@@ -76,7 +76,8 @@ function toAgentInputSummary(value: unknown): AgentInputSummary | null {
   if (
     typeof commitOutputOptions.includeScope !== 'boolean' ||
     typeof commitOutputOptions.includeBody !== 'boolean' ||
-    typeof commitOutputOptions.includeFooter !== 'boolean'
+    typeof commitOutputOptions.includeFooter !== 'boolean' ||
+    typeof commitOutputOptions.includeGitmoji !== 'boolean'
   ) {
     return null;
   }
@@ -89,6 +90,7 @@ function toAgentInputSummary(value: unknown): AgentInputSummary | null {
       includeScope: commitOutputOptions.includeScope,
       includeBody: commitOutputOptions.includeBody,
       includeFooter: commitOutputOptions.includeFooter,
+      includeGitmoji: commitOutputOptions.includeGitmoji,
     },
   };
 }
@@ -112,7 +114,8 @@ function toClientOptionsSummary(value: unknown): ClientOptionsSummary | null {
   if (
     typeof commitOutputOptions.includeScope !== 'boolean' ||
     typeof commitOutputOptions.includeBody !== 'boolean' ||
-    typeof commitOutputOptions.includeFooter !== 'boolean'
+    typeof commitOutputOptions.includeFooter !== 'boolean' ||
+    typeof commitOutputOptions.includeGitmoji !== 'boolean'
   ) {
     return null;
   }
@@ -124,6 +127,7 @@ function toClientOptionsSummary(value: unknown): ClientOptionsSummary | null {
       includeScope: commitOutputOptions.includeScope,
       includeBody: commitOutputOptions.includeBody,
       includeFooter: commitOutputOptions.includeFooter,
+      includeGitmoji: commitOutputOptions.includeGitmoji,
     },
   };
 }
@@ -218,6 +222,7 @@ void test('generateCommitMessage uses agent loop in agentic mode', async () => {
       includeScope: false,
       includeBody: true,
       includeFooter: true,
+      includeGitmoji: true,
     },
     runAgentLoop: (input) => {
       capturedAgentInput = input;
@@ -251,6 +256,7 @@ void test('generateCommitMessage uses agent loop in agentic mode', async () => {
       includeScope: false,
       includeBody: true,
       includeFooter: true,
+      includeGitmoji: true,
     });
   } finally {
     cleanupTempDir(repoRoot);
@@ -269,6 +275,7 @@ void test('generateCommitMessage uses direct diff client in direct-diff mode', a
       includeScope: true,
       includeBody: false,
       includeFooter: false,
+      includeGitmoji: false,
     },
     runAgentLoop: () => {
       agentCallCount++;
@@ -304,6 +311,7 @@ void test('generateCommitMessage uses direct diff client in direct-diff mode', a
       includeScope: true,
       includeBody: false,
       includeFooter: false,
+      includeGitmoji: false,
     });
     assert.match(capturedDirectDiff, /diff --git a\/a\.ts b\/a\.ts/);
   } finally {

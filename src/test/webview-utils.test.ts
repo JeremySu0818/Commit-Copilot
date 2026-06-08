@@ -50,6 +50,7 @@ void test('normalizeCommitOutputOptions keeps booleans and falls back to default
     includeScope: true,
     includeBody: false,
     includeFooter: true,
+    includeGitmoji: false,
   };
 
   const normalized = normalizeCommitOutputOptions(
@@ -64,6 +65,7 @@ void test('normalizeCommitOutputOptions keeps booleans and falls back to default
     includeScope: false,
     includeBody: false,
     includeFooter: true,
+    includeGitmoji: false,
   });
 });
 

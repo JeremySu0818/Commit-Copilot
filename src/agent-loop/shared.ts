@@ -60,6 +60,27 @@ const CONVENTIONAL_COMMIT_TYPES = [
   'revert',
 ];
 
+const GITMOJI_GUIDE = `### Gitmoji Mapping
+When Gitmoji is enabled, choose exactly one Gitmoji from this table based on the selected Conventional Commit type and change intent:
+
+| Type | Gitmoji | Use |
+|------|---------|-----|
+| \`feat\` | ✨ | New feature |
+| \`fix\` | 🐛 | Bug fix |
+| \`fix\` | 🚑️ | Urgent hotfix |
+| \`fix\` | 🔒️ | Security fix |
+| \`docs\` | 📝 | Documentation |
+| \`style\` | 💄 | UI-only style change |
+| \`style\` | 🎨 | Formatting or code style change with no logic impact |
+| \`refactor\` | ♻️ | Refactor without adding a feature or fixing a bug |
+| \`perf\` | ⚡️ | Performance improvement |
+| \`test\` | ✅ | Tests |
+| \`build\` | 👷 | Build system change |
+| \`build\` | 📦️ | Packaging or dependency change |
+| \`ci\` | 💚 | CI |
+| \`chore\` | 🔧 | Miscellaneous maintenance or configuration |
+| \`revert\` | ⏪️ | Revert commit |`;
+
 const CLASSIFICATION_RULES = `## Classification Rules (STRICT)
 Apply these rules IN ORDER. The first matching rule wins:
 
@@ -70,6 +91,7 @@ Apply these rules IN ORDER. The first matching rule wins:
 | Only changes CI config (\`.github/workflows\`, \`.gitlab-ci.yml\`, Jenkinsfile) | \`ci\` |
 | Only changes build config (\`webpack\`, \`esbuild\`, \`tsconfig\`, \`Dockerfile\`, \`Makefile\`) | \`build\` |
 | Adds a new user-facing feature or capability | \`feat\` |
+| Fixes a security vulnerability | \`fix\` |
 | Fixes a bug (corrects incorrect behavior) | \`fix\` |
 | Improves performance without changing behavior | \`perf\` |
 | Changes ONLY whitespace, formatting, semicolons, trailing commas (no logic change) | \`style\` |
@@ -79,13 +101,21 @@ Apply these rules IN ORDER. The first matching rule wins:
 ### Critical Distinctions
 - **chore vs refactor**: If the ONLY change is removing comments, TODO notes, console.logs, unused imports, or deprecated dead code — this is \`chore\`, NOT \`refactor\`. \`refactor\` requires restructuring of actual program logic (e.g., extracting functions, reorganizing class hierarchy).
 - **chore vs style**: Removing comments is \`chore\`. Reformatting existing code (indentation, bracket style) is \`style\`.
-- **feat vs refactor**: If the change exposes new functionality to the user/API, it's \`feat\`. If it only reorganizes internals, it's \`refactor\`.`;
+- **feat vs refactor**: If the change exposes new functionality to the user/API, it's \`feat\`. If it only reorganizes internals, it's \`refactor\`.
+- **security fixes**: Use \`fix\` for security fixes so Conventional Commit tooling remains compatible.`;
+
+function buildSubjectFormat(options: CommitOutputOptions): string {
+  const base = options.includeScope
+    ? 'type(scope): description'
+    : 'type: description';
+  return options.includeGitmoji ? `gitmoji ${base}` : base;
+}
 
 function buildScopeRule(options: CommitOutputOptions): string {
   if (options.includeScope) {
-    return 'Scope is MANDATORY: first line MUST be `type(scope): description`. Never output `type: description` without scope.';
+    return `Scope is MANDATORY: first line MUST be \`${buildSubjectFormat(options)}\`. Never output \`${options.includeGitmoji ? 'gitmoji type: description' : 'type: description'}\` without scope.`;
   }
-  return 'Scope is FORBIDDEN: first line MUST be `type: description`. Do NOT include scope parentheses like `type(scope): ...`.';
+  return `Scope is FORBIDDEN: first line MUST be \`${buildSubjectFormat(options)}\`. Do NOT include scope parentheses like \`${options.includeGitmoji ? 'gitmoji type(scope): ...' : 'type(scope): ...'}\`.`;
 }
 
 function buildBodyAndFooterRule(options: CommitOutputOptions): string {
@@ -102,44 +132,52 @@ function buildBodyAndFooterRule(options: CommitOutputOptions): string {
 }
 
 function buildCommitLayout(options: CommitOutputOptions): string {
+  const subject = buildSubjectFormat(options);
   if (options.includeScope && options.includeBody && options.includeFooter) {
-    return `type(scope): description
+    return `${subject}
 
 Body explaining what changed and why.
 
 Refs: #123`;
   }
   if (options.includeScope && options.includeBody && !options.includeFooter) {
-    return `type(scope): description
+    return `${subject}
 
 Body explaining what changed and why.`;
   }
   if (options.includeScope && !options.includeBody && options.includeFooter) {
-    return `type(scope): description
+    return `${subject}
 
 Refs: #123`;
   }
   if (options.includeScope && !options.includeBody && !options.includeFooter) {
-    return 'type(scope): description';
+    return subject;
   }
   if (!options.includeScope && options.includeBody && options.includeFooter) {
-    return `type: description
+    return `${subject}
 
 Body explaining what changed and why.
 
 Refs: #123`;
   }
   if (!options.includeScope && options.includeBody && !options.includeFooter) {
-    return `type: description
+    return `${subject}
 
 Body explaining what changed and why.`;
   }
   if (!options.includeScope && !options.includeBody && options.includeFooter) {
-    return `type: description
+    return `${subject}
 
 Refs: #123`;
   }
-  return 'type: description';
+  return subject;
+}
+
+function buildGitmojiRule(options: CommitOutputOptions): string {
+  if (options.includeGitmoji) {
+    return 'Gitmoji is MANDATORY: the first line MUST begin with exactly one mapped Gitmoji, then one space, then the Conventional Commit type. Do not use emojis anywhere else.';
+  }
+  return 'English only, no emojis.';
 }
 
 function buildOutputFormatRules(options: CommitOutputOptions): string {
@@ -147,17 +185,19 @@ function buildOutputFormatRules(options: CommitOutputOptions): string {
     (type) => `\`${type}\``,
   ).join(', ');
   const strictRules = [
-    `First line MUST start with one of: ${commitTypes}.`,
+    options.includeGitmoji
+      ? `After the Gitmoji prefix, the Conventional Commit type MUST be one of: ${commitTypes}.`
+      : `First line MUST start with one of: ${commitTypes}.`,
     buildScopeRule(options),
     'First line max 72 characters, ideally under 50.',
     buildBodyAndFooterRule(options),
-    'English only, no emojis.',
+    buildGitmojiRule(options),
     'Do NOT wrap in markdown code blocks (no ```).',
   ];
 
   return `## Output Format (MANDATORY — ZERO TOLERANCE FOR VIOLATIONS)
 
-### Strict Rules
+${options.includeGitmoji ? `${GITMOJI_GUIDE}\n\n` : ''}### Strict Rules
 ${strictRules.map((rule, index) => `${String(index + 1)}. ${rule}`).join('\n')}
 
 ### Required Layout
@@ -169,7 +209,11 @@ ${buildCommitLayout(options)}
 - Do NOT include bullet points, numbered lists, or headers describing what you found.
 - Do NOT precede the commit message with phrases like "Based on...", "Here is...", "The commit message is...", or any introductory text.
 - Do NOT follow the commit message with any concluding remarks or justification.
-- The FIRST character of your output must be the start of the commit type (e.g., \`f\` in \`feat\`, \`c\` in \`chore\`).
+- ${
+    options.includeGitmoji
+      ? 'The FIRST character of your output must be the Gitmoji. The Conventional Commit type must immediately follow after one space.'
+      : 'The FIRST character of your output must be the start of the commit type (e.g., `f` in `feat`, `c` in `chore`).'
+  }
 - The output must be PARSEABLE as a commit message directly — no surrounding text whatsoever.
 
 VIOLATING THESE OUTPUT RULES IS A CRITICAL FAILURE.`;
@@ -179,9 +223,7 @@ function buildCommitOutputReminder(
   commitOutputOptions: CommitOutputOptions = DEFAULT_COMMIT_OUTPUT_OPTIONS,
 ): string {
   const options = normalizeCommitOutputOptions(commitOutputOptions);
-  const subjectFormat = options.includeScope
-    ? '`type(scope): description`'
-    : '`type: description`';
+  const subjectFormat = `\`${buildSubjectFormat(options)}\``;
   const scopeRule = options.includeScope
     ? 'Scope parentheses are MANDATORY.'
     : 'Scope parentheses are FORBIDDEN.';
@@ -191,8 +233,11 @@ function buildCommitOutputReminder(
   const footerRule = options.includeFooter
     ? 'At least one footer line is MANDATORY. If no valid Conventional Commit footer can be derived, write `Footer: none` honestly. Never fabricate.'
     : 'Footer lines are FORBIDDEN.';
+  const gitmojiRule = options.includeGitmoji
+    ? 'Gitmoji is MANDATORY: begin the first line with exactly one mapped Gitmoji followed by one space. Do not use emojis anywhere else.'
+    : 'Emojis are FORBIDDEN.';
 
-  return `When you are done, your ENTIRE text output must be ONLY the commit message. First-line format: ${subjectFormat}. ${scopeRule} ${bodyRule} ${footerRule} No analysis, no explanation, no commentary.`;
+  return `When you are done, your ENTIRE text output must be ONLY the commit message. First-line format: ${subjectFormat}. ${scopeRule} ${bodyRule} ${footerRule} ${gitmojiRule} No analysis, no explanation, no commentary.`;
 }
 
 function buildFinalOutputReminder(
@@ -209,11 +254,14 @@ function extractCommitMessage(raw: string): string {
     .replace(/^```[^\n]*\n?/, '')
     .replace(/\n?```\s*$/, '')
     .trim();
-  const candidate = unfenced.length > 0 ? unfenced : trimmed;
+  const candidate = (unfenced.length > 0 ? unfenced : trimmed).replace(
+    /\\n/g,
+    '\n',
+  );
 
   const typesPattern = CONVENTIONAL_COMMIT_TYPES.join('|');
   const commitRegex = new RegExp(
-    `^(${typesPattern})(\\([^)]+\\))?(!)?:\\s*.+`,
+    `^(?:\\S+\\s+)?(${typesPattern})(\\([^)]+\\))?(!)?:\\s*.+`,
     'm',
   );
 

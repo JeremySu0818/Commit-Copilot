@@ -75,7 +75,7 @@ function asString(value: unknown): string | undefined {
 }
 
 function toErrorLike(error: unknown): ErrorLike {
-  return isRecord(error) ? (error as ErrorLike) : {};
+  return isRecord(error) ? error : {};
 }
 
 function pickNonEmpty(primary: string | undefined, fallback: string): string {

@@ -219,6 +219,7 @@ export const arLocale: LocaleTextBundle = {
       includeScope: 'تضمين النطاق',
       includeBody: 'تضمين النص',
       includeFooter: 'تضمين التذييل',
+      includeGitmoji: 'تضمين Gitmoji',
       language: 'لغة الإضافة',
       maxAgentSteps: 'أقصى خطوات للوكيل',
       providerName: 'اسم المزود',

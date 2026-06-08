@@ -156,6 +156,10 @@ function normalizeCommitOutputOptions(
       typeof options.includeFooter === 'boolean'
         ? options.includeFooter
         : defaults.includeFooter,
+    includeGitmoji:
+      typeof options.includeGitmoji === 'boolean'
+        ? options.includeGitmoji
+        : defaults.includeGitmoji,
   };
 }
 

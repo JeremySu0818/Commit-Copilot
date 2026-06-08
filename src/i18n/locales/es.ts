@@ -241,6 +241,7 @@ export const esLocale: LocaleTextBundle = {
       includeScope: 'Incluir Ámbito',
       includeBody: 'Incluir Cuerpo',
       includeFooter: 'Incluir Pie',
+      includeGitmoji: 'Incluir Gitmoji',
       language: 'Idioma de Extensión',
       maxAgentSteps: 'Pasos Máximos del Agente',
       providerName: 'Nombre del Proveedor',

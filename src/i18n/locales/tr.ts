@@ -243,6 +243,7 @@ export const trLocale: LocaleTextBundle = {
       includeScope: 'Kapsamı (Scope) Dahil Et',
       includeBody: 'Gövdeyi (Body) Dahil Et',
       includeFooter: 'Altbilgiyi (Footer) Dahil Et',
+      includeGitmoji: 'Gitmoji Dahil Et',
       language: 'Eklenti Dili',
       maxAgentSteps: 'Maksimum Ajan Adımı',
       providerName: 'Sağlayıcı Adı',

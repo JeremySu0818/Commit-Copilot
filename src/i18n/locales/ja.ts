@@ -239,6 +239,7 @@ export const jaLocale: LocaleTextBundle = {
       includeScope: 'スコープを含める',
       includeBody: '本文を含める',
       includeFooter: 'フッターを含める',
+      includeGitmoji: 'Gitmoji を含める',
       language: '拡張機能の言語',
       maxAgentSteps: '最大エージェントステップ数',
       providerName: 'プロバイダー名',

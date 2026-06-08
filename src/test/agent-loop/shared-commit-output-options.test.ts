@@ -28,6 +28,7 @@ void test('buildAgentSystemPrompt forbids scope when includeScope is false', () 
       includeScope: false,
       includeBody: true,
       includeFooter: false,
+      includeGitmoji: false,
     },
   });
 
@@ -46,12 +47,31 @@ void test('buildAgentSystemPrompt enforces footer-only layout when body is disab
       includeScope: true,
       includeBody: false,
       includeFooter: true,
+      includeGitmoji: false,
     },
   });
 
   assert.match(prompt, /Body is FORBIDDEN and footer is MANDATORY/);
   assert.match(prompt, /If no footer content can be validly derived/);
   assert.match(prompt, /type\(scope\): description\n\nRefs: #123/);
+});
+
+void test('buildAgentSystemPrompt requires mapped Gitmoji only when enabled', () => {
+  const prompt = buildAgentSystemPrompt({
+    includeFindReferences: false,
+    enableTools: false,
+    commitOutputOptions: {
+      includeScope: false,
+      includeBody: false,
+      includeFooter: false,
+      includeGitmoji: true,
+    },
+  });
+
+  assert.match(prompt, /Gitmoji Mapping/);
+  assert.match(prompt, /gitmoji type: description/);
+  assert.match(prompt, /Gitmoji is MANDATORY/);
+  assert.doesNotMatch(prompt, /English only, no emojis/);
 });
 
 void test('tool-enabled agent prompt requires untrusted data handling and final message tool', () => {
@@ -80,6 +100,7 @@ void test('reminder builders reflect selected commit output options', () => {
     includeScope: false,
     includeBody: false,
     includeFooter: false,
+    includeGitmoji: false,
   };
   const reminder = buildCommitOutputReminder(options);
   const finalReminder = buildFinalOutputReminder(options);
@@ -90,4 +111,13 @@ void test('reminder builders reflect selected commit output options', () => {
   assert.match(reminder, /Footer lines are FORBIDDEN/);
   assert.match(finalReminder, /write_commit_message/);
   assert.match(finalReminder, /structured `message` argument/);
+});
+
+void test('extractFinalCommitMessageFromArgs allows Gitmoji prefixes', () => {
+  assert.equal(
+    extractFinalCommitMessageFromArgs({
+      message: 'Generated message:\\n✨ feat(ui): add gitmoji option',
+    }),
+    '✨ feat(ui): add gitmoji option',
+  );
 });

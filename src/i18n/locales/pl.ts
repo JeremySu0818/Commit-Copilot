@@ -244,6 +244,7 @@ export const plLocale: LocaleTextBundle = {
       includeScope: 'Uwzględnij zakres (scope)',
       includeBody: 'Uwzględnij treść (body)',
       includeFooter: 'Uwzględnij stopkę (footer)',
+      includeGitmoji: 'Uwzględnij Gitmoji',
       language: 'Język rozszerzenia',
       maxAgentSteps: 'Maks. kroków agenta',
       providerName: 'Nazwa dostawcy',
