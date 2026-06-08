@@ -231,6 +231,8 @@ export const trLocale: LocaleTextBundle = {
       addProvider: 'Özel Sağlayıcı Ekle',
       editProvider: 'Özel Sağlayıcıyı Düzenle',
       addModel: 'Özel Model Ekle',
+      about: 'Hakkında',
+      updateInfo: 'Güncelleme Bilgisi',
     },
     labels: {
       provider: 'Sağlayıcı',
@@ -252,6 +254,8 @@ export const trLocale: LocaleTextBundle = {
       apiBaseUrl: 'API Temel URL',
       commitMessage: 'Commit Mesajı',
       modelName: 'Model Adı',
+      version: 'Sürüm',
+      author: 'Yazar',
     },
     placeholders: {
       selectProvider: 'Bir sağlayıcı seçin...',
@@ -276,6 +280,7 @@ export const trLocale: LocaleTextBundle = {
       addModel: '+ Model Ekle...',
       deleteModel: 'Modeli Sil',
       cancel: 'İptal',
+      showUpdateNotes: 'Güncelleme Notlarını Göster',
     },
     statuses: {
       checkingStatus: 'Durum kontrol ediliyor...',

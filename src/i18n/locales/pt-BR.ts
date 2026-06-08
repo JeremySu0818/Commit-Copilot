@@ -231,6 +231,8 @@ export const ptBRLocale: LocaleTextBundle = {
       addProvider: 'Adicionar Provedor Personalizado',
       editProvider: 'Editar Provedor Personalizado',
       addModel: 'Adicionar modelo personalizado',
+      about: 'Sobre',
+      updateInfo: 'Informações de atualização',
     },
     labels: {
       provider: 'Provedor',
@@ -252,6 +254,8 @@ export const ptBRLocale: LocaleTextBundle = {
       apiBaseUrl: 'URL Base da API',
       commitMessage: 'Mensagem de commit',
       modelName: 'Nome do modelo',
+      version: 'Versão',
+      author: 'Autor',
     },
     placeholders: {
       selectProvider: 'Selecione um provedor...',
@@ -276,6 +280,7 @@ export const ptBRLocale: LocaleTextBundle = {
       addModel: '+ Adicionar modelo...',
       deleteModel: 'Excluir modelo',
       cancel: 'Cancelar',
+      showUpdateNotes: 'Mostrar notas de atualização',
     },
     statuses: {
       checkingStatus: 'Verificando o status...',

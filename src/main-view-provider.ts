@@ -1,5 +1,6 @@
 import { randomBytes } from 'crypto';
 
+import { marked } from 'marked';
 import * as vscode from 'vscode';
 
 import {
@@ -186,7 +187,7 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
 
   private updateCurrentScreen(screen: unknown): void {
     const normalizedScreen: MainViewScreen =
-      screen === 'settings' || screen === 'addProvider' || screen === 'addModel'
+      screen === 'settings' || screen === 'addProvider' || screen === 'addModel' || screen === 'about'
         ? screen
         : 'main';
     this._currentScreen = normalizedScreen;
@@ -203,6 +204,52 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
       this._view.show(true);
       this._view.webview.postMessage({ type: 'openSettingsView' });
     }
+  }
+
+  public openAboutView() {
+    this.updateCurrentScreen('about');
+    if (this._view) {
+      this._view.show(true);
+      this._view.webview.postMessage({ type: 'openAboutView' });
+    }
+  }
+
+  public async showUpdateInfo() {
+    const lang = this.getEffectiveDisplayLanguage();
+    const docsUri = vscode.Uri.joinPath(this._extensionUri, 'docs');
+    let langMdUri = vscode.Uri.joinPath(docsUri, `${lang}.md`);
+    try {
+      await vscode.workspace.fs.stat(langMdUri);
+    } catch {
+      langMdUri = vscode.Uri.joinPath(docsUri, 'en.md');
+    }
+
+    let mdContent = '';
+    try {
+      const fileBytes = await vscode.workspace.fs.readFile(langMdUri);
+      mdContent = Buffer.from(fileBytes).toString('utf-8');
+    } catch {
+      mdContent = `# Update\n\nNo update info available for language "${lang}".`;
+    }
+
+    const extension = this._context.extension as vscode.Extension<unknown> | undefined;
+    const packageJson = (extension ? extension.packageJSON : undefined) as Record<string, unknown> | undefined;
+    const extName = typeof packageJson?.name === 'string' ? packageJson.name : 'commit-copilot';
+    const extensionName = extName.split('-').map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+    const updateInfoText = WEBVIEW_LANGUAGE_PACKS[lang].sections.updateInfo;
+    const title = `${extensionName} ${updateInfoText}`;
+
+    const panel = vscode.window.createWebviewPanel(
+      'commitCopilotUpdateInfo',
+      title,
+      vscode.ViewColumn.One,
+      {
+        enableScripts: true,
+        retainContextWhenHidden: true,
+      }
+    );
+
+    panel.webview.html = getUpdateInfoHtml(title, parseMarkdownToHtml(mdContent));
   }
 
   private getCustomProviders(): CustomProviderConfig[] {
@@ -1251,6 +1298,9 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
       checkGit: () => {
         checkGitStatus();
       },
+      showUpdateNotes: async () => {
+        await this.showUpdateInfo();
+      },
       getModels: async (message) => {
         const provider = toProvider(message.provider);
         if (isCustomProvider(provider)) {
@@ -1629,6 +1679,25 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
 
   private getWebviewBootstrapData(): WebviewBootstrapData {
     const languagePayload = this.getWebviewLanguagePayload();
+    const extension = this._context.extension as vscode.Extension<unknown> | undefined;
+    const packageJson = (extension ? extension.packageJSON : undefined) as Record<string, unknown> | undefined;
+    const extensionVersion = typeof packageJson?.version === 'string' ? packageJson.version : '';
+
+    let extensionAuthor = '';
+    if (packageJson) {
+      const authorVal = packageJson.author;
+      if (typeof authorVal === 'object' && authorVal !== null) {
+        const authorObj = authorVal as Record<string, unknown>;
+        if (typeof authorObj.name === 'string') {
+          extensionAuthor = authorObj.name;
+        }
+      } else if (typeof authorVal === 'string') {
+        extensionAuthor = authorVal;
+      } else if (typeof packageJson.publisher === 'string') {
+        extensionAuthor = packageJson.publisher;
+      }
+    }
+
     return {
       providers: PROVIDER_DISPLAY_NAMES,
       generateModes: GENERATE_MODE_DISPLAY_NAMES,
@@ -1649,6 +1718,8 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
       initialScreen: this._currentScreen,
       customProviderPrefix: CUSTOM_PROVIDER_PREFIX,
       customProviders: this.getCustomProviders(),
+      extensionVersion,
+      extensionAuthor,
     };
   }
 
@@ -1800,4 +1871,96 @@ function escapeHtmlAttribute(value: string): string {
 
 function getNonce() {
   return randomBytes(nonceByteLength).toString('hex');
+}
+
+function parseMarkdownToHtml(markdown: string): string {
+  const parsed = marked.parse(markdown);
+  return typeof parsed === 'string' ? parsed : '';
+}
+
+function getUpdateInfoHtml(title: string, contentHtml: string): string {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${title}</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      padding: 30px;
+      line-height: 1.6;
+      color: var(--vscode-editor-foreground, #cccccc);
+      background-color: var(--vscode-editor-background, #1e1e1e);
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    h1 {
+      border-bottom: 1px solid var(--vscode-divider, #444444);
+      padding-bottom: 10px;
+      color: var(--vscode-editor-foreground, #ffffff);
+      font-size: 2.2em;
+    }
+    h2 {
+      margin-top: 30px;
+      color: var(--vscode-symbolIcon-keywordForeground, #007acc);
+      font-size: 1.5em;
+    }
+    h3 {
+      margin-top: 20px;
+      color: var(--vscode-editor-foreground, #ffffff);
+      font-size: 1.2em;
+    }
+    p {
+      margin: 1em 0;
+    }
+    ul {
+      padding-left: 20px;
+    }
+    li {
+      margin: 5px 0;
+    }
+    code {
+      font-family: Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace;
+      background-color: var(--vscode-textCodeBlock-background, rgba(220, 220, 220, 0.1));
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 0.9em;
+    }
+    pre {
+      background-color: var(--vscode-textCodeBlock-background, rgba(0, 0, 0, 0.2));
+      padding: 15px;
+      border-radius: 5px;
+      overflow-x: auto;
+      border: 1px solid var(--vscode-divider, #444444);
+    }
+    pre code {
+      background-color: transparent;
+      padding: 0;
+      border-radius: 0;
+    }
+    a {
+      color: var(--vscode-textLink-foreground, #3794ff);
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    .footer {
+      margin-top: 50px;
+      border-top: 1px solid var(--vscode-divider, #444444);
+      padding-top: 20px;
+      font-size: 0.9em;
+      color: var(--vscode-descriptionForeground, #858585);
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  ${contentHtml}
+  <div class="footer">
+    Commit Copilot &copy; ${String(new Date().getFullYear())}
+  </div>
+</body>
+</html>`;
 }

@@ -225,6 +225,8 @@ export const hiLocale: LocaleTextBundle = {
       addProvider: 'कस्टम प्रदाता जोड़ें',
       editProvider: 'कस्टम प्रदाता संपादित करें',
       addModel: 'कस्टम मॉडल जोड़ें',
+      about: 'के बारे में',
+      updateInfo: 'अद्यतन जानकारी',
     },
     labels: {
       provider: 'प्रदाता',
@@ -246,6 +248,8 @@ export const hiLocale: LocaleTextBundle = {
       apiBaseUrl: 'एपीआई बेस URL',
       commitMessage: 'Commit Message',
       modelName: 'मॉडल का नाम',
+      version: 'संस्करण',
+      author: 'लेखक',
     },
     placeholders: {
       selectProvider: 'प्रदाता का चयन करें...',
@@ -270,6 +274,7 @@ export const hiLocale: LocaleTextBundle = {
       addModel: '+ मॉडल जोड़ें...',
       deleteModel: 'मॉडल हटाएं',
       cancel: 'रद्द करें',
+      showUpdateNotes: 'अद्यतन नोट दिखाएं',
     },
     statuses: {
       checkingStatus: 'स्थिति की जांच कर रहा है...',

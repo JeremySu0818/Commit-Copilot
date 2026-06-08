@@ -222,6 +222,8 @@ export const koLocale: LocaleTextBundle = {
       addProvider: '사용자 지정 프로바이더 추가',
       editProvider: '사용자 지정 프로바이더 편집',
       addModel: '사용자 지정 모델 추가',
+      about: '정보',
+      updateInfo: '업데이트 정보',
     },
     labels: {
       provider: '프로바이더',
@@ -243,6 +245,8 @@ export const koLocale: LocaleTextBundle = {
       apiBaseUrl: 'API 베이스 URL',
       commitMessage: '커밋 메시지',
       modelName: '모델 이름',
+      version: '버전',
+      author: '작성자',
     },
     placeholders: {
       selectProvider: '프로바이더 선택...',
@@ -267,6 +271,7 @@ export const koLocale: LocaleTextBundle = {
       addModel: '+ 모델 추가...',
       deleteModel: '모델 삭제',
       cancel: '취소',
+      showUpdateNotes: '업데이트 노트 다시 보기',
     },
     statuses: {
       checkingStatus: '상태 확인 중...',

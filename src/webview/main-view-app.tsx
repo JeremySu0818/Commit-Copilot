@@ -8,6 +8,7 @@ import {
   mainViewStateReducer,
 } from './main-view-context';
 import { useMainViewMessageHandler } from './main-view-message-handler';
+import { AboutView } from './views/AboutView';
 import { AddModelView } from './views/AddModelView';
 import { AddProviderView } from './views/AddProviderView';
 import { MainView } from './views/MainView';
@@ -46,6 +47,9 @@ export function MainViewApp({ bootstrap, vscode }: MainViewAppProps) {
     }
     if (state.screen === 'addModel') {
       return <AddModelView />;
+    }
+    if (state.screen === 'about') {
+      return <AboutView />;
     }
     return <MainView />;
   })();

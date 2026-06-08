@@ -226,6 +226,8 @@ export const itLocale: LocaleTextBundle = {
       addProvider: 'Aggiungi Provider Personalizzato',
       editProvider: 'Modifica Provider Personalizzato',
       addModel: 'Aggiungi modello personalizzato',
+      about: 'Informazioni',
+      updateInfo: 'Informazioni sull\'aggiornamento',
     },
     labels: {
       provider: 'Provider',
@@ -247,6 +249,8 @@ export const itLocale: LocaleTextBundle = {
       apiBaseUrl: 'URL Base API',
       commitMessage: 'Messaggio di commit',
       modelName: 'Nome modello',
+      version: 'Versione',
+      author: 'Autore',
     },
     placeholders: {
       selectProvider: 'Seleziona un provider...',
@@ -271,6 +275,7 @@ export const itLocale: LocaleTextBundle = {
       addModel: '+ Aggiungi modello...',
       deleteModel: 'Elimina modello',
       cancel: 'Annulla',
+      showUpdateNotes: 'Mostra note di aggiornamento',
     },
     statuses: {
       checkingStatus: 'Controllo dello stato...',

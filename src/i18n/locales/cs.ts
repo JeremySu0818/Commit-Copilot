@@ -225,6 +225,8 @@ export const csLocale: LocaleTextBundle = {
       addProvider: 'Přidat vlastního poskytovatele',
       editProvider: 'Upravit vlastního poskytovatele',
       addModel: 'Přidat vlastní model',
+      about: 'O aplikaci',
+      updateInfo: 'Informace o aktualizaci',
     },
     labels: {
       provider: 'Poskytovatel',
@@ -246,6 +248,8 @@ export const csLocale: LocaleTextBundle = {
       apiBaseUrl: 'Základní URL API',
       commitMessage: 'Zpráva commitu',
       modelName: 'Název modelu',
+      version: 'Verze',
+      author: 'Autor',
     },
     placeholders: {
       selectProvider: 'Vyberte poskytovatele...',
@@ -270,6 +274,7 @@ export const csLocale: LocaleTextBundle = {
       addModel: '+ Přidat model...',
       deleteModel: 'Smazat model',
       cancel: 'Zrušit',
+      showUpdateNotes: 'Zobrazit poznámky k aktualizaci',
     },
     statuses: {
       checkingStatus: 'Kontrola stavu...',

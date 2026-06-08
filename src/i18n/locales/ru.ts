@@ -225,6 +225,8 @@ export const ruLocale: LocaleTextBundle = {
       addProvider: 'Добавить кастомного провайдера',
       editProvider: 'Редактировать кастомного провайдера',
       addModel: 'Добавить пользовательскую модель',
+      about: 'О программе',
+      updateInfo: 'Информация об обновлении',
     },
     labels: {
       provider: 'Провайдер',
@@ -246,6 +248,8 @@ export const ruLocale: LocaleTextBundle = {
       apiBaseUrl: 'Базовый URL-адрес API',
       commitMessage: 'Сообщение коммита',
       modelName: 'Имя модели',
+      version: 'Версия',
+      author: 'Автор',
     },
     placeholders: {
       selectProvider: 'Выберите провайдера...',
@@ -270,6 +274,7 @@ export const ruLocale: LocaleTextBundle = {
       addModel: '+ Добавить модель...',
       deleteModel: 'Удалить модель',
       cancel: 'Отмена',
+      showUpdateNotes: 'Показать примечания к обновлению',
     },
     statuses: {
       checkingStatus: 'Проверка статуса...',

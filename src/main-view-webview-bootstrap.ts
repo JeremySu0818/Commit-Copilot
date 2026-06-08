@@ -13,7 +13,7 @@ import type {
   ModelConfig,
 } from './models';
 
-export type MainViewScreen = 'main' | 'settings' | 'addProvider' | 'addModel';
+export type MainViewScreen = 'main' | 'settings' | 'addProvider' | 'addModel' | 'about';
 
 export interface WebviewBootstrapData {
   providers: Record<APIProvider, string>;
@@ -35,4 +35,6 @@ export interface WebviewBootstrapData {
   initialScreen: MainViewScreen;
   customProviderPrefix: string;
   customProviders: CustomProviderConfig[];
+  extensionVersion: string;
+  extensionAuthor: string;
 }

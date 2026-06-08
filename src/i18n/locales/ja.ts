@@ -227,6 +227,8 @@ export const jaLocale: LocaleTextBundle = {
       addProvider: 'カスタムプロバイダーを追加',
       editProvider: 'カスタムプロバイダーを編集',
       addModel: 'カスタムモデルの追加',
+      about: 'バージョン情報',
+      updateInfo: '更新情報',
     },
     labels: {
       provider: 'プロバイダー',
@@ -248,6 +250,8 @@ export const jaLocale: LocaleTextBundle = {
       apiBaseUrl: 'API ベース URL',
       commitMessage: 'コミットメッセージ',
       modelName: 'モデル名',
+      version: 'バージョン',
+      author: '作成者',
     },
     placeholders: {
       selectProvider: 'プロバイダーを選択...',
@@ -272,6 +276,7 @@ export const jaLocale: LocaleTextBundle = {
       addModel: '+ モデルを追加...',
       deleteModel: 'モデルを削除',
       cancel: 'キャンセル',
+      showUpdateNotes: '更新履歴を再表示',
     },
     statuses: {
       checkingStatus: '状態を確認中...',

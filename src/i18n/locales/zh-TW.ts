@@ -203,6 +203,8 @@ export const zhTWLocale: LocaleTextBundle = {
       addProvider: '新增自訂供應商',
       editProvider: '編輯自訂供應商',
       addModel: '新增自訂模型',
+      about: '關於',
+      updateInfo: '更新資訊',
     },
     labels: {
       provider: '供應商',
@@ -224,6 +226,8 @@ export const zhTWLocale: LocaleTextBundle = {
       apiBaseUrl: 'API Base URL',
       commitMessage: 'Commit 訊息',
       modelName: '模型名稱',
+      version: '當前版本',
+      author: '作者',
     },
     placeholders: {
       selectProvider: '請選擇供應商...',
@@ -248,6 +252,7 @@ export const zhTWLocale: LocaleTextBundle = {
       addModel: '+ 新增模型...',
       deleteModel: '刪除模型',
       cancel: '取消',
+      showUpdateNotes: '再次顯示更新紀錄',
     },
     statuses: {
       checkingStatus: '檢查狀態中...',

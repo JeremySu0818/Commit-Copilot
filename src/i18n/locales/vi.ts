@@ -226,6 +226,8 @@ export const viLocale: LocaleTextBundle = {
       addProvider: 'Thêm nhà cung cấp tùy chỉnh',
       editProvider: 'Chỉnh sửa nhà cung cấp tùy chỉnh',
       addModel: 'Thêm mô hình tùy chỉnh',
+      about: 'Giới thiệu',
+      updateInfo: 'Thông tin cập nhật',
     },
     labels: {
       provider: 'Nhà cung cấp',
@@ -247,6 +249,8 @@ export const viLocale: LocaleTextBundle = {
       apiBaseUrl: 'API Base URL',
       commitMessage: 'Thông báo commit',
       modelName: 'Tên mô hình',
+      version: 'Phiên bản',
+      author: 'Tác giả',
     },
     placeholders: {
       selectProvider: 'Chọn một nhà cung cấp...',
@@ -271,6 +275,7 @@ export const viLocale: LocaleTextBundle = {
       addModel: '+ Thêm mô hình...',
       deleteModel: 'Xóa mô hình',
       cancel: 'Hủy',
+      showUpdateNotes: 'Hiển thị nhật ký cập nhật',
     },
     statuses: {
       checkingStatus: 'Đang kiểm tra trạng thái...',

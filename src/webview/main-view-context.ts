@@ -120,7 +120,8 @@ export function createInitialState(
   const initialScreen: MainViewScreen =
     bootstrap.initialScreen === 'settings' ||
     bootstrap.initialScreen === 'addProvider' ||
-    bootstrap.initialScreen === 'addModel'
+    bootstrap.initialScreen === 'addModel' ||
+    bootstrap.initialScreen === 'about'
       ? bootstrap.initialScreen
       : 'main';
   return {

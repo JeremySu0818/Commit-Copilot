@@ -225,6 +225,8 @@ export const nlLocale: LocaleTextBundle = {
       addProvider: 'Aangepaste Provider Toevoegen',
       editProvider: 'Aangepaste Provider Bewerken',
       addModel: 'Aangepast model toevoegen',
+      about: 'Over',
+      updateInfo: 'Update-informatie',
     },
     labels: {
       provider: 'Provider',
@@ -246,6 +248,8 @@ export const nlLocale: LocaleTextBundle = {
       apiBaseUrl: 'API Basis URL',
       commitMessage: 'Commitbericht',
       modelName: 'Modelnaam',
+      version: 'Versie',
+      author: 'Auteur',
     },
     placeholders: {
       selectProvider: 'Selecteer een provider...',
@@ -270,6 +274,7 @@ export const nlLocale: LocaleTextBundle = {
       addModel: '+ Model toevoegen...',
       deleteModel: 'Model verwijderen',
       cancel: 'Annuleren',
+      showUpdateNotes: 'Update-opmerkingen weergeven',
     },
     statuses: {
       checkingStatus: 'Status controleren...',

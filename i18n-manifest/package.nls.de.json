@@ -6,5 +6,6 @@
   "command.openSettings.title": "Einstellungen öffnen",
   "viewsContainer.title": "Commit Copilot",
   "view.name": "Commit Copilot",
-  "command.openGitHub.title": "GitHub"
+  "command.openGitHub.title": "GitHub",
+  "command.openAbout.title": "Über"
 }

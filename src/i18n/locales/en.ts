@@ -223,6 +223,8 @@ export const enLocale: LocaleTextBundle = {
       addProvider: 'Add Custom Provider',
       editProvider: 'Edit Custom Provider',
       addModel: 'Add Custom Model',
+      about: 'About',
+      updateInfo: 'Update Info',
     },
     labels: {
       provider: 'Provider',
@@ -244,6 +246,8 @@ export const enLocale: LocaleTextBundle = {
       apiBaseUrl: 'API Base URL',
       commitMessage: 'Commit Message',
       modelName: 'Model Name',
+      version: 'Version',
+      author: 'Author',
     },
     placeholders: {
       selectProvider: 'Select a provider...',
@@ -268,6 +272,7 @@ export const enLocale: LocaleTextBundle = {
       addModel: '+ Add Model...',
       deleteModel: 'Delete Model',
       cancel: 'Cancel',
+      showUpdateNotes: 'Show Update Notes',
     },
     statuses: {
       checkingStatus: 'Checking status...',

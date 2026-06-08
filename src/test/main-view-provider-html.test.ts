@@ -28,6 +28,8 @@ interface BootstrapPayload extends Record<string, unknown> {
   displayLanguageOptions: unknown[];
   initialCommitMessageLanguage: string;
   commitMessageLanguageOptions: unknown[];
+  extensionVersion: string;
+  extensionAuthor: string;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -49,7 +51,9 @@ function toBootstrapPayload(value: unknown): BootstrapPayload | null {
     !isRecord(value.modelsByProvider) ||
     !Array.isArray(value.displayLanguageOptions) ||
     typeof value.initialCommitMessageLanguage !== 'string' ||
-    !Array.isArray(value.commitMessageLanguageOptions)
+    !Array.isArray(value.commitMessageLanguageOptions) ||
+    typeof value.extensionVersion !== 'string' ||
+    typeof value.extensionAuthor !== 'string'
   ) {
     return null;
   }
@@ -126,6 +130,13 @@ void test('webview html shell includes nonce/csp/assets and bootstrap payload', 
       get: () => Promise.resolve(undefined),
       store: () => Promise.resolve(),
       delete: () => Promise.resolve(),
+    },
+    extension: {
+      packageJSON: {
+        version: '1.2.3',
+        publisher: 'TestPublisher',
+        author: { name: 'TestAuthor' },
+      },
     },
   } as unknown as vscode.ExtensionContext;
 
@@ -207,4 +218,6 @@ void test('webview html shell includes nonce/csp/assets and bootstrap payload', 
   assert.ok(bootstrap.generateModes.agentic);
   assert.ok(Array.isArray(bootstrap.modelsByProvider.google));
   assert.ok(Array.isArray(bootstrap.displayLanguageOptions));
+  assert.equal(bootstrap.extensionVersion, '1.2.3');
+  assert.equal(bootstrap.extensionAuthor, 'TestAuthor');
 });

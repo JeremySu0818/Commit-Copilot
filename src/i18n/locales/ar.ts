@@ -208,6 +208,8 @@ export const arLocale: LocaleTextBundle = {
       addProvider: 'إضافة مزود مخصص',
       editProvider: 'تعديل مزود مخصص',
       addModel: 'إضافة نموذج مخصص',
+      about: 'حول',
+      updateInfo: 'معلومات التحديث',
     },
     labels: {
       provider: 'المزود',
@@ -229,6 +231,8 @@ export const arLocale: LocaleTextBundle = {
       apiBaseUrl: 'الرابط الأساسي لـ API',
       commitMessage: 'رسالة Commit',
       modelName: 'اسم النموذج',
+      version: 'الإصدار',
+      author: 'المؤلف',
     },
     placeholders: {
       selectProvider: 'حدد مزوداً...',
@@ -253,6 +257,7 @@ export const arLocale: LocaleTextBundle = {
       addModel: '+ إضافة نموذج...',
       deleteModel: 'حذف النموذج',
       cancel: 'إلغاء',
+      showUpdateNotes: 'عرض ملاحظات التحديث',
     },
     statuses: {
       checkingStatus: 'جاري التحقق من الحالة...',

@@ -1035,10 +1035,51 @@ export function activate(context: vscode.ExtensionContext) {
     },
   );
 
+  const openAboutDisposable = vscode.commands.registerCommand(
+    'commit-copilot.openAbout',
+    async () => {
+      await vscode.commands.executeCommand('commit-copilot.view.focus');
+      provider.openAboutView();
+    },
+  );
+
   context.subscriptions.push(openSettingsDisposable);
   context.subscriptions.push(openGitHubDisposable);
+  context.subscriptions.push(openAboutDisposable);
   context.subscriptions.push(generateDisposable);
   context.subscriptions.push(cancelDisposable);
+
+  // Version check & Update notes flow
+  const lastVersionKey = 'LAST_VERSION';
+  const updateInfoShownKey = 'UPDATE_INFO_SHOWN';
+
+  const packageJson = context.extension.packageJSON as Record<string, unknown>;
+  const currentVersion = typeof packageJson.version === 'string' ? packageJson.version : '';
+  const lastVersion = context.globalState.get<string>(lastVersionKey);
+
+  const semverGt = (v1: string, v2: string): boolean => {
+    const parts1 = v1.split('.').map(Number);
+    const parts2 = v2.split('.').map(Number);
+    for (let i = 0; i < Math.max(parts1.length, parts2.length); i++) {
+      const p1 = parts1[i] || 0;
+      const p2 = parts2[i] || 0;
+      if (p1 > p2) return true;
+      if (p1 < p2) return false;
+    }
+    return false;
+  };
+
+  if (!lastVersion || semverGt(currentVersion, lastVersion)) {
+    void context.globalState.update(lastVersionKey, currentVersion);
+    void context.globalState.update(updateInfoShownKey, false);
+  }
+
+  const updateInfoShown = context.globalState.get<boolean>(updateInfoShownKey) ?? false;
+  if (!updateInfoShown) {
+    void provider.showUpdateInfo().then(() => {
+      void context.globalState.update(updateInfoShownKey, true);
+    });
+  }
 }
 
 let currentGenerationCancellationSource: vscode.CancellationTokenSource | null =

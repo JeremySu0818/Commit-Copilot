@@ -176,7 +176,12 @@ function normalizeHybridGenerationOptions(
 }
 
 function normalizeScreen(value: unknown): MainViewState['screen'] {
-  if (value === 'settings' || value === 'addProvider' || value === 'addModel') {
+  if (
+    value === 'settings' ||
+    value === 'addProvider' ||
+    value === 'addModel' ||
+    value === 'about'
+  ) {
     return value;
   }
   return 'main';
@@ -579,6 +584,10 @@ export function useMainViewMessageHandler(
         openSettingsView: () => {
           dispatch({ type: 'SET_SCREEN', screen: 'settings' });
           vscode.postMessage({ type: 'setCurrentScreen', value: 'settings' });
+        },
+        openAboutView: () => {
+          dispatch({ type: 'SET_SCREEN', screen: 'about' });
+          vscode.postMessage({ type: 'setCurrentScreen', value: 'about' });
         },
         customProviderSaved: (message) => {
           const customProviders = toCustomProviderArray(

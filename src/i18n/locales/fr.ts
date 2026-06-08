@@ -227,6 +227,8 @@ export const frLocale: LocaleTextBundle = {
       addProvider: 'Ajouter un fournisseur personnalisé',
       editProvider: 'Modifier un fournisseur personnalisé',
       addModel: 'Ajouter un modèle personnalisé',
+      about: 'À propos',
+      updateInfo: 'Informations de mise à jour',
     },
     labels: {
       provider: 'Fournisseur',
@@ -248,6 +250,8 @@ export const frLocale: LocaleTextBundle = {
       apiBaseUrl: "URL de base de l'API",
       commitMessage: 'Message de commit',
       modelName: 'Nom du modèle',
+      version: 'Version',
+      author: 'Auteur',
     },
     placeholders: {
       selectProvider: 'Sélectionnez un fournisseur...',
@@ -272,6 +276,7 @@ export const frLocale: LocaleTextBundle = {
       addModel: '+ Ajouter un modèle...',
       deleteModel: 'Supprimer le modèle',
       cancel: 'Annuler',
+      showUpdateNotes: 'Afficher les notes de mise à jour',
     },
     statuses: {
       checkingStatus: "Vérification de l'état...",

@@ -237,6 +237,8 @@ export const deLocale: LocaleTextBundle = {
       addProvider: 'Benutzerdefinierten Anbieter hinzufügen',
       editProvider: 'Benutzerdefinierten Anbieter bearbeiten',
       addModel: 'Benutzerdefiniertes Modell hinzufügen',
+      about: 'Über',
+      updateInfo: 'Update-Informationen',
     },
     labels: {
       provider: 'Anbieter',
@@ -258,6 +260,8 @@ export const deLocale: LocaleTextBundle = {
       apiBaseUrl: 'API Basis-URL',
       commitMessage: 'Commit-Nachricht',
       modelName: 'Modellname',
+      version: 'Version',
+      author: 'Autor',
     },
     placeholders: {
       selectProvider: 'Einen Anbieter auswählen...',
@@ -282,6 +286,7 @@ export const deLocale: LocaleTextBundle = {
       addModel: '+ Modell hinzufügen...',
       deleteModel: 'Modell löschen',
       cancel: 'Abbrechen',
+      showUpdateNotes: 'Update-Hinweise anzeigen',
     },
     statuses: {
       checkingStatus: 'Status wird überprüft...',

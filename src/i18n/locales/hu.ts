@@ -227,6 +227,8 @@ export const huLocale: LocaleTextBundle = {
       addProvider: 'Egyéni szolgáltató hozzáadása',
       editProvider: 'Egyéni szolgáltató szerkesztése',
       addModel: 'Egyedi modell hozzáadása',
+      about: 'Névjegy',
+      updateInfo: 'Frissítési információk',
     },
     labels: {
       provider: 'Szolgáltató',
@@ -248,6 +250,8 @@ export const huLocale: LocaleTextBundle = {
       apiBaseUrl: 'API Base URL',
       commitMessage: 'Commit üzenet',
       modelName: 'Modell neve',
+      version: 'Verzió',
+      author: 'Szerző',
     },
     placeholders: {
       selectProvider: 'Válasszon szolgáltatót...',
@@ -272,6 +276,7 @@ export const huLocale: LocaleTextBundle = {
       addModel: '+ Modell hozzáadása...',
       deleteModel: 'Modell törlése',
       cancel: 'Mégse',
+      showUpdateNotes: 'Frissítési megjegyzések megjelenítése',
     },
     statuses: {
       checkingStatus: 'Állapot ellenőrzése...',

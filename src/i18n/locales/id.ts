@@ -226,6 +226,8 @@ export const idLocale: LocaleTextBundle = {
       addProvider: 'Tambahkan Penyedia Kustom',
       editProvider: 'Edit Penyedia Kustom',
       addModel: 'Tambah Model Kustom',
+      about: 'Tentang',
+      updateInfo: 'Informasi Pembaruan',
     },
     labels: {
       provider: 'Penyedia',
@@ -247,6 +249,8 @@ export const idLocale: LocaleTextBundle = {
       apiBaseUrl: 'URL Dasar API',
       commitMessage: 'Pesan Commit',
       modelName: 'Nama Model',
+      version: 'Versi',
+      author: 'Penulis',
     },
     placeholders: {
       selectProvider: 'Pilih penyedia...',
@@ -271,6 +275,7 @@ export const idLocale: LocaleTextBundle = {
       addModel: '+ Tambah Model...',
       deleteModel: 'Hapus Model',
       cancel: 'Batal',
+      showUpdateNotes: 'Tampilkan Catatan Pembaruan',
     },
     statuses: {
       checkingStatus: 'Memeriksa status...',

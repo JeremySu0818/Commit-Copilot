@@ -140,6 +140,8 @@ export interface WebviewLanguagePack {
     addProvider: string;
     editProvider: string;
     addModel: string;
+    about: string;
+    updateInfo: string;
   };
   labels: {
     provider: string;
@@ -161,6 +163,8 @@ export interface WebviewLanguagePack {
     apiBaseUrl: string;
     commitMessage: string;
     modelName: string;
+    version: string;
+    author: string;
   };
   placeholders: {
     selectProvider: string;
@@ -185,6 +189,7 @@ export interface WebviewLanguagePack {
     addModel: string;
     deleteModel: string;
     cancel: string;
+    showUpdateNotes: string;
   };
   statuses: {
     checkingStatus: string;

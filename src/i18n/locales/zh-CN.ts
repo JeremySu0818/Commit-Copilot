@@ -203,6 +203,8 @@ export const zhCNLocale: LocaleTextBundle = {
       addProvider: '添加自定义提供商',
       editProvider: '编辑自定义提供商',
       addModel: '添加自定义模型',
+      about: '关于',
+      updateInfo: '更新信息',
     },
     labels: {
       provider: '提供商',
@@ -224,6 +226,8 @@ export const zhCNLocale: LocaleTextBundle = {
       apiBaseUrl: 'API Base URL',
       commitMessage: '提交信息',
       modelName: '模型名称',
+      version: '当前版本',
+      author: '作者',
     },
     placeholders: {
       selectProvider: '请选择提供商...',
@@ -248,6 +252,7 @@ export const zhCNLocale: LocaleTextBundle = {
       addModel: '+ 添加模型...',
       deleteModel: '删除模型',
       cancel: '取消',
+      showUpdateNotes: '再次显示更新记录',
     },
     statuses: {
       checkingStatus: '检查状态中...',
