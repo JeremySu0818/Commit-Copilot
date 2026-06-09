@@ -1,5 +1,4 @@
 import { EXIT_CODES, type CommitCopilotError } from './errors';
-import { LOCALES } from './i18n/locales';
 import type {
   DisplayLanguage,
   EffectiveDisplayLanguage,
@@ -9,6 +8,7 @@ import type {
   MainViewText,
   WebviewLanguagePack,
 } from './i18n/types';
+import { LOCALES } from './i18n/ui';
 
 export type {
   DisplayLanguage,

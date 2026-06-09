@@ -27,8 +27,8 @@ import {
   createTruncatedResponseError,
   createUnknownAnthropicModelError,
 } from '../errors';
-import { LOCALES } from '../i18n/locales';
 import type { EffectiveDisplayLanguage } from '../i18n/types';
+import { LOCALES } from '../i18n/ui';
 import { ProgressCallback } from '../llm-clients';
 import {
   CommitOutputOptions,

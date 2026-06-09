@@ -12,9 +12,9 @@ import {
   createOllamaConnectionError,
   createOllamaModelNotFoundError,
 } from '../errors';
-import { LOCALES } from '../i18n/locales';
 import { buildOllamaEnhancedPrompt } from '../i18n/prompts';
 import type { EffectiveDisplayLanguage } from '../i18n/types';
+import { LOCALES } from '../i18n/ui';
 import { ProgressCallback } from '../llm-clients';
 import {
   CommitOutputOptions,

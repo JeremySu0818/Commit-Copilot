@@ -1,5 +1,4 @@
 import { FINAL_COMMIT_MESSAGE_TOOL_NAME } from '../agent-tools/definitions';
-import { LOCALES } from '../i18n/locales';
 import {
   buildAgentSystemPrompt,
   buildCommitOutputReminder,
@@ -7,6 +6,7 @@ import {
   buildFinalToolRequiredReminder,
 } from '../i18n/prompts';
 import type { EffectiveDisplayLanguage } from '../i18n/types';
+import { LOCALES } from '../i18n/ui';
 const MAX_AGENT_STEPS = Infinity;
 const compactBatchSizeThreshold = 2;
 

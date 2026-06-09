@@ -14,12 +14,12 @@ import {
   createOllamaModelNotFoundError,
   createUnknownAnthropicModelError,
 } from './errors';
-import { LOCALES } from './i18n/locales';
 import {
   buildAgentSystemPrompt,
   buildDirectDiffUserPrompt,
 } from './i18n/prompts';
 import type { EffectiveDisplayLanguage } from './i18n/types';
+import { LOCALES } from './i18n/ui';
 import {
   APIProvider,
   CommitOutputOptions,
