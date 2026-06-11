@@ -298,8 +298,6 @@ export const koLocale: LocaleTextBundle = {
         '엔드포인트에서 모델을 가져올 수 없습니다. 모델을 수동으로 추가할 수 있습니다.',
     },
     descriptions: {
-      ollamaFixedToDirectDiff:
-        'Ollama는 "Direct Diff" 모드로 고정되어 있습니다.',
       agenticModeDescription:
         'Agentic 모드는 리포지토리 도구를 사용하여 심층 분석을 수행합니다.',
       directDiffDescription:

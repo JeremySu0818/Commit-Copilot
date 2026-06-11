@@ -363,39 +363,36 @@ void test('generateCommitMessage uses direct diff client in direct-diff mode', a
   }
 });
 
-void test('generateCommitMessage forces ollama to direct diff even if agentic requested', async () => {
-  let capturedClientOptions: unknown;
-  let agentCallCount = 0;
+void test('generateCommitMessage uses agent loop for ollama in agentic mode', async () => {
+  let capturedAgentInput: unknown;
+  let directCallCount = 0;
 
   const { result, repoRoot } = await runGenerate({
     provider: 'ollama',
     generateMode: 'agentic',
-    runAgentLoop: () => {
-      agentCallCount++;
-      return Promise.resolve('should not be used');
+    runAgentLoop: (input) => {
+      capturedAgentInput = input;
+      return Promise.resolve('feat(ollama): support agent tools');
     },
-    createLLMClient: (clientOptions) => {
-      capturedClientOptions = clientOptions;
+    createLLMClient: () => {
+      directCallCount++;
       return {
-        generateCommitMessage: () =>
-          Promise.resolve(
-            'chore(local): use ollama direct diff\n\nEnforced direct mode for local provider.',
-          ),
+        generateCommitMessage: () => Promise.resolve('should not be used'),
       };
     },
   });
 
   try {
     assert.equal(result.success, true);
-    assert.equal(agentCallCount, 0);
-    const clientOptions = toClientOptionsSummary(capturedClientOptions);
-    if (!clientOptions) {
-      throw new Error('capturedClientOptions not set');
+    assert.equal(directCallCount, 0);
+    const agentInput = toAgentInputSummary(capturedAgentInput);
+    if (!agentInput) {
+      throw new Error('capturedAgentInput not set');
     }
-    assert.equal(clientOptions.provider, 'ollama');
-    assert.equal(clientOptions.model, DEFAULT_MODELS.ollama);
+    assert.equal(agentInput.provider, 'ollama');
+    assert.equal(agentInput.model, DEFAULT_MODELS.ollama);
     assert.deepEqual(
-      clientOptions.commitOutputOptions,
+      agentInput.commitOutputOptions,
       DEFAULT_COMMIT_OUTPUT_OPTIONS,
     );
   } finally {

@@ -278,7 +278,6 @@ export const zhCNLocale: LocaleTextBundle = {
       fetchModelsFailed: '无法从端点获取模型列表。你可以手动添加模型。',
     },
     descriptions: {
-      ollamaFixedToDirectDiff: 'Ollama 固定使用 Direct Diff 模式',
       agenticModeDescription: 'Agentic 模式会使用仓库工具做更深入分析',
       directDiffDescription: 'Direct Diff 会将原始 diff 直接发给模型',
       ollamaInfo:

@@ -307,7 +307,6 @@ export const esLocale: LocaleTextBundle = {
         'No se pudieron obtener los modelos del punto final. Puede agregar modelos manualmente.',
     },
     descriptions: {
-      ollamaFixedToDirectDiff: 'Ollama está fijado al modo Direct Diff',
       agenticModeDescription:
         'El modo Agente utiliza herramientas del repositorio para análisis profundo',
       directDiffDescription:

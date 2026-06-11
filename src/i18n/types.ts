@@ -215,7 +215,6 @@ export interface WebviewLanguagePack {
     fetchModelsFailed: string;
   };
   descriptions: {
-    ollamaFixedToDirectDiff: string;
     agenticModeDescription: string;
     directDiffDescription: string;
     ollamaInfo: string;
@@ -264,7 +263,31 @@ export interface ProgressMessages {
   stepExecutingMultipleTools: (step: number, count: number) => string;
 }
 
+export interface AgentToolPromptBundle {
+  pathArgument: string;
+  startLineArgument: string;
+  endLineArgument: string;
+  lineArgument: string;
+  characterArgument: string;
+  includeDeclarationArgument: string;
+  countArgument: string;
+  queryArgument: string;
+  caseSensitiveArgument: string;
+  maxResultsArgument: string;
+  messageArgument: string;
+}
+
+export interface OllamaProtocolPromptBundle {
+  instructions: string;
+  protocolError: string;
+  correction: string;
+  ordinaryTextError: string;
+  finalReminder: string;
+}
+
 export interface LocalePromptBundle {
+  agentTools: AgentToolPromptBundle;
+  ollamaProtocol: OllamaProtocolPromptBundle;
   commitLanguagePrompt: string;
   systemPromptIntroNoTools: string;
   systemPromptIntroWithTools: string;

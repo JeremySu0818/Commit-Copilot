@@ -299,7 +299,6 @@ export const enLocale: LocaleTextBundle = {
         'Could not fetch models from endpoint. You can add models manually.',
     },
     descriptions: {
-      ollamaFixedToDirectDiff: 'Ollama is fixed to Direct Diff mode',
       agenticModeDescription:
         'Agentic mode uses repository tools for deeper analysis',
       directDiffDescription:

@@ -307,8 +307,6 @@ export const trLocale: LocaleTextBundle = {
         'Uç noktadan modeller alınamadı. Modelleri manuel olarak ekleyebilirsiniz.',
     },
     descriptions: {
-      ollamaFixedToDirectDiff:
-        'Ollama Doğrudan Diff (Direct Diff) moduna sabitlenmiştir',
       agenticModeDescription:
         'Ajan (Agentic) mod, derin analiz için depo araçlarını kullanır',
       directDiffDescription:

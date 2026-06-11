@@ -301,7 +301,6 @@ export const hiLocale: LocaleTextBundle = {
         'एंडपॉइंट से मॉडल प्राप्त नहीं किए जा सके। आप मैन्युअल रूप से मॉडल जोड़ सकते हैं।',
     },
     descriptions: {
-      ollamaFixedToDirectDiff: 'Ollama डायरेक्ट डिफ मोड पर निश्चित है',
       agenticModeDescription:
         'एजेंटिक मोड गहरे विश्लेषण के लिए रिपॉजिटरी टूल का उपयोग करता है',
       directDiffDescription: 'डायरेक्ट डिफ रॉ डिफ को सीधे मॉडल में भेजता है',

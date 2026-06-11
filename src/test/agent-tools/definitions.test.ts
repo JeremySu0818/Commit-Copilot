@@ -3,6 +3,7 @@ import test from 'node:test';
 
 import {
   AGENT_TOOLS,
+  getAgentTools,
   toAnthropicTools,
   toGeminiFunctionDeclarations,
   toOpenAITools,
@@ -54,4 +55,24 @@ void test('toAnthropicTools maps parameters to input_schema', () => {
   };
   assert.equal(first.name, AGENT_TOOLS[0].name);
   assert.deepEqual(first.input_schema, AGENT_TOOLS[0].parameters);
+});
+
+void test('tool schemas localize descriptions without changing names or parameter keys', () => {
+  const english = getAgentTools('en');
+  const traditionalChinese = getAgentTools('zh-TW');
+
+  assert.deepEqual(
+    traditionalChinese.map((tool) => tool.name),
+    english.map((tool) => tool.name),
+  );
+  assert.match(traditionalChinese[0].description, /取得特定檔案/);
+  assert.doesNotMatch(traditionalChinese[0].description, /Get the actual/);
+
+  const parameters = traditionalChinese[0].parameters as {
+    properties?: { path?: { description?: unknown } };
+  };
+  assert.match(
+    String(parameters.properties?.path?.description),
+    /相對於儲存庫根目錄/,
+  );
 });

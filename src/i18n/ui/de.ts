@@ -315,8 +315,6 @@ export const deLocale: LocaleTextBundle = {
         'Modelle konnten nicht vom Endpunkt abgerufen werden. Sie können Modelle manuell hinzufügen.',
     },
     descriptions: {
-      ollamaFixedToDirectDiff:
-        'Ollama ist auf den Modus Direct Diff festgelegt',
       agenticModeDescription:
         'Der Agentic-Modus verwendet Repository-Tools für eine tiefere Analyse',
       directDiffDescription:

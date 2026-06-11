@@ -394,7 +394,7 @@ async function handleGeminiFunctionCallBatch(params: {
 }): Promise<string | null> {
   params.onProgress?.(
     formatBatchProgressMessage(
-      params.step + 1,
+      params.step,
       params.functionCalls.map((call) => ({
         name: call.name,
         args: call.args,
@@ -448,6 +448,7 @@ async function executeGeminiInvestigationLoop(params: {
   cancellationToken?: CancellationSignal;
   commitOutputOptions: CommitOutputOptions;
   commitMessageLanguage: EffectiveDisplayLanguage;
+  progressState: { nextStep: number };
 }): Promise<string | null> {
   let step = 0;
   let finalToolReminderSent = false;
@@ -480,7 +481,7 @@ async function executeGeminiInvestigationLoop(params: {
         functionCalls,
         response,
         history: params.history,
-        step,
+        step: params.progressState.nextStep,
         onProgress: params.onProgress,
         language: params.language,
         repoRoot: params.repoRoot,
@@ -492,6 +493,7 @@ async function executeGeminiInvestigationLoop(params: {
       if (finalMessage) {
         return finalMessage;
       }
+      params.progressState.nextStep += 1;
     }
     step += 1;
   }
@@ -571,7 +573,7 @@ async function requestGeminiFinalCommitMessage(params: {
   generationConfig: UnknownRecord;
   onProgress?: ProgressCallback;
   language: EffectiveDisplayLanguage;
-  maxAgentSteps?: number;
+  progressStep: number;
   commitOutputOptions: CommitOutputOptions;
   commitMessageLanguage: EffectiveDisplayLanguage;
 }): Promise<string> {
@@ -598,9 +600,7 @@ async function requestGeminiFinalCommitMessage(params: {
   if (finalFunctionCall) {
     params.onProgress?.(
       formatBatchProgressMessage(
-        resolveStepLimit(params.maxAgentSteps) === Number.POSITIVE_INFINITY
-          ? 1
-          : resolveStepLimit(params.maxAgentSteps) + 1,
+        params.progressStep,
         [
           {
             name: FINAL_COMMIT_MESSAGE_TOOL_NAME,
@@ -670,6 +670,7 @@ async function runGeminiAgentLoop(
         {
           functionDeclarations: toGeminiFunctionDeclarations(
             isStaged,
+            commitMessageLanguage,
           ) as unknown,
         },
       ],
@@ -711,6 +712,7 @@ async function runGeminiAgentLoop(
       config: UnknownRecord = generationConfig,
     ) => requestGeminiResponseWithConfig(contents, config);
 
+    const progressState = { nextStep: 1 };
     const loopResult = await executeGeminiInvestigationLoop({
       history,
       stepLimit: resolveStepLimit(maxAgentSteps),
@@ -724,6 +726,7 @@ async function runGeminiAgentLoop(
       cancellationToken,
       commitOutputOptions: resolvedCommitOutputOptions,
       commitMessageLanguage,
+      progressState,
     });
     if (loopResult) {
       return loopResult;
@@ -735,7 +738,7 @@ async function runGeminiAgentLoop(
       generationConfig,
       onProgress,
       language,
-      maxAgentSteps,
+      progressStep: progressState.nextStep,
       commitOutputOptions: resolvedCommitOutputOptions,
       commitMessageLanguage,
     });

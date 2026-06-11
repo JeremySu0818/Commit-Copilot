@@ -5,6 +5,7 @@ export {
   FINAL_COMMIT_MESSAGE_TOOL,
   FINAL_COMMIT_MESSAGE_TOOL_NAME,
   AGENT_TOOLS,
+  getAgentTools,
   toGeminiFunctionDeclarations,
   toOpenAITools,
   toAnthropicTools,

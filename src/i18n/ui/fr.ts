@@ -304,7 +304,6 @@ export const frLocale: LocaleTextBundle = {
         'Impossible de récupérer les modèles depuis le point de terminaison. Vous pouvez ajouter des modèles manuellement.',
     },
     descriptions: {
-      ollamaFixedToDirectDiff: 'Ollama est fixé en mode Direct Diff',
       agenticModeDescription:
         'Le mode Agentic utilise des outils de dépôt pour une analyse plus approfondie',
       directDiffDescription:

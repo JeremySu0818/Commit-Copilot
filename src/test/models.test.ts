@@ -6,6 +6,7 @@ import {
   fetchOpenRouterModels,
   fetchQwenModels,
   resolveDefaultModel,
+  resolveGenerateMode,
 } from '../models';
 
 function toRequestUrl(input: unknown): string {
@@ -175,4 +176,13 @@ void test('resolveDefaultModel falls back to first model when provider default i
 
 void test('resolveDefaultModel returns empty string when no models are available', () => {
   assert.equal(resolveDefaultModel('openrouter', []), '');
+});
+
+void test('resolveGenerateMode preserves an explicitly requested agentic mode', () => {
+  assert.equal(resolveGenerateMode('direct-diff', 'agentic'), 'agentic');
+});
+
+void test('resolveGenerateMode falls back to saved and default modes', () => {
+  assert.equal(resolveGenerateMode('direct-diff', undefined), 'direct-diff');
+  assert.equal(resolveGenerateMode(undefined, undefined), 'agentic');
 });

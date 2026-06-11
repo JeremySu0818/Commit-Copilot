@@ -212,7 +212,7 @@ async function handleOpenAIToolCallBatch(params: {
 }): Promise<string | null> {
   params.onProgress?.(
     formatBatchProgressMessage(
-      params.step + 1,
+      params.step,
       params.parsedToolCalls.map(({ name, args }) => ({ name, args })),
       params.language,
     ),
@@ -295,6 +295,7 @@ async function executeOpenAIInvestigationLoop(params: {
   cancellationToken?: CancellationSignal;
   commitOutputOptions: CommitOutputOptions;
   commitMessageLanguage: EffectiveDisplayLanguage;
+  progressState: { nextStep: number };
 }): Promise<string | null> {
   let step = 0;
   let finalToolReminderSent = false;
@@ -332,7 +333,7 @@ async function executeOpenAIInvestigationLoop(params: {
       const finalMessage = await handleOpenAIToolCallBatch({
         parsedToolCalls: parseOpenAIToolCalls(functionToolCalls),
         language: params.language,
-        step,
+        step: params.progressState.nextStep,
         onProgress: params.onProgress,
         messages: params.messages,
         repoRoot: params.repoRoot,
@@ -344,6 +345,7 @@ async function executeOpenAIInvestigationLoop(params: {
       if (finalMessage) {
         return finalMessage;
       }
+      params.progressState.nextStep += 1;
     }
     step += 1;
   }
@@ -405,6 +407,7 @@ function createOpenAIRequestCompletionWithTools(params: {
   modelName: string;
   isStaged: boolean;
   retryOptions: RetryOptions;
+  commitMessageLanguage: EffectiveDisplayLanguage;
 }) {
   return (currentMessages: ChatCompletionMessageParam[]) =>
     withRetry(
@@ -414,6 +417,7 @@ function createOpenAIRequestCompletionWithTools(params: {
           messages: currentMessages,
           tools: toOpenAITools(
             params.isStaged,
+            params.commitMessageLanguage,
           ) as unknown as ChatCompletionTool[],
           tool_choice: 'auto',
         }),
@@ -429,7 +433,8 @@ async function requestOpenAIFinalCommitMessage(params: {
   retryOptions: RetryOptions;
   onProgress?: ProgressCallback;
   language: EffectiveDisplayLanguage;
-  maxAgentSteps?: number;
+  commitMessageLanguage: EffectiveDisplayLanguage;
+  progressStep: number;
 }): Promise<string> {
   const completion = await withRetry(
     () =>
@@ -438,6 +443,7 @@ async function requestOpenAIFinalCommitMessage(params: {
         messages: params.messages,
         tools: toOpenAITools(
           params.isStaged,
+          params.commitMessageLanguage,
         ) as unknown as ChatCompletionTool[],
         tool_choice: {
           type: 'function',
@@ -456,9 +462,7 @@ async function requestOpenAIFinalCommitMessage(params: {
   if (finalToolCall) {
     params.onProgress?.(
       formatBatchProgressMessage(
-        resolveStepLimit(params.maxAgentSteps) === Number.POSITIVE_INFINITY
-          ? 1
-          : resolveStepLimit(params.maxAgentSteps) + 1,
+        params.progressStep,
         [
           {
             name: FINAL_COMMIT_MESSAGE_TOOL_NAME,
@@ -554,8 +558,10 @@ async function runOpenAIAgentLoop(
       modelName,
       isStaged,
       retryOptions,
+      commitMessageLanguage,
     });
     const stepLimit = resolveStepLimit(maxAgentSteps);
+    const progressState = { nextStep: 1 };
     const loopResult = await executeOpenAIInvestigationLoop({
       messages,
       stepLimit,
@@ -569,6 +575,7 @@ async function runOpenAIAgentLoop(
       cancellationToken,
       commitOutputOptions: resolvedCommitOutputOptions,
       commitMessageLanguage,
+      progressState,
     });
     if (loopResult) {
       return loopResult;
@@ -590,7 +597,8 @@ async function runOpenAIAgentLoop(
       retryOptions,
       onProgress,
       language,
-      maxAgentSteps,
+      commitMessageLanguage,
+      progressStep: progressState.nextStep,
     });
   } catch (error: unknown) {
     if (

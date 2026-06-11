@@ -13,11 +13,12 @@ Commit-Copilot is an **agentic** VS Code extension that uses a multi-step AI age
   - **OpenRouter**: Access any model via OpenRouter's API, including dynamic model fetching with tool-support filtering.
   - **DeepSeek**: Support for DeepSeek Chat, DeepSeek R1 (Reasoner), and DeepSeek V4 Flash/Pro.
   - **Qwen**: Support for Qwen models via DashScope, including dynamic model fetching.
-  - **Ollama**: Support for local models. Dynamically fetches your local model list from the Ollama instance and allows manual addition of custom model IDs. Supports any model you have installed, including Gemma 3, Llama 3.3, Phi-4, and Mistral.
+  - **Ollama**: Support for local models. Dynamically fetches your local model list from the Ollama instance and allows manual addition of custom model IDs. Agentic mode uses a built-in text tool protocol, so models can investigate with tools even when they do not implement Ollama's native tool-calling API.
   - **Custom Provider**: Add any OpenAI-compatible endpoint (e.g. LM Studio, Azure OpenAI) by specifying a display name and Base URL. Custom providers appear alongside built-in providers, use secure API key storage, and can fetch or manually manage provider-specific models.
 - **Two Generate Modes**:
   - **Agentic** (default): Runs a multi-step agent loop. The AI is given only file names and line counts initially, then autonomously calls tools — `get_diff`, `read_file`, `get_file_outline`, `find_references`, `get_recent_commits`, `search_code` — to investigate changes, understand context, and learn the project's commit style before classifying.
-  - **Direct Diff**: Skips the agent loop and feeds the full diff directly to the model in one shot. Faster and better suited for smaller or local models. Ollama always uses this mode.
+  - **Direct Diff**: Skips the agent loop and feeds the full diff directly to the model in one shot. Faster and available for every provider, including Ollama.
+- **Ollama Text Tool Protocol**: Gives Ollama models the same agent tools and multi-step workflow as native tool-calling providers. A strict system prompt and parser support batched calls, application-assigned call IDs, per-call errors, structured tool results, and final submission through `write_commit_message`.
 - **Configurable Agent Steps**: Set a `Max Agent Steps` limit to cap how many tool-call iterations the agent may perform before it must produce its final output. Set to `0` (default) for no limit.
 - **Cross-Project Pattern Search**: Uses a built-in `search_code` tool (grep-like) to discover hidden relationships not expressed through imports, such as environment variable references, string-based event names, and configuration keys.
 - **LSP Reference Impact Radar**: Uses VS Code's Language Server Protocol via `vscode.executeReferenceProvider` to find syntax-aware references for a symbol across the workspace. This helps the agent connect a change to the business scope it impacts.
@@ -53,6 +54,7 @@ Commit-Copilot uses an **agentic workflow** rather than a single-shot LLM call:
    - `find_references` — Find LSP-based references for a symbol at a file position.
    - `get_recent_commits` — Fetch recent commit messages to learn the project's commit style.
    - `search_code` — Search for a keyword or pattern across the entire project to discover hidden relationships, verify consistency, or find string-based references.
+   - OpenAI, Anthropic, and Gemini use their native structured tool APIs. Ollama uses an equivalent text protocol parsed by the extension and can batch multiple independent calls in one step.
 4. **Classification & Generation**: After investigating, the agent applies a strict priority-ordered ruleset to classify the change type, determines the appropriate scope, and outputs the final commit message in `type(scope): description` format with a mandatory body.
 5. **Output**: The generated message is placed into the Source Control input box for review.
 
@@ -93,7 +95,7 @@ The custom provider will appear in the provider list alongside the built-in ones
 
 | Option                      | Default       | Description                                                                                                                |
 | --------------------------- | ------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| **Generate Mode**           | Agentic       | `Agentic` runs a multi-step investigation loop; `Direct Diff` sends the full diff in one shot (always used for Ollama).    |
+| **Generate Mode**           | Agentic       | `Agentic` runs a multi-step investigation loop; `Direct Diff` sends the full diff in one shot. Both modes support Ollama.  |
 | **Hybrid Generation**       | Off           | Uses the existing Source Control input text as reference draft content while ignoring instructions embedded in that draft. |
 | **Max Agent Steps**         | 0 (unlimited) | Maximum number of tool-call iterations the agent may take. Set to `0` to remove the cap.                                   |
 | **Include Scope**           | On            | Whether to include a scope in the commit type, e.g. `fix(auth):`.                                                          |
@@ -196,6 +198,7 @@ This executes:
 Current unit tests cover:
 
 - All agent tools: `get_diff`, `read_file`, `get_file_outline`, `find_references`, `get_recent_commits`, `search_code`
+- Native and Ollama text-protocol agent loops, including batched calls, localized tool schemas, malformed-response recovery, and final tool submission
 - Tool dispatcher: `executeToolCall`
 - Core supporting logic: context parsing/building, staged workspace snapshot utilities, retry behavior, localized errors, main view provider behavior, custom model management, and state managers
 

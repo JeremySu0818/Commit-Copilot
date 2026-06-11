@@ -301,7 +301,6 @@ export const csLocale: LocaleTextBundle = {
         'Nepodařilo se načíst modely z koncového bodu. Modely můžete přidat ručně.',
     },
     descriptions: {
-      ollamaFixedToDirectDiff: 'Ollama je pevně nastavena na režim Direct Diff',
       agenticModeDescription:
         'Režim Agentic používá nástroje repozitáře k hlubší analýze',
       directDiffDescription:

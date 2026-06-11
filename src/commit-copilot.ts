@@ -542,8 +542,7 @@ async function generateMessageWithProvider(params: {
   isStaged: boolean;
   gitOps: GitOperations;
 }): Promise<string> {
-  const resolvedGenerateMode: GenerateMode =
-    params.provider === 'ollama' ? 'direct-diff' : params.generateMode;
+  const resolvedGenerateMode: GenerateMode = params.generateMode;
   const resolvedModel =
     params.model && params.model.length > 0
       ? params.model

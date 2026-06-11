@@ -231,7 +231,7 @@ async function handleAnthropicToolUseBatch(params: {
 }): Promise<string | null> {
   params.onProgress?.(
     formatBatchProgressMessage(
-      params.step + 1,
+      params.step,
       params.toolUseBlocks.map((block) => ({
         name: block.name,
         args: block.input,
@@ -283,6 +283,7 @@ async function executeAnthropicInvestigationLoop(params: {
   cancellationToken?: CancellationSignal;
   commitOutputOptions: CommitOutputOptions;
   commitMessageLanguage: EffectiveDisplayLanguage;
+  progressState: { nextStep: number };
 }): Promise<string | null> {
   let step = 0;
   let finalToolReminderSent = false;
@@ -325,7 +326,7 @@ async function executeAnthropicInvestigationLoop(params: {
       response,
       toolUseBlocks,
       messages: params.messages,
-      step,
+      step: params.progressState.nextStep,
       onProgress: params.onProgress,
       language: params.language,
       repoRoot: params.repoRoot,
@@ -337,6 +338,7 @@ async function executeAnthropicInvestigationLoop(params: {
     if (finalMessage) {
       return finalMessage;
     }
+    params.progressState.nextStep += 1;
     step += 1;
   }
 
@@ -399,7 +401,7 @@ async function requestAnthropicFinalCommitMessage(params: {
   messages: MessageParam[];
   onProgress?: ProgressCallback;
   language: EffectiveDisplayLanguage;
-  maxAgentSteps?: number;
+  progressStep: number;
 }): Promise<string> {
   const finalResponse = await params.requestResponse(params.messages);
   const finalResponseContent = Array.isArray(finalResponse.content)
@@ -411,9 +413,7 @@ async function requestAnthropicFinalCommitMessage(params: {
   if (finalToolUseBlock) {
     params.onProgress?.(
       formatBatchProgressMessage(
-        resolveStepLimit(params.maxAgentSteps) === Number.POSITIVE_INFINITY
-          ? 1
-          : resolveStepLimit(params.maxAgentSteps) + 1,
+        params.progressStep,
         [
           {
             name: finalToolUseBlock.name,
@@ -519,7 +519,10 @@ async function runAnthropicAgentLoop(
           max_tokens: maxTokens,
           system: systemPrompt,
           messages: currentMessages,
-          tools: toAnthropicTools(isStaged) as unknown as Tool[],
+          tools: toAnthropicTools(
+            isStaged,
+            commitMessageLanguage,
+          ) as unknown as Tool[],
         })
         .finalMessage();
       return {
@@ -531,6 +534,7 @@ async function runAnthropicAgentLoop(
       requestMessage,
       retryOptions,
     });
+    const progressState = { nextStep: 1 };
     const loopResult = await executeAnthropicInvestigationLoop({
       messages,
       stepLimit: resolveStepLimit(maxAgentSteps),
@@ -544,6 +548,7 @@ async function runAnthropicAgentLoop(
       cancellationToken,
       commitOutputOptions: resolvedCommitOutputOptions,
       commitMessageLanguage,
+      progressState,
     });
     if (loopResult) {
       return loopResult;
@@ -568,7 +573,7 @@ async function runAnthropicAgentLoop(
       messages,
       onProgress,
       language,
-      maxAgentSteps,
+      progressStep: progressState.nextStep,
     });
   } catch (error: unknown) {
     if (

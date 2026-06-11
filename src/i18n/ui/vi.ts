@@ -302,7 +302,6 @@ export const viLocale: LocaleTextBundle = {
         'Không thể tải các mô hình từ điểm cuối. Bạn có thể thêm mô hình thủ công.',
     },
     descriptions: {
-      ollamaFixedToDirectDiff: 'Ollama được cố định ở chế độ Direct Diff',
       agenticModeDescription:
         'Chế độ Agentic sử dụng các công cụ kho lưu trữ để phân tích sâu hơn',
       directDiffDescription: 'Direct Diff gửi raw diff trực tiếp đến mô hình',

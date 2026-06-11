@@ -1,3 +1,10 @@
+import { LOCALIZED_PROMPTS } from '../i18n/prompts/index';
+import type {
+  AgentToolPromptBundle,
+  EffectiveDisplayLanguage,
+  LocalePromptBundle,
+} from '../i18n/types';
+
 export interface ToolDefinition {
   name: string;
   description: string;
@@ -17,172 +24,179 @@ export interface ToolCallResult {
 
 export const FINAL_COMMIT_MESSAGE_TOOL_NAME = 'write_commit_message';
 
-export const FINAL_COMMIT_MESSAGE_TOOL: ToolDefinition = {
-  name: FINAL_COMMIT_MESSAGE_TOOL_NAME,
-  description:
-    'Submit the final commit message after you have finished investigating. Use this only when the commit message is complete and ready to return. The message argument must contain only the commit message, with no analysis, commentary, markdown fences, or surrounding text.',
-  parameters: {
-    type: 'object',
-    properties: {
-      message: {
-        type: 'string',
-        description:
-          'Required. The completed commit message only. Include body/footer text only when required by the output options.',
+function buildAgentTools(
+  bundle: LocalePromptBundle,
+  descriptions: AgentToolPromptBundle,
+): ToolDefinition[] {
+  const toSchemaDescription = (value: string): string =>
+    value.replace(/^-\s*`[^`]+`\s*[—-]\s*/, '').replace(/\{0\}/g, '');
+  const finalCommitMessageTool: ToolDefinition = {
+    name: FINAL_COMMIT_MESSAGE_TOOL_NAME,
+    description: toSchemaDescription(bundle.toolDescWriteCommitMessage),
+    parameters: {
+      type: 'object',
+      properties: {
+        message: {
+          type: 'string',
+          description: descriptions.messageArgument,
+        },
       },
+      required: ['message'],
     },
-    required: ['message'],
-  },
-};
+  };
 
-export const AGENT_TOOLS: ToolDefinition[] = [
-  {
-    name: 'get_diff',
-    description:
-      'Get the actual git diff content for a specific file. You MUST specify the file path. Call this tool for each file you want to investigate. You MUST call this tool at least once to understand what was actually changed before making a classification decision.',
-    parameters: {
-      type: 'object',
-      properties: {
-        path: {
-          type: 'string',
-          description:
-            "Required. Relative path to the file from the repository root. Example: 'src/index.ts'",
+  return [
+    {
+      name: 'get_diff',
+      description: toSchemaDescription(bundle.toolDescGetDiff),
+      parameters: {
+        type: 'object',
+        properties: {
+          path: {
+            type: 'string',
+            description: descriptions.pathArgument,
+          },
         },
+        required: ['path'],
       },
-      required: ['path'],
     },
-  },
-  {
-    name: 'read_file',
-    description:
-      'Read the current contents of a file in the repository. Use this to understand the full context around changes — e.g., whether removed lines were comments, dead code, or functional logic. You can specify a line range to read a portion of the file.',
-    parameters: {
-      type: 'object',
-      properties: {
-        path: {
-          type: 'string',
-          description:
-            "Required. Relative path to the file from the repository root. Example: 'src/index.ts'",
+    {
+      name: 'read_file',
+      description: toSchemaDescription(bundle.toolDescReadFile),
+      parameters: {
+        type: 'object',
+        properties: {
+          path: {
+            type: 'string',
+            description: descriptions.pathArgument,
+          },
+          startLine: {
+            type: 'number',
+            description: descriptions.startLineArgument,
+          },
+          endLine: {
+            type: 'number',
+            description: descriptions.endLineArgument,
+          },
         },
-        startLine: {
-          type: 'number',
-          description:
-            'Optional. 1-indexed start line to read from. If omitted, reads from the beginning.',
-        },
-        endLine: {
-          type: 'number',
-          description:
-            'Optional. 1-indexed end line to read to (inclusive). If omitted, reads to the end.',
-        },
+        required: ['path'],
       },
-      required: ['path'],
     },
-  },
-  {
-    name: 'get_file_outline',
-    description:
-      'Get the structural outline of a file — its top-level functions, classes, exports, and imports. Use this to understand what role a file plays in the codebase without reading all its contents, which helps determine the appropriate commit type and scope.',
-    parameters: {
-      type: 'object',
-      properties: {
-        path: {
-          type: 'string',
-          description:
-            "Required. Relative path to the file from the repository root. Example: 'src/index.ts'",
+    {
+      name: 'get_file_outline',
+      description: toSchemaDescription(bundle.toolDescGetFileOutline),
+      parameters: {
+        type: 'object',
+        properties: {
+          path: {
+            type: 'string',
+            description: descriptions.pathArgument,
+          },
         },
+        required: ['path'],
       },
-      required: ['path'],
     },
-  },
-  {
-    name: 'find_references',
-    description:
-      'Find all references for a symbol at a specific file position using the VS Code Language Server (LSP). This is syntax-aware reference lookup, not a text search. Provide the file path plus 1-based line and character.',
-    parameters: {
-      type: 'object',
-      properties: {
-        path: {
-          type: 'string',
-          description:
-            "Required. Relative path to the file from the repository root. Example: 'src/index.ts'",
+    {
+      name: 'find_references',
+      description: toSchemaDescription(bundle.toolDescFindReferences),
+      parameters: {
+        type: 'object',
+        properties: {
+          path: {
+            type: 'string',
+            description: descriptions.pathArgument,
+          },
+          line: {
+            type: 'number',
+            description: descriptions.lineArgument,
+          },
+          character: {
+            type: 'number',
+            description: descriptions.characterArgument,
+          },
+          includeDeclaration: {
+            type: 'boolean',
+            description: descriptions.includeDeclarationArgument,
+          },
         },
-        line: {
-          type: 'number',
-          description:
-            'Required. 1-based line number of the symbol to analyze.',
-        },
-        character: {
-          type: 'number',
-          description:
-            'Required. 1-based character (column) number of the symbol to analyze.',
-        },
-        includeDeclaration: {
-          type: 'boolean',
-          description:
-            'Optional. Whether to include the symbol declaration itself in the results. Defaults to false.',
-        },
+        required: ['path', 'line', 'character'],
       },
-      required: ['path', 'line', 'character'],
     },
-  },
-  {
-    name: 'get_recent_commits',
-    description:
-      'Get recent git commit messages to learn the repository commit style (e.g., scope naming, tense, use of emojis). Provide how many commit messages you want. Returns newest first.',
-    parameters: {
-      type: 'object',
-      properties: {
-        count: {
-          type: 'number',
-          description:
-            'Required. Number of recent commit messages to return. Use a positive integer (recommended 5-10). No maximum.',
+    {
+      name: 'get_recent_commits',
+      description: toSchemaDescription(bundle.toolDescGetRecentCommits),
+      parameters: {
+        type: 'object',
+        properties: {
+          count: {
+            type: 'number',
+            description: descriptions.countArgument,
+          },
         },
+        required: ['count'],
       },
-      required: ['count'],
     },
-  },
-  {
-    name: 'search_code',
-    description:
-      'Search for a keyword or pattern across the entire project (similar to grep/ripgrep). Use this to discover hidden relationships that are not expressed through imports — such as environment variable references (e.g. process.env.DB_URL), string-based event names, configuration keys in .env or config.yaml, or duplicated magic strings. Also useful for consistency checks (e.g. verifying an API endpoint path is updated everywhere).',
-    parameters: {
-      type: 'object',
-      properties: {
-        query: {
-          type: 'string',
-          description:
-            'Required. The keyword or text pattern to search for across the project.',
+    {
+      name: 'search_code',
+      description: toSchemaDescription(bundle.toolDescSearchCode),
+      parameters: {
+        type: 'object',
+        properties: {
+          query: {
+            type: 'string',
+            description: descriptions.queryArgument,
+          },
+          caseSensitive: {
+            type: 'boolean',
+            description: descriptions.caseSensitiveArgument,
+          },
+          maxResults: {
+            type: 'number',
+            description: descriptions.maxResultsArgument,
+          },
         },
-        caseSensitive: {
-          type: 'boolean',
-          description:
-            'Optional. Whether the search should be case-sensitive. Defaults to false.',
-        },
-        maxResults: {
-          type: 'number',
-          description:
-            'Optional. Maximum number of matching files to return. Defaults to no limit.',
-        },
+        required: ['query'],
       },
-      required: ['query'],
     },
-  },
-  FINAL_COMMIT_MESSAGE_TOOL,
-];
-
-function getAvailableTools(_isStaged: boolean): ToolDefinition[] {
-  return AGENT_TOOLS;
+    finalCommitMessageTool,
+  ];
 }
 
-export function toGeminiFunctionDeclarations(isStaged = false): object[] {
-  return getAvailableTools(isStaged).map((tool) => ({
+export function getAgentTools(
+  language: EffectiveDisplayLanguage = 'en',
+): ToolDefinition[] {
+  const bundle = LOCALIZED_PROMPTS[language];
+  return buildAgentTools(bundle, bundle.agentTools);
+}
+
+export const AGENT_TOOLS = getAgentTools();
+export const FINAL_COMMIT_MESSAGE_TOOL =
+  AGENT_TOOLS.find((tool) => tool.name === FINAL_COMMIT_MESSAGE_TOOL_NAME) ??
+  AGENT_TOOLS[AGENT_TOOLS.length - 1];
+
+function getAvailableTools(
+  _isStaged: boolean,
+  language: EffectiveDisplayLanguage,
+): ToolDefinition[] {
+  return getAgentTools(language);
+}
+
+export function toGeminiFunctionDeclarations(
+  isStaged = false,
+  language: EffectiveDisplayLanguage = 'en',
+): object[] {
+  return getAvailableTools(isStaged, language).map((tool) => ({
     name: tool.name,
     description: tool.description,
     parameters: tool.parameters,
   }));
 }
 
-export function toOpenAITools(isStaged = false): object[] {
-  return getAvailableTools(isStaged).map((tool) => ({
+export function toOpenAITools(
+  isStaged = false,
+  language: EffectiveDisplayLanguage = 'en',
+): object[] {
+  return getAvailableTools(isStaged, language).map((tool) => ({
     type: 'function',
     function: {
       name: tool.name,
@@ -192,8 +206,11 @@ export function toOpenAITools(isStaged = false): object[] {
   }));
 }
 
-export function toAnthropicTools(isStaged = false): object[] {
-  return getAvailableTools(isStaged).map((tool) => ({
+export function toAnthropicTools(
+  isStaged = false,
+  language: EffectiveDisplayLanguage = 'en',
+): object[] {
+  return getAvailableTools(isStaged, language).map((tool) => ({
     name: tool.name,
     description: tool.description,
     input_schema: tool.parameters,

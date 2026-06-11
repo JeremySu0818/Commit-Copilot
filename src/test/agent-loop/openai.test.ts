@@ -233,9 +233,9 @@ void test('runOpenAIAgentLoop returns write_commit_message argument without exec
 
   assert.deepEqual(executedCalls, []);
   assert.equal(completionRequests.length, 1);
-  assert.ok(
-    progressMessages.some((message) =>
-      message.includes('write_commit_message'),
-    ),
+  const finalProgressMessage = progressMessages.find((message) =>
+    message.includes('write_commit_message'),
   );
+  assert.ok(finalProgressMessage);
+  assert.match(finalProgressMessage, /^\[Step 1\]/);
 });

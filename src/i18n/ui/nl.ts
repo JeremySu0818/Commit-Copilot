@@ -301,7 +301,6 @@ export const nlLocale: LocaleTextBundle = {
         'Kon modellen niet ophalen van eindpunt. U kunt modellen handmatig toevoegen.',
     },
     descriptions: {
-      ollamaFixedToDirectDiff: 'Ollama staat vast op Direct Diff modus',
       agenticModeDescription:
         'Agentic modus gebruikt repository tools voor diepere analyse',
       directDiffDescription:

@@ -303,7 +303,6 @@ export const huLocale: LocaleTextBundle = {
         'Nem sikerült lekérni a modelleket a végpontról. Hozzáadhat modelleket manuálisan.',
     },
     descriptions: {
-      ollamaFixedToDirectDiff: 'Az Ollama rögzítve van a Direct Diff módhoz',
       agenticModeDescription:
         'Az ügynöki (Agentic) mód adattár eszközöket használ a mélyebb elemzéshez',
       directDiffDescription:

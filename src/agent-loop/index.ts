@@ -126,6 +126,7 @@ export async function runAgentLoop(options: AgentLoopOptions): Promise<string> {
         gitOps,
         commitOutputOptions,
         cancellationToken,
+        maxAgentSteps,
         draftCommitMessage,
         language,
         commitMessageLanguage,

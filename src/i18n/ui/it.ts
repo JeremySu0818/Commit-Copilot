@@ -302,7 +302,6 @@ export const itLocale: LocaleTextBundle = {
         "Impossibile recuperare i modelli dall'endpoint. È possibile aggiungere modelli manualmente.",
     },
     descriptions: {
-      ollamaFixedToDirectDiff: 'Ollama è fissato sulla modalità Direct Diff',
       agenticModeDescription:
         "La modalità agentica utilizza gli strumenti del repository per un'analisi più approfondita",
       directDiffDescription:

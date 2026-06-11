@@ -39,10 +39,8 @@ export function MainView() {
     : null;
 
   const isOllama = currentProvider === 'ollama';
-  const generateModeDisabled = isOllama;
-  const effectiveGenerateMode = isOllama
-    ? ('direct-diff' as const)
-    : currentGenerateMode;
+  const generateModeDisabled = false;
+  const effectiveGenerateMode = currentGenerateMode;
 
   const {
     handleProviderChange,
@@ -63,11 +61,10 @@ export function MainView() {
   });
 
   const generateModeStatusText = useMemo(() => {
-    if (isOllama) return pack.descriptions.ollamaFixedToDirectDiff;
     if (effectiveGenerateMode === 'agentic')
       return pack.descriptions.agenticModeDescription;
     return pack.descriptions.directDiffDescription;
-  }, [isOllama, effectiveGenerateMode, pack]);
+  }, [effectiveGenerateMode, pack]);
 
   const apiKeyLabel = isOllama ? pack.labels.ollamaHostUrl : pack.labels.apiKey;
   const apiKeyPlaceholder = useMemo(

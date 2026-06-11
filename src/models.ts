@@ -445,6 +445,13 @@ export const DEFAULT_COMMIT_OUTPUT_OPTIONS: CommitOutputOptions = {
   includeGitmoji: false,
 };
 
+export function resolveGenerateMode(
+  savedGenerateMode: GenerateMode | undefined,
+  requestedGenerateMode: GenerateMode | undefined,
+): GenerateMode {
+  return requestedGenerateMode ?? savedGenerateMode ?? DEFAULT_GENERATE_MODE;
+}
+
 export function normalizeCommitOutputOptions(
   options: unknown,
 ): CommitOutputOptions {

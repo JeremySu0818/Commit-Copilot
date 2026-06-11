@@ -27,7 +27,6 @@ import {
   CUSTOM_PROVIDERS_STATE_KEY,
   DEFAULT_HYBRID_GENERATION_OPTIONS,
   DEFAULT_COMMIT_OUTPUT_OPTIONS,
-  DEFAULT_GENERATE_MODE,
   DEFAULT_PROVIDER,
   GenerateMode,
   HybridGenerationOptions,
@@ -40,6 +39,7 @@ import {
   normalizeCommitOutputOptions,
   normalizeHybridGenerationOptions,
   normalizeMaxAgentStepsValue,
+  resolveGenerateMode,
 } from './models';
 import { GenerationStateManager } from './state';
 
@@ -322,18 +322,14 @@ function resolveProviderContext(
   };
 }
 
-function resolveGenerateMode(
+function resolveRequestedGenerateMode(
   context: vscode.ExtensionContext,
-  llmProvider: APIProvider,
   requestedGenerateMode: GenerateMode | undefined,
 ): GenerateMode {
-  const savedGenerateMode =
-    context.globalState.get<GenerateMode>('GENERATE_MODE') ??
-    DEFAULT_GENERATE_MODE;
-  if (llmProvider === 'ollama') {
-    return 'direct-diff';
-  }
-  return requestedGenerateMode ?? savedGenerateMode;
+  return resolveGenerateMode(
+    context.globalState.get<GenerateMode>('GENERATE_MODE'),
+    requestedGenerateMode,
+  );
 }
 
 function resolveCommitOutputOptions(
@@ -892,9 +888,8 @@ async function executeGenerateCommand(
     }
 
     const providerContext = resolveProviderContext(context);
-    const currentGenerateMode = resolveGenerateMode(
+    const currentGenerateMode = resolveRequestedGenerateMode(
       context,
-      providerContext.llmProvider,
       parsedArg.requestedGenerateMode,
     );
     const currentCommitOutputOptions = resolveCommitOutputOptions(

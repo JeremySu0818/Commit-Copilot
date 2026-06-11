@@ -302,7 +302,6 @@ export const idLocale: LocaleTextBundle = {
         'Tidak dapat mengambil model dari titik akhir. Anda dapat menambahkan model secara manual.',
     },
     descriptions: {
-      ollamaFixedToDirectDiff: 'Ollama ditetapkan ke mode Direct Diff',
       agenticModeDescription:
         'Mode Agentic menggunakan alat repositori untuk analisis yang lebih dalam',
       directDiffDescription:

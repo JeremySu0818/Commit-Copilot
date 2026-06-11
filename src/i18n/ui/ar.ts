@@ -284,7 +284,6 @@ export const arLocale: LocaleTextBundle = {
         'تعذر جلب النماذج من نقطة النهاية. يمكنك إضافة النماذج يدويًا.',
     },
     descriptions: {
-      ollamaFixedToDirectDiff: 'Ollama مثبت على وضع Direct Diff',
       agenticModeDescription: 'الوضع الوكيلي يستخدم أدوات المستودع لتحليل أعمق',
       directDiffDescription: 'Direct Diff يرسل الفرق الخام مباشرة إلى النموذج',
       ollamaInfo:

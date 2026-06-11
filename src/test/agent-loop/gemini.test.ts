@@ -228,11 +228,11 @@ void test('runGeminiAgentLoop returns write_commit_message argument without func
 
   assert.deepEqual(executedCalls, []);
   assert.equal(generateRequests.length, 1);
-  assert.ok(
-    progressMessages.some((message) =>
-      message.includes('write_commit_message'),
-    ),
+  const finalProgressMessage = progressMessages.find((message) =>
+    message.includes('write_commit_message'),
   );
+  assert.ok(finalProgressMessage);
+  assert.match(finalProgressMessage, /^\[Step 1\]/);
 });
 
 void test('runGeminiAgentLoop maps API_KEY_INVALID to APIKeyInvalidError', async () => {

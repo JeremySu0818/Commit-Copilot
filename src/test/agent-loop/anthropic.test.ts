@@ -221,11 +221,11 @@ void test('runAnthropicAgentLoop returns write_commit_message input without tool
 
   assert.deepEqual(executedCalls, []);
   assert.equal(streamRequests.length, 1);
-  assert.ok(
-    progressMessages.some((message) =>
-      message.includes('write_commit_message'),
-    ),
+  const finalProgressMessage = progressMessages.find((message) =>
+    message.includes('write_commit_message'),
   );
+  assert.ok(finalProgressMessage);
+  assert.match(finalProgressMessage, /^\[Step 1\]/);
 });
 
 void test('runAnthropicAgentLoop maps 401 errors to APIKeyInvalidError', async () => {

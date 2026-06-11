@@ -309,8 +309,6 @@ export const plLocale: LocaleTextBundle = {
         'Nie można pobrać modeli z punktu końcowego. Możesz dodać modele ręcznie.',
     },
     descriptions: {
-      ollamaFixedToDirectDiff:
-        'Ollama jest na sztywno przypisana do trybu Direct Diff',
       agenticModeDescription:
         'Tryb agenta używa narzędzi repozytorium do głębszej analizy',
       directDiffDescription:

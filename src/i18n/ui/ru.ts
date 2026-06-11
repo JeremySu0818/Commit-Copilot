@@ -301,7 +301,6 @@ export const ruLocale: LocaleTextBundle = {
         'Не удалось получить модели из конечной точки. Вы можете добавить модели вручную.',
     },
     descriptions: {
-      ollamaFixedToDirectDiff: 'Ollama зафиксирована в режиме Direct Diff',
       agenticModeDescription:
         'Агентный режим использует инструменты репозитория для более глубокого анализа',
       directDiffDescription:

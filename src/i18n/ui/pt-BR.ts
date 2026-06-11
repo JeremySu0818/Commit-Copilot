@@ -308,7 +308,6 @@ export const ptBRLocale: LocaleTextBundle = {
         'Não foi possível buscar modelos do endpoint. Você pode adicionar modelos manualmente.',
     },
     descriptions: {
-      ollamaFixedToDirectDiff: 'O Ollama está fixado no modo de Diff Direto',
       agenticModeDescription:
         'Modo Agêntico usa ferramentas de repositório para uma análise mais profunda',
       directDiffDescription:

@@ -303,8 +303,6 @@ export const jaLocale: LocaleTextBundle = {
         'エンドポイントからモデルを取得できませんでした。手動でモデルを追加できます。',
     },
     descriptions: {
-      ollamaFixedToDirectDiff:
-        'Ollamaは「Direct Diff」モードに固定されています',
       agenticModeDescription:
         'Agentic モードでは、リポジトリツールを使用して詳細な分析を行います',
       directDiffDescription: 'Direct Diff は差分を直接モデルに送信します',
