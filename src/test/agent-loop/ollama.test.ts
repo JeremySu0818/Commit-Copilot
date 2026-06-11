@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import test from 'node:test';
 
+import { EXIT_CODES } from '../../errors';
 import { OLLAMA_DEFAULT_HOST } from '../../models';
 import { clearRequireCache, withModuleMock } from '../helpers/module-mock';
 
@@ -37,6 +38,10 @@ function isApiRequestErrorWithHostMessage(
     isRecord(value.messageArgs) &&
     value.messageArgs.host === host
   );
+}
+
+function hasExitCode(value: unknown, code: number): boolean {
+  return isRecord(value) && 'exitCode' in value && value.exitCode === code;
 }
 
 async function withOllamaModule<T>(
@@ -184,6 +189,93 @@ void test('runOllamaAgentLoop executes batched text-protocol tools and returns f
     progressEvents.some((event) => event.increment === expectedIncrement),
     true,
   );
+});
+
+void test('runOllamaAgentLoop aborts an active model pull when cancelled', async () => {
+  let abortCalls = 0;
+  let listenerDisposed = false;
+  let cancellationListener: (() => void) | undefined;
+  let rejectPull: ((error: Error) => void) | undefined;
+  let markPullStarted: (() => void) | undefined;
+  const pullStarted = new Promise<void>((resolve) => {
+    markPullStarted = resolve;
+  });
+
+  class OllamaMock {
+    abort() {
+      abortCalls += 1;
+      rejectPull?.(new Error('The operation was aborted'));
+    }
+
+    pull() {
+      return Promise.resolve({
+        [Symbol.asyncIterator]() {
+          return {
+            next: () =>
+              new Promise<IteratorResult<Record<string, unknown>>>(
+                (_resolve, reject) => {
+                  rejectPull = reject;
+                  markPullStarted?.();
+                },
+              ),
+          };
+        },
+      });
+    }
+
+    chat() {
+      return Promise.reject(new Error('chat should not be called'));
+    }
+  }
+
+  const cancellationToken = {
+    isCancellationRequested: false,
+    onCancellationRequested(listener: () => void) {
+      cancellationListener = listener;
+      return {
+        dispose() {
+          listenerDisposed = true;
+        },
+      };
+    },
+  };
+  const agentToolsMock = {
+    buildInitialContext: () => Promise.resolve('initial context'),
+    executeToolCall: () => Promise.resolve({ name: 'get_diff', content: '' }),
+  };
+
+  try {
+    await withOllamaModule(
+      { Ollama: OllamaMock },
+      agentToolsMock,
+      async ({ runOllamaAgentLoop }) => {
+        const generation = runOllamaAgentLoop(
+          undefined,
+          'llama3-test',
+          'diff --git a/a.ts b/a.ts\n+cancel pull',
+          process.cwd(),
+          undefined,
+          false,
+          undefined,
+          undefined,
+          cancellationToken,
+        );
+
+        await pullStarted;
+        cancellationToken.isCancellationRequested = true;
+        cancellationListener?.();
+
+        await assert.rejects(generation, (error: unknown) =>
+          hasExitCode(error, EXIT_CODES.CANCELLED),
+        );
+      },
+    );
+  } finally {
+    clearRequireCache(MODULE_PATH);
+  }
+
+  assert.equal(abortCalls, 1);
+  assert.equal(listenerDisposed, true);
 });
 
 void test('runOllamaAgentLoop maps connection failures to friendly host error', async () => {

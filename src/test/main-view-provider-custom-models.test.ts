@@ -330,3 +330,114 @@ void test('deleteCustomModel clears ollama selection when deleting the last avai
     harness.dispose();
   }
 });
+
+void test('fetchOllamaModels cleans up manual models present in API tags response', async () => {
+  const originalFetch = global.fetch;
+  const mockFetch = () =>
+    Promise.resolve({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          models: [{ name: 'llama3:latest' }],
+        }),
+    } as Response);
+
+  global.fetch = mockFetch;
+
+  const harness = await createHarness({
+    OLLAMA_MODELS: [
+      { id: 'llama3:latest', alias: 'llama3:latest' },
+      { id: 'custom-unlisted-model', alias: 'custom-unlisted-model' },
+    ],
+  });
+
+  const realFetchOllamaModels = Object.getPrototypeOf(harness.provider).fetchOllamaModels;
+  harness.provider.fetchOllamaModels = realFetchOllamaModels;
+
+  try {
+    const result = await harness.provider.fetchOllamaModels('http://localhost:11434');
+
+    assert.deepEqual(harness.state.get('OLLAMA_MODELS'), [
+      { id: 'custom-unlisted-model', alias: 'custom-unlisted-model' },
+    ]);
+
+    assert.deepEqual(result, [
+      { id: 'llama3:latest', alias: 'llama3:latest' },
+      { id: 'custom-unlisted-model', alias: 'custom-unlisted-model' },
+    ]);
+
+    const message = findPostedMessage(harness.postedMessages, 'customModelsList');
+    assert.deepEqual(message.customModels, [
+      { id: 'custom-unlisted-model', alias: 'custom-unlisted-model' },
+    ]);
+  } finally {
+    global.fetch = originalFetch;
+    harness.dispose();
+  }
+});
+
+void test('fetchCustomProviderModels cleans up manual models present in API models response', async () => {
+  class MockOpenAI {
+    models = {
+      list: () => {
+        const mockModelIterator = {
+          [Symbol.asyncIterator]() {
+            let step = 0;
+            const models = [{ id: 'gpt-4o' }];
+            return {
+              next() {
+                if (step < models.length) {
+                  return Promise.resolve({ value: models[step++], done: false });
+                }
+                return Promise.resolve({ done: true });
+              },
+            };
+          },
+        };
+        return mockModelIterator;
+      },
+    };
+    constructor(options: { apiKey: string }) {}
+  }
+
+  await withModuleMock('openai', { __esModule: true, default: MockOpenAI }, async () => {
+    const harness = await createHarness({
+      [CUSTOM_PROVIDERS_STATE_KEY]: [
+        { id: customId, name: 'Local AI', baseUrl: 'http://localhost:1234/v1' },
+      ],
+      [getCustomProviderModelsStorageKey(customId)]: [
+        { id: 'gpt-4o', alias: 'gpt-4o' },
+        { id: 'custom-unlisted-model', alias: 'custom-unlisted-model' },
+      ],
+    });
+
+    const realFetchCustomProviderModels = Object.getPrototypeOf(harness.provider).fetchCustomProviderModels;
+    harness.provider.fetchCustomProviderModels = realFetchCustomProviderModels;
+
+    try {
+      const result = await harness.provider.fetchCustomProviderModels(
+        'mock-api-key',
+        'http://localhost:1234/v1',
+        customId,
+      );
+
+      assert.deepEqual(
+        harness.state.get(getCustomProviderModelsStorageKey(customId)),
+        [{ id: 'custom-unlisted-model', alias: 'custom-unlisted-model' }],
+      );
+
+      assert.deepEqual(result, [
+        { id: 'gpt-4o', alias: 'gpt-4o' },
+        { id: 'custom-unlisted-model', alias: 'custom-unlisted-model' },
+      ]);
+
+      const message = findPostedMessage(harness.postedMessages, 'customModelsList');
+      assert.deepEqual(message.customModels, [
+        { id: 'custom-unlisted-model', alias: 'custom-unlisted-model' },
+      ]);
+    } finally {
+      harness.dispose();
+    }
+  });
+});
+

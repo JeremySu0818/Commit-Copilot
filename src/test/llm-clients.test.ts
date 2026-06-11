@@ -51,6 +51,81 @@ void test('createLLMClient falls back to default ollama host when host is empty'
   assert.equal(getOllamaHost(client), OLLAMA_DEFAULT_HOST);
 });
 
+void test('Ollama direct diff aborts an active model pull when cancelled', async () => {
+  let abortCalls = 0;
+  let listenerDisposed = false;
+  let cancellationListener: (() => void) | undefined;
+  let rejectPull: ((error: Error) => void) | undefined;
+  let markPullStarted: (() => void) | undefined;
+  const pullStarted = new Promise<void>((resolve) => {
+    markPullStarted = resolve;
+  });
+
+  class OllamaMock {
+    abort() {
+      abortCalls += 1;
+      rejectPull?.(new Error('The operation was aborted'));
+    }
+
+    pull() {
+      return Promise.resolve({
+        [Symbol.asyncIterator]() {
+          return {
+            next: () =>
+              new Promise<IteratorResult<Record<string, unknown>>>(
+                (_resolve, reject) => {
+                  rejectPull = reject;
+                  markPullStarted?.();
+                },
+              ),
+          };
+        },
+      });
+    }
+
+    chat() {
+      return Promise.reject(new Error('chat should not be called'));
+    }
+  }
+
+  const cancellationToken = {
+    isCancellationRequested: false,
+    onCancellationRequested(listener: () => void) {
+      cancellationListener = listener;
+      return {
+        dispose() {
+          listenerDisposed = true;
+        },
+      };
+    },
+  };
+
+  await withModuleMock('ollama', { Ollama: OllamaMock }, async () => {
+    const client = createLLMClient({
+      provider: 'ollama',
+      apiKey: OLLAMA_DEFAULT_HOST,
+      model: 'qwen2.5:latest',
+    });
+    const generation = client.generateCommitMessage(
+      'diff --git a/file.txt b/file.txt\n+cancel pull',
+      undefined,
+      undefined,
+      cancellationToken,
+    );
+
+    await pullStarted;
+    cancellationToken.isCancellationRequested = true;
+    cancellationListener?.();
+
+    await assert.rejects(generation, (error: unknown) =>
+      hasExitCode(error, EXIT_CODES.CANCELLED),
+    );
+  });
+
+  assert.equal(abortCalls, 1);
+  assert.equal(listenerDisposed, true);
+});
+
 void test('Anthropic direct diff uses streaming API', async () => {
   const calls = {
     apiKeys: [] as string[],

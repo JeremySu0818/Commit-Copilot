@@ -1,6 +1,7 @@
 import { buildInitialContext, executeToolCall } from '../agent-tools';
 import {
   CancellationSignal,
+  subscribeToCancellation,
   throwIfCancellationRequested,
 } from '../cancellation';
 import { GitOperations } from '../commit-copilot';
@@ -411,75 +412,87 @@ async function runOllamaAgentLoop(
     const modelName = pickNonEmpty(model, DEFAULT_MODELS.ollama);
     const resolvedCommitOutputOptions =
       normalizeCommitOutputOptions(commitOutputOptions);
-
-    const pullStream = await client.pull({ model: modelName, stream: true });
-    await reportPullProgress(
-      pullStream,
-      modelName,
-      onProgress,
+    const cancellationSubscription = subscribeToCancellation(
       cancellationToken,
-      language,
-    );
-
-    if (onProgress) {
-      onProgress(LOCALES[language].progressMessages.generatingMessage, 0);
-    }
-
-    const initialContext = await buildInitialContext(
-      diff,
-      repoRoot,
-      gitOps,
-      isStaged,
-      true,
-      resolvedCommitOutputOptions,
-      draftCommitMessage,
-      commitMessageLanguage,
-    );
-    const systemPrompt = buildAgentSystemPrompt({
-      includeFindReferences: true,
-      commitOutputOptions: resolvedCommitOutputOptions,
-      maxAgentSteps,
-      language: commitMessageLanguage,
-    });
-    const messages: OllamaMessage[] = [
-      {
-        role: 'system',
-        content: `${systemPrompt}\n\n${buildOllamaToolProtocolPrompt(
-          commitMessageLanguage,
-        )}`,
+      () => {
+        client.abort();
       },
-      { role: 'user', content: initialContext },
-    ];
-    const progressState = { nextStep: 1 };
-    const loopResult = await executeOllamaInvestigationLoop({
-      client,
-      modelName,
-      messages,
-      stepLimit: resolveStepLimit(maxAgentSteps),
-      onProgress,
-      language,
-      repoRoot,
-      diff,
-      isStaged,
-      gitOps,
-      cancellationToken,
-      commitMessageLanguage,
-      progressState,
-    });
-    if (loopResult) {
-      return loopResult;
+    );
+
+    try {
+      throwIfCancellationRequested(cancellationToken);
+      const pullStream = await client.pull({ model: modelName, stream: true });
+      await reportPullProgress(
+        pullStream,
+        modelName,
+        onProgress,
+        cancellationToken,
+        language,
+      );
+
+      if (onProgress) {
+        onProgress(LOCALES[language].progressMessages.generatingMessage, 0);
+      }
+
+      const initialContext = await buildInitialContext(
+        diff,
+        repoRoot,
+        gitOps,
+        isStaged,
+        true,
+        resolvedCommitOutputOptions,
+        draftCommitMessage,
+        commitMessageLanguage,
+      );
+      const systemPrompt = buildAgentSystemPrompt({
+        includeFindReferences: true,
+        commitOutputOptions: resolvedCommitOutputOptions,
+        maxAgentSteps,
+        language: commitMessageLanguage,
+      });
+      const messages: OllamaMessage[] = [
+        {
+          role: 'system',
+          content: `${systemPrompt}\n\n${buildOllamaToolProtocolPrompt(
+            commitMessageLanguage,
+          )}`,
+        },
+        { role: 'user', content: initialContext },
+      ];
+      const progressState = { nextStep: 1 };
+      const loopResult = await executeOllamaInvestigationLoop({
+        client,
+        modelName,
+        messages,
+        stepLimit: resolveStepLimit(maxAgentSteps),
+        onProgress,
+        language,
+        repoRoot,
+        diff,
+        isStaged,
+        gitOps,
+        cancellationToken,
+        commitMessageLanguage,
+        progressState,
+      });
+      if (loopResult) {
+        return loopResult;
+      }
+      return await requestOllamaFinalCommitMessage({
+        client,
+        modelName,
+        messages,
+        cancellationToken,
+        commitMessageLanguage,
+        onProgress,
+        language,
+        progressStep: progressState.nextStep,
+      });
+    } finally {
+      cancellationSubscription.dispose();
     }
-    return await requestOllamaFinalCommitMessage({
-      client,
-      modelName,
-      messages,
-      cancellationToken,
-      commitMessageLanguage,
-      onProgress,
-      language,
-      progressStep: progressState.nextStep,
-    });
   } catch (error: unknown) {
+    throwIfCancellationRequested(cancellationToken);
     if (
       error instanceof NoChangesError ||
       error instanceof GenerationCancelledError

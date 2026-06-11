@@ -259,13 +259,12 @@ export function useMainViewHandlers({
 
   const handleGenerateModeChange = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
-      if (isOllama) return;
       const mode = normalizeGenerateMode(e.target.value);
       dispatch({ type: 'SET_PREFERRED_GENERATE_MODE', mode });
       dispatch({ type: 'SET_GENERATE_MODE', mode });
       vscode.postMessage({ type: 'saveGenerateMode', value: mode });
     },
-    [isOllama, dispatch, vscode],
+    [dispatch, vscode],
   );
 
   const handleCheckboxChange = useCallback(

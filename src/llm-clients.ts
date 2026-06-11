@@ -1,5 +1,6 @@
 import {
   CancellationSignal,
+  subscribeToCancellation,
   throwIfCancellationRequested,
 } from './cancellation';
 import {
@@ -664,51 +665,66 @@ export class OllamaClient implements ILLMClient {
     try {
       const { Ollama: ollamaClientClass } = await import('ollama');
       const client = new ollamaClientClass({ host: this.host });
-
-      const pullStream = await client.pull({ model: this.model, stream: true });
-      await reportOllamaPullProgress(
-        pullStream,
-        this.model,
-        onProgress,
+      const cancellationSubscription = subscribeToCancellation(
         cancellationToken,
-        this.language,
+        () => {
+          client.abort();
+        },
       );
 
-      if (onProgress) {
-        onProgress(
-          LOCALES[this.language].progressMessages.generatingMessage,
-          0,
+      try {
+        throwIfCancellationRequested(cancellationToken);
+        const pullStream = await client.pull({
+          model: this.model,
+          stream: true,
+        });
+        await reportOllamaPullProgress(
+          pullStream,
+          this.model,
+          onProgress,
+          cancellationToken,
+          this.language,
         );
-      }
 
-      const response = await client.chat({
-        model: this.model,
-        messages: [
-          { role: 'system', content: this.systemPrompt },
-          {
-            role: 'user',
-            content: buildDirectDiffUserPrompt(
-              diff,
-              draftCommitMessage,
-              this.commitMessageLanguage,
-            ),
+        if (onProgress) {
+          onProgress(
+            LOCALES[this.language].progressMessages.generatingMessage,
+            0,
+          );
+        }
+
+        const response = await client.chat({
+          model: this.model,
+          messages: [
+            { role: 'system', content: this.systemPrompt },
+            {
+              role: 'user',
+              content: buildDirectDiffUserPrompt(
+                diff,
+                draftCommitMessage,
+                this.commitMessageLanguage,
+              ),
+            },
+          ],
+          options: {
+            temperature: 0.7,
+            top_p: 0.95,
           },
-        ],
-        options: {
-          temperature: 0.7,
-          top_p: 0.95,
-        },
-      });
+        });
 
-      const text = response.message.content;
-      throwIfCancellationRequested(cancellationToken);
+        const text = response.message.content;
+        throwIfCancellationRequested(cancellationToken);
 
-      if (!text) {
-        throw createEmptyResponseError('Ollama');
+        if (!text) {
+          throw createEmptyResponseError('Ollama');
+        }
+
+        return text.trim();
+      } finally {
+        cancellationSubscription.dispose();
       }
-
-      return text.trim();
     } catch (error: unknown) {
+      throwIfCancellationRequested(cancellationToken);
       if (
         error instanceof NoChangesError ||
         error instanceof GenerationCancelledError
