@@ -12,6 +12,13 @@ async function withModuleMock<T>(
   mockValue: unknown,
   run: () => AsyncOrSync<T>,
 ): Promise<T> {
+  return withModulesMock({ [moduleName]: mockValue }, run);
+}
+
+async function withModulesMock<T>(
+  mocks: Readonly<Record<string, unknown>>,
+  run: () => AsyncOrSync<T>,
+): Promise<T> {
   const moduleImpl = Module as unknown as {
     _load: (request: string, parent: unknown, isMain: boolean) => unknown;
   };
@@ -22,8 +29,8 @@ async function withModuleMock<T>(
     parent: unknown,
     isMain: boolean,
   ): unknown {
-    if (request === moduleName) {
-      return mockValue;
+    if (Object.prototype.hasOwnProperty.call(mocks, request)) {
+      return mocks[request];
     }
     return originalLoad.call(this, request, parent, isMain);
   };
@@ -35,4 +42,4 @@ async function withModuleMock<T>(
   }
 }
 
-export { clearRequireCache, withModuleMock };
+export { clearRequireCache, withModuleMock, withModulesMock };

@@ -1,10 +1,7 @@
 import { useCallback } from 'react';
 
-import type {
-  CommitOutputOptions,
-  CustomProviderConfig,
-  GenerateMode,
-} from '../../models';
+import type { CustomProviderConfig } from '../../models/custom-provider';
+import type { CommitOutputOptions, GenerateMode } from '../../models/options';
 import { useMainViewContext } from '../main-view-context';
 import {
   createStatusMessage,

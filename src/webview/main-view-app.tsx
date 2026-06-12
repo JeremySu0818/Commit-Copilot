@@ -1,6 +1,6 @@
 import React, { useReducer, useMemo } from 'react';
 
-import type { WebviewBootstrapData } from '../main-view-webview-bootstrap';
+import type { WebviewBootstrapData } from '../shared/webview-bootstrap';
 
 import {
   MainViewContext,

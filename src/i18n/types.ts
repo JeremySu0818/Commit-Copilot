@@ -1,4 +1,4 @@
-import type { CommitCopilotErrorMessageKey } from '../errors';
+import type { CommitCopilotErrorMessageKey } from '../shared/errors';
 
 export type DisplayLanguage =
   | 'auto'

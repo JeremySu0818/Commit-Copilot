@@ -8,9 +8,11 @@
   "include": [
     "src/webview/**/*.ts",
     "src/webview/**/*.tsx",
-    "src/main-view-webview-bootstrap.ts",
-    "src/models.ts",
-    "src/i18n.ts",
+    "src/shared/webview-bootstrap.ts",
+    "src/models/**/*.ts",
+    "src/llm/provider-registry.ts",
+    "src/shared/webview-protocol.ts",
+    "src/i18n/index.ts",
     "src/i18n/**/*.ts"
   ],
   "exclude": ["node_modules", ".vscode-test"]

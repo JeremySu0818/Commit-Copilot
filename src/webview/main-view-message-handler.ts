@@ -1,13 +1,17 @@
 import { useEffect } from 'react';
 
 import type { DisplayLanguage, EffectiveDisplayLanguage } from '../i18n';
-import type { WebviewBootstrapData } from '../main-view-webview-bootstrap';
+import type { ModelConfig } from '../models/catalog';
+import type { CustomProviderConfig } from '../models/custom-provider';
 import type {
   CommitOutputOptions,
-  CustomProviderConfig,
   HybridGenerationOptions,
-  ModelConfig,
-} from '../models';
+} from '../models/options';
+import type { WebviewBootstrapData } from '../shared/webview-bootstrap';
+import {
+  asExtensionMessage,
+  ExtensionToWebviewMessage as MessagePayload,
+} from '../shared/webview-protocol';
 
 import type { MainViewAction, MainViewState } from './main-view-context';
 import {
@@ -20,19 +24,12 @@ import {
 
 type UnknownRecord = Record<string, unknown>;
 
-interface MessagePayload extends UnknownRecord {
-  type: string;
-}
-
 function isRecord(value: unknown): value is UnknownRecord {
   return typeof value === 'object' && value !== null;
 }
 
 function toMessagePayload(value: unknown): MessagePayload | null {
-  if (!isRecord(value) || typeof value.type !== 'string') {
-    return null;
-  }
-  return value as MessagePayload;
+  return asExtensionMessage(value);
 }
 
 function toString(value: unknown): string | undefined {

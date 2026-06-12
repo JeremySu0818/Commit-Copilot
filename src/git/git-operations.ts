@@ -1,0 +1,385 @@
+import { execFile } from 'child_process';
+import * as fs from 'fs';
+import * as path from 'path';
+import { promisify } from 'util';
+
+import type { GitCommit, GitRepository } from './types';
+
+const STATUS_UNTRACKED = 7;
+const MAX_COMMIT_LOG_ENTRIES_FALLBACK = 1000;
+const GIT_COMMIT_COUNT_TIMEOUT_MS = 15000;
+const GIT_LS_FILES_TIMEOUT_MS = 15000;
+const bytesPerKiB = 1024;
+const bytesPerMiB = bytesPerKiB * bytesPerKiB;
+const GIT_LS_FILES_MAX_BUFFER = Number.POSITIVE_INFINITY;
+const execFileAsync = promisify(execFile);
+
+function isNoCommitsError(message: string): boolean {
+  return (
+    message.includes('does not have any commits') ||
+    message.includes('no commits yet') ||
+    message.includes('unknown revision') ||
+    message.includes('bad revision') ||
+    message.includes('Needed a single revision') ||
+    (message.includes('ambiguous argument') && message.includes('HEAD'))
+  );
+}
+
+function getStringProperty(value: unknown, key: string): string {
+  if (
+    typeof value === 'object' &&
+    value !== null &&
+    key in value &&
+    typeof (value as Record<string, unknown>)[key] === 'string'
+  ) {
+    return String((value as Record<string, unknown>)[key]);
+  }
+  return '';
+}
+
+function normalizeGitPathCandidate(
+  filePath: string,
+  repoRoot: string,
+): string | null {
+  const trimmed = filePath.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  let candidate = trimmed;
+  if (path.isAbsolute(candidate)) {
+    const relPath = path.relative(repoRoot, candidate);
+    if (!relPath || relPath.startsWith('..') || path.isAbsolute(relPath)) {
+      return null;
+    }
+    candidate = relPath;
+  }
+
+  const normalized = candidate.replace(/\\/g, '/');
+  if (
+    !normalized ||
+    normalized.startsWith('../') ||
+    path.isAbsolute(normalized)
+  ) {
+    return null;
+  }
+
+  return normalized;
+}
+
+function normalizeGitFileList(
+  files: unknown,
+  repoRoot: string | undefined,
+): string[] | null {
+  if (!Array.isArray(files)) {
+    return null;
+  }
+
+  const normalizedFiles: string[] = [];
+  for (const filePath of files) {
+    if (typeof filePath !== 'string') {
+      continue;
+    }
+
+    if (path.isAbsolute(filePath) && !repoRoot) {
+      continue;
+    }
+
+    const normalized = normalizeGitPathCandidate(filePath, repoRoot ?? '');
+    if (normalized) {
+      normalizedFiles.push(normalized);
+    }
+  }
+  return normalizedFiles;
+}
+
+export class GitOperations {
+  constructor(private readonly repository: GitRepository) {}
+
+  async isGitRepo(): Promise<boolean> {
+    const rootPath = this.repository.rootUri.fsPath;
+    if (!rootPath) {
+      return false;
+    }
+
+    const gitPath = path.join(rootPath, '.git');
+    const gitPathExists = await fs.promises
+      .stat(gitPath)
+      .then((stat) => stat.isDirectory() || stat.isFile())
+      .catch(() => false);
+    if (gitPathExists) {
+      return true;
+    }
+
+    try {
+      await this.repository.status();
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async getDiff(staged = true): Promise<string> {
+    const diff = await this.repository.diff(staged);
+    return diff;
+  }
+
+  async show(filePath: string): Promise<string | null> {
+    try {
+      return await this.repository.show(':', filePath);
+    } catch (error) {
+      console.error('Error running git show:', error);
+      return null;
+    }
+  }
+
+  async showIndexFile(
+    filePath: string,
+  ): Promise<{ content: string; found: boolean }> {
+    try {
+      const content = await this.repository.show(':', filePath);
+      return { content, found: true };
+    } catch (error) {
+      console.error('Error running git show for index file:', error);
+      return { content: '', found: false };
+    }
+  }
+
+  async getRecentCommitMessages(count: number): Promise<string[]> {
+    if (count <= 0 || !Number.isFinite(count)) {
+      return [];
+    }
+    try {
+      const repoAny = this.repository as unknown as {
+        log?: (options?: {
+          maxEntries?: number;
+          path?: string;
+        }) => Promise<GitCommit[]>;
+      };
+      if (typeof repoAny.log !== 'function') {
+        console.error('Git log API not available on repository');
+        return [];
+      }
+      const commits = await repoAny.log({ maxEntries: count });
+      return commits.map((commit) => commit.message).filter(Boolean);
+    } catch (error) {
+      console.error('Error running git log:', error);
+      return [];
+    }
+  }
+
+  async listFilesFromGitApi(): Promise<string[] | null> {
+    const repoRoot = this.repository.rootUri.fsPath;
+
+    try {
+      if (typeof this.repository.lsFiles === 'function') {
+        try {
+          const apiFiles = await this.repository.lsFiles('');
+          const normalized = normalizeGitFileList(apiFiles, repoRoot);
+          if (normalized !== null) {
+            return normalized;
+          }
+        } catch {
+          const apiFiles = await this.repository.lsFiles();
+          const normalized = normalizeGitFileList(apiFiles, repoRoot);
+          if (normalized !== null) {
+            return normalized;
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error listing files via VS Code Git API:', error);
+    }
+
+    if (!repoRoot) {
+      return null;
+    }
+
+    try {
+      const { stdout } = await execFileAsync(
+        'git',
+        ['ls-files', '--cached', '--others', '--exclude-standard'],
+        {
+          cwd: repoRoot,
+          windowsHide: true,
+          maxBuffer: GIT_LS_FILES_MAX_BUFFER,
+          timeout: GIT_LS_FILES_TIMEOUT_MS,
+        },
+      );
+      const cliFiles = stdout.split(/\r?\n/).filter(Boolean);
+      const normalized = normalizeGitFileList(cliFiles, repoRoot);
+      return normalized ?? null;
+    } catch (error) {
+      console.error('Error listing files via git ls-files:', error);
+      return null;
+    }
+  }
+
+  async getCommitCount(): Promise<number | null> {
+    try {
+      const repoRoot = this.repository.rootUri.fsPath;
+      if (repoRoot) {
+        const count = await this.getCommitCountFromCli(repoRoot);
+        if (count !== null) {
+          return count;
+        }
+      }
+
+      const repoAny = this.repository as unknown as {
+        log?: (options?: {
+          maxEntries?: number;
+          path?: string;
+        }) => Promise<GitCommit[]>;
+      };
+      if (typeof repoAny.log !== 'function') {
+        console.error('Git log API not available on repository');
+        return null;
+      }
+      const commits = await repoAny.log({
+        maxEntries: MAX_COMMIT_LOG_ENTRIES_FALLBACK,
+      });
+      if (!Array.isArray(commits)) {
+        return null;
+      }
+      if (commits.length < MAX_COMMIT_LOG_ENTRIES_FALLBACK) {
+        return commits.length;
+      }
+      return null;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (isNoCommitsError(message)) {
+        return 0;
+      }
+      console.error('Error running git log:', error);
+      return null;
+    }
+  }
+
+  private async getCommitCountFromCli(
+    repoRoot: string,
+  ): Promise<number | null> {
+    try {
+      const { stdout } = await execFileAsync(
+        'git',
+        ['rev-list', '--count', 'HEAD'],
+        {
+          cwd: repoRoot,
+          windowsHide: true,
+          maxBuffer: bytesPerMiB,
+          timeout: GIT_COMMIT_COUNT_TIMEOUT_MS,
+        },
+      );
+      const trimmed = stdout.trim();
+      if (!trimmed) {
+        return null;
+      }
+      const parsed = Number.parseInt(trimmed, 10);
+      return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
+    } catch (error: unknown) {
+      const stderr = getStringProperty(error, 'stderr');
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : getStringProperty(error, 'message');
+      const message = [stderr, errorMessage]
+        .filter((segment): segment is string => segment.length > 0)
+        .join(' ');
+      if (isNoCommitsError(message)) {
+        return 0;
+      }
+      console.error('Error running git rev-list --count:', error);
+      return null;
+    }
+  }
+
+  hasMixedChanges(): boolean {
+    const hasStaged = this.repository.state.indexChanges.length > 0;
+    const hasUnstaged = this.repository.state.workingTreeChanges.length > 0;
+    return hasStaged && hasUnstaged;
+  }
+
+  async stageAllChanges(): Promise<boolean> {
+    try {
+      await this.repository.status();
+      const paths: string[] = [];
+
+      for (const change of this.repository.state.workingTreeChanges) {
+        paths.push(change.uri.fsPath);
+      }
+      for (const change of this.repository.state.untrackedChanges) {
+        paths.push(change.uri.fsPath);
+      }
+
+      if (paths.length > 0) {
+        await this.repository.add(paths);
+      }
+      return true;
+    } catch (error) {
+      console.error('Error staging changes:', error);
+      return false;
+    }
+  }
+
+  async commitChanges(message: string): Promise<boolean> {
+    try {
+      await this.repository.commit(message);
+      return true;
+    } catch (error) {
+      console.error('Error committing changes:', error);
+      return false;
+    }
+  }
+
+  hasUntrackedFiles(): boolean {
+    try {
+      if (this.repository.state.untrackedChanges.length > 0) {
+        return true;
+      }
+      return this.repository.state.workingTreeChanges.some(
+        (change) => change.status === STATUS_UNTRACKED,
+      );
+    } catch {
+      return false;
+    }
+  }
+
+  getWorkingTreePaths(): string[] {
+    try {
+      return this.repository.state.workingTreeChanges.map(
+        (change) => change.uri.fsPath,
+      );
+    } catch {
+      return [];
+    }
+  }
+
+  getUntrackedPaths(): string[] {
+    try {
+      const paths = new Set<string>();
+      for (const change of this.repository.state.untrackedChanges) {
+        paths.add(change.uri.fsPath);
+      }
+      for (const change of this.repository.state.workingTreeChanges) {
+        if (change.status === STATUS_UNTRACKED) {
+          paths.add(change.uri.fsPath);
+        }
+      }
+      return [...paths];
+    } catch {
+      return [];
+    }
+  }
+
+  async stageFiles(files: string[]): Promise<boolean> {
+    if (files.length === 0) {
+      return true;
+    }
+    try {
+      await this.repository.add(files);
+      return true;
+    } catch (error) {
+      console.error('Error staging files:', error);
+      return false;
+    }
+  }
+}

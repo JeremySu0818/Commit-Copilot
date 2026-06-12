@@ -6,17 +6,17 @@ import type {
   EffectiveDisplayLanguage,
   WebviewLanguagePack,
 } from '../i18n';
+import type { ModelConfig } from '../models/catalog';
+import type { CustomProviderConfig } from '../models/custom-provider';
+import type {
+  CommitOutputOptions,
+  GenerateMode,
+  HybridGenerationOptions,
+} from '../models/options';
 import type {
   MainViewScreen,
   WebviewBootstrapData,
-} from '../main-view-webview-bootstrap';
-import type {
-  CommitOutputOptions,
-  CustomProviderConfig,
-  GenerateMode,
-  HybridGenerationOptions,
-  ModelConfig,
-} from '../models';
+} from '../shared/webview-bootstrap';
 
 import type { StatusMessage } from './utils';
 

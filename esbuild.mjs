@@ -29,7 +29,7 @@ const createProblemMatcherPlugin = (label) => {
 
 async function main() {
   const extensionCtx = await context({
-    entryPoints: ['src/extension.ts'],
+    entryPoints: ['src/extension/index.ts'],
     bundle: true,
     format: 'cjs',
     minify: production,

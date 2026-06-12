@@ -1,10 +1,10 @@
-import { FINAL_COMMIT_MESSAGE_TOOL_NAME } from '../agent-tools/definitions';
-import type { GitOperations } from '../commit-copilot';
+import { FINAL_COMMIT_MESSAGE_TOOL_NAME } from '../agent/tools/definitions';
+import type { GitOperations } from '../git/git-operations';
 import {
   CommitOutputOptions,
   DEFAULT_COMMIT_OUTPUT_OPTIONS,
   normalizeCommitOutputOptions,
-} from '../models';
+} from '../models/options';
 
 import { LOCALIZED_PROMPTS } from './prompts/index';
 import type { EffectiveDisplayLanguage, LocalePromptBundle } from './types';

@@ -1,4 +1,4 @@
-import { EXIT_CODES } from '../../errors';
+import { EXIT_CODES } from '../../shared/errors';
 import type { LocaleTextBundle } from '../types';
 
 export const ruLocale: LocaleTextBundle = {

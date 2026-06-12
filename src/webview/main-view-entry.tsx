@@ -1,7 +1,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 
-import type { WebviewBootstrapData } from '../main-view-webview-bootstrap';
+import type { WebviewBootstrapData } from '../shared/webview-bootstrap';
 
 import { MainViewApp } from './main-view-app';
 import './main-view.css';
