@@ -273,7 +273,7 @@ export const huLocale: LocaleTextBundle = {
       editProvider: 'Szolgáltató szerkesztése',
       addProvider: '+ Szolgáltató hozzáadása...',
       deleteProvider: 'Szolgáltató törlése',
-      addModel: '+ Modell hozzáadása...',
+      addModel: 'Modellek kezelése...',
       deleteModel: 'Modell törlése',
       cancel: 'Mégse',
       showUpdateNotes: 'Frissítési megjegyzések megjelenítése',

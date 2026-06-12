@@ -271,7 +271,7 @@ export const ruLocale: LocaleTextBundle = {
       editProvider: 'Изменить провайдера',
       addProvider: '+ Добавить провайдера...',
       deleteProvider: 'Удалить провайдера',
-      addModel: '+ Добавить модель...',
+      addModel: 'Управление моделями...',
       deleteModel: 'Удалить модель',
       cancel: 'Отмена',
       showUpdateNotes: 'Показать примечания к обновлению',

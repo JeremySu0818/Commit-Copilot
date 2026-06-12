@@ -277,7 +277,7 @@ export const trLocale: LocaleTextBundle = {
       editProvider: 'Sağlayıcıyı Düzenle',
       addProvider: '+ Sağlayıcı Ekle...',
       deleteProvider: 'Sağlayıcıyı Sil',
-      addModel: '+ Model Ekle...',
+      addModel: 'Modelleri Yönet...',
       deleteModel: 'Modeli Sil',
       cancel: 'İptal',
       showUpdateNotes: 'Güncelleme Notlarını Göster',

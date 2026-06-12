@@ -249,7 +249,7 @@ export const zhCNLocale: LocaleTextBundle = {
       editProvider: '编辑 Provider',
       addProvider: '+ 添加 Provider...',
       deleteProvider: '删除 Provider',
-      addModel: '+ 添加模型...',
+      addModel: '管理模型...',
       deleteModel: '删除模型',
       cancel: '取消',
       showUpdateNotes: '再次显示更新记录',

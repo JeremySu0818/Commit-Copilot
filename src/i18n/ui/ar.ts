@@ -254,7 +254,7 @@ export const arLocale: LocaleTextBundle = {
       editProvider: 'تعديل المزود',
       addProvider: '+ إضافة مزود...',
       deleteProvider: 'حذف المزود',
-      addModel: '+ إضافة نموذج...',
+      addModel: 'إدارة النماذج...',
       deleteModel: 'حذف النموذج',
       cancel: 'إلغاء',
       showUpdateNotes: 'عرض ملاحظات التحديث',

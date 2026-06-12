@@ -271,7 +271,7 @@ export const nlLocale: LocaleTextBundle = {
       editProvider: 'Bewerk Provider',
       addProvider: '+ Provider Toevoegen...',
       deleteProvider: 'Verwijder Provider',
-      addModel: '+ Model toevoegen...',
+      addModel: 'Modellen beheren...',
       deleteModel: 'Model verwijderen',
       cancel: 'Annuleren',
       showUpdateNotes: 'Update-opmerkingen weergeven',

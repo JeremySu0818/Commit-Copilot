@@ -277,7 +277,7 @@ export const ptBRLocale: LocaleTextBundle = {
       editProvider: 'Editar Provedor',
       addProvider: '+ Adicionar Provedor...',
       deleteProvider: 'Excluir Provedor',
-      addModel: '+ Adicionar modelo...',
+      addModel: 'Gerenciar modelos...',
       deleteModel: 'Excluir modelo',
       cancel: 'Cancelar',
       showUpdateNotes: 'Mostrar notas de atualização',

@@ -271,7 +271,7 @@ export const hiLocale: LocaleTextBundle = {
       editProvider: 'प्रदाता संपादित करें',
       addProvider: '+ प्रदाता जोड़ें...',
       deleteProvider: 'प्रदाता हटाएं',
-      addModel: '+ मॉडल जोड़ें...',
+      addModel: 'मॉडल प्रबंधित करें...',
       deleteModel: 'मॉडल हटाएं',
       cancel: 'रद्द करें',
       showUpdateNotes: 'अद्यतन नोट दिखाएं',

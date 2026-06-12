@@ -249,7 +249,7 @@ export const zhTWLocale: LocaleTextBundle = {
       editProvider: '編輯 Provider',
       addProvider: '+ 新增 Provider...',
       deleteProvider: '刪除 Provider',
-      addModel: '+ 新增模型...',
+      addModel: '管理模型...',
       deleteModel: '刪除模型',
       cancel: '取消',
       showUpdateNotes: '再次顯示更新紀錄',

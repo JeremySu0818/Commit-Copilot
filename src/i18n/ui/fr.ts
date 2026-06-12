@@ -273,7 +273,7 @@ export const frLocale: LocaleTextBundle = {
       editProvider: 'Modifier le fournisseur',
       addProvider: '+ Ajouter un fournisseur...',
       deleteProvider: 'Supprimer le fournisseur',
-      addModel: '+ Ajouter un modèle...',
+      addModel: 'Gérer les modèles...',
       deleteModel: 'Supprimer le modèle',
       cancel: 'Annuler',
       showUpdateNotes: 'Afficher les notes de mise à jour',

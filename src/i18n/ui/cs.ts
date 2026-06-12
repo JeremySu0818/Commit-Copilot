@@ -271,7 +271,7 @@ export const csLocale: LocaleTextBundle = {
       editProvider: 'Upravit poskytovatele',
       addProvider: '+ Přidat poskytovatele...',
       deleteProvider: 'Smazat poskytovatele',
-      addModel: '+ Přidat model...',
+      addModel: 'Spravovat modely...',
       deleteModel: 'Smazat model',
       cancel: 'Zrušit',
       showUpdateNotes: 'Zobrazit poznámky k aktualizaci',

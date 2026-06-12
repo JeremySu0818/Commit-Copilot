@@ -283,7 +283,7 @@ export const deLocale: LocaleTextBundle = {
       editProvider: 'Anbieter bearbeiten',
       addProvider: '+ Anbieter hinzufügen...',
       deleteProvider: 'Anbieter löschen',
-      addModel: '+ Modell hinzufügen...',
+      addModel: 'Modelle verwalten...',
       deleteModel: 'Modell löschen',
       cancel: 'Abbrechen',
       showUpdateNotes: 'Update-Hinweise anzeigen',

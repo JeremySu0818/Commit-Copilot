@@ -272,7 +272,7 @@ export const itLocale: LocaleTextBundle = {
       editProvider: 'Modifica Provider',
       addProvider: '+ Aggiungi Provider...',
       deleteProvider: 'Elimina Provider',
-      addModel: '+ Aggiungi modello...',
+      addModel: 'Gestisci modelli...',
       deleteModel: 'Elimina modello',
       cancel: 'Annulla',
       showUpdateNotes: 'Mostra note di aggiornamento',

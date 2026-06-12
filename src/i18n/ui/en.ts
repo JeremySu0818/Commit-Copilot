@@ -269,7 +269,7 @@ export const enLocale: LocaleTextBundle = {
       editProvider: 'Edit Provider',
       addProvider: '+ Add Provider...',
       deleteProvider: 'Delete Provider',
-      addModel: '+ Add Model...',
+      addModel: 'Manage Models...',
       deleteModel: 'Delete Model',
       cancel: 'Cancel',
       showUpdateNotes: 'Show Update Notes',

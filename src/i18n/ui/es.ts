@@ -275,7 +275,7 @@ export const esLocale: LocaleTextBundle = {
       editProvider: 'Editar Proveedor',
       addProvider: '+ Añadir Proveedor...',
       deleteProvider: 'Borrar Proveedor',
-      addModel: '+ Agregar modelo...',
+      addModel: 'Gestionar modelos...',
       deleteModel: 'Eliminar modelo',
       cancel: 'Cancelar',
       showUpdateNotes: 'Mostrar notas de actualización',

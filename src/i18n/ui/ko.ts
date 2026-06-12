@@ -268,7 +268,7 @@ export const koLocale: LocaleTextBundle = {
       editProvider: '프로바이더 편집',
       addProvider: '+ 프로바이더 추가...',
       deleteProvider: '프로바이더 삭제',
-      addModel: '+ 모델 추가...',
+      addModel: '모델 관리...',
       deleteModel: '모델 삭제',
       cancel: '취소',
       showUpdateNotes: '업데이트 노트 다시 보기',

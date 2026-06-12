@@ -272,7 +272,7 @@ export const idLocale: LocaleTextBundle = {
       editProvider: 'Edit Penyedia',
       addProvider: '+ Tambah Penyedia...',
       deleteProvider: 'Hapus Penyedia',
-      addModel: '+ Tambah Model...',
+      addModel: 'Kelola Model...',
       deleteModel: 'Hapus Model',
       cancel: 'Batal',
       showUpdateNotes: 'Tampilkan Catatan Pembaruan',

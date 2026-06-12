@@ -273,7 +273,7 @@ export const jaLocale: LocaleTextBundle = {
       editProvider: 'プロバイダーを編集',
       addProvider: '+ プロバイダーを追加...',
       deleteProvider: 'プロバイダーを削除',
-      addModel: '+ モデルを追加...',
+      addModel: 'モデルを管理...',
       deleteModel: 'モデルを削除',
       cancel: 'キャンセル',
       showUpdateNotes: '更新履歴を再表示',

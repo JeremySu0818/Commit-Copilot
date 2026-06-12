@@ -278,7 +278,7 @@ export const plLocale: LocaleTextBundle = {
       editProvider: 'Edytuj dostawcę',
       addProvider: '+ Dodaj dostawcę...',
       deleteProvider: 'Usuń dostawcę',
-      addModel: '+ Dodaj model...',
+      addModel: 'Zarządzaj modelami...',
       deleteModel: 'Usuń model',
       cancel: 'Anuluj',
       showUpdateNotes: 'Pokaż informacje o aktualizacji',

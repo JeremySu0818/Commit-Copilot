@@ -272,7 +272,7 @@ export const viLocale: LocaleTextBundle = {
       editProvider: 'Chỉnh sửa Nhà cung cấp',
       addProvider: '+ Thêm Nhà cung cấp...',
       deleteProvider: 'Xóa Nhà cung cấp',
-      addModel: '+ Thêm mô hình...',
+      addModel: 'Quản lý mô hình...',
       deleteModel: 'Xóa mô hình',
       cancel: 'Hủy',
       showUpdateNotes: 'Hiển thị nhật ký cập nhật',
