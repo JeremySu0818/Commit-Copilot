@@ -7,14 +7,14 @@ Commit-Copilot is an **agentic** VS Code extension that uses a multi-step AI age
 - **Multi-Provider Support**: Choose your preferred AI provider:
   - **Google Gemini**: Support for Gemini 2.5 Flash-Lite/Flash/Pro, Gemini 3 Flash, Gemini 3.1 Flash-Lite/Pro, and Gemini 3.5 Flash.
   - **OpenAI**: Support for o3/o3-mini, o4-mini, GPT-4o mini/GPT-4o, GPT-4.1 nano/GPT-4.1 mini/GPT-4.1, GPT-5 nano/GPT-5 mini/GPT-5, GPT-5.1, GPT-5.2, GPT-5.4 nano/GPT-5.4 mini/GPT-5.4, and GPT-5.5.
-  - **Anthropic**: Support for Claude Sonnet/Opus 4, Claude Opus 4.1, Claude Haiku/Sonnet/Opus 4.5, Claude Sonnet/Opus 4.6, Claude Opus 4.7, and Claude Opus 4.8.
+  - **Anthropic**: Support for Claude Sonnet/Opus 4, Claude Opus 4.1, Claude Haiku/Sonnet/Opus 4.5, Claude Sonnet/Opus 4.6, Claude Opus 4.7, Claude Opus 4.8, and Claude Fable 5.
   - **xAI (Grok)**: Support for Grok 4.20 (non-reasoning/reasoning) and Grok 4.3.
   - **Groq**: Support for Llama 3.1 8B, Llama 3.3 70B, Llama 4 Scout, gpt-oss-20B/120B, and Qwen 3 32b.
   - **OpenRouter**: Access any model via OpenRouter's API, including dynamic model fetching with tool-support filtering.
   - **DeepSeek**: Support for DeepSeek Chat, DeepSeek R1 (Reasoner), and DeepSeek V4 Flash/Pro.
   - **Qwen**: Support for Qwen models via DashScope, including dynamic model fetching.
   - **Ollama**: Support for local models. Dynamically fetches your local model list from the Ollama instance and allows manual addition of custom model IDs. Agentic mode uses a built-in text tool protocol, so models can investigate with tools even when they do not implement Ollama's native tool-calling API.
-  - **Custom Provider**: Add any OpenAI-compatible endpoint (e.g. LM Studio, Azure OpenAI) by specifying a display name and Base URL. Custom providers appear alongside built-in providers, use secure API key storage, and can fetch or manually manage provider-specific models.
+  - **Custom Provider**: Add any OpenAI-compatible endpoint by specifying a display name and Base URL. Custom providers appear alongside built-in providers, use secure API key storage, and can fetch or manually manage provider-specific models.
 - **Two Generate Modes**:
   - **Agentic** (default): Runs a multi-step agent loop. The AI is given only file names and line counts initially, then autonomously calls tools — `get_diff`, `read_file`, `get_file_outline`, `find_references`, `get_recent_commits`, `search_code` — to investigate changes, understand context, and learn the project's commit style before classifying.
   - **Direct Diff**: Skips the agent loop and feeds the full diff directly to the model in one shot. Faster and available for every provider, including Ollama.
@@ -22,7 +22,7 @@ Commit-Copilot is an **agentic** VS Code extension that uses a multi-step AI age
 - **Configurable Agent Steps**: Set a `Max Agent Steps` limit to cap how many tool-call iterations the agent may perform before it must produce its final output. Set to `0` (default) for no limit.
 - **Cross-Project Pattern Search**: Uses a built-in `search_code` tool (grep-like) to discover hidden relationships not expressed through imports, such as environment variable references, string-based event names, and configuration keys.
 - **LSP Reference Impact Radar**: Uses VS Code's Language Server Protocol via `vscode.executeReferenceProvider` to find syntax-aware references for a symbol across the workspace. This helps the agent connect a change to the business scope it impacts.
-- **Strict Conventional Commits Classification**: Applies a priority-ordered ruleset covering 11 commit types (`feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`) with clearly defined boundary rules (e.g., removing dead code is `chore`, not `refactor`). Enforces mandatory scope parentheses, commit body, and 72-character line limits.
+- **Strict Conventional Commits Classification**: Applies a priority-ordered ruleset covering 11 commit types (`feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`) with clearly defined boundary rules. Enforces mandatory scope parentheses, commit body, and 72-character line limits.
 - **Intelligent Change Detection**: Detects five distinct change scenarios — staged-only, unstaged-only, mixed (staged + unstaged), unstaged with untracked files, and untracked-only — and presents contextual prompts to let you decide how to proceed. Never auto-stages without your explicit consent.
 - **Git Index-Aware Analysis**: When analyzing staged changes, the agent reads file contents from the Git index (`git show :path`) rather than from disk, ensuring the analysis matches exactly what will be committed. For LSP-based `find_references`, a temporary workspace snapshot is created from the index so that on-disk references align with the staged state.
 - **Real-Time API Validation**: Each provider's API key is validated against its actual endpoint before saving. Invalid keys, quota limits, and connection failures are caught immediately with provider-specific error messages.
@@ -83,7 +83,7 @@ Download and install the extension from the VS Code Marketplace or Open VSX Regi
 
 #### Adding a Custom Provider
 
-To use any OpenAI-compatible endpoint (e.g. Azure OpenAI, LM Studio):
+To use any OpenAI-compatible endpoint:
 
 1. Click **"Add Custom Provider"** in the provider settings.
 2. Enter a display **Name** and the **Base URL** for the endpoint.
@@ -98,10 +98,10 @@ The custom provider will appear in the provider list alongside the built-in ones
 | **Generate Mode**           | Agentic       | `Agentic` runs a multi-step investigation loop; `Direct Diff` sends the full diff in one shot. Both modes support Ollama.  |
 | **Hybrid Generation**       | Off           | Uses the existing Source Control input text as reference draft content while ignoring instructions embedded in that draft. |
 | **Max Agent Steps**         | 0 (unlimited) | Maximum number of tool-call iterations the agent may take. Set to `0` to remove the cap.                                   |
-| **Include Scope**           | On            | Whether to include a scope in the commit type, e.g. `fix(auth):`.                                                          |
+| **Include Scope**           | On            | Whether to include a scope in the commit type.                                                                             |
 | **Include Body**            | On            | Whether to append a descriptive body paragraph to the message.                                                             |
-| **Include Footer**          | Off           | Whether to append a footer section (e.g. `BREAKING CHANGE:` notes).                                                        |
-| **Include Gitmoji**         | Off           | Whether to prefix the subject with a mapped Gitmoji, e.g. `✨ feat(ui): add toolbar`.                                      |
+| **Include Footer**          | Off           | Whether to append a footer section.                                                                                        |
+| **Include Gitmoji**         | Off           | Whether to prefix the subject with a mapped Gitmoji.                                                                       |
 | **Extension Language**      | Auto          | Language used by the Commit-Copilot UI. Auto follows VS Code's display language.                                           |
 | **Commit Message Language** | English       | Language used for generated commit message subjects, bodies, and footers.                                                  |
 
