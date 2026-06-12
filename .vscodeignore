@@ -16,7 +16,6 @@ out/**
 !out/webview/main-view.css
 esbuild.mjs
 tsconfig*.json
-build.*
 *.md
 !README.md
 !package.nls*.json

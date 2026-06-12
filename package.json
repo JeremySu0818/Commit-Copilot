@@ -106,6 +106,7 @@
     }
   },
   "scripts": {
+    "build": "node scripts/build.mjs",
     "vscode:prepublish": "node scripts/move-locales.mjs && npm run package",
     "package": "npm run check-types && node esbuild.mjs --production",
     "compile": "npm run check-types && node esbuild.mjs",
