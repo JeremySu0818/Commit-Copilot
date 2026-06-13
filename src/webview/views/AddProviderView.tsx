@@ -131,20 +131,6 @@ export function AddProviderView() {
           }}
         />
         <div className="input-group input-group-spaced">
-          <label>{pack.labels.providerName}</label>
-          <input
-            type="text"
-            id="providerNameInput"
-            value={draft.name}
-            onChange={(e) => {
-              dispatch({
-                type: 'UPDATE_ADD_PROVIDER_DRAFT',
-                partial: { name: e.target.value },
-              });
-            }}
-          />
-        </div>
-        <div className="input-group input-group-spaced">
           <label>{pack.labels.apiFormat}</label>
           <select
             id="apiFormatSelect"
@@ -164,6 +150,20 @@ export function AddProviderView() {
               {pack.options.anthropicCompatible}
             </option>
           </select>
+        </div>
+        <div className="input-group input-group-spaced">
+          <label>{pack.labels.providerName}</label>
+          <input
+            type="text"
+            id="providerNameInput"
+            value={draft.name}
+            onChange={(e) => {
+              dispatch({
+                type: 'UPDATE_ADD_PROVIDER_DRAFT',
+                partial: { name: e.target.value },
+              });
+            }}
+          />
         </div>
         <div className="input-group input-group-spaced">
           <label>{pack.labels.apiBaseUrl}</label>
