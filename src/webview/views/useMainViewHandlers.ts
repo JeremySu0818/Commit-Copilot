@@ -1,6 +1,9 @@
 import { useCallback } from 'react';
 
-import type { CustomProviderConfig } from '../../models/custom-provider';
+import {
+  DEFAULT_CUSTOM_PROVIDER_API_FORMAT,
+  type CustomProviderConfig,
+} from '../../models/custom-provider';
 import type { CommitOutputOptions, GenerateMode } from '../../models/options';
 import { useMainViewContext } from '../main-view-context';
 import {
@@ -30,6 +33,12 @@ export function useMainViewHandlers({
     isGenerating,
   } = state;
 
+  const savedCustomProviderMaxTokens =
+    customProviderConfig?.apiFormat === 'anthropic'
+      ? String(customProviderConfig.maxTokens ?? '')
+      : '';
+  const isCustomAnthropic = customProviderConfig?.apiFormat === 'anthropic';
+
   const handleProviderChange = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
       const provider = e.target.value;
@@ -41,8 +50,10 @@ export function useMainViewHandlers({
             editingId: null,
             originalName: '',
             originalBaseUrl: '',
+            originalApiFormat: DEFAULT_CUSTOM_PROVIDER_API_FORMAT,
             name: '',
             baseUrl: '',
+            apiFormat: DEFAULT_CUSTOM_PROVIDER_API_FORMAT,
             apiKey: '',
             statusHtml: '',
           },
@@ -62,6 +73,17 @@ export function useMainViewHandlers({
       dispatch({
         type: 'SET_API_KEY_VALUE',
         value: nextApiValue,
+      });
+      const nextCustomProvider = state.customProviders.find(
+        (cp) => bootstrap.customProviderPrefix + cp.id === provider,
+      );
+
+      dispatch({
+        type: 'SET_CUSTOM_PROVIDER_MAX_TOKENS_VALUE',
+        value:
+          nextCustomProvider?.apiFormat === 'anthropic'
+            ? String(nextCustomProvider.maxTokens ?? '')
+            : '',
       });
       dispatch({
         type: 'SET_API_KEY_TYPE',
@@ -93,6 +115,7 @@ export function useMainViewHandlers({
     [
       currentProvider,
       state.ollamaStoredHost,
+      state.customProviders,
       bootstrap,
       pack,
       dispatch,
@@ -120,6 +143,53 @@ export function useMainViewHandlers({
       }
     },
     [isOllama, pack, dispatch],
+  );
+
+  const handleCustomProviderMaxTokensInput = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      dispatch({ type: 'SET_CUSTOM_PROVIDER_MAX_TOKENS_VALUE', value });
+    },
+    [dispatch],
+  );
+
+  const handleCustomProviderMaxTokensBlur = useCallback(
+    (e: React.FocusEvent<HTMLInputElement>) => {
+      if (!isCustomAnthropic || !customProviderConfig) {
+        return;
+      }
+      const trimmedValue = e.target.value.trim();
+      if (trimmedValue === savedCustomProviderMaxTokens) {
+        return;
+      }
+      if (trimmedValue.length === 0) {
+        vscode.postMessage({
+          type: 'saveCustomProviderMaxTokens',
+          provider: currentProvider,
+        });
+        return;
+      }
+      if (!/^\d+$/.test(trimmedValue) || Number.parseInt(trimmedValue, 10) <= 0) {
+        dispatch({
+          type: 'SET_CUSTOM_PROVIDER_MAX_TOKENS_VALUE',
+          value: savedCustomProviderMaxTokens,
+        });
+        return;
+      }
+      vscode.postMessage({
+        type: 'saveCustomProviderMaxTokens',
+        provider: currentProvider,
+        maxTokens: Number.parseInt(trimmedValue, 10),
+      });
+    },
+    [
+      isCustomAnthropic,
+      customProviderConfig,
+      savedCustomProviderMaxTokens,
+      vscode,
+      currentProvider,
+      dispatch,
+    ],
   );
 
   const handleSave = useCallback(() => {
@@ -167,8 +237,10 @@ export function useMainViewHandlers({
         editingId: customProviderConfig.id,
         originalName: customProviderConfig.name,
         originalBaseUrl: customProviderConfig.baseUrl,
+        originalApiFormat: customProviderConfig.apiFormat,
         name: customProviderConfig.name,
         baseUrl: customProviderConfig.baseUrl,
+        apiFormat: customProviderConfig.apiFormat,
         apiKey: '',
         statusHtml: '',
       },
@@ -279,6 +351,8 @@ export function useMainViewHandlers({
   return {
     handleProviderChange,
     handleApiKeyInput,
+    handleCustomProviderMaxTokensInput,
+    handleCustomProviderMaxTokensBlur,
     handleSave,
     handleEditProvider,
     handleGenerate,

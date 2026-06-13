@@ -4,6 +4,7 @@ import {
   APIProvider,
   getOpenAICompatibleBaseUrl,
 } from '../../llm/provider-registry';
+import type { CustomProviderApiFormat } from '../../models/custom-provider';
 import type { CommitOutputOptions } from '../../models/options';
 import type { CancellationSignal } from '../../shared/cancellation';
 import type { ProgressCallback } from '../../shared/progress';
@@ -19,6 +20,8 @@ export interface AgentDispatcherOptions {
   apiKey: string;
   model?: string;
   baseUrl?: string;
+  apiFormat?: CustomProviderApiFormat;
+  maxTokens?: number;
   diff: string;
   repoRoot: string;
   onProgress?: ProgressCallback;
@@ -49,9 +52,16 @@ export async function runAgentLoop(
     draftCommitMessage: options.draftCommitMessage,
     language: options.language,
     commitMessageLanguage: options.commitMessageLanguage ?? 'en',
+    maxTokens: options.maxTokens,
   };
 
   if (options.baseUrl) {
+    if (options.apiFormat === 'anthropic') {
+      return runAnthropicAgentLoop({
+        ...runnerOptions,
+        baseUrl: options.baseUrl,
+      });
+    }
     return runOpenAIAgentLoop({
       ...runnerOptions,
       baseUrl: options.baseUrl,

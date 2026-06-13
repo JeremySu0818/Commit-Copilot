@@ -251,7 +251,9 @@ export const trLocale: LocaleTextBundle = {
       useScmInputAsDraft: 'SCM metnini taslak olarak kullan',
       maxAgentSteps: 'Maksimum Ajan Adımı',
       providerName: 'Sağlayıcı Adı',
+      apiFormat: 'API Biçimi',
       apiBaseUrl: 'API Temel URL',
+      maxOutputTokens: 'Maksimum Çıktı Tokeni',
       commitMessage: 'Commit Mesajı',
       modelName: 'Model Adı',
       version: 'Sürüm',
@@ -324,11 +326,15 @@ export const trLocale: LocaleTextBundle = {
       hybridGenerationDescription:
         'Etkinleştirildiğinde mevcut SCM giriş metni yalnızca referans taslak olarak kullanılır; içindeki talimatlar izlenmez.',
       customProviderInfo:
-        "Özel sağlayıcılar <strong>OpenAI uyumlu</strong> olmalıdır.<br>API Temel URL'si, OpenAI Chat Completions API'sini uygulayan bir hizmeti işaret etmelidir.",
+        'Özel sağlayıcılar <strong>OpenAI</strong> ve <strong>Anthropic</strong> uyumlu API biçimlerini destekler.<br>API Temel URL tarafından uygulanan biçimi seçin.',
+      maxOutputTokensDescription:
+        'Her Anthropic isteğiyle gönderilen max_tokens değeri. Sağlayıcı ve model tarafından desteklenen bir sınır kullanın.',
     },
     options: {
       agentic: 'Ajan (Agentic) Oluşturma',
       directDiff: 'Doğrudan Diff',
+      openaiCompatible: 'OpenAI-compatible',
+      anthropicCompatible: 'Anthropic-compatible',
     },
   },
   progressMessages: {

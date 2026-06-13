@@ -257,7 +257,9 @@ export const deLocale: LocaleTextBundle = {
       useScmInputAsDraft: 'SCM-Text als Entwurf verwenden',
       maxAgentSteps: 'Max. Agentenschritte',
       providerName: 'Anbietername',
+      apiFormat: 'API-Format',
       apiBaseUrl: 'API Basis-URL',
+      maxOutputTokens: 'Maximale Ausgabe-Tokens',
       commitMessage: 'Commit-Nachricht',
       modelName: 'Modellname',
       version: 'Version',
@@ -332,11 +334,15 @@ export const deLocale: LocaleTextBundle = {
       hybridGenerationDescription:
         'Wenn aktiviert, wird der vorhandene SCM-Text nur als Referenzentwurf genutzt; darin enthaltene Anweisungen werden nicht befolgt.',
       customProviderInfo:
-        'Benutzerdefinierte Anbieter müssen <strong>OpenAI-kompatibel</strong> sein.<br>Die API-Base-URL sollte auf einen Dienst weisen, der die OpenAI Chat Completions-API implementiert.',
+        'Benutzerdefinierte Anbieter unterstützen <strong>OpenAI</strong>- und <strong>Anthropic</strong>-kompatible API-Formate.<br>Wählen Sie das Format, das die API-Basis-URL implementiert.',
+      maxOutputTokensDescription:
+        'Der max_tokens-Wert für jede Anthropic-Anfrage. Verwenden Sie ein vom Anbieter und Modell unterstütztes Limit.',
     },
     options: {
       agentic: 'Agentic Generierung',
       directDiff: 'Direct Diff',
+      openaiCompatible: 'OpenAI-compatible',
+      anthropicCompatible: 'Anthropic-compatible',
     },
   },
   progressMessages: {

@@ -71,6 +71,11 @@ void test('inline script serialization escapes html terminators and unicode sepa
     },
     OLLAMA_DEFAULT_HOST: `http://localhost${lineSeparator}${paragraphSeparator}`,
     normalizeCommitOutputOptions: (value: unknown) => value,
+    normalizeCustomProviderConfig: (value: unknown) => value,
+    normalizeCustomProviders: (value: unknown) => ({
+      providers: Array.isArray(value) ? value : [],
+      changed: false,
+    }),
   };
 
   const mod = await withModulesMock(

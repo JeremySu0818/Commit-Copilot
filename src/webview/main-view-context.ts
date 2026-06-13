@@ -7,7 +7,11 @@ import type {
   WebviewLanguagePack,
 } from '../i18n';
 import type { ModelConfig } from '../models/catalog';
-import type { CustomProviderConfig } from '../models/custom-provider';
+import {
+  DEFAULT_CUSTOM_PROVIDER_API_FORMAT,
+  type CustomProviderApiFormat,
+  type CustomProviderConfig,
+} from '../models/custom-provider';
 import type {
   CommitOutputOptions,
   GenerateMode,
@@ -32,8 +36,10 @@ export interface AddProviderDraft {
   editingId: string | null;
   originalName: string;
   originalBaseUrl: string;
+  originalApiFormat: CustomProviderApiFormat;
   name: string;
   baseUrl: string;
+  apiFormat: CustomProviderApiFormat;
   apiKey: string;
   statusHtml: string;
 }
@@ -70,6 +76,7 @@ export interface MainViewState {
   saveBtnDisabled: boolean;
   saveBtnText: string;
   apiKeyValue: string;
+  customProviderMaxTokensValue: string;
   apiKeyType: string;
 }
 
@@ -110,6 +117,7 @@ export type MainViewAction =
   | { type: 'SET_LANGUAGE_STATUS_MESSAGE'; status: StatusMessage | null }
   | { type: 'SET_SAVE_BTN'; disabled: boolean; text: string }
   | { type: 'SET_API_KEY_VALUE'; value: string }
+  | { type: 'SET_CUSTOM_PROVIDER_MAX_TOKENS_VALUE'; value: string }
   | { type: 'SET_API_KEY_TYPE'; inputType: string };
 
 export function createInitialState(
@@ -153,8 +161,10 @@ export function createInitialState(
       editingId: null,
       originalName: '',
       originalBaseUrl: '',
+      originalApiFormat: DEFAULT_CUSTOM_PROVIDER_API_FORMAT,
       name: '',
       baseUrl: '',
+      apiFormat: DEFAULT_CUSTOM_PROVIDER_API_FORMAT,
       apiKey: '',
       statusHtml: '',
     },
@@ -168,6 +178,7 @@ export function createInitialState(
     saveBtnDisabled: true,
     saveBtnText: pack.buttons.save,
     apiKeyValue: '',
+    customProviderMaxTokensValue: '',
     apiKeyType: 'password',
   };
 }
@@ -248,6 +259,8 @@ export function mainViewStateReducer(
       };
     case 'SET_API_KEY_VALUE':
       return { ...state, apiKeyValue: action.value };
+    case 'SET_CUSTOM_PROVIDER_MAX_TOKENS_VALUE':
+      return { ...state, customProviderMaxTokensValue: action.value };
     case 'SET_API_KEY_TYPE':
       return { ...state, apiKeyType: action.inputType };
     default:

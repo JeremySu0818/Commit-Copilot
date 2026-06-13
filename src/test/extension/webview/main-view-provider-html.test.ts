@@ -219,7 +219,12 @@ void test('webview html shell includes nonce/csp/assets and bootstrap payload', 
   assert.equal(bootstrap.initialScreen, 'main');
   assert.equal(bootstrap.customProviderPrefix, 'custom:');
   assert.deepEqual(bootstrap.customProviders, [
-    { id: 'acme', name: 'Acme Provider', baseUrl: 'https://acme.example' },
+    {
+      id: 'acme',
+      name: 'Acme Provider',
+      baseUrl: 'https://acme.example',
+      apiFormat: 'openai',
+    },
   ]);
   assert.ok(bootstrap.providers.google);
   assert.ok(bootstrap.generateModes.agentic);

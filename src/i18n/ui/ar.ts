@@ -228,7 +228,9 @@ export const arLocale: LocaleTextBundle = {
       useScmInputAsDraft: 'استخدام نص SCM كمسودة',
       maxAgentSteps: 'أقصى خطوات للوكيل',
       providerName: 'اسم المزود',
+      apiFormat: 'تنسيق API',
       apiBaseUrl: 'الرابط الأساسي لـ API',
+      maxOutputTokens: 'الحد الأقصى لرموز الإخراج',
       commitMessage: 'رسالة Commit',
       modelName: 'اسم النموذج',
       version: 'الإصدار',
@@ -299,11 +301,15 @@ export const arLocale: LocaleTextBundle = {
       hybridGenerationDescription:
         'عند التفعيل، يستخدم النص الموجود في مربع SCM كمسودة مرجعية فقط؛ ولا تُتبع أي تعليمات داخله.',
       customProviderInfo:
-        'المزودات المخصصة يجب أن تكون <strong>متوافقة مع OpenAI</strong>.<br>الرابط الأساسي لـ API يجب أن يشير إلى خدمة تنفذ API الخاص بـ OpenAI Chat Completions.',
+        'يدعم موفرو الخدمة المخصصون تنسيقات API المتوافقة مع <strong>OpenAI</strong> و<strong>Anthropic</strong>.<br>اختر التنسيق الذي ينفذه عنوان URL الأساسي لـ API.',
+      maxOutputTokensDescription:
+        'قيمة max_tokens المرسلة مع كل طلب Anthropic. استخدم حدًا يدعمه المزود والنموذج.',
     },
     options: {
       agentic: 'توليد وكيلي',
       directDiff: 'فرق مباشر',
+      openaiCompatible: 'OpenAI-compatible',
+      anthropicCompatible: 'Anthropic-compatible',
     },
   },
   progressMessages: {

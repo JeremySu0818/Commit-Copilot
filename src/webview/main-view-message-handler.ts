@@ -2,7 +2,10 @@ import { useEffect } from 'react';
 
 import type { DisplayLanguage, EffectiveDisplayLanguage } from '../i18n';
 import type { ModelConfig } from '../models/catalog';
-import type { CustomProviderConfig } from '../models/custom-provider';
+import {
+  normalizeCustomProviderApiFormat,
+  type CustomProviderConfig,
+} from '../models/custom-provider';
 import type {
   CommitOutputOptions,
   HybridGenerationOptions,
@@ -85,9 +88,17 @@ function toCustomProviderArray(value: unknown): CustomProviderConfig[] {
   if (!Array.isArray(value)) {
     return [];
   }
-  return value.filter((item): item is CustomProviderConfig =>
-    isCustomProviderConfig(item),
-  );
+  return value
+    .filter((item): item is CustomProviderConfig =>
+      isCustomProviderConfig(item),
+    )
+    .map((item) => ({
+      ...item,
+      apiFormat: normalizeCustomProviderApiFormat(item.apiFormat),
+      ...(typeof item.maxTokens === 'number'
+        ? { maxTokens: item.maxTokens }
+        : {}),
+    }));
 }
 
 function isDefaultModelProvider(
@@ -238,6 +249,16 @@ export function useMainViewMessageHandler(
         currentProvider: (message) => {
           const provider = toString(message.provider) ?? state.currentProvider;
           dispatch({ type: 'SET_PROVIDER', provider });
+          const customProvider = state.customProviders.find(
+            (cp) => bootstrap.customProviderPrefix + cp.id === provider,
+          );
+          dispatch({
+            type: 'SET_CUSTOM_PROVIDER_MAX_TOKENS_VALUE',
+            value:
+              customProvider?.apiFormat === 'anthropic'
+                ? String(customProvider.maxTokens ?? '')
+                : '',
+          });
           dispatch({
             type: 'SET_API_KEY_TYPE',
             inputType: provider === 'ollama' ? 'text' : 'password',
@@ -596,8 +617,17 @@ export function useMainViewMessageHandler(
           });
           const savedId = toString(message.savedId) ?? '';
           const savedKey = bootstrap.customProviderPrefix + savedId;
+          const savedProvider =
+            customProviders.find((provider) => provider.id === savedId) ?? null;
           dispatch({ type: 'SET_PROVIDER', provider: savedKey });
           dispatch({ type: 'SET_API_KEY_VALUE', value: '' });
+          dispatch({
+            type: 'SET_CUSTOM_PROVIDER_MAX_TOKENS_VALUE',
+            value:
+              savedProvider?.apiFormat === 'anthropic'
+                ? String(savedProvider.maxTokens ?? '')
+                : '',
+          });
           dispatch({ type: 'SET_API_KEY_TYPE', inputType: 'password' });
           setModelStateToLocked(true);
           vscode.postMessage({ type: 'saveProvider', value: savedKey });
@@ -626,6 +656,7 @@ export function useMainViewMessageHandler(
                 )
               : '',
           });
+          dispatch({ type: 'SET_CUSTOM_PROVIDER_MAX_TOKENS_VALUE', value: '' });
           dispatch({
             type: 'SET_API_KEY_TYPE',
             inputType: deletedIsOllama ? 'text' : 'password',
@@ -651,10 +682,26 @@ export function useMainViewMessageHandler(
           });
         },
         customProvidersLoaded: (message) => {
-          dispatch({
-            type: 'SET_CUSTOM_PROVIDERS',
-            providers: toCustomProviderArray(message.customProviders),
-          });
+          const providers = toCustomProviderArray(message.customProviders);
+          dispatch({ type: 'SET_CUSTOM_PROVIDERS', providers });
+          const activeCustomProvider = providers.find(
+            (provider) =>
+              bootstrap.customProviderPrefix + provider.id ===
+              state.currentProvider,
+          );
+          if (activeCustomProvider?.apiFormat === 'anthropic') {
+            dispatch({
+              type: 'SET_CUSTOM_PROVIDER_MAX_TOKENS_VALUE',
+              value: String(activeCustomProvider.maxTokens ?? ''),
+            });
+          } else if (
+            state.currentProvider.startsWith(bootstrap.customProviderPrefix)
+          ) {
+            dispatch({
+              type: 'SET_CUSTOM_PROVIDER_MAX_TOKENS_VALUE',
+              value: '',
+            });
+          }
         },
         openAddProviderView: () => {
           dispatch({ type: 'SET_SCREEN', screen: 'addProvider' });
@@ -779,6 +826,8 @@ export function useMainViewMessageHandler(
     vscode,
     bootstrap,
     state.currentProvider,
+    state.customProviderMaxTokensValue,
+    state.customProviders,
     state.currentPack,
     state.modelState,
     state.apiKeyValue,

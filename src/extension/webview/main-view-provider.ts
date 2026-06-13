@@ -35,11 +35,13 @@ import {
 } from '../../models/catalog';
 import {
   CUSTOM_PROVIDER_PREFIX,
+  CustomProviderApiFormat,
   CustomProviderConfig,
   getCustomProviderId,
   getCustomProviderModelsStorageKey,
   getCustomProviderStorageKey,
   isCustomProvider,
+  normalizeCustomProviderApiFormat,
 } from '../../models/custom-provider';
 import {
   CommitOutputOptions,
@@ -198,6 +200,10 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
     }
   }
 
+  public async migrateCustomProviders(): Promise<void> {
+    await this.customProviderService.migrateProviders();
+  }
+
   public async showUpdateInfo() {
     const lang = this.getEffectiveDisplayLanguage();
     const docsUri = vscode.Uri.joinPath(this._extensionUri, 'docs');
@@ -335,8 +341,13 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
   private async validateCustomProviderKey(
     apiKey: string,
     baseUrl: string,
+    apiFormat: CustomProviderApiFormat,
   ): Promise<{ valid: boolean; error?: string }> {
-    return this.providerValidator.validateCustomProvider(apiKey, baseUrl);
+    return this.providerValidator.validateCustomProvider(
+      apiKey,
+      baseUrl,
+      apiFormat,
+    );
   }
 
   private async validateGoogleApiKey(
@@ -591,15 +602,32 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
     ): Promise<void> => {
       const customId = getCustomProviderId(provider);
       const customProviders = this.getCustomProviders();
-      const cp = customProviders.find((candidate) => candidate.id === customId);
+      const providerIndex = customProviders.findIndex(
+        (candidate) => candidate.id === customId,
+      );
+      const cp =
+        providerIndex >= 0 ? customProviders[providerIndex] : undefined;
       if (!cp) {
         postValidationResult(provider, false, { error: text.unknownProvider });
         return;
       }
 
+      const resolvedApiKey =
+        apiKey.length > 0
+          ? apiKey
+          : ((await this._context.secrets.get(
+              getCustomProviderStorageKey(customId),
+            )) ?? '');
+      if (!resolvedApiKey) {
+        vscode.window.showErrorMessage(text.apiKeyCannotBeEmpty);
+        postValidationResult(provider, false);
+        return;
+      }
+
       const validationResult = await this.validateCustomProviderKey(
-        apiKey,
+        resolvedApiKey,
         cp.baseUrl,
+        cp.apiFormat,
       );
       if (!validationResult.valid) {
         vscode.window.showWarningMessage(
@@ -612,12 +640,14 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
       }
 
       const storageKey = getCustomProviderStorageKey(customId);
-      await this._context.secrets.store(storageKey, apiKey);
+      await this._context.secrets.store(storageKey, resolvedApiKey);
+
       const savedModel = this.getSavedCustomProviderModel(customId);
       const fetchedModels = await this.modelFetcher.fetchCustomProviderModels(
-        apiKey,
+        resolvedApiKey,
         cp.baseUrl,
         customId,
+        cp.apiFormat,
       );
       vscode.window.showInformationMessage(text.saveConfigSuccess(cp.name));
       postValidationResult(provider, true, {
@@ -747,7 +777,13 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
 
     const upsertCustomProvider = (
       providers: CustomProviderConfig[],
-      payload: { name: string; baseUrl: string; editId: string | null },
+      payload: {
+        name: string;
+        baseUrl: string;
+        apiFormat: CustomProviderApiFormat;
+        maxTokens?: number;
+        editId: string | null;
+      },
     ): string => {
       if (payload.editId) {
         const id = payload.editId;
@@ -757,21 +793,46 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
             id,
             name: payload.name,
             baseUrl: payload.baseUrl,
+            apiFormat: payload.apiFormat,
+            ...(payload.maxTokens === undefined
+              ? {}
+              : { maxTokens: payload.maxTokens }),
           };
         } else {
-          providers.push({ id, name: payload.name, baseUrl: payload.baseUrl });
+          providers.push({
+            id,
+            name: payload.name,
+            baseUrl: payload.baseUrl,
+            apiFormat: payload.apiFormat,
+            ...(payload.maxTokens === undefined
+              ? {}
+              : { maxTokens: payload.maxTokens }),
+          });
         }
         return id;
       }
 
       const baseId = createCustomProviderBaseId(payload.name);
       const id = createUniqueCustomProviderId(baseId, providers);
-      providers.push({ id, name: payload.name, baseUrl: payload.baseUrl });
+      providers.push({
+        id,
+        name: payload.name,
+        baseUrl: payload.baseUrl,
+        apiFormat: payload.apiFormat,
+        ...(payload.maxTokens === undefined
+          ? {}
+          : { maxTokens: payload.maxTokens }),
+      });
       return id;
     };
 
     const validateCustomProviderBeforeSave = async (
-      payload: { apiKey: string; baseUrl: string; editId: string | null },
+      payload: {
+        apiKey: string;
+        baseUrl: string;
+        apiFormat: CustomProviderApiFormat;
+        editId: string | null;
+      },
       text: ReturnType<typeof getMainViewText>,
     ): Promise<boolean> => {
       if (payload.editId && !payload.apiKey) {
@@ -781,6 +842,7 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
       const validationResult = await this.validateCustomProviderKey(
         payload.apiKey,
         payload.baseUrl,
+        payload.apiFormat,
       );
       if (validationResult.valid) {
         return true;
@@ -797,9 +859,17 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
     ): Promise<void> => {
       const text = getMainViewText(this.getEffectiveDisplayLanguage());
       const customProviders = this.getCustomProviders();
+      const apiFormat = normalizeCustomProviderApiFormat(message.apiFormat);
+      const requestedMaxTokens =
+        typeof message.maxTokens === 'number' ? message.maxTokens : undefined;
       const payload = {
         name: (asString(message.name) ?? '').trim(),
         baseUrl: (asString(message.baseUrl) ?? '').trim(),
+        apiFormat,
+        maxTokens:
+          apiFormat === 'anthropic' && typeof requestedMaxTokens === 'number'
+            ? Math.max(1, Math.trunc(requestedMaxTokens))
+            : undefined,
         apiKey: (asString(message.apiKey) ?? '').trim(),
         editId: parseEditId(message.editId),
       };
@@ -830,6 +900,53 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
       this._view?.webview.postMessage({
         type: 'customProviderSaved',
         savedId: id,
+        customProviders,
+      });
+    };
+
+    const handleSaveCustomProviderMaxTokensMessage = async (
+      message: IncomingMessage,
+    ): Promise<void> => {
+      const provider = toProvider(message.provider);
+      if (!isCustomProvider(provider)) {
+        return;
+      }
+
+      const customId = getCustomProviderId(provider);
+      const customProviders = this.getCustomProviders();
+      const providerIndex = customProviders.findIndex(
+        (candidate) => candidate.id === customId,
+      );
+      const cp =
+        providerIndex >= 0 ? customProviders[providerIndex] : undefined;
+      if (!cp || cp.apiFormat !== 'anthropic') {
+        return;
+      }
+
+      const nextMaxTokens =
+        typeof message.maxTokens === 'number'
+          ? Math.max(1, Math.trunc(message.maxTokens))
+          : undefined;
+      if (cp.maxTokens === nextMaxTokens) {
+        return;
+      }
+
+      customProviders[providerIndex] =
+        nextMaxTokens === undefined
+          ? {
+              id: cp.id,
+              name: cp.name,
+              baseUrl: cp.baseUrl,
+              apiFormat: cp.apiFormat,
+            }
+          : {
+              ...cp,
+              maxTokens: nextMaxTokens,
+            };
+
+      await this.saveCustomProviders(customProviders);
+      this._view?.webview.postMessage({
+        type: 'customProvidersLoaded',
         customProviders,
       });
     };
@@ -1285,6 +1402,7 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
         ...simpleMessageHandlers,
         saveKey: handleSaveKeyMessage,
         saveCustomProvider: handleSaveCustomProviderMessage,
+        saveCustomProviderMaxTokens: handleSaveCustomProviderMaxTokensMessage,
         deleteCustomProvider: handleDeleteCustomProviderMessage,
       },
     }).register(webviewView.webview);

@@ -7,6 +7,8 @@ import { OLLAMA_DEFAULT_HOST } from '../../models/catalog';
 import { APIRequestError, EXIT_CODES } from '../../shared/errors';
 import { withModuleMock } from '../helpers/module-mock';
 
+const customAnthropicMaxTokens = 12288;
+
 function getOllamaHost(client: unknown): string {
   return (client as { host: string }).host;
 }
@@ -181,6 +183,98 @@ void test('Anthropic direct diff uses streaming API', async () => {
   assert.equal(calls.streamCalls, 1);
   assert.equal(calls.finalMessageCalls, 1);
   assert.equal(calls.createCalls, 0);
+});
+
+void test('custom Anthropic direct diff uses configured base URL and max tokens', async () => {
+  const constructorOptions: Record<string, unknown>[] = [];
+  const streamParams: Record<string, unknown>[] = [];
+
+  class AnthropicMock {
+    messages = {
+      stream: (params: Record<string, unknown>) => {
+        streamParams.push(params);
+        return {
+          finalMessage: () =>
+            Promise.resolve({
+              content: [{ type: 'text', text: 'feat: custom anthropic' }],
+            }),
+        };
+      },
+    };
+
+    constructor(options: Record<string, unknown>) {
+      constructorOptions.push(options);
+    }
+  }
+
+  await withModuleMock(
+    '@anthropic-ai/sdk',
+    { __esModule: true, default: AnthropicMock },
+    async () => {
+      const client = createLLMClient({
+        provider: 'openai',
+        apiKey: 'custom-key',
+        baseUrl: 'https://anthropic.example',
+        apiFormat: 'anthropic',
+        maxTokens: customAnthropicMaxTokens,
+        model: 'custom-claude-model',
+      });
+
+      const message = await client.generateCommitMessage(
+        'diff --git a/file.txt b/file.txt\n+custom anthropic',
+      );
+      assert.equal(message, 'feat: custom anthropic');
+    },
+  );
+
+  assert.deepEqual(constructorOptions, [
+    {
+      apiKey: 'custom-key',
+      baseURL: 'https://anthropic.example',
+    },
+  ]);
+  assert.equal(streamParams[0]?.model, 'custom-claude-model');
+  assert.equal(streamParams[0]?.max_tokens, customAnthropicMaxTokens);
+});
+
+void test('custom Anthropic direct diff omits max_tokens when custom endpoint leaves it unset', async () => {
+  const streamParams: Record<string, unknown>[] = [];
+
+  class AnthropicMock {
+    messages = {
+      stream: (params: Record<string, unknown>) => {
+        streamParams.push(params);
+        return {
+          finalMessage: () =>
+            Promise.resolve({
+              content: [{ type: 'text', text: 'feat: custom anthropic no max' }],
+            }),
+        };
+      },
+    };
+  }
+
+  await withModuleMock(
+    '@anthropic-ai/sdk',
+    { __esModule: true, default: AnthropicMock },
+    async () => {
+      const client = createLLMClient({
+        provider: 'openai',
+        apiKey: 'custom-key',
+        baseUrl: 'https://anthropic.example',
+        apiFormat: 'anthropic',
+        model: 'custom-claude-model',
+      });
+
+      const message = await client.generateCommitMessage(
+        'diff --git a/file.txt b/file.txt\n+custom anthropic',
+      );
+      assert.equal(message, 'feat: custom anthropic no max');
+    },
+  );
+
+  assert.equal(streamParams[0]?.model, 'custom-claude-model');
+  assert.equal('max_tokens' in (streamParams[0] ?? {}), false);
 });
 
 void test('OpenAI direct diff rethrows existing APIRequestError without wrapping', async () => {

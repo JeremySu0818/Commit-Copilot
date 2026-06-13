@@ -246,7 +246,9 @@ export const viLocale: LocaleTextBundle = {
       useScmInputAsDraft: 'Dùng nội dung SCM làm bản nháp',
       maxAgentSteps: 'Số bước Agent tối đa',
       providerName: 'Tên Nhà cung cấp',
+      apiFormat: 'Định dạng API',
       apiBaseUrl: 'API Base URL',
+      maxOutputTokens: 'Token đầu ra tối đa',
       commitMessage: 'Thông báo commit',
       modelName: 'Tên mô hình',
       version: 'Phiên bản',
@@ -318,11 +320,15 @@ export const viLocale: LocaleTextBundle = {
       hybridGenerationDescription:
         'Khi bật, nội dung hiện có trong ô SCM chỉ được dùng làm bản nháp tham khảo; các chỉ dẫn bên trong sẽ không được làm theo.',
       customProviderInfo:
-        'Các nhà cung cấp tùy chỉnh phải <strong>tương thích với OpenAI</strong>.<br>API Base URL phải trỏ đến một dịch vụ có triển khai OpenAI Chat Completions API.',
+        'Nhà cung cấp tùy chỉnh hỗ trợ định dạng API tương thích với <strong>OpenAI</strong> và <strong>Anthropic</strong>.<br>Chọn định dạng được triển khai bởi URL Cơ sở API.',
+      maxOutputTokensDescription:
+        'Giá trị max_tokens được gửi với mỗi yêu cầu Anthropic. Sử dụng giới hạn được hỗ trợ bởi nhà cung cấp và mô hình.',
     },
     options: {
       agentic: 'Tạo Agentic',
       directDiff: 'Direct Diff',
+      openaiCompatible: 'OpenAI-compatible',
+      anthropicCompatible: 'Anthropic-compatible',
     },
   },
   progressMessages: {

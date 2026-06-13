@@ -7,6 +7,10 @@ import {
   fetchQwenModels,
   resolveDefaultModel,
 } from '../../models/catalog';
+import {
+  DEFAULT_CUSTOM_PROVIDER_API_FORMAT,
+  normalizeCustomProviderConfig,
+} from '../../models/custom-provider';
 import { resolveGenerateMode } from '../../models/options';
 
 function toRequestUrl(input: unknown): string {
@@ -185,4 +189,39 @@ void test('resolveGenerateMode preserves an explicitly requested agentic mode', 
 void test('resolveGenerateMode falls back to saved and default modes', () => {
   assert.equal(resolveGenerateMode('direct-diff', undefined), 'direct-diff');
   assert.equal(resolveGenerateMode(undefined, undefined), 'agentic');
+});
+
+void test('normalizeCustomProviderConfig keeps legacy providers OpenAI-compatible', () => {
+  assert.deepEqual(
+    normalizeCustomProviderConfig({
+      id: 'legacy',
+      name: 'Legacy Provider',
+      baseUrl: 'https://legacy.example/v1',
+    }),
+    {
+      id: 'legacy',
+      name: 'Legacy Provider',
+      baseUrl: 'https://legacy.example/v1',
+      apiFormat: DEFAULT_CUSTOM_PROVIDER_API_FORMAT,
+    },
+  );
+});
+
+void test('normalizeCustomProviderConfig keeps valid Anthropic settings', () => {
+  assert.deepEqual(
+    normalizeCustomProviderConfig({
+      id: 'claude-proxy',
+      name: 'Claude Proxy',
+      baseUrl: 'https://anthropic.example',
+      apiFormat: 'anthropic',
+      maxTokens: 16384,
+    }),
+    {
+      id: 'claude-proxy',
+      name: 'Claude Proxy',
+      baseUrl: 'https://anthropic.example',
+      apiFormat: 'anthropic',
+      maxTokens: 16384,
+    },
+  );
 });

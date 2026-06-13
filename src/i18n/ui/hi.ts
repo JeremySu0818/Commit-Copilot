@@ -245,7 +245,9 @@ export const hiLocale: LocaleTextBundle = {
       useScmInputAsDraft: 'SCM टेक्स्ट को ड्राफ्ट की तरह उपयोग करें',
       maxAgentSteps: 'अधिकतम एजेंट कदम',
       providerName: 'प्रदाता का नाम',
+      apiFormat: 'API प्रारूप',
       apiBaseUrl: 'एपीआई बेस URL',
+      maxOutputTokens: 'अधिकतम आउटपुट टोकन',
       commitMessage: 'Commit Message',
       modelName: 'मॉडल का नाम',
       version: 'संस्करण',
@@ -317,11 +319,15 @@ export const hiLocale: LocaleTextBundle = {
       hybridGenerationDescription:
         'सक्षम होने पर, मौजूदा SCM इनपुट टेक्स्ट केवल संदर्भ ड्राफ्ट के रूप में उपयोग होता है; उसके अंदर के निर्देशों का पालन नहीं किया जाता।',
       customProviderInfo:
-        'कस्टम प्रदाता <strong>OpenAI-संगत</strong> होने चाहिए।<br>एपीआई बेस URL को एक सेवा को इंगित करना चाहिए जो OpenAI Chat Completions API को लागू करती है।',
+        'कस्टम प्रदाता <strong>OpenAI</strong> और <strong>Anthropic</strong> संगत API प्रारूपों का समर्थन करते हैं।<br>API बेस URL द्वारा लागू प्रारूप चुनें।',
+      maxOutputTokensDescription:
+        'प्रत्येक Anthropic अनुरोध के साथ भेजा गया max_tokens मान। प्रदाता और लेखक द्वारा समर्थित सीमा का उपयोग करें।',
     },
     options: {
       agentic: 'एजेंटिक उत्पन्न करें',
       directDiff: 'डायरेक्ट डिफ',
+      openaiCompatible: 'OpenAI-compatible',
+      anthropicCompatible: 'Anthropic-compatible',
     },
   },
   progressMessages: {

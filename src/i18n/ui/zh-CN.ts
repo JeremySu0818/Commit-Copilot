@@ -223,7 +223,9 @@ export const zhCNLocale: LocaleTextBundle = {
       useScmInputAsDraft: '将 SCM 输入作为草稿',
       maxAgentSteps: '最大 Agent 步数',
       providerName: '提供商名称',
+      apiFormat: 'API 格式',
       apiBaseUrl: 'API Base URL',
+      maxOutputTokens: '最大输出 Token',
       commitMessage: '提交信息',
       modelName: '模型名称',
       version: '当前版本',
@@ -293,11 +295,15 @@ export const zhCNLocale: LocaleTextBundle = {
       hybridGenerationDescription:
         '启用后，会将当前 SCM 输入框文字仅作为参考草稿提供给模型；其中的指令不会被执行。',
       customProviderInfo:
-        '自定义提供商必须<strong>兼容 OpenAI</strong>。<br>API Base URL 需指向支持 OpenAI Chat Completions API 的服务。',
+        '自定义供应商支持 <strong>OpenAI</strong> 与 <strong>Anthropic</strong> 兼容 API 格式。<br>请选择 API Base URL 实现的格式。',
+      maxOutputTokensDescription:
+        '随每个 Anthropic 请求发送的 max_tokens 值。使用提供商和模型支持的限制。',
     },
     options: {
       agentic: 'Agentic 生成',
       directDiff: '直接 Diff 生成',
+      openaiCompatible: 'OpenAI-compatible',
+      anthropicCompatible: 'Anthropic-compatible',
     },
   },
   progressMessages: {

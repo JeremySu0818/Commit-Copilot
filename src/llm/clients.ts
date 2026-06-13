@@ -8,6 +8,7 @@ import {
   OLLAMA_DEFAULT_HOST,
   getAnthropicModelMaxTokens,
 } from '../models/catalog';
+import type { CustomProviderApiFormat } from '../models/custom-provider';
 import {
   CommitOutputOptions,
   DEFAULT_COMMIT_OUTPUT_OPTIONS,
@@ -46,6 +47,8 @@ export interface LLMClientOptions {
   apiKey: string;
   ollamaHost?: string;
   baseUrl?: string;
+  apiFormat?: CustomProviderApiFormat;
+  maxTokens?: number;
   model?: string;
   commitOutputOptions?: CommitOutputOptions;
   language?: EffectiveDisplayLanguage;
@@ -516,7 +519,8 @@ export class OpenAIClient implements ILLMClient {
 export class AnthropicClient implements ILLMClient {
   private readonly apiKey: string;
   private readonly model: string;
-  private readonly maxTokens: number;
+  private readonly maxTokens?: number;
+  private readonly baseURL?: string;
   private readonly systemPrompt: string;
   private readonly commitMessageLanguage: EffectiveDisplayLanguage;
 
@@ -525,6 +529,8 @@ export class AnthropicClient implements ILLMClient {
     model?: string,
     commitOutputOptions: CommitOutputOptions = DEFAULT_COMMIT_OUTPUT_OPTIONS,
     commitMessageLanguage: EffectiveDisplayLanguage = 'en',
+    baseURL?: string,
+    maxTokens?: number,
   ) {
     if (!apiKey) {
       throw new APIKeyMissingError();
@@ -532,11 +538,16 @@ export class AnthropicClient implements ILLMClient {
     this.apiKey = apiKey;
     this.commitMessageLanguage = commitMessageLanguage;
     this.model = pickNonEmpty(model, DEFAULT_MODELS.anthropic);
-    const maxTokens = getAnthropicModelMaxTokens(this.model);
-    if (maxTokens === undefined) {
-      throw createUnknownAnthropicModelError(this.model);
+    this.baseURL = baseURL;
+    if (typeof maxTokens === 'number') {
+      this.maxTokens = maxTokens;
+    } else if (!baseURL) {
+      const resolvedMaxTokens = getAnthropicModelMaxTokens(this.model);
+      if (resolvedMaxTokens === undefined) {
+        throw createUnknownAnthropicModelError(this.model);
+      }
+      this.maxTokens = resolvedMaxTokens;
     }
-    this.maxTokens = maxTokens;
     this.systemPrompt = buildAgentSystemPrompt({
       includeFindReferences: false,
       enableTools: false,
@@ -558,31 +569,39 @@ export class AnthropicClient implements ILLMClient {
 
     try {
       const anthropicClientClass = (await import('@anthropic-ai/sdk')).default;
-      const client = new anthropicClientClass({ apiKey: this.apiKey });
+      const client = new anthropicClientClass({
+        apiKey: this.apiKey,
+        ...(this.baseURL ? { baseURL: this.baseURL } : {}),
+      });
       const retryOptions = {
         ...DEFAULT_RETRY_OPTIONS,
         checkAbort: () => {
           throwIfCancellationRequested(cancellationToken);
         },
       };
+      const requestParams: Record<string, unknown> = {
+        model: this.model,
+        system: this.systemPrompt,
+        messages: [
+          {
+            role: 'user',
+            content: buildDirectDiffUserPrompt(
+              diff,
+              draftCommitMessage,
+              this.commitMessageLanguage,
+            ),
+          },
+        ],
+      };
+      if (typeof this.maxTokens === 'number') {
+        requestParams.max_tokens = this.maxTokens;
+      }
       const message = await withRetry(
         () =>
           client.messages
-            .stream({
-              model: this.model,
-              max_tokens: this.maxTokens,
-              system: this.systemPrompt,
-              messages: [
-                {
-                  role: 'user',
-                  content: buildDirectDiffUserPrompt(
-                    diff,
-                    draftCommitMessage,
-                    this.commitMessageLanguage,
-                  ),
-                },
-              ],
-            })
+            .stream(
+              requestParams as Parameters<typeof client.messages.stream>[0],
+            )
             .finalMessage(),
         retryOptions,
       );
@@ -746,12 +765,30 @@ export class OllamaClient implements ILLMClient {
 }
 
 export function createLLMClient(options: LLMClientOptions): ILLMClient {
-  const { provider, apiKey, ollamaHost, baseUrl, model, commitOutputOptions } =
-    options;
+  const {
+    provider,
+    apiKey,
+    ollamaHost,
+    baseUrl,
+    apiFormat,
+    maxTokens,
+    model,
+    commitOutputOptions,
+  } = options;
   const resolvedCommitOutputOptions =
     normalizeCommitOutputOptions(commitOutputOptions);
 
   if (baseUrl) {
+    if (apiFormat === 'anthropic') {
+      return new AnthropicClient(
+        apiKey,
+        model,
+        resolvedCommitOutputOptions,
+        options.commitMessageLanguage,
+        baseUrl,
+        maxTokens,
+      );
+    }
     return new OpenAIClient(
       apiKey,
       model,

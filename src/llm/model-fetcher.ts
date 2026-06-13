@@ -9,6 +9,7 @@ import {
 } from '../models/catalog';
 import {
   CUSTOM_PROVIDER_PREFIX,
+  CustomProviderApiFormat,
   CustomProviderConfig,
   getCustomProviderModelsStorageKey,
 } from '../models/custom-provider';
@@ -112,11 +113,13 @@ export class ModelFetcher {
     apiKey: string,
     baseUrl: string | undefined,
     customId: string,
+    apiFormat?: CustomProviderApiFormat,
   ): Promise<ModelConfig[]> {
     const provider = this.customProviders
       .getProviders()
       .find((candidate) => candidate.id === customId);
     const resolvedBaseUrl = baseUrl ?? provider?.baseUrl ?? '';
+    const resolvedApiFormat = apiFormat ?? provider?.apiFormat ?? 'openai';
     const storageKey = getCustomProviderModelsStorageKey(customId);
     const manualModels =
       this.context.globalState.get<ModelConfig[]>(storageKey) ?? [];
@@ -124,20 +127,40 @@ export class ModelFetcher {
     const apiModels: ModelConfig[] = [];
     let fetchSuccess = false;
     try {
-      const openAIClientClass = (await import('openai')).default;
-      const response = await new openAIClientClass({
-        apiKey,
-        baseURL: resolvedBaseUrl,
-      }).models.list();
-      for await (const model of response) {
-        if (model.id) {
-          apiModels.push({ id: model.id, alias: model.id });
+      if (resolvedApiFormat === 'anthropic') {
+        const anthropicClientClass = (await import('@anthropic-ai/sdk'))
+          .default;
+        const response = await new anthropicClientClass({
+          apiKey,
+          baseURL: resolvedBaseUrl,
+        }).models.list();
+        for await (const model of response) {
+          if (model.id) {
+            apiModels.push({
+              id: model.id,
+              alias: model.display_name || model.id,
+            });
+          }
+        }
+      } else {
+        const openAIClientClass = (await import('openai')).default;
+        const response = await new openAIClientClass({
+          apiKey,
+          baseURL: resolvedBaseUrl,
+        }).models.list();
+        for await (const model of response) {
+          if (model.id) {
+            apiModels.push({ id: model.id, alias: model.id });
+          }
         }
       }
       apiModels.sort((a, b) => a.id.localeCompare(b.id));
       fetchSuccess = true;
     } catch (error) {
-      console.error('Error fetching OpenAI-compatible provider models:', error);
+      console.error(
+        `Error fetching ${resolvedApiFormat}-compatible provider models:`,
+        error,
+      );
     }
 
     if (!fetchSuccess) {

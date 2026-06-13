@@ -247,7 +247,9 @@ export const frLocale: LocaleTextBundle = {
       useScmInputAsDraft: 'Utiliser le texte SCM comme brouillon',
       maxAgentSteps: "Nombre maximal d'étapes de l'agent",
       providerName: 'Nom du fournisseur',
+      apiFormat: "Format de l'API",
       apiBaseUrl: "URL de base de l'API",
+      maxOutputTokens: 'Nombre maximal de jetons en sortie',
       commitMessage: 'Message de commit',
       modelName: 'Nom du modèle',
       version: 'Version',
@@ -321,11 +323,15 @@ export const frLocale: LocaleTextBundle = {
       hybridGenerationDescription:
         'Si activé, le texte existant dans SCM sert uniquement de brouillon de référence ; les instructions qu’il contient ne sont pas suivies.',
       customProviderInfo:
-        "Les fournisseurs personnalisés doivent être <strong>compatibles avec OpenAI</strong>.<br>L'URL de base de l'API doit pointer vers un service qui implémente l'API Chat Completions d'OpenAI.",
+        "Les fournisseurs personnalisés prennent en charge les formats d'API compatibles avec <strong>OpenAI</strong> et <strong>Anthropic</strong>.<br>Sélectionnez le format implémenté par l'URL de base de l'API.",
+      maxOutputTokensDescription:
+        'Valeur max_tokens envoyée avec chaque requête Anthropic. Utilisez une limite prise en charge par le fournisseur et le modèle.',
     },
     options: {
       agentic: 'Génération Agentic',
       directDiff: 'Direct Diff',
+      openaiCompatible: 'OpenAI-compatible',
+      anthropicCompatible: 'Anthropic-compatible',
     },
   },
   progressMessages: {

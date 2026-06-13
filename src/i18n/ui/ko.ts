@@ -242,7 +242,9 @@ export const koLocale: LocaleTextBundle = {
       useScmInputAsDraft: 'SCM 입력을 초안으로 사용',
       maxAgentSteps: '최대 에이전트 단계 수',
       providerName: '프로바이더 이름',
+      apiFormat: 'API 형식',
       apiBaseUrl: 'API 베이스 URL',
+      maxOutputTokens: '최대 출력 토큰',
       commitMessage: '커밋 메시지',
       modelName: '모델 이름',
       version: '버전',
@@ -315,11 +317,15 @@ export const koLocale: LocaleTextBundle = {
       hybridGenerationDescription:
         '활성화하면 기존 SCM 입력 텍스트를 참고용 초안으로만 사용하며, 그 안의 지시는 따르지 않습니다.',
       customProviderInfo:
-        '사용자 지정 프로바이더는 <strong>OpenAI 호환</strong>이어야 합니다.<br>API 베이스 URL은 OpenAI Chat Completions API를 준수하는 서비스를 가리켜야 합니다.',
+        '사용자 지정 공급자는 <strong>OpenAI</strong> 및 <strong>Anthropic</strong> 호환 API 형식을 지원합니다.<br>API 베이스 URL이 구현하는 형식을 선택하세요.',
+      maxOutputTokensDescription:
+        '각 Anthropic 요청에 전송할 max_tokens 값입니다. 공급자와 모델이 지원하는 제한을 사용하세요.',
     },
     options: {
       agentic: 'Agentic 생성',
       directDiff: 'Direct Diff',
+      openaiCompatible: 'OpenAI-compatible',
+      anthropicCompatible: 'Anthropic-compatible',
     },
   },
   progressMessages: {

@@ -245,7 +245,9 @@ export const csLocale: LocaleTextBundle = {
       useScmInputAsDraft: 'Použít text SCM jako koncept',
       maxAgentSteps: 'Max. počet kroků agenta',
       providerName: 'Název poskytovatele',
+      apiFormat: 'Formát API',
       apiBaseUrl: 'Základní URL API',
+      maxOutputTokens: 'Maximum výstupních tokenů',
       commitMessage: 'Zpráva commitu',
       modelName: 'Název modelu',
       version: 'Verze',
@@ -318,11 +320,15 @@ export const csLocale: LocaleTextBundle = {
       hybridGenerationDescription:
         'Je-li zapnuto, aktuální text v poli SCM se použije jen jako referenční koncept; pokyny v něm se neprovádějí.',
       customProviderInfo:
-        'Vlastní poskytovatelé musí být kompatibilní s <strong>OpenAI</strong>.<br>Základní adresa URL rozhraní API by měla ukazovat na službu, která implementuje rozhraní OpenAI Chat Completions API.',
+        'Vlastní poskytovatelé podporují formáty API kompatibilní s <strong>OpenAI</strong> a <strong>Anthropic</strong>.<br>Vyberte formát implementovaný základní adresou URL API.',
+      maxOutputTokensDescription:
+        'Hodnota max_tokens odeslaná s každým požadavkem Anthropic. Použijte limit podporovaný poskytovatelem a modelem.',
     },
     options: {
       agentic: 'Agentic generování',
       directDiff: 'Direct Diff (přímý rozdíl)',
+      openaiCompatible: 'OpenAI-compatible',
+      anthropicCompatible: 'Anthropic-compatible',
     },
   },
   progressMessages: {

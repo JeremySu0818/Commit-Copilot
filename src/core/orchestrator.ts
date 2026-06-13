@@ -2,6 +2,7 @@ import { GitOperations } from '../git/git-operations';
 import type { GitRepository } from '../git/types';
 import type { EffectiveDisplayLanguage } from '../i18n/types';
 import type { APIProvider } from '../llm/provider-registry';
+import type { CustomProviderApiFormat } from '../models/custom-provider';
 import {
   CommitOutputOptions,
   DEFAULT_COMMIT_OUTPUT_OPTIONS,
@@ -24,6 +25,8 @@ export interface GenerateCommitMessageOptions {
   provider: APIProvider;
   apiKey: string;
   baseUrl?: string;
+  apiFormat?: CustomProviderApiFormat;
+  maxTokens?: number;
   cancellationToken?: CancellationSignal;
   model?: string;
   generateMode?: GenerateMode;
@@ -52,6 +55,8 @@ export async function generateCommitMessage(
     provider,
     apiKey,
     baseUrl,
+    apiFormat,
+    maxTokens,
     cancellationToken,
     model,
     generateMode = DEFAULT_GENERATE_MODE,
@@ -94,6 +99,8 @@ export async function generateCommitMessage(
       provider,
       apiKey,
       baseUrl,
+      apiFormat,
+      maxTokens,
       model,
       generateMode,
       commitOutputOptions,

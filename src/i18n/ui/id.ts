@@ -246,7 +246,9 @@ export const idLocale: LocaleTextBundle = {
       useScmInputAsDraft: 'Gunakan teks SCM sebagai draf',
       maxAgentSteps: 'Maks. Langkah Agen',
       providerName: 'Nama Penyedia',
+      apiFormat: 'Format API',
       apiBaseUrl: 'URL Dasar API',
+      maxOutputTokens: 'Token Output Maksimum',
       commitMessage: 'Pesan Commit',
       modelName: 'Nama Model',
       version: 'Versi',
@@ -319,11 +321,15 @@ export const idLocale: LocaleTextBundle = {
       hybridGenerationDescription:
         'Jika aktif, teks input SCM yang ada hanya digunakan sebagai draf referensi; instruksi di dalamnya tidak diikuti.',
       customProviderInfo:
-        'Penyedia kustom harus <strong>Kompatibel dengan OpenAI</strong>.<br>URL Dasar API harus mengarah ke layanan yang menerapkan API Chat Completions OpenAI.',
+        'Provider kustom mendukung format API yang kompatibel dengan <strong>OpenAI</strong> dan <strong>Anthropic</strong>.<br>Pilih format yang diterapkan oleh URL Dasar API.',
+      maxOutputTokensDescription:
+        'Nilai max_tokens yang dikirim pada setiap permintaan Anthropic. Gunakan batas yang didukung provider dan model.',
     },
     options: {
       agentic: 'Agentic Generate',
       directDiff: 'Direct Diff',
+      openaiCompatible: 'OpenAI-compatible',
+      anthropicCompatible: 'Anthropic-compatible',
     },
   },
   progressMessages: {

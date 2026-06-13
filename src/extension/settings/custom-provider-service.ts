@@ -5,17 +5,26 @@ import {
   CustomProviderConfig,
   getCustomProviderModelsStorageKey,
   getCustomProviderStorageKey,
+  normalizeCustomProviders,
 } from '../../models/custom-provider';
 
 export class CustomProviderService {
   constructor(private readonly context: vscode.ExtensionContext) {}
 
   getProviders(): CustomProviderConfig[] {
-    return (
-      this.context.globalState.get<CustomProviderConfig[]>(
-        CUSTOM_PROVIDERS_STATE_KEY,
-      ) ?? []
+    return normalizeCustomProviders(
+      this.context.globalState.get<unknown>(CUSTOM_PROVIDERS_STATE_KEY),
+    ).providers;
+  }
+
+  async migrateProviders(): Promise<CustomProviderConfig[]> {
+    const { providers, changed } = normalizeCustomProviders(
+      this.context.globalState.get<unknown>(CUSTOM_PROVIDERS_STATE_KEY),
     );
+    if (changed) {
+      await this.saveProviders(providers);
+    }
+    return providers;
   }
 
   saveProviders(providers: CustomProviderConfig[]): Thenable<void> {

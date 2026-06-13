@@ -37,6 +37,8 @@ export function MainView() {
           currentProvider.slice(bootstrap.customProviderPrefix.length),
       ) ?? null)
     : null;
+  const showCustomProviderMaxTokens =
+    isCustom && customProviderConfig?.apiFormat === 'anthropic';
 
   const isOllama = currentProvider === 'ollama';
   const generateModeDisabled = false;
@@ -45,6 +47,8 @@ export function MainView() {
   const {
     handleProviderChange,
     handleApiKeyInput,
+    handleCustomProviderMaxTokensInput,
+    handleCustomProviderMaxTokensBlur,
     handleSave,
     handleEditProvider,
     handleGenerate,
@@ -141,9 +145,13 @@ export function MainView() {
         pack={pack}
         modelState={modelState}
         isManagedModelProvider={isCustom || isOllama}
+        showCustomProviderMaxTokens={showCustomProviderMaxTokens}
+        customProviderMaxTokensValue={state.customProviderMaxTokensValue}
         onModelChange={handleModelChange}
         onCustomModelChange={handleCustomModelChange}
         onCustomModelBlur={handleCustomModelBlur}
+        onCustomProviderMaxTokensInput={handleCustomProviderMaxTokensInput}
+        onCustomProviderMaxTokensBlur={handleCustomProviderMaxTokensBlur}
       />
 
       <GenerateConfigurationSection

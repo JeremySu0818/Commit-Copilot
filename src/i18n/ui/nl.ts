@@ -245,7 +245,9 @@ export const nlLocale: LocaleTextBundle = {
       useScmInputAsDraft: 'SCM-tekst als concept gebruiken',
       maxAgentSteps: 'Max Agent Stappen',
       providerName: 'Naam van Provider',
+      apiFormat: 'API-indeling',
       apiBaseUrl: 'API Basis URL',
+      maxOutputTokens: 'Maximale uitvoertokens',
       commitMessage: 'Commitbericht',
       modelName: 'Modelnaam',
       version: 'Versie',
@@ -318,11 +320,15 @@ export const nlLocale: LocaleTextBundle = {
       hybridGenerationDescription:
         'Wanneer ingeschakeld wordt de bestaande SCM-invoer alleen als referentieconcept gebruikt; instructies erin worden niet gevolgd.',
       customProviderInfo:
-        'Aangepaste providers moeten <strong>OpenAI-compatibel</strong> zijn.<br>De API basis URL moet wijzen naar een service die de OpenAI Chat Completions API implementeert.',
+        'Aangepaste providers ondersteunen API-indelingen die compatibel zijn met <strong>OpenAI</strong> en <strong>Anthropic</strong>.<br>Selecteer de indeling die door de API-basis-URL wordt geïmplementeerd.',
+      maxOutputTokensDescription:
+        'De max_tokens-waarde die bij elk Anthropic-verzoek wordt verzonden. Gebruik een limiet die wordt ondersteund door de provider und het model.',
     },
     options: {
       agentic: 'Agentic Genereren',
       directDiff: 'Direct Diff',
+      openaiCompatible: 'OpenAI-compatible',
+      anthropicCompatible: 'Anthropic-compatible',
     },
   },
   progressMessages: {

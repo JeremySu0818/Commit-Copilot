@@ -251,7 +251,9 @@ export const ptBRLocale: LocaleTextBundle = {
       useScmInputAsDraft: 'Usar texto do SCM como rascunho',
       maxAgentSteps: 'Número Máximo de Passos do Agente',
       providerName: 'Nome do Provedor',
+      apiFormat: 'Formato da API',
       apiBaseUrl: 'URL Base da API',
+      maxOutputTokens: 'Máximo de tokens de saída',
       commitMessage: 'Mensagem de commit',
       modelName: 'Nome do modelo',
       version: 'Versão',
@@ -325,11 +327,15 @@ export const ptBRLocale: LocaleTextBundle = {
       hybridGenerationDescription:
         'Quando ativado, o texto atual do SCM é usado apenas como rascunho de referência; instruções nele não são seguidas.',
       customProviderInfo:
-        'Os provedores personalizados precisam ser <strong>compatíveis com a OpenAI</strong>.<br>A URL Base da API deve apontar a um local com completude para Chat.',
+        'Provedores personalizados aceitam formatos de API compatíveis com <strong>OpenAI</strong> e <strong>Anthropic</strong>.<br>Selecione o formato implementado pela URL Base da API.',
+      maxOutputTokensDescription:
+        'O valor max_tokens enviado com cada solicitação da Anthropic. Use um limite suportado pelo provedor e modelo.',
     },
     options: {
       agentic: 'Geração Agêntica',
       directDiff: 'Diff Direto',
+      openaiCompatible: 'OpenAI-compatible',
+      anthropicCompatible: 'Anthropic-compatible',
     },
   },
   progressMessages: {

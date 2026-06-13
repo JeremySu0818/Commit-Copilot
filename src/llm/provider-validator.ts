@@ -1,6 +1,7 @@
 import { getMainViewText } from '../i18n';
 import type { EffectiveDisplayLanguage } from '../i18n/types';
 import { OLLAMA_DEFAULT_HOST } from '../models/catalog';
+import type { CustomProviderApiFormat } from '../models/custom-provider';
 
 import { APIProvider, getOpenAICompatibleBaseUrl } from './provider-registry';
 
@@ -75,8 +76,18 @@ export class ProviderValidator {
   async validateCustomProvider(
     apiKey: string,
     baseUrl: string,
+    apiFormat: CustomProviderApiFormat = 'openai',
   ): Promise<ProviderValidationResult> {
     try {
+      if (apiFormat === 'anthropic') {
+        const anthropicClientClass = (await import('@anthropic-ai/sdk'))
+          .default;
+        await new anthropicClientClass({
+          apiKey,
+          baseURL: baseUrl,
+        }).models.list({ limit: 1 });
+        return { valid: true };
+      }
       const openAIClientClass = (await import('openai')).default;
       const client = new openAIClientClass({ apiKey, baseURL: baseUrl });
       await client.models.list();
@@ -101,7 +112,7 @@ export class ProviderValidator {
     }
     const compatibleBaseUrl = getOpenAICompatibleBaseUrl(provider);
     if (compatibleBaseUrl) {
-      return this.validateCustomProvider(apiKey, compatibleBaseUrl);
+      return this.validateCustomProvider(apiKey, compatibleBaseUrl, 'openai');
     }
 
     switch (provider) {

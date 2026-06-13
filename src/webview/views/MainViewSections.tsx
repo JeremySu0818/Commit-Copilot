@@ -126,16 +126,24 @@ export function ModelSection({
   pack,
   modelState,
   isManagedModelProvider,
+  showCustomProviderMaxTokens,
+  customProviderMaxTokensValue,
   onModelChange,
   onCustomModelChange,
   onCustomModelBlur,
+  onCustomProviderMaxTokensInput,
+  onCustomProviderMaxTokensBlur,
 }: Readonly<{
   pack: LanguagePack;
   modelState: ModelState;
   isManagedModelProvider: boolean;
+  showCustomProviderMaxTokens: boolean;
+  customProviderMaxTokensValue: string;
   onModelChange: React.ChangeEventHandler<HTMLSelectElement>;
   onCustomModelChange: React.ChangeEventHandler<HTMLInputElement>;
   onCustomModelBlur: React.FocusEventHandler<HTMLInputElement>;
+  onCustomProviderMaxTokensInput: React.ChangeEventHandler<HTMLInputElement>;
+  onCustomProviderMaxTokensBlur: React.FocusEventHandler<HTMLInputElement>;
 }>) {
   return (
     <div className="config-section">
@@ -173,6 +181,23 @@ export function ModelSection({
           </select>
         )}
       </div>
+      {showCustomProviderMaxTokens && (
+        <div className="input-group input-group-spaced">
+          <label>{pack.labels.maxOutputTokens}</label>
+          <input
+            type="number"
+            id="customProviderMaxOutputTokensInput"
+            min="1"
+            step="1"
+            value={customProviderMaxTokensValue}
+            onChange={onCustomProviderMaxTokensInput}
+            onBlur={onCustomProviderMaxTokensBlur}
+          />
+          <div className="field-description">
+            {pack.descriptions.maxOutputTokensDescription}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

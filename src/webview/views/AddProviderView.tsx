@@ -18,7 +18,8 @@ export function AddProviderView() {
     const hasChanges =
       !draft.editingId ||
       name !== draft.originalName ||
-      url !== draft.originalBaseUrl;
+      url !== draft.originalBaseUrl ||
+      draft.apiFormat !== draft.originalApiFormat;
     return !(hasName && hasUrl && hasKey && hasChanges);
   }, [draft]);
 
@@ -85,6 +86,7 @@ export function AddProviderView() {
       type: 'saveCustomProvider',
       name,
       baseUrl,
+      apiFormat: draft.apiFormat,
       apiKey,
       editId: draft.editingId ?? null,
     });
@@ -141,6 +143,27 @@ export function AddProviderView() {
               });
             }}
           />
+        </div>
+        <div className="input-group input-group-spaced">
+          <label>{pack.labels.apiFormat}</label>
+          <select
+            id="apiFormatSelect"
+            value={draft.apiFormat}
+            onChange={(e) => {
+              dispatch({
+                type: 'UPDATE_ADD_PROVIDER_DRAFT',
+                partial: {
+                  apiFormat:
+                    e.target.value === 'anthropic' ? 'anthropic' : 'openai',
+                },
+              });
+            }}
+          >
+            <option value="openai">{pack.options.openaiCompatible}</option>
+            <option value="anthropic">
+              {pack.options.anthropicCompatible}
+            </option>
+          </select>
         </div>
         <div className="input-group input-group-spaced">
           <label>{pack.labels.apiBaseUrl}</label>

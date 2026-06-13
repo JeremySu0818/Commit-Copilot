@@ -4,6 +4,7 @@ import type { GitRepository } from '../git/types';
 import type { EffectiveDisplayLanguage } from '../i18n/types';
 import { createLLMClient } from '../llm/clients';
 import { APIProvider, DEFAULT_MODELS } from '../llm/provider-registry';
+import type { CustomProviderApiFormat } from '../models/custom-provider';
 import {
   CommitOutputOptions,
   GenerateMode,
@@ -16,6 +17,8 @@ export async function generateMessageWithProvider(params: {
   provider: APIProvider;
   apiKey: string;
   baseUrl?: string;
+  apiFormat?: CustomProviderApiFormat;
+  maxTokens?: number;
   model?: string;
   generateMode: GenerateMode;
   commitOutputOptions: CommitOutputOptions;
@@ -43,6 +46,8 @@ export async function generateMessageWithProvider(params: {
       provider: params.provider,
       apiKey: params.apiKey,
       baseUrl: params.baseUrl,
+      apiFormat: params.apiFormat,
+      maxTokens: params.maxTokens,
       model: resolvedModel,
       diff: params.diff,
       repoRoot,
@@ -62,6 +67,8 @@ export async function generateMessageWithProvider(params: {
     provider: params.provider,
     apiKey: params.apiKey,
     baseUrl: params.baseUrl,
+    apiFormat: params.apiFormat,
+    maxTokens: params.maxTokens,
     ollamaHost: params.provider === 'ollama' ? params.apiKey : undefined,
     model: resolvedModel,
     commitOutputOptions: resolvedCommitOutputOptions,

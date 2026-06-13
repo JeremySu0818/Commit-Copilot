@@ -5,6 +5,7 @@ import * as path from 'path';
 
 import type { GitOperations } from '../../../git/git-operations';
 import type { APIProvider } from '../../../llm/provider-registry';
+import type { CustomProviderApiFormat } from '../../../models/custom-provider';
 import { DEFAULT_COMMIT_OUTPUT_OPTIONS } from '../../../models/options';
 import { clearRequireCache } from '../../helpers/module-mock';
 
@@ -17,6 +18,7 @@ const MODULE_PATH = path.resolve(
   'loop',
   'index',
 );
+const customAnthropicMaxTokens = 12288;
 
 type AgentLoopModule = typeof import('../../../agent/loop');
 
@@ -24,6 +26,7 @@ interface CallRecord {
   provider: string;
   model?: string;
   baseUrl?: string;
+  maxTokens?: number;
 }
 
 type AsyncOrSync<T> = T | Promise<T>;
@@ -58,6 +61,8 @@ async function withModulesMock<T>(
 async function runDispatcherTest(
   provider: APIProvider,
   customBaseUrl?: string,
+  apiFormat?: CustomProviderApiFormat,
+  maxTokens?: number,
 ): Promise<CallRecord> {
   clearRequireCache(MODULE_PATH);
 
@@ -77,8 +82,17 @@ async function runDispatcherTest(
     return Promise.resolve('gemini-loop-result');
   };
 
-  const mockAnthropicLoop = () => {
-    capturedCall = { provider: 'anthropic' };
+  const mockAnthropicLoop = (options: {
+    model?: string;
+    baseUrl?: string;
+    maxTokens?: number;
+  }) => {
+    capturedCall = {
+      provider: 'anthropic',
+      model: options.model,
+      baseUrl: options.baseUrl,
+      maxTokens: options.maxTokens,
+    };
     return Promise.resolve('anthropic-loop-result');
   };
 
@@ -103,6 +117,8 @@ async function runDispatcherTest(
       apiKey: 'test-key',
       model: 'test-model',
       baseUrl: customBaseUrl,
+      apiFormat,
+      maxTokens,
       diff: 'test-diff',
       repoRoot: 'test-root',
       isStaged: true,
@@ -165,4 +181,16 @@ void test('runAgentLoop overrides default base URLs if custom baseUrl is provide
   );
   assert.equal(customCall.provider, 'openai');
   assert.equal(customCall.baseUrl, 'https://custom-endpoint.com/v1');
+});
+
+void test('runAgentLoop routes Anthropic-compatible custom endpoints with configured output limit', async () => {
+  const customCall = await runDispatcherTest(
+    'openai',
+    'https://anthropic.example',
+    'anthropic',
+    customAnthropicMaxTokens,
+  );
+  assert.equal(customCall.provider, 'anthropic');
+  assert.equal(customCall.baseUrl, 'https://anthropic.example');
+  assert.equal(customCall.maxTokens, customAnthropicMaxTokens);
 });

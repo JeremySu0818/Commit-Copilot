@@ -247,7 +247,9 @@ export const huLocale: LocaleTextBundle = {
       useScmInputAsDraft: 'SCM-szöveg használata vázlatként',
       maxAgentSteps: 'Max ügynök lépés',
       providerName: 'Szolgáltató neve',
+      apiFormat: 'API-formátum',
       apiBaseUrl: 'API Base URL',
+      maxOutputTokens: 'Kimeneti tokenek maximuma',
       commitMessage: 'Commit üzenet',
       modelName: 'Modell neve',
       version: 'Verzió',
@@ -320,11 +322,15 @@ export const huLocale: LocaleTextBundle = {
       hybridGenerationDescription:
         'Bekapcsolva a meglévő SCM-beviteli szöveg csak referencia-vázlatként szolgál; a benne lévő utasítások nem hajtódnak végre.',
       customProviderInfo:
-        'Az egyéni szolgáltatóknak <strong>OpenAI-kompatibilisnek</strong> kell lenniük.<br>Az API Base URL-nek olyan szolgáltatásra kell mutatnia, amely megvalósítja az OpenAI Chat Completions API-t.',
+        'Az egyéni szolgáltatók támogatják az <strong>OpenAI</strong>- és <strong>Anthropic</strong>-kompatibilis API-formátumokat.<br>Válassza ki az API alap URL által megvalósított formátumot.',
+      maxOutputTokensDescription:
+        'Az egyes Anthropic-kérésekkel küldött max_tokens érték. A szolgáltató és a modell által támogatott korlátot használjon.',
     },
     options: {
       agentic: 'Ügynöki (Agentic) Generálás',
       directDiff: 'Direct Diff',
+      openaiCompatible: 'OpenAI-compatible',
+      anthropicCompatible: 'Anthropic-compatible',
     },
   },
   progressMessages: {

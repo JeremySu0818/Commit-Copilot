@@ -160,7 +160,9 @@ export interface WebviewLanguagePack {
     useScmInputAsDraft: string;
     maxAgentSteps: string;
     providerName: string;
+    apiFormat: string;
     apiBaseUrl: string;
+    maxOutputTokens: string;
     commitMessage: string;
     modelName: string;
     version: string;
@@ -224,10 +226,13 @@ export interface WebviewLanguagePack {
     maxAgentStepsDescription: string;
     hybridGenerationDescription: string;
     customProviderInfo: string;
+    maxOutputTokensDescription: string;
   };
   options: {
     agentic: string;
     directDiff: string;
+    openaiCompatible: string;
+    anthropicCompatible: string;
   };
 }
 

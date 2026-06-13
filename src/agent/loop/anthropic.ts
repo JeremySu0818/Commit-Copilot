@@ -462,6 +462,8 @@ async function runAnthropicAgentLoop(
     draftCommitMessage,
     language = 'en',
     commitMessageLanguage = 'en',
+    baseUrl,
+    maxTokens: configuredMaxTokens,
   } = options;
   throwIfCancellationRequested(cancellationToken);
   if (!apiKey) {
@@ -473,10 +475,18 @@ async function runAnthropicAgentLoop(
 
   try {
     const anthropicClientClass = (await import('@anthropic-ai/sdk')).default;
-    const client = new anthropicClientClass({ apiKey });
+    const client = new anthropicClientClass({
+      apiKey,
+      ...(baseUrl ? { baseURL: baseUrl } : {}),
+    });
     const modelName = pickNonEmpty(model, DEFAULT_MODELS.anthropic);
-    const maxTokens = getAnthropicModelMaxTokens(modelName);
-    if (maxTokens === undefined) {
+    const maxTokens =
+      typeof configuredMaxTokens === 'number'
+        ? configuredMaxTokens
+        : baseUrl
+          ? undefined
+          : getAnthropicModelMaxTokens(modelName);
+    if (!baseUrl && maxTokens === undefined) {
       throw createUnknownAnthropicModelError(modelName);
     }
     const resolvedCommitOutputOptions =
@@ -515,17 +525,20 @@ async function runAnthropicAgentLoop(
     const requestMessage: AnthropicMessageRequester = async (
       currentMessages,
     ) => {
+      const requestParams: Record<string, unknown> = {
+        model: modelName,
+        system: systemPrompt,
+        messages: currentMessages,
+        tools: toAnthropicTools(
+          isStaged,
+          commitMessageLanguage,
+        ) as unknown as Tool[],
+      };
+      if (typeof maxTokens === 'number') {
+        requestParams.max_tokens = maxTokens;
+      }
       const response = await client.messages
-        .stream({
-          model: modelName,
-          max_tokens: maxTokens,
-          system: systemPrompt,
-          messages: currentMessages,
-          tools: toAnthropicTools(
-            isStaged,
-            commitMessageLanguage,
-          ) as unknown as Tool[],
-        })
+        .stream(requestParams as Parameters<typeof client.messages.stream>[0])
         .finalMessage();
       return {
         content: response.content,

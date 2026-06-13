@@ -26,6 +26,7 @@ import {
   getCustomProviderId,
   getCustomProviderStorageKey,
   isCustomProvider,
+  normalizeCustomProviders,
 } from '../models/custom-provider';
 import {
   CommitOutputOptions,
@@ -308,10 +309,9 @@ function resolveProviderContext(
   }
 
   const customProviderId = getCustomProviderId(currentProviderRaw);
-  const customProviders =
-    context.globalState.get<CustomProviderConfig[]>(
-      CUSTOM_PROVIDERS_STATE_KEY,
-    ) ?? [];
+  const customProviders = normalizeCustomProviders(
+    context.globalState.get<unknown>(CUSTOM_PROVIDERS_STATE_KEY),
+  ).providers;
   const customProviderConfig = customProviders.find(
     (provider) => provider.id === customProviderId,
   );
@@ -490,6 +490,8 @@ function createBaseGenerateOptions(args: {
     provider: args.providerContext.llmProvider,
     apiKey: args.apiKey ?? '',
     baseUrl: args.providerContext.customProviderConfig?.baseUrl,
+    apiFormat: args.providerContext.customProviderConfig?.apiFormat,
+    maxTokens: args.providerContext.customProviderConfig?.maxTokens,
     generateMode: args.currentGenerateMode,
     commitOutputOptions: args.currentCommitOutputOptions,
     maxAgentSteps: args.maxAgentSteps,
@@ -992,6 +994,7 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(outputChannel);
 
   const provider = new MainViewProvider(context.extensionUri, context);
+  void provider.migrateCustomProviders();
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider(
       MainViewProvider.viewType,

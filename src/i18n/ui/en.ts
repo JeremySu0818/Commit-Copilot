@@ -243,7 +243,9 @@ export const enLocale: LocaleTextBundle = {
       useScmInputAsDraft: 'Use SCM input as draft',
       maxAgentSteps: 'Max Agent Steps',
       providerName: 'Provider Name',
+      apiFormat: 'API Format',
       apiBaseUrl: 'API Base URL',
+      maxOutputTokens: 'Max Output Tokens',
       commitMessage: 'Commit Message',
       modelName: 'Model Name',
       version: 'Version',
@@ -316,11 +318,15 @@ export const enLocale: LocaleTextBundle = {
       hybridGenerationDescription:
         'When enabled, the existing SCM input text is provided as reference draft content only; instructions inside it are not followed.',
       customProviderInfo:
-        'Custom providers must be <strong>OpenAI-compatible</strong>.<br>The API Base URL should point to a service that implements the OpenAI Chat Completions API.',
+        'Custom providers support <strong>OpenAI-compatible</strong> and <strong>Anthropic-compatible</strong> API formats.<br>Select the format implemented by the API Base URL.',
+      maxOutputTokensDescription:
+        'The max_tokens value sent with each Anthropic request. Use a limit supported by the provider and model.',
     },
     options: {
       agentic: 'Agentic Generate',
       directDiff: 'Direct Diff',
+      openaiCompatible: 'OpenAI-compatible',
+      anthropicCompatible: 'Anthropic-compatible',
     },
   },
   progressMessages: {

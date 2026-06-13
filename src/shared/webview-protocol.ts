@@ -32,6 +32,7 @@ export type WebviewToExtensionMessageType =
   | 'saveCommitMessageLanguage'
   | 'saveCommitOutputOptions'
   | 'saveCustomProvider'
+  | 'saveCustomProviderMaxTokens'
   | 'saveDisplayLanguage'
   | 'saveGenerateMode'
   | 'saveHybridGenerationOptions'
@@ -66,7 +67,14 @@ export interface SaveCustomProviderMessage extends IncomingMessage {
   id?: unknown;
   name?: unknown;
   baseUrl?: unknown;
+  apiFormat?: unknown;
+  maxTokens?: unknown;
   apiKey?: unknown;
+}
+
+export interface SaveCustomProviderMaxTokensMessage extends ProviderMessage {
+  type: 'saveCustomProviderMaxTokens';
+  maxTokens?: unknown;
 }
 
 export interface DeleteCustomProviderMessage extends ProviderMessage {

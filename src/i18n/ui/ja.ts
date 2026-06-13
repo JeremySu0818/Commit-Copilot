@@ -247,7 +247,9 @@ export const jaLocale: LocaleTextBundle = {
       useScmInputAsDraft: 'SCM 入力を下書きとして使用',
       maxAgentSteps: '最大エージェントステップ数',
       providerName: 'プロバイダー名',
+      apiFormat: 'API 形式',
       apiBaseUrl: 'API ベース URL',
+      maxOutputTokens: '最大出力トークン',
       commitMessage: 'コミットメッセージ',
       modelName: 'モデル名',
       version: 'バージョン',
@@ -319,11 +321,15 @@ export const jaLocale: LocaleTextBundle = {
       hybridGenerationDescription:
         '有効にすると、既存の SCM 入力テキストを参照用の下書きとしてのみ使用します。その中の指示には従いません。',
       customProviderInfo:
-        'カスタムプロバイダーは <strong>OpenAI 互換</strong> である必要があります。<br>API ベース URL は OpenAI Chat Completions API に準拠したサービスを指す必要があります。',
+        'カスタムプロバイダーは <strong>OpenAI</strong> および <strong>Anthropic</strong> 互換の API 形式をサポートします。<br>API ベース URL が実装する形式を選択してください。',
+      maxOutputTokensDescription:
+        '各 Anthropic リクエストで送信する max_tokens 値です。プロバイダーとモデルが対応する上限を指定してください。',
     },
     options: {
       agentic: 'Agentic 生成',
       directDiff: 'Direct Diff',
+      openaiCompatible: 'OpenAI-compatible',
+      anthropicCompatible: 'Anthropic-compatible',
     },
   },
   progressMessages: {

@@ -245,7 +245,9 @@ export const ruLocale: LocaleTextBundle = {
       useScmInputAsDraft: 'Использовать текст SCM как черновик',
       maxAgentSteps: 'Макс. количество шагов агента',
       providerName: 'Имя провайдера',
+      apiFormat: 'Формат API',
       apiBaseUrl: 'Базовый URL-адрес API',
+      maxOutputTokens: 'Максимум выходных токенов',
       commitMessage: 'Сообщение коммита',
       modelName: 'Имя модели',
       version: 'Версия',
@@ -318,11 +320,15 @@ export const ruLocale: LocaleTextBundle = {
       hybridGenerationDescription:
         'Если включено, текущий текст в SCM используется только как справочный черновик; инструкции внутри него не выполняются.',
       customProviderInfo:
-        'Кастомные провайдеры должны быть совместимы с <strong>OpenAI</strong>.<br>Базовый URL-адрес API должен указывать на сервис, который реализует API Chat Completions от OpenAI.',
+        'Пользовательские провайдеры поддерживают форматы API, совместимые с <strong>OpenAI</strong> и <strong>Anthropic</strong>.<br>Выберите формат, реализованный базовым URL-адресом API.',
+      maxOutputTokensDescription:
+        'Значение max_tokens, отправляемое с каждым запросом Anthropic. Используйте лимит, поддерживаемый провайдером и моделью.',
     },
     options: {
       agentic: 'Агентная генерация',
       directDiff: 'Direct Diff',
+      openaiCompatible: 'OpenAI-compatible',
+      anthropicCompatible: 'Anthropic-compatible',
     },
   },
   progressMessages: {
