@@ -1,12 +1,10 @@
 # Informations de mise à jour de Commit Copilot
 
-## Nouveautés de la version 1.13.0
+## Nouveautés de la version 1.14.0
 
-- Ajout de l'option "Langue du message de commit" dans la page des paramètres, indépendante de la langue de l'interface de l'extension.
-- Ajout de l'option "Génération hybride" dans la page des paramètres pour utiliser l'entrée SCM actuelle comme brouillon de référence.
-- Ajout de l'option de préfixe Gitmoji (`includeGitmoji`) dans les paramètres de génération pour ajouter des emojis aux messages de commit générés.
-- Ajout d'une icône GitHub dans la vue principale créant un lien direct vers le dépôt de l'extension.
-- Ajout d'un bouton dans la vue principale pour ouvrir la page "À propos" (Info/About), affichant les détails de la version et de l'auteur.
-- Ajout d'un onglet d'informations de mise à jour, qui s'affiche au premier lancement après une mise à jour de l'extension.
-- Architecture des prompts entièrement localisée, prenant en charge les 20 langues.
-- La commande des paramètres a été renommée en `openSettings` et la cohérence de l'interface utilisateur a été améliorée.
+- Prise en charge du mode proxy d'Ollama : Introduction de protocoles d'outils d'agent texte pour supprimer le mécanisme de secours obligatoire Direct Diff, et prise en charge de l'interruption du téléchargement (Pull) du modèle Ollama lors de l'annulation de la génération.
+- Prise en charge des fournisseurs personnalisés Anthropic : Permet de configurer des points de terminaison personnalisés au format de l'API Anthropic et de définir les jetons de sortie maximaux, avec optimisation de l'ordre de saisie des nouveaux champs et migration automatique des anciennes configurations.
+- Modularisation de l'architecture centrale : Séparation des composants clés tels que l'orchestration de la génération, les opérations Git, la gestion des modèles et les protocoles de webview en modules indépendants, et modularisation des prompts de langue pour améliorer les performances de chargement.
+- Simplification des noms d'affichage des fournisseurs : Correction des étiquettes des fournisseurs intégrés pour obtenir des noms plus épurés.
+- Correction des étiquettes de langue de l'interface : Correction de l'étiquette d'action du sélecteur de modèle de « Ajouter un modèle » à « Gérer les modèles... » pour mieux correspondre à l'écran de la fonctionnalité.
+- Mise à jour et optimisation de la documentation README.md et des exemples de configuration.

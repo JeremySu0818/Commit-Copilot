@@ -322,7 +322,7 @@ export const viLocale: LocaleTextBundle = {
       customProviderInfo:
         'Nhà cung cấp tùy chỉnh hỗ trợ định dạng API tương thích với <strong>OpenAI</strong> và <strong>Anthropic</strong>.<br>Chọn định dạng được triển khai bởi URL Cơ sở API.',
       maxOutputTokensDescription:
-        'Giá trị max_tokens được gửi với mỗi yêu cầu Anthropic. Sử dụng giới hạn được hỗ trợ bởi nhà cung cấp và mô hình.',
+        'Giá trị max_tokens được gửi với mỗi yêu cầu Anthropic. Sử dụng giới hạn được hỗ trợ bởi nhà cung cấp và mô hình. Thông thường đây là bắt buộc; việc bỏ qua nó có thể gây ra lỗi API.',
     },
     options: {
       agentic: 'Tạo Agentic',

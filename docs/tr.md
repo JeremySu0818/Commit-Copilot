@@ -1,12 +1,10 @@
 # Commit Copilot Güncelleme Bilgisi
 
-## Sürüm 1.13.0'daki Yenilikler
+## Sürüm 1.14.0 ile Gelen Yenilikler
 
-- Ayarlar sayfasına, eklenti kullanıcı arayüzü dilinden bağımsız bir "Commit Mesajı Dili" seçeneği eklendi.
-- Ayarlar sayfasına, mevcut SCM girişini referans taslağı olarak kullanmak için "Hibrit Oluşturma" seçeneği eklendi.
-- Oluşturulan commit mesajlarına emoji eklemek için oluşturma ayarlarına Gitmoji ön eki seçeneği (`includeGitmoji`) eklendi.
-- Ana görünüme, doğrudan eklenti deposuna bağlanan bir GitHub simgesi eklendi.
-- Ana görünüme sürüm ve yazar ayrıntılarını gösteren "Hakkında" (Info/About) sayfasını açan bir düğme eklendi.
-- Bir eklenti güncellemesinden sonraki ilk açılışta görüntülenen bir güncelleme bilgi sekmesi eklendi.
-- Prompt mimarisi, 20 dilin tamamını destekleyecek şekilde tamamen yerelleştirildi.
-- Ayarlar komutu `openSettings` olarak yeniden adlandırıldı ve kullanıcı arayüzü tutarlılığı iyileştirildi.
+- Ollama proxy modu desteği: Zorunlu Direct Diff geri dönüş mekanizmasını kaldırmak için metin aracı protokolleri tanıtıldı ve üretim iptal edildiğinde Ollama modeli indirme (Pull) işleminin durdurulması desteklendi.
+- Anthropic özel sağlayıcı desteği: Anthropic API biçimindeki özel uç noktaların ayarlanmasına, maksimum çıktı belirteci (token) yapılandırılmasına izin verildi; yeni alanların giriş sırası optimize edildi ve eski ayarlar otomatik olarak taşındı.
+- Çekirdek mimari modülerleştirildi: Üretim yönetimi, Git işlemleri, model yönetimi ve webview protokolleri gibi temel bileşenler bağımsız modüllere ayrıldı ve yükleme performansını artırmak için dil promptları modülerleştirildi.
+- Sağlayıcı görünen adları sadeleştirildi: Yerleşik sağlayıcı etiketleri daha temiz adlarla düzeltildi.
+- Arayüz dil etiketleri düzeltildi: Model seçici işlem etiketi, işlev ekranıyla daha uyumlu olması için "Model Ekle"den "Modelleri Yönet..." olarak düzeltildi.
+- README.md belgeleri ve yapılandırma örnekleri güncellendi ve optimize edildi.

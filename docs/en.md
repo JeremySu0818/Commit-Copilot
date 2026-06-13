@@ -1,12 +1,10 @@
 # Commit Copilot Update Info
 
-## What's New in Version 1.13.0
+## What's New in Version 1.14.0
 
-- Added a "Commit Message Language" option in the settings page, independent of the extension UI language.
-- Added a "Hybrid Generation" option in the settings page to use the current SCM input as a draft reference.
-- Added a Gitmoji prefix option (`includeGitmoji`) in the generation settings to add emojis to generated commit messages.
-- Added a GitHub icon to the main view linking directly to the extension repository.
-- Added a button in the main view to open the "About" (Info/About) page, displaying version and author details.
-- Added an update info tab, which displays on the first launch after an extension update.
-- Fully localized the Prompt architecture, supporting all 20 languages.
-- Renamed the settings command to `openSettings` and improved UI consistency.
+- Supported Ollama proxy mode: Introduced text agent tool protocols to remove the forced Direct Diff fallback mechanism, and supported aborting Ollama model download (Pull) progress when canceling generation.
+- Supported Anthropic custom provider: Allowed configuring custom endpoints in Anthropic API format, setting max output tokens, optimized the input sequence of new fields, and automatically migrated legacy settings.
+- Modularized core architecture: Split core components such as generation orchestration, Git operations, model management, and webview protocols into independent modules, and modularized language Prompts to improve load performance.
+- Simplified provider display names: Corrected built-in provider labels to cleaner names.
+- Fixed UI language labels: Corrected the model selector action label from "Add Model" to "Manage Models..." to better match the functional screen.
+- Updated and optimized README.md documentation and configuration examples.

@@ -1,12 +1,10 @@
-# Informações de atualização do Commit Copilot
+# Informações de Atualização do Commit Copilot
 
-## Novidades da versão 1.13.0
+## Novidades na Versão 1.14.0
 
-- Adicionada a opção "Idioma da mensagem de commit" na página de configurações, independente do idioma da interface da extensão.
-- Adicionada a opção "Geração híbrida" na página de configurações para usar a entrada atual do SCM como rascunho de referência.
-- Adicionada a opção de prefixo Gitmoji (`includeGitmoji`) nas configurações de geração para adicionar emojis às mensagens de commit geradas.
-- Adicionado um ícone do GitHub na tela principal com link direto para o repositório da extensão.
-- Adicionado um botão na tela principal para abrir a página "Sobre" (Info/About), exibindo detalhes da versão e autor.
-- Adicionada uma aba de informações de atualização, que é exibida na primeira inicialização após a atualização da extensão.
-- Arquitetura de prompts totalmente localizada, com suporte para todos os 20 idiomas.
-- O comando de configurações foi renomeado para `openSettings` e a consistência da interface foi aprimorada.
+- Suporte ao modo proxy do Ollama: Introdução de protocolos de ferramentas de agente de texto para remover o mecanismo de fallback obrigatório Direct Diff, e suporte para abortar o progresso do download (Pull) do modelo do Ollama ao cancelar a geração.
+- Suporte a provedores personalizados da Anthropic: Permissão para configurar endpoints personalizados no formato da API da Anthropic, definição de limite máximo de tokens de saída, otimização da ordem de entrada dos novos campos e migração automática das configurações antigas.
+- Modularização da arquitetura principal: Divisão dos componentes principais, como orquestração de geração, operações Git, gerenciamento de modelos e protocolos de webview, em módulos independentes, além da modularização dos prompts de idioma para melhorar o desempenho de carregamento.
+- Simplificação dos nomes de exibição dos provedores: Correção dos rótulos dos provedores integrados para nomes mais limpos.
+- Correção dos rótulos de idioma da interface: Alteração do rótulo de ação do seletor de modelos de "Adicionar Modelo" para "Gerenciar Modelos..." para melhor correspondência com a tela da funcionalidade.
+- Atualização e otimização da documentação do README.md e dos exemplos de configuração.

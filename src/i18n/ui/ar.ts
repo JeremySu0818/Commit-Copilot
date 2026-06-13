@@ -303,7 +303,7 @@ export const arLocale: LocaleTextBundle = {
       customProviderInfo:
         'يدعم موفرو الخدمة المخصصون تنسيقات API المتوافقة مع <strong>OpenAI</strong> و<strong>Anthropic</strong>.<br>اختر التنسيق الذي ينفذه عنوان URL الأساسي لـ API.',
       maxOutputTokensDescription:
-        'قيمة max_tokens المرسلة مع كل طلب Anthropic. استخدم حدًا يدعمه المزود والنموذج.',
+        'قيمة max_tokens المرسلة مع كل طلب Anthropic. استخدم حدًا يدعمه المزود والنموذج. عادةً ما يكون إلزاميًا، وقد يؤدي حذفه إلى حدوث أخطاء في واجهة برمجة التطبيقات.',
     },
     options: {
       agentic: 'توليد وكيلي',

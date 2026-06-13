@@ -1,12 +1,10 @@
 # Informasi Pembaruan Commit Copilot
 
-## Apa yang Baru di Versi 1.13.0
+## Fitur Baru di Versi 1.14.0
 
-- Menambahkan opsi "Bahasa Pesan Commit" di halaman pengaturan, terlepas dari bahasa antarmuka ekstensi.
-- Menambahkan opsi "Pembuatan Hibrida" di halaman pengaturan untuk menggunakan input SCM saat ini sebagai draf referensi.
-- Menambahkan opsi awalan Gitmoji (`includeGitmoji`) dalam pengaturan pembuatan untuk menambahkan emoji ke pesan commit yang dihasilkan.
-- Menambahkan ikon GitHub ke tampilan utama yang menautkan langsung ke repositori ekstensi.
-- Menambahkan tombol di tampilan utama untuk membuka halaman "Tentang" (Info/About), yang menampilkan detail versi dan penulis.
-- Menambahkan tab informasi pembaruan, yang ditampilkan pada peluncuran pertama setelah pembaruan ekstensi.
-- Arsitektur Prompt dilokalisasi sepenuhnya, mendukung semua 20 bahasa.
-- Mengganti nama perintah pengaturan menjadi `openSettings` dan meningkatkan konsistensi antarmuka pengguna.
+- Dukungan mode proksi Ollama: Memperkenalkan protokol alat agen teks untuk menghapus mekanisme cadangan Direct Diff yang dipaksakan, dan mendukung pembatalan proses pengunduhan (Pull) model Ollama saat pembuatan dibatalkan.
+- Dukungan penyedia kustom Anthropic: Memungkinkan konfigurasi endpoint kustom dengan format API Anthropic, konfigurasi token output maksimum, mengoptimalkan urutan input bidang baru, dan memigrasikan pengaturan lama secara otomatis.
+- Modularisasi arsitektur inti: Memisahkan komponen inti seperti orkestrasi pembuatan, operasi Git, manajemen model, dan protokol webview menjadi modul independen, serta memodularisasi prompt bahasa untuk meningkatkan performa pemuatan.
+- Penyederhanaan nama tampilan penyedia: Memperbaiki label penyedia bawaan menjadi nama yang lebih bersih.
+- Perbaikan label bahasa UI: Mengubah label tindakan pemilih model dari "Tambah Model" menjadi "Kelola Model..." agar lebih sesuai dengan tampilan fitur.
+- Pembaruan dan pengoptimalan dokumentasi README.md serta contoh konfigurasi.

@@ -1,12 +1,10 @@
-# Commit Copilot Update-informatie
+# Commit Copilot Update-info
 
-## Wat is er nieuw in versie 1.13.0
+## Nieuw in versie 1.14.0
 
-- Optie "Taal van commitberichten" toegevoegd op de instellingenpagina, onafhankelijk van de UI-taal van de extensie.
-- Optie "Hybride generatie" toegevoegd op de instellingenpagina om de huidige SCM-invoer als concept te gebruiken.
-- Gitmoji-voorvoegseloptie (`includeGitmoji`) toegevoegd in de generatie-instellingen om emoji's toe te voegen aan gegenereerde commitberichten.
-- GitHub-pictogram toegevoegd aan de hoofdweergave die direct linkt naar de extensie-repository.
-- Knop toegevoegd in de hoofdweergave om de "Over"-pagina (Info/About) te openen met versiedetails en auteursinformatie.
-- Een tabblad met update-informatie toegevoegd, dat wordt weergegeven bij de eerste start na een extensie-update.
-- De prompt-architectuur is volledig gelokaliseerd en ondersteunt alle 20 talen.
-- Het instellingencommando is hernoemd naar `openSettings` en de consistentie van de gebruikersinterface is verbeterd.
+- Ondersteuning voor Ollama-proxymodus: Introductie van tekstagent-toolprotocollen om het geforceerde Direct Diff-terugvalmechanisme te verwijderen, en ondersteuning voor het afbreken van de downloadvoortgang (Pull) van het Ollama-model bij het annuleren van de generatie.
+- Ondersteuning voor aangepaste Anthropic-providers: Mogelijkheid om aangepaste eindpunten in Anthropic API-indeling in te stellen, maximale outputtokens te configureren, de invoervolgorde van nieuwe velden te optimaliseren en oude instellingen automatisch te migreren.
+- Modularisering van de kernarchitectuur: Opsplitsing van kerncomponenten zoals generatie-orchestratie, Git-bewerkingen, modelbeheer en webview-protocollen in onafhankelijke modules, en modularisering van taalprompts om de laadprestaties te verbeteren.
+- Vereenvoudigde weergavenamen van providers: Labels van ingebouwde providers gecorrigeerd naar schonere namen.
+- Correctie van UI-taallabels: Actielabel van de modelkiezer gecorrigeerd van "Model toevoegen" naar "Modellen beheren..." om beter overeen te komen met het functiescherm.
+- Update en optimalisatie van de README.md-documentatie en configuratievoorbeelden.

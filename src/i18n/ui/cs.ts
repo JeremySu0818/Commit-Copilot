@@ -322,7 +322,7 @@ export const csLocale: LocaleTextBundle = {
       customProviderInfo:
         'Vlastní poskytovatelé podporují formáty API kompatibilní s <strong>OpenAI</strong> a <strong>Anthropic</strong>.<br>Vyberte formát implementovaný základní adresou URL API.',
       maxOutputTokensDescription:
-        'Hodnota max_tokens odeslaná s každým požadavkem Anthropic. Použijte limit podporovaný poskytovatelem a modelem.',
+        'Hodnota max_tokens odeslaná s každým požadavkem Anthropic. Použijte limit podporovaný poskytovatelem a modelem. Obvykle je to povinné, nevyplnění může způsobit chyby API.',
     },
     options: {
       agentic: 'Agentic generování',

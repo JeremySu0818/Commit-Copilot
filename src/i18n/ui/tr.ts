@@ -328,7 +328,7 @@ export const trLocale: LocaleTextBundle = {
       customProviderInfo:
         'Özel sağlayıcılar <strong>OpenAI</strong> ve <strong>Anthropic</strong> uyumlu API biçimlerini destekler.<br>API Temel URL tarafından uygulanan biçimi seçin.',
       maxOutputTokensDescription:
-        'Her Anthropic isteğiyle gönderilen max_tokens değeri. Sağlayıcı ve model tarafından desteklenen bir sınır kullanın.',
+        'Her Anthropic isteğiyle gönderilen max_tokens değeri. Sağlayıcı ve model tarafından desteklenen bir sınır kullanın. Genellikle zorunludur; belirtilmemesi API hatalarına neden olabilir.',
     },
     options: {
       agentic: 'Ajan (Agentic) Oluşturma',

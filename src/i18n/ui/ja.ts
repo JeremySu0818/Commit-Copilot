@@ -323,7 +323,7 @@ export const jaLocale: LocaleTextBundle = {
       customProviderInfo:
         'カスタムプロバイダーは <strong>OpenAI</strong> および <strong>Anthropic</strong> 互換の API 形式をサポートします。<br>API ベース URL が実装する形式を選択してください。',
       maxOutputTokensDescription:
-        '各 Anthropic リクエストで送信する max_tokens 値です。プロバイダーとモデルが対応する上限を指定してください。',
+        '各 Anthropic リクエストで送信する max_tokens 値です。プロバイダーとモデルが対応する上限を指定してください。通常は必須であり、指定しない場合はAPIエラーが発生することがあります。',
     },
     options: {
       agentic: 'Agentic 生成',

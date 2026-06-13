@@ -320,7 +320,7 @@ export const enLocale: LocaleTextBundle = {
       customProviderInfo:
         'Custom providers support <strong>OpenAI-compatible</strong> and <strong>Anthropic-compatible</strong> API formats.<br>Select the format implemented by the API Base URL.',
       maxOutputTokensDescription:
-        'The max_tokens value sent with each Anthropic request. Use a limit supported by the provider and model.',
+        'The max_tokens value sent with each Anthropic request. Use a limit supported by the provider and model. It is usually mandatory; omitting it may cause API errors.',
     },
     options: {
       agentic: 'Agentic Generate',

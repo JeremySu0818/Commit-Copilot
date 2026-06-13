@@ -330,7 +330,7 @@ export const plLocale: LocaleTextBundle = {
       customProviderInfo:
         'Niestandardowi dostawcy obsługują formaty API zgodne z <strong>OpenAI</strong> i <strong>Anthropic</strong>.<br>Wybierz format implementowany przez bazowy adres URL API.',
       maxOutputTokensDescription:
-        'Wartość max_tokens wysyłana z każdym żądaniem Anthropic. Użyj limitu obsługiwanego przez dostawcę i model.',
+        'Wartość max_tokens wysyłana z każdym żądaniem Anthropic. Użyj limitu obsługiwanego przez dostawcę i model. Zwykle jest to wymagane; pominięcie tego może powodować błędy API.',
     },
     options: {
       agentic: 'Generowanie agentowe',

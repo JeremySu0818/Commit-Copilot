@@ -1,12 +1,10 @@
-# Commit Copilot Frissítési információk
+# Commit Copilot frissítési információk
 
-## Újdonságok az 1.13.0 verzióban
+## Újdonságok az 1.14.0-s verzióban
 
-- Hozzáadva egy "Commit üzenet nyelve" opció a beállítások oldalon, amely független a bővítmény felületének nyelvétől.
-- Hozzáadva egy "Hibrid generálás" opció a beállítások oldalon, amely lehetővé teszi az aktuális SCM bevitel használatát piszkozatként.
-- Hozzáadva egy Gitmoji előtag opció (`includeGitmoji`) a generálási beállításokban, amellyel emojikat adhat a generált commit üzenetekhez.
-- Hozzáadva egy GitHub ikon a fő nézethez, amely közvetlenül a bővítmény tárolójára mutat.
-- Hozzáadva egy gomb a fő nézethez, amely megnyitja a "Névjegy" (Info/About) oldalt a verzió- és szerzőadatokkal.
-- Hozzáadva egy frissítési információk lap, amely a bővítmény frissítése utáni első indításkor jelenik meg.
-- A Prompt architektúra teljesen lokalizálva lett, és mind a 20 nyelvet támogatja.
-- A beállítások parancs átnevezve `openSettings`-re, javítva a felhasználói felület konzisztenciáját.
+- Ollama proxy mód támogatása: Bevezetésre kerültek a szöveges ágens eszköz protokollok a kényszerített Direct Diff tartalék mechanizmus eltávolítására, valamint támogatottá vált az Ollama modell letöltési (Pull) folyamatának megszakítása a generálás visszavonásakor.
+- Anthropic egyéni szolgáltató támogatása: Lehetővé vált az Anthropic API formátumú egyéni végpontok beállítása, a maximális kimeneti tokenek konfigurálása, optimalizálásra került az új mezők beviteli sorrendje, és automatikusan migrációra kerültek a régi beállítások.
+- Moduláris magarchitektúra: A generálás-kezelés, a Git műveletek, a modellkezelés és a webview protokollok különálló modulokba lettek kiszervezve, a nyelvi promptek pedig modulárisak lettek a betöltési teljesítmény növelése érdekében.
+- Szolgáltatók megjelenített neveinek egyszerűsítése: A beépített szolgáltatók címkéi tisztább nevekre lettek javítva.
+- UI nyelv címkéinek javítása: A modellválasztó akciócímkéje „Modell hozzáadása” helyett „Modellek kezelése...” lett, hogy jobban illeszkedjen a funkció képernyőjéhez.
+- A README.md dokumentáció és a konfigurációs példák frissítése és optimalizálása.

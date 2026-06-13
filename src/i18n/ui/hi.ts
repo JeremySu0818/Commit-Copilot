@@ -321,7 +321,7 @@ export const hiLocale: LocaleTextBundle = {
       customProviderInfo:
         'कस्टम प्रदाता <strong>OpenAI</strong> और <strong>Anthropic</strong> संगत API प्रारूपों का समर्थन करते हैं।<br>API बेस URL द्वारा लागू प्रारूप चुनें।',
       maxOutputTokensDescription:
-        'प्रत्येक Anthropic अनुरोध के साथ भेजा गया max_tokens मान। प्रदाता और लेखक द्वारा समर्थित सीमा का उपयोग करें।',
+        'प्रत्येक Anthropic अनुरोध के साथ भेजा गया max_tokens मान। प्रदाता और लेखक द्वारा समर्थित सीमा का उपयोग करें। यह आमतौर पर अनिवार्य है; इसे छोड़ने से एपीआई त्रुटियां हो सकती हैं।',
     },
     options: {
       agentic: 'एजेंटिक उत्पन्न करें',

@@ -1,12 +1,10 @@
 # Informacje o aktualizacji Commit Copilot
 
-## Co nowego w wersji 1.13.0
+## Nowości w wersji 1.14.0
 
-- Dodano opcję "Język wiadomości commita" na stronie ustawień, niezależną od języka interfejsu rozszerzenia.
-- Dodano opcję "Generowanie hybrydowe" na stronie ustawień, aby używać obecnego wpisu SCM jako szkicu.
-- Dodano opcję prefiksu Gitmoji (`includeGitmoji`) w ustawieniach generowania, aby dodawać emoji do generowanych wiadomości commita.
-- Dodano ikonę GitHub w głównym widoku prowadzącą bezpośrednio do repozytorium rozszerzenia.
-- Dodano przycisk w głównym widoku, który otwiera stronę "O programie" (Info/About), wyświetlającą szczegóły wersji i autora.
-- Dodano zakładkę z informacjami o aktualizacji, która pojawia się przy pierwszym uruchomieniu po zaktualizowaniu rozszerzenia.
-- Architektura promptów została w pełni zlokalizowana, obsługując wszystkie 20 języków.
-- Polecenie ustawień zostało zmienione na `openSettings`, a spójność interfejsu użytkownika uległa poprawie.
+- Obsługa trybu proxy Ollama: Wprowadzono protokoły narzędzi agenta tekstowego w celu usunięcia wymuszonego mechanizmu awaryjnego Direct Diff oraz dodano obsługę przerywania pobierania (Pull) modelu Ollama podczas anulowania generowania.
+- Obsługa niestandardowych dostawców Anthropic: Umożliwiono konfigurowanie niestandardowych punktów końcowych w formacie API Anthropic, ustawianie maksymalnej liczby tokenów wyjściowych, zoptymalizowano kolejność wprowadzania nowych pól oraz automatycznie zmigrowano starsze ustawienia.
+- Modularyzacja architektury rdzenia: Podzielono kluczowe komponenty, takie jak orkiestracja generowania, operacje Git, zarządzanie modelami i protokoły webview, na niezależne moduły oraz zmodularyzowano prompty językowe w celu poprawy wydajności ładowania.
+- Uproszczenie wyświetlanych nazw dostawców: Poprawiono etykiety wbudowanych dostawców na czytelniejsze nazwy.
+- Poprawki etykiet językowych interfejsu: Zmieniono etykietę akcji selektora modeli z „Dodaj model” na „Zarządzaj modelami...”, aby lepiej pasowała do ekranu funkcji.
+- Aktualizacja i optymalizacja dokumentacji README.md oraz przykładowych konfiguracji.

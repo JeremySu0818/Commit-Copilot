@@ -336,7 +336,7 @@ export const deLocale: LocaleTextBundle = {
       customProviderInfo:
         'Benutzerdefinierte Anbieter unterstützen <strong>OpenAI</strong>- und <strong>Anthropic</strong>-kompatible API-Formate.<br>Wählen Sie das Format, das die API-Basis-URL implementiert.',
       maxOutputTokensDescription:
-        'Der max_tokens-Wert für jede Anthropic-Anfrage. Verwenden Sie ein vom Anbieter und Modell unterstütztes Limit.',
+        'Der max_tokens-Wert für jede Anthropic-Anfrage. Verwenden Sie ein vom Anbieter und Modell unterstütztes Limit. Dies ist in der Regel obligatorisch. Das Weglassen kann zu API-Fehlern führen.',
     },
     options: {
       agentic: 'Agentic Generierung',

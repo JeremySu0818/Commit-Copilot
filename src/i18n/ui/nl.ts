@@ -322,7 +322,7 @@ export const nlLocale: LocaleTextBundle = {
       customProviderInfo:
         'Aangepaste providers ondersteunen API-indelingen die compatibel zijn met <strong>OpenAI</strong> en <strong>Anthropic</strong>.<br>Selecteer de indeling die door de API-basis-URL wordt geïmplementeerd.',
       maxOutputTokensDescription:
-        'De max_tokens-waarde die bij elk Anthropic-verzoek wordt verzonden. Gebruik een limiet die wordt ondersteund door de provider und het model.',
+        'De max_tokens-waarde die bij elk Anthropic-verzoek wordt verzonden. Gebruik een limiet die wordt ondersteund door de provider und het model. Dit is meestal verplicht; het weglaten ervan kan API-fouten veroorzaken.',
     },
     options: {
       agentic: 'Agentic Genereren',

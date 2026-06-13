@@ -319,7 +319,7 @@ export const koLocale: LocaleTextBundle = {
       customProviderInfo:
         '사용자 지정 공급자는 <strong>OpenAI</strong> 및 <strong>Anthropic</strong> 호환 API 형식을 지원합니다.<br>API 베이스 URL이 구현하는 형식을 선택하세요.',
       maxOutputTokensDescription:
-        '각 Anthropic 요청에 전송할 max_tokens 값입니다. 공급자와 모델이 지원하는 제한을 사용하세요.',
+        '각 Anthropic 요청에 전송할 max_tokens 값입니다. 공급자와 모델이 지원하는 제한을 사용하세요. 보통 필수 항목이며, 입력하지 않으면 API 오류가 발생할 수 있습니다.',
     },
     options: {
       agentic: 'Agentic 생성',

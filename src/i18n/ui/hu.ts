@@ -324,7 +324,7 @@ export const huLocale: LocaleTextBundle = {
       customProviderInfo:
         'Az egyéni szolgáltatók támogatják az <strong>OpenAI</strong>- és <strong>Anthropic</strong>-kompatibilis API-formátumokat.<br>Válassza ki az API alap URL által megvalósított formátumot.',
       maxOutputTokensDescription:
-        'Az egyes Anthropic-kérésekkel küldött max_tokens érték. A szolgáltató és a modell által támogatott korlátot használjon.',
+        'Az egyes Anthropic-kérésekkel küldött max_tokens érték. A szolgáltató és a modell által támogatott korlátot használjon. Általában kötelező; ha kihagyja, az API-hibákat okozhat.',
     },
     options: {
       agentic: 'Ügynöki (Agentic) Generálás',

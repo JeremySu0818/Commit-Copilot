@@ -322,7 +322,7 @@ export const ruLocale: LocaleTextBundle = {
       customProviderInfo:
         'Пользовательские провайдеры поддерживают форматы API, совместимые с <strong>OpenAI</strong> и <strong>Anthropic</strong>.<br>Выберите формат, реализованный базовым URL-адресом API.',
       maxOutputTokensDescription:
-        'Значение max_tokens, отправляемое с каждым запросом Anthropic. Используйте лимит, поддерживаемый провайдером и моделью.',
+        'Значение max_tokens, отправляемое с каждым запросом Anthropic. Используйте лимит, поддерживаемый провайдером и моделью. Обычно это поле является обязательным; его отсутствие может привести к ошибкам API.',
     },
     options: {
       agentic: 'Агентная генерация',

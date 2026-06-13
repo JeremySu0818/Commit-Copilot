@@ -297,7 +297,7 @@ export const zhCNLocale: LocaleTextBundle = {
       customProviderInfo:
         '自定义供应商支持 <strong>OpenAI</strong> 与 <strong>Anthropic</strong> 兼容 API 格式。<br>请选择 API Base URL 实现的格式。',
       maxOutputTokensDescription:
-        '随每个 Anthropic 请求发送的 max_tokens 值。使用提供商和模型支持的限制。',
+        '随每个 Anthropic 请求发送的 max_tokens 值。使用提供商和模型支持的限制。通常都会是强制性的，若未填写可能会造成API错误',
     },
     options: {
       agentic: 'Agentic 生成',

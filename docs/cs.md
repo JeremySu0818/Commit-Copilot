@@ -1,12 +1,10 @@
 # Informace o aktualizaci Commit Copilot
 
-## Co je nového ve verzi 1.13.0
+## Novinky ve verzi 1.14.0
 
-- Na stránku nastavení byla přidána možnost "Jazyk zpráv commitu", nezávisle na jazyku uživatelského rozhraní rozšíření.
-- Na stránku nastavení byla přidána možnost "Hybridní generování" pro použití aktuálního vstupu SCM jako konceptu.
-- Do nastavení generování byla přidána volba předpony Gitmoji (`includeGitmoji`) pro přidávání emotikonů do generovaných zpráv commitu.
-- Do hlavního zobrazení byla přidána ikona GitHubu směřující přímo do repozitáře rozšíření.
-- Do hlavního zobrazení bylo přidáno tlačítko pro otevření stránky "O aplikaci" (Info/About), kde se zobrazují podrobnosti o verzi a autorovi.
-- Byla přidána karta s informacemi o aktualizaci, která se zobrazí při prvním spuštění po aktualizaci rozšíření.
-- Plně lokalizována architektura promptů s podporou všech 20 jazyků.
-- Příkaz nastavení byl přejmenován na `openSettings` a byla vylepšena konzistence uživatelského rozhraní.
+- Podpora proxy režimu Ollama: Zavedeny protokoly textových agentů pro odstranění vynuceného záložního mechanismu Direct Diff a přidána podpora pro přerušení stahování (Pull) modelu Ollama při zrušení generování.
+- Podpora pro vlastní poskytovatele Anthropic: Umožněno nastavení vlastních koncových bodů ve formátu Anthropic API, konfigurace maximálního počtu výstupních tokenů, optimalizováno pořadí zadávání nových polí a automaticky migrována starší nastavení.
+- Modularizace jádra architektury: Rozdělení klíčových komponent, jako je orchestrace generování, operace Git, správa modelů a protokoly webview, do nezávislých modulů a modularizace jazykových promptů pro zvýšení výkonu načítání.
+- Zjednodušení zobrazovaných názvů poskytovatelů: Opraveny štítky vestavěných poskytovatelů na čistší názvy.
+- Oprava jazykových štítků uživatelského rozhraní: Opraven štítek akce v selektoru modelů z „Přidat model“ na „Spravovat modely...“, aby lépe odpovídal funkční obrazovce.
+- Aktualizace a optimalizace dokumentace README.md a příkladů konfigurace.

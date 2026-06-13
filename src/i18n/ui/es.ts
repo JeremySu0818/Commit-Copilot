@@ -328,7 +328,7 @@ export const esLocale: LocaleTextBundle = {
       customProviderInfo:
         'Los proveedores personalizados admiten formatos de API compatibles con <strong>OpenAI</strong> y <strong>Anthropic</strong>.<br>Selecciona el formato implementado por la URL Base de API.',
       maxOutputTokensDescription:
-        'El valor max_tokens enviado con cada solicitud de Anthropic. Usa un límite compatible con el proveedor y el modelo.',
+        'El valor max_tokens enviado con cada solicitud de Anthropic. Usa un límite compatible con el proveedor y el modelo. Normalmente es obligatorio; omitirlo puede causar errores de API.',
     },
     options: {
       agentic: 'Generación de Agente',

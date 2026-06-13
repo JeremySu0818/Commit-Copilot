@@ -323,7 +323,7 @@ export const idLocale: LocaleTextBundle = {
       customProviderInfo:
         'Provider kustom mendukung format API yang kompatibel dengan <strong>OpenAI</strong> dan <strong>Anthropic</strong>.<br>Pilih format yang diterapkan oleh URL Dasar API.',
       maxOutputTokensDescription:
-        'Nilai max_tokens yang dikirim pada setiap permintaan Anthropic. Gunakan batas yang didukung provider dan model.',
+        'Nilai max_tokens yang dikirim pada setiap permintaan Anthropic. Gunakan batas yang didukung provider dan model. Biasanya wajib diisi; jika tidak diisi dapat menyebabkan kesalahan API.',
     },
     options: {
       agentic: 'Agentic Generate',
