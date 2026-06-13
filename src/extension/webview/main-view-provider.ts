@@ -207,7 +207,7 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
   public async showUpdateInfo() {
     const lang = this.getEffectiveDisplayLanguage();
     const docsUri = vscode.Uri.joinPath(this._extensionUri, 'docs');
-    let langMdUri = vscode.Uri.joinPath(docsUri, `${lang}.md`);
+    let langMdUri = vscode.Uri.joinPath(docsUri, `${lang.toLowerCase()}.md`);
     try {
       await vscode.workspace.fs.stat(langMdUri);
     } catch {
