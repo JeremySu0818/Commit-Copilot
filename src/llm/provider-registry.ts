@@ -10,15 +10,15 @@ export type APIProvider =
   | 'qwen';
 
 export const PROVIDER_DISPLAY_NAMES: Record<APIProvider, string> = {
-  google: 'Google (Gemini)',
-  openai: 'OpenAI (ChatGPT)',
-  anthropic: 'Anthropic (Claude)',
-  ollama: 'Ollama (Local)',
-  grok: 'xAI (Grok)',
+  google: 'Google Gemini',
+  openai: 'OpenAI ChatGPT',
+  anthropic: 'Anthropic Claude',
+  deepseek: 'DeepSeek',
+  qwen: 'Alibaba Qwen',
+  ollama: 'Ollama',
+  grok: 'xAI Grok',
   groq: 'Groq',
   openrouter: 'OpenRouter',
-  deepseek: 'DeepSeek',
-  qwen: 'Qwen',
 };
 
 export const DEFAULT_MODELS: Record<APIProvider, string> = {
