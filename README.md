@@ -7,7 +7,7 @@ Commit-Copilot is an **agentic** VS Code extension that uses a multi-step AI age
 - **Multi-Provider Support**: Choose your preferred AI provider:
   - **Google Gemini**: Support for Gemini 2.5 Flash-Lite/Flash/Pro, Gemini 3 Flash, Gemini 3.1 Flash-Lite/Pro, and Gemini 3.5 Flash.
   - **OpenAI**: Support for o3/o3-mini, o4-mini, GPT-4o mini/GPT-4o, GPT-4.1 nano/GPT-4.1 mini/GPT-4.1, GPT-5 nano/GPT-5 mini/GPT-5, GPT-5.1, GPT-5.2, GPT-5.4 nano/GPT-5.4 mini/GPT-5.4, and GPT-5.5.
-  - **Anthropic**: Support for Claude Sonnet/Opus 4, Claude Opus 4.1, Claude Haiku/Sonnet/Opus 4.5, Claude Sonnet/Opus 4.6, Claude Opus 4.7, Claude Opus 4.8, and Claude Fable 5.
+  - **Anthropic**: Support for Claude Sonnet/Opus 4, Claude Opus 4.1, Claude Haiku/Sonnet/Opus 4.5, Claude Sonnet/Opus 4.6, Claude Opus 4.7, and Claude Opus 4.8.
   - **xAI (Grok)**: Support for Grok 4.20 (non-reasoning/reasoning) and Grok 4.3.
   - **Groq**: Support for Llama 3.1 8B, Llama 3.3 70B, Llama 4 Scout, gpt-oss-20B/120B, and Qwen 3 32b.
   - **OpenRouter**: Access any model via OpenRouter's API, including dynamic model fetching with tool-support filtering.
