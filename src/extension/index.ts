@@ -1049,7 +1049,6 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(generateDisposable);
   context.subscriptions.push(cancelDisposable);
 
-  // Version check & Update notes flow
   const lastVersionKey = 'LAST_VERSION';
   const updateInfoShownKey = 'UPDATE_INFO_SHOWN';
 

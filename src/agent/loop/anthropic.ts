@@ -1,6 +1,5 @@
 import type {
   MessageParam,
-  Tool,
   ToolResultBlockParam,
 } from '@anthropic-ai/sdk/resources/messages/messages';
 
@@ -480,12 +479,14 @@ async function runAnthropicAgentLoop(
       ...(baseUrl ? { baseURL: baseUrl } : {}),
     });
     const modelName = pickNonEmpty(model, DEFAULT_MODELS.anthropic);
-    const maxTokens =
-      typeof configuredMaxTokens === 'number'
-        ? configuredMaxTokens
-        : baseUrl
-          ? undefined
-          : getAnthropicModelMaxTokens(modelName);
+    let maxTokens: number | undefined;
+    if (typeof configuredMaxTokens === 'number') {
+      maxTokens = configuredMaxTokens;
+    } else if (baseUrl) {
+      maxTokens = undefined;
+    } else {
+      maxTokens = getAnthropicModelMaxTokens(modelName);
+    }
     if (!baseUrl && maxTokens === undefined) {
       throw createUnknownAnthropicModelError(modelName);
     }
@@ -529,10 +530,7 @@ async function runAnthropicAgentLoop(
         model: modelName,
         system: systemPrompt,
         messages: currentMessages,
-        tools: toAnthropicTools(
-          isStaged,
-          commitMessageLanguage,
-        ) as unknown as Tool[],
+        tools: toAnthropicTools(isStaged, commitMessageLanguage),
       };
       if (typeof maxTokens === 'number') {
         requestParams.max_tokens = maxTokens;

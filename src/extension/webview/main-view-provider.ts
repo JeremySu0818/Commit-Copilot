@@ -919,7 +919,7 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
       );
       const cp =
         providerIndex >= 0 ? customProviders[providerIndex] : undefined;
-      if (!cp || cp.apiFormat !== 'anthropic') {
+      if (cp?.apiFormat !== 'anthropic') {
         return;
       }
 

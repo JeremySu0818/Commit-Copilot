@@ -69,7 +69,7 @@ void test('MainViewProvider.showUpdateInfo reads and renders update info markdow
         },
         readFile: (uri: { fsPath: string }) => {
           readFileCalledUri = uri.fsPath;
-          // Mock Markdown content
+
           const mockMd = `# Mock Release Notes\n- Feature A\n- Feature B`;
           return Promise.resolve(Buffer.from(mockMd, 'utf8'));
         },
@@ -121,7 +121,7 @@ void test('MainViewProvider.showUpdateInfo reads and renders update info markdow
   await provider.showUpdateInfo();
 
   assert.ok(statCalledUri);
-  assert.ok((statCalledUri as string).endsWith('en.md')); // defaults to English UI/doc in mock environment
+  assert.ok((statCalledUri as string).endsWith('en.md'));
   assert.ok(readFileCalledUri);
   assert.ok((readFileCalledUri as string).endsWith('en.md'));
   assert.ok(webviewPanelCreated);
@@ -204,7 +204,7 @@ void test('MainViewProvider.showUpdateInfo falls back to en.md when requested la
   });
 
   const state = new Map<string, unknown>();
-  // set display language to 'ja' so it looks for ja.md first
+
   state.set('DISPLAY_LANGUAGE', 'ja');
 
   const context = {
@@ -308,7 +308,7 @@ void test('MainViewProvider.openAboutView updates screen to about and posts mess
   );
 
   const noop = (): void => {
-    // No-op for testing
+    void 0;
   };
   const webview = {
     cspSource: 'mock-csp-source',
@@ -375,7 +375,7 @@ void test('MainViewProvider webview handles showUpdateNotes message by showing u
         const panel = {
           webview: {
             set html(_val: string) {
-              // noop
+              void 0;
             },
             get html() {
               return '';
@@ -434,7 +434,7 @@ void test('MainViewProvider webview handles showUpdateNotes message by showing u
   );
 
   const noop = (): void => {
-    // no-op for testing
+    void 0;
   };
   const webview = {
     cspSource: 'mock-csp-source',

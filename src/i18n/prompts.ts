@@ -9,13 +9,11 @@ import {
 import { LOCALIZED_PROMPTS } from './prompts/index';
 import type { EffectiveDisplayLanguage, LocalePromptBundle } from './types';
 
-// Fallback to English helper
 function getBundle(language?: EffectiveDisplayLanguage): LocalePromptBundle {
   const lang = language ?? 'en';
   return LOCALIZED_PROMPTS[lang];
 }
 
-// Helper to interpolate formatting placeholders
 function t(template: string, ...args: (string | number)[]): string {
   return template.replace(/\{(\d+)\}/g, (match, index) => {
     const val = args.at(Number(index));

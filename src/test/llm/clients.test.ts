@@ -247,7 +247,9 @@ void test('custom Anthropic direct diff omits max_tokens when custom endpoint le
         return {
           finalMessage: () =>
             Promise.resolve({
-              content: [{ type: 'text', text: 'feat: custom anthropic no max' }],
+              content: [
+                { type: 'text', text: 'feat: custom anthropic no max' },
+              ],
             }),
         };
       },

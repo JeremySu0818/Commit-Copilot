@@ -155,7 +155,7 @@ export function useMainViewHandlers({
 
   const handleCustomProviderMaxTokensBlur = useCallback(
     (e: React.FocusEvent<HTMLInputElement>) => {
-      if (!isCustomAnthropic || !customProviderConfig) {
+      if (!isCustomAnthropic) {
         return;
       }
       const trimmedValue = e.target.value.trim();
@@ -169,7 +169,10 @@ export function useMainViewHandlers({
         });
         return;
       }
-      if (!/^\d+$/.test(trimmedValue) || Number.parseInt(trimmedValue, 10) <= 0) {
+      if (
+        !/^\d+$/.test(trimmedValue) ||
+        Number.parseInt(trimmedValue, 10) <= 0
+      ) {
         dispatch({
           type: 'SET_CUSTOM_PROVIDER_MAX_TOKENS_VALUE',
           value: savedCustomProviderMaxTokens,
@@ -184,7 +187,6 @@ export function useMainViewHandlers({
     },
     [
       isCustomAnthropic,
-      customProviderConfig,
       savedCustomProviderMaxTokens,
       vscode,
       currentProvider,
