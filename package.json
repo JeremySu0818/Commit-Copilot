@@ -9,7 +9,7 @@
     "type": "git",
     "url": "https://github.com/JeremySu0818/Commit-Copilot"
   },
-  "license": "Unlicense",
+  "license": "MIT",
   "engines": {
     "vscode": "^1.91.0"
   },

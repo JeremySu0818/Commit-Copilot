@@ -3,3 +3,4 @@
 ## Újdonságok az 1.15.0-s verzióban
 
 - Claude Sonnet/Fable 5 támogatás hozzáadása az Anthropic Claude szolgáltatóhoz.
+- A projekt licencének módosítása Unlicense-ről MIT-re.

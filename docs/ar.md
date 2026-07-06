@@ -3,3 +3,4 @@
 ## الميزات الجديدة في الإصدار 1.15.0
 
 - إضافة دعم لـ Claude Sonnet/Fable 5 في مزود Anthropic Claude.
+- تغيير ترخيص المشروع من Unlicense إلى MIT.

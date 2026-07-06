@@ -3,3 +3,4 @@
 ## Nouveautés de la version 1.15.0
 
 - Ajout de la prise en charge de Claude Sonnet/Fable 5 pour le fournisseur Anthropic Claude.
+- Modification de la licence du projet de Unlicense en MIT.
