@@ -24,7 +24,7 @@ export const PROVIDER_DISPLAY_NAMES: Record<APIProvider, string> = {
 export const DEFAULT_MODELS: Record<APIProvider, string> = {
   google: 'gemini-3.5-flash',
   openai: 'gpt-5.5',
-  anthropic: 'claude-sonnet-4-6',
+  anthropic: 'claude-sonnet-5',
   ollama: '',
   grok: 'grok-4.3',
   groq: 'openai/gpt-oss-120b',

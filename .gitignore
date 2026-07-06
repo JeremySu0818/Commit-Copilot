@@ -14,7 +14,7 @@
 # Package files
 *.vsix
 /package.nls*.json
-
+package-lock.json
 # docs
 *.txt
 *.md
