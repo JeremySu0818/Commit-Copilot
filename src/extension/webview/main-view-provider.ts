@@ -223,11 +223,9 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
     }
 
     const extension = this._context.extension as
-      | vscode.Extension<unknown>
-      | undefined;
+      vscode.Extension<unknown> | undefined;
     const packageJson = (extension ? extension.packageJSON : undefined) as
-      | Record<string, unknown>
-      | undefined;
+      Record<string, unknown> | undefined;
     const extName =
       typeof packageJson?.name === 'string'
         ? packageJson.name
@@ -1411,11 +1409,9 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
   private getWebviewBootstrapData(): WebviewBootstrapData {
     const languagePayload = this.getWebviewLanguagePayload();
     const extension = this._context.extension as
-      | vscode.Extension<unknown>
-      | undefined;
+      vscode.Extension<unknown> | undefined;
     const packageJson = (extension ? extension.packageJSON : undefined) as
-      | Record<string, unknown>
-      | undefined;
+      Record<string, unknown> | undefined;
     const extensionVersion =
       typeof packageJson?.version === 'string' ? packageJson.version : '';
 

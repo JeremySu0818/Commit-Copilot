@@ -16,10 +16,7 @@ interface ParsedOllamaToolCall {
 }
 
 type OllamaToolCallError =
-  | 'invalid_call'
-  | 'missing_name'
-  | 'unknown_tool'
-  | 'invalid_arguments';
+  'invalid_call' | 'missing_name' | 'unknown_tool' | 'invalid_arguments';
 
 type OllamaProtocolError =
   | 'multiple_envelopes'

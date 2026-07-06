@@ -14,11 +14,7 @@ import type {
 } from '../models/options';
 
 export type MainViewScreen =
-  | 'main'
-  | 'settings'
-  | 'addProvider'
-  | 'addModel'
-  | 'about';
+  'main' | 'settings' | 'addProvider' | 'addModel' | 'about';
 
 export interface WebviewBootstrapData {
   providers: Record<APIProvider, string>;
