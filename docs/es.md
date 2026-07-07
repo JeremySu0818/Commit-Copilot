@@ -1,6 +1,5 @@
 # Información de actualización de Commit Copilot
 
-## Novedades de la versión 1.15.0
+## Novedades de la versión 1.15.1
 
-- Se añadió soporte para Claude Sonnet/Fable 5 en el proveedor Anthropic Claude.
-- Se cambió la licencia del proyecto de Unlicense a MIT.
+- Se corrigió la descripción del proyecto en README.md.
