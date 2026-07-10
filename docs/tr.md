@@ -1,5 +1,5 @@
 # Commit Copilot Güncelleme Bilgisi
 
-## Sürüm 1.15.1 ile Gelen Yenilikler
+## Sürüm 1.16.0 ile Gelen Yenilikler
 
-- README.md dosyasındaki proje açıklaması düzeltildi.
+- OpenAI ChatGPT sağlayıcısı için GPT-5.6 Luna/Terra/Sol desteği eklendi.

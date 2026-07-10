@@ -1,5 +1,5 @@
 # Commit Copilot Update-info
 
-## Nieuw in versie 1.15.1
+## Nieuw in versie 1.16.0
 
-- Projectbeschrijving in README.md gecorrigeerd.
+- Ondersteuning toegevoegd voor GPT-5.6 Luna/Terra/Sol in de OpenAI ChatGPT-provider.

@@ -1,5 +1,5 @@
 # Commit Copilot frissítési információk
 
-## Újdonságok az 1.15.1-es verzióban
+## Újdonságok az 1.16.0-s verzióban
 
-- A projekt leírásának javítása a README.md fájlban.
+- GPT-5.6 Luna/Terra/Sol támogatás hozzáadása az OpenAI ChatGPT szolgáltatóhoz.

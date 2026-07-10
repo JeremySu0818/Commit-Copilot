@@ -242,3 +242,70 @@ void test('runOpenAIAgentLoop returns write_commit_message argument without exec
   assert.ok(finalProgressMessage);
   assert.match(finalProgressMessage, /^\[Step 1\]/);
 });
+
+void test('runOpenAIAgentLoop uses Responses API for GPT-5.6 models', async () => {
+  const responseRequests: unknown[] = [];
+
+  class OpenAIMock {
+    chat = {
+      completions: {
+        create: () => {
+          throw new Error('Chat Completions must not be called for GPT-5.6');
+        },
+      },
+    };
+
+    responses = {
+      create: (params: unknown) => {
+        responseRequests.push(params);
+        return Promise.resolve({
+          id: 'response-1',
+          output: [
+            {
+              type: 'function_call',
+              call_id: 'call-final',
+              name: 'write_commit_message',
+              arguments:
+                '{"message":"fix(agent): use Responses API for GPT-5.6"}',
+            },
+          ],
+          output_text: '',
+        });
+      },
+    };
+  }
+
+  const agentToolsMock = {
+    buildInitialContext: () => Promise.resolve('mocked initial context'),
+    executeToolCall: () => Promise.resolve({ content: 'tool ok' }),
+    toOpenAITools: () => [],
+  };
+
+  try {
+    const result = await withOpenAIModule(
+      OpenAIMock,
+      agentToolsMock,
+      async ({ runOpenAIAgentLoop }) =>
+        runOpenAIAgentLoop({
+          apiKey: 'openai-test-key',
+          model: 'gpt-5.6-terra',
+          diff: 'diff --git a/a.ts b/a.ts\n+line',
+          repoRoot: process.cwd(),
+        }),
+    );
+
+    assert.equal(result, 'fix(agent): use Responses API for GPT-5.6');
+  } finally {
+    clearRequireCache(MODULE_PATH);
+  }
+
+  assert.equal(responseRequests.length, 1);
+  const request = responseRequests[0] as Record<string, unknown>;
+  assert.equal(request.model, 'gpt-5.6-terra');
+  assert.equal(request.tool_choice, 'auto');
+  assert.ok(Array.isArray(request.tools));
+  const tools = request.tools as Record<string, unknown>[];
+  assert.equal(tools[0].type, 'function');
+  assert.equal(typeof tools[0].name, 'string');
+  assert.equal('function' in tools[0], false);
+});

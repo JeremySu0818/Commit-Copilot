@@ -37,7 +37,7 @@ import {
   withRetry,
 } from '../../shared/retry';
 import { buildInitialContext } from '../tools/context';
-import { toOpenAITools } from '../tools/definitions';
+import { getAgentTools, toOpenAITools } from '../tools/definitions';
 import { executeToolCall } from '../tools/executors/execute-tool-call';
 
 import {
@@ -87,6 +87,12 @@ interface OpenAIFunctionToolCall {
   };
 }
 
+interface OpenAIResponsesFunctionToolCall {
+  call_id: string;
+  name: string;
+  arguments: string;
+}
+
 function isFunctionToolCall(value: unknown): value is OpenAIFunctionToolCall {
   return (
     isRecord(value) &&
@@ -96,6 +102,22 @@ function isFunctionToolCall(value: unknown): value is OpenAIFunctionToolCall {
     typeof value.function.name === 'string' &&
     typeof value.function.arguments === 'string'
   );
+}
+
+function isResponsesFunctionToolCall(
+  value: unknown,
+): value is OpenAIResponsesFunctionToolCall {
+  return (
+    isRecord(value) &&
+    value.type === 'function_call' &&
+    typeof value.call_id === 'string' &&
+    typeof value.name === 'string' &&
+    typeof value.arguments === 'string'
+  );
+}
+
+function usesResponsesApi(modelName: string): boolean {
+  return /^gpt-5\.6-(?:luna|terra|sol)(?:-|$)/i.test(modelName);
 }
 
 function getAssistantMessage(completion: unknown): UnknownRecord | null {
@@ -401,6 +423,234 @@ type OpenAICompletionCreate = (
   request: ChatCompletionCreateParamsNonStreaming,
 ) => Promise<unknown>;
 
+type OpenAIResponseCreate = (request: UnknownRecord) => Promise<unknown>;
+
+function toOpenAIResponsesTools(language: EffectiveDisplayLanguage): object[] {
+  return getAgentTools(language).map((tool) => ({
+    type: 'function',
+    name: tool.name,
+    description: tool.description,
+    parameters: tool.parameters,
+    strict: false,
+  }));
+}
+
+function getResponsesOutput(response: unknown): unknown[] {
+  return isRecord(response) && isUnknownArray(response.output)
+    ? response.output
+    : [];
+}
+
+function getResponsesText(response: unknown): string | null {
+  return isRecord(response) && typeof response.output_text === 'string'
+    ? getOpenAIMessageText(response.output_text)
+    : null;
+}
+
+async function handleOpenAIResponsesToolCalls(params: {
+  toolCalls: OpenAIResponsesFunctionToolCall[];
+  language: EffectiveDisplayLanguage;
+  step: number;
+  onProgress?: ProgressCallback;
+  repoRoot: string;
+  diff: string;
+  isStaged: boolean;
+  gitOps?: GitOperations;
+  cancellationToken?: CancellationSignal;
+}): Promise<{ finalMessage?: string; toolOutputs: UnknownRecord[] }> {
+  const parsedToolCalls = params.toolCalls.map((toolCall) => {
+    const parsed = parseToolArguments(toolCall.arguments);
+    return {
+      toolCall,
+      name: toolCall.name,
+      args: parsed.args,
+      parseError: parsed.error,
+    };
+  });
+  params.onProgress?.(
+    formatBatchProgressMessage(
+      params.step,
+      parsedToolCalls.map(({ name, args }) => ({ name, args })),
+      params.language,
+    ),
+  );
+  const finalToolCall = parsedToolCalls.find(
+    (toolCall) =>
+      toolCall.name === FINAL_COMMIT_MESSAGE_TOOL_NAME && !toolCall.parseError,
+  );
+  if (finalToolCall) {
+    const finalMessage = extractFinalCommitMessageFromArgs(finalToolCall.args);
+    if (finalMessage) {
+      return { finalMessage, toolOutputs: [] };
+    }
+  }
+
+  const toolOutputs: UnknownRecord[] = [];
+  for (const { toolCall, name, args, parseError } of parsedToolCalls) {
+    throwIfCancellationRequested(params.cancellationToken);
+    const output = parseError
+      ? `Tool execution error: Invalid JSON arguments for ${name}: ${parseError}`
+      : (
+          await executeToolCall(
+            { name, arguments: args },
+            params.repoRoot,
+            params.diff,
+            params.isStaged,
+            params.gitOps,
+          )
+        ).content;
+    toolOutputs.push({
+      type: 'function_call_output',
+      call_id: toolCall.call_id,
+      output,
+    });
+  }
+  return { toolOutputs };
+}
+
+async function executeOpenAIResponsesAgentLoop(params: {
+  createResponse: OpenAIResponseCreate;
+  modelName: string;
+  systemPrompt: string;
+  initialContext: string;
+  stepLimit: number;
+  isStaged: boolean;
+  retryOptions: RetryOptions;
+  onProgress?: ProgressCallback;
+  language: EffectiveDisplayLanguage;
+  commitMessageLanguage: EffectiveDisplayLanguage;
+  repoRoot: string;
+  diff: string;
+  gitOps?: GitOperations;
+  cancellationToken?: CancellationSignal;
+  commitOutputOptions: CommitOutputOptions;
+}): Promise<string> {
+  let previousResponseId: string | undefined;
+  let input: unknown = params.initialContext;
+  let step = 0;
+  let finalToolReminderSent = false;
+  const progressState = { nextStep: 1 };
+
+  while (step < params.stepLimit) {
+    throwIfCancellationRequested(params.cancellationToken);
+    const response = await withRetry(
+      () =>
+        params.createResponse({
+          model: params.modelName,
+          instructions: params.systemPrompt,
+          input,
+          ...(previousResponseId
+            ? { previous_response_id: previousResponseId }
+            : {}),
+          tools: toOpenAIResponsesTools(params.commitMessageLanguage),
+          tool_choice: 'auto',
+        }),
+      params.retryOptions,
+    );
+    if (!isRecord(response) || typeof response.id !== 'string') {
+      throw createEmptyResponseError('OpenAI API');
+    }
+
+    const toolCalls = getResponsesOutput(response).filter(
+      isResponsesFunctionToolCall,
+    );
+    if (toolCalls.length === 0) {
+      const text = getResponsesText(response);
+      if (!text) {
+        throw createEmptyTextResponseError('OpenAI API');
+      }
+      if (finalToolReminderSent) {
+        return extractCommitMessage(text);
+      }
+
+      previousResponseId = response.id;
+      input = buildFinalToolRequiredReminder(
+        params.commitOutputOptions,
+        params.commitMessageLanguage,
+      );
+      finalToolReminderSent = true;
+      step += 1;
+      continue;
+    }
+
+    const toolCallResult = await handleOpenAIResponsesToolCalls({
+      toolCalls,
+      language: params.language,
+      step: progressState.nextStep,
+      onProgress: params.onProgress,
+      repoRoot: params.repoRoot,
+      diff: params.diff,
+      isStaged: params.isStaged,
+      gitOps: params.gitOps,
+      cancellationToken: params.cancellationToken,
+    });
+    if (toolCallResult.finalMessage) {
+      return toolCallResult.finalMessage;
+    }
+
+    previousResponseId = response.id;
+    input = toolCallResult.toolOutputs;
+    progressState.nextStep += 1;
+    step += 1;
+  }
+
+  return requestOpenAIResponsesFinalCommitMessage({
+    createResponse: params.createResponse,
+    modelName: params.modelName,
+    systemPrompt: params.systemPrompt,
+    previousResponseId,
+    retryOptions: params.retryOptions,
+    commitMessageLanguage: params.commitMessageLanguage,
+    commitOutputOptions: params.commitOutputOptions,
+  });
+}
+
+async function requestOpenAIResponsesFinalCommitMessage(params: {
+  createResponse: OpenAIResponseCreate;
+  modelName: string;
+  systemPrompt: string;
+  previousResponseId?: string;
+  retryOptions: RetryOptions;
+  commitMessageLanguage: EffectiveDisplayLanguage;
+  commitOutputOptions: CommitOutputOptions;
+}): Promise<string> {
+  const response = await withRetry(
+    () =>
+      params.createResponse({
+        model: params.modelName,
+        instructions: params.systemPrompt,
+        input: buildFinalOutputReminder(
+          params.commitOutputOptions,
+          params.commitMessageLanguage,
+        ),
+        ...(params.previousResponseId
+          ? { previous_response_id: params.previousResponseId }
+          : {}),
+        tools: toOpenAIResponsesTools(params.commitMessageLanguage),
+        tool_choice: { type: 'function', name: FINAL_COMMIT_MESSAGE_TOOL_NAME },
+      }),
+    params.retryOptions,
+  );
+  const finalToolCall = getResponsesOutput(response).find(
+    (item) =>
+      isResponsesFunctionToolCall(item) &&
+      item.name === FINAL_COMMIT_MESSAGE_TOOL_NAME,
+  );
+  if (finalToolCall && isResponsesFunctionToolCall(finalToolCall)) {
+    const message = extractFinalCommitMessageFromArgs(
+      parseToolArguments(finalToolCall.arguments).args,
+    );
+    if (message) {
+      return message;
+    }
+  }
+  const text = getResponsesText(response);
+  if (!text) {
+    throw createEmptyFinalResponseError('OpenAI API');
+  }
+  return extractCommitMessage(text);
+}
+
 function createOpenAIRequestCompletionWithTools(params: {
   createCompletion: OpenAICompletionCreate;
   modelName: string;
@@ -553,6 +803,27 @@ async function runOpenAIAgentLoop(options: AgentLoopOptions): Promise<string> {
       onProgress,
       language,
     });
+    if (usesResponsesApi(modelName)) {
+      const createResponse: OpenAIResponseCreate = (request) =>
+        client.responses.create(request as never);
+      return await executeOpenAIResponsesAgentLoop({
+        createResponse,
+        modelName,
+        systemPrompt,
+        initialContext,
+        stepLimit: resolveStepLimit(maxAgentSteps),
+        isStaged,
+        retryOptions,
+        onProgress,
+        language,
+        commitMessageLanguage,
+        repoRoot,
+        diff,
+        gitOps,
+        cancellationToken,
+        commitOutputOptions: resolvedCommitOutputOptions,
+      });
+    }
     const requestCompletionWithTools = createOpenAIRequestCompletionWithTools({
       createCompletion,
       modelName,
