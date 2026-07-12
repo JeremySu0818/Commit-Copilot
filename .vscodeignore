@@ -19,3 +19,5 @@ tsconfig*.json
 *.md
 !README.md
 !package.nls*.json
+.prettierignore
+eslint.config.js
