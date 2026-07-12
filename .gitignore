@@ -1,21 +1,9 @@
-# Dependencies
 /node_modules
-
-# Build outputs
 /out
-/dist
-
-# VS Code
 /.vscode
-
-# Environment
-.env
-
-# Package files
 *.vsix
 /package.nls*.json
 package-lock.json
-# docs
 *.txt
 *.md
 !readme.md
