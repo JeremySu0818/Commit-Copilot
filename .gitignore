@@ -6,5 +6,5 @@
 package-lock.json
 *.txt
 *.md
-!readme.md
+!README.md
 !/docs/*.md
