@@ -1,6 +1,5 @@
 # Informasi Pembaruan Commit Copilot
 
-## Fitur Baru di Versi 1.16.0
+## Fitur Baru di Versi 1.17.0
 
-- Menambahkan dukungan untuk GPT-5.6 Luna/Terra/Sol di penyedia OpenAI ChatGPT.
-- Memperbarui dan merancang ulang dokumentasi README.md untuk menyertakan tabel perbandingan fitur, diagram alur arsitektur, opsi konfigurasi yang terorganisir, FAQ mendetail, dan panduan kontribusi.
+- Menambahkan dukungan untuk Gemini 3.5 Flash-Lite dan Gemini 3.6 Flash di penyedia Google Gemini.

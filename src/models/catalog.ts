@@ -57,7 +57,9 @@ export const GEMINI_MODELS: ModelConfig[] = [
   { id: 'gemini-3-flash-preview', alias: 'Gemini 3 Flash' },
   { id: 'gemini-3.1-flash-lite-preview', alias: 'Gemini 3.1 Flash-Lite' },
   { id: 'gemini-3.1-pro-preview', alias: 'Gemini 3.1 Pro' },
+  { id: 'gemini-3.5-flash-lite', alias: 'Gemini 3.5 Flash-Lite' },
   { id: 'gemini-3.5-flash', alias: 'Gemini 3.5 Flash' },
+  { id: 'gemini-3.6-flash', alias: 'Gemini 3.6 Flash' },
 ];
 
 export const OPENAI_MODELS: ModelConfig[] = [

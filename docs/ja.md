@@ -1,6 +1,5 @@
 # Commit Copilot 更新情報
 
-## バージョン 1.16.0 の新機能
+## バージョン 1.17.0 の新機能
 
-- OpenAI ChatGPT プロバイダーの GPT-5.6 Luna/Terra/Sol に対応しました。
-- README.md ドキュメントを再設計・リファクタリングし、機能比較表、アーキテクチャ図、整理された設定オプション、詳細なよくある質問（FAQ）、およびコントリビューションガイドを追加しました。
+- Google Gemini プロバイダーの Gemini 3.5 Flash-Lite、Gemini 3.6 Flash に対応しました。

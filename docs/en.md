@@ -1,6 +1,5 @@
 # Commit Copilot Update Info
 
-## What's New in Version 1.16.0
+## What's New in Version 1.17.0
 
-- Added support for GPT-5.6 Luna/Terra/Sol in OpenAI ChatGPT provider.
-- Refactored and redesigned the README.md documentation to include a capability comparison table, workflow architecture diagram, organized options directory, detailed FAQ, and contribution guidelines.
+- Added support for Gemini 3.5 Flash-Lite and Gemini 3.6 Flash in Google Gemini provider.
