@@ -16,6 +16,7 @@ import {
 } from '../models/options';
 import {
   CancellationSignal,
+  runWithCancellationAbort,
   subscribeToCancellation,
   throwIfCancellationRequested,
 } from '../shared/cancellation';
@@ -345,29 +346,32 @@ export class GeminiClient implements ILLMClient {
 
       const result = await withRetry(
         () =>
-          client.models.generateContent({
-            model: this.model,
-            contents: [
-              {
-                role: 'user',
-                parts: [
-                  {
-                    text: buildDirectDiffUserPrompt(
-                      diff,
-                      draftCommitMessage,
-                      this.commitMessageLanguage,
-                    ),
-                  },
-                ],
+          runWithCancellationAbort(cancellationToken, (signal) =>
+            client.models.generateContent({
+              model: this.model,
+              contents: [
+                {
+                  role: 'user',
+                  parts: [
+                    {
+                      text: buildDirectDiffUserPrompt(
+                        diff,
+                        draftCommitMessage,
+                        this.commitMessageLanguage,
+                      ),
+                    },
+                  ],
+                },
+              ],
+              config: {
+                abortSignal: signal,
+                systemInstruction: this.systemPrompt,
+                temperature: 0.7,
+                topP: 0.95,
+                topK: 40,
               },
-            ],
-            config: {
-              systemInstruction: this.systemPrompt,
-              temperature: 0.7,
-              topP: 0.95,
-              topK: 40,
-            },
-          }),
+            }),
+          ),
         retryOptions,
       );
 
@@ -458,20 +462,25 @@ export class OpenAIClient implements ILLMClient {
       };
       const completion = await withRetry(
         () =>
-          client.chat.completions.create({
-            model: this.model,
-            messages: [
-              { role: 'system', content: this.systemPrompt },
+          runWithCancellationAbort(cancellationToken, (signal) =>
+            client.chat.completions.create(
               {
-                role: 'user',
-                content: buildDirectDiffUserPrompt(
-                  diff,
-                  draftCommitMessage,
-                  this.commitMessageLanguage,
-                ),
+                model: this.model,
+                messages: [
+                  { role: 'system', content: this.systemPrompt },
+                  {
+                    role: 'user',
+                    content: buildDirectDiffUserPrompt(
+                      diff,
+                      draftCommitMessage,
+                      this.commitMessageLanguage,
+                    ),
+                  },
+                ],
               },
-            ],
-          }),
+              { signal },
+            ),
+          ),
         retryOptions,
       );
 
@@ -598,11 +607,14 @@ export class AnthropicClient implements ILLMClient {
       }
       const message = await withRetry(
         () =>
-          client.messages
-            .stream(
-              requestParams as Parameters<typeof client.messages.stream>[0],
-            )
-            .finalMessage(),
+          runWithCancellationAbort(cancellationToken, (signal) =>
+            client.messages
+              .stream(
+                requestParams as Parameters<typeof client.messages.stream>[0],
+                { signal },
+              )
+              .finalMessage(),
+          ),
         retryOptions,
       );
 

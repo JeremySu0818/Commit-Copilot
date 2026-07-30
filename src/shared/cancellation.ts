@@ -27,3 +27,19 @@ export function subscribeToCancellation(
     }
   );
 }
+
+export async function runWithCancellationAbort<T>(
+  cancellationToken: CancellationSignal | undefined,
+  request: (signal: AbortSignal) => Promise<T>,
+): Promise<T> {
+  throwIfCancellationRequested(cancellationToken);
+  const controller = new AbortController();
+  const subscription = subscribeToCancellation(cancellationToken, () => {
+    controller.abort();
+  });
+  try {
+    return await request(controller.signal);
+  } finally {
+    subscription.dispose();
+  }
+}

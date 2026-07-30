@@ -9,6 +9,7 @@ import {
 } from '../../models/options';
 import {
   CancellationSignal,
+  runWithCancellationAbort,
   throwIfCancellationRequested,
 } from '../../shared/cancellation';
 import {
@@ -584,15 +585,18 @@ function createGeminiResponseRequester(params: {
   client: GeminiClientLike;
   modelName: string;
   retryOptions: ReturnType<typeof createGeminiRetryOptions>;
+  cancellationToken?: CancellationSignal;
 }) {
   return (contents: UnknownRecord[], config: UnknownRecord) =>
     withRetry(
       () =>
-        params.client.models.generateContent({
-          model: params.modelName,
-          contents,
-          config,
-        }),
+        runWithCancellationAbort(params.cancellationToken, (signal) =>
+          params.client.models.generateContent({
+            model: params.modelName,
+            contents,
+            config: { ...config, abortSignal: signal },
+          }),
+        ),
       params.retryOptions,
     );
 }
@@ -741,6 +745,7 @@ async function runGeminiAgentLoop(options: AgentLoopOptions): Promise<string> {
       client,
       modelName,
       retryOptions,
+      cancellationToken,
     });
     const requestGeminiResponse = (
       contents: UnknownRecord[],

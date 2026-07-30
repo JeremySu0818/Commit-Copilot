@@ -15,6 +15,7 @@ import {
 } from '../../models/options';
 import {
   CancellationSignal,
+  runWithCancellationAbort,
   throwIfCancellationRequested,
 } from '../../shared/cancellation';
 import {
@@ -570,9 +571,16 @@ async function runAnthropicAgentLoop(
       if (typeof maxTokens === 'number') {
         requestParams.max_tokens = maxTokens;
       }
-      const response = await client.messages
-        .stream(requestParams as Parameters<typeof client.messages.stream>[0])
-        .finalMessage();
+      const response = await runWithCancellationAbort(
+        cancellationToken,
+        (signal) =>
+          client.messages
+            .stream(
+              requestParams as Parameters<typeof client.messages.stream>[0],
+              { signal },
+            )
+            .finalMessage(),
+      );
       return {
         content: response.content,
         stop_reason: response.stop_reason,

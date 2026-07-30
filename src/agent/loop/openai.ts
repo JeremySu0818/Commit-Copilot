@@ -16,6 +16,7 @@ import {
 } from '../../models/options';
 import {
   CancellationSignal,
+  runWithCancellationAbort,
   throwIfCancellationRequested,
 } from '../../shared/cancellation';
 import {
@@ -438,9 +439,13 @@ function createOpenAIRetryOptions(params: {
 
 type OpenAICompletionCreate = (
   request: ChatCompletionCreateParamsNonStreaming,
+  options?: { signal?: AbortSignal },
 ) => Promise<unknown>;
 
-type OpenAIResponseCreate = (request: UnknownRecord) => Promise<unknown>;
+type OpenAIResponseCreate = (
+  request: UnknownRecord,
+  options?: { signal?: AbortSignal },
+) => Promise<unknown>;
 
 function toOpenAIResponsesTools(language: EffectiveDisplayLanguage): object[] {
   return getAgentTools(language).map((tool) => ({
@@ -564,16 +569,21 @@ async function executeOpenAIResponsesAgentLoop(params: {
     throwIfCancellationRequested(params.cancellationToken);
     const response = await withRetry(
       () =>
-        params.createResponse({
-          model: params.modelName,
-          instructions: params.systemPrompt,
-          input,
-          ...(previousResponseId
-            ? { previous_response_id: previousResponseId }
-            : {}),
-          tools: toOpenAIResponsesTools(params.commitMessageLanguage),
-          tool_choice: 'auto',
-        }),
+        runWithCancellationAbort(params.cancellationToken, (signal) =>
+          params.createResponse(
+            {
+              model: params.modelName,
+              instructions: params.systemPrompt,
+              input,
+              ...(previousResponseId
+                ? { previous_response_id: previousResponseId }
+                : {}),
+              tools: toOpenAIResponsesTools(params.commitMessageLanguage),
+              tool_choice: 'auto',
+            },
+            { signal },
+          ),
+        ),
       params.retryOptions,
     );
     if (!isRecord(response) || typeof response.id !== 'string') {
@@ -634,6 +644,7 @@ async function executeOpenAIResponsesAgentLoop(params: {
     retryOptions: params.retryOptions,
     commitMessageLanguage: params.commitMessageLanguage,
     commitOutputOptions: params.commitOutputOptions,
+    cancellationToken: params.cancellationToken,
   });
 }
 
@@ -645,22 +656,31 @@ async function requestOpenAIResponsesFinalCommitMessage(params: {
   retryOptions: RetryOptions;
   commitMessageLanguage: EffectiveDisplayLanguage;
   commitOutputOptions: CommitOutputOptions;
+  cancellationToken?: CancellationSignal;
 }): Promise<string> {
   const response = await withRetry(
     () =>
-      params.createResponse({
-        model: params.modelName,
-        instructions: params.systemPrompt,
-        input: buildFinalOutputReminder(
-          params.commitOutputOptions,
-          params.commitMessageLanguage,
+      runWithCancellationAbort(params.cancellationToken, (signal) =>
+        params.createResponse(
+          {
+            model: params.modelName,
+            instructions: params.systemPrompt,
+            input: buildFinalOutputReminder(
+              params.commitOutputOptions,
+              params.commitMessageLanguage,
+            ),
+            ...(params.previousResponseId
+              ? { previous_response_id: params.previousResponseId }
+              : {}),
+            tools: toOpenAIResponsesTools(params.commitMessageLanguage),
+            tool_choice: {
+              type: 'function',
+              name: FINAL_COMMIT_MESSAGE_TOOL_NAME,
+            },
+          },
+          { signal },
         ),
-        ...(params.previousResponseId
-          ? { previous_response_id: params.previousResponseId }
-          : {}),
-        tools: toOpenAIResponsesTools(params.commitMessageLanguage),
-        tool_choice: { type: 'function', name: FINAL_COMMIT_MESSAGE_TOOL_NAME },
-      }),
+      ),
     params.retryOptions,
   );
   const finalToolCall = getResponsesOutput(response).find(
@@ -689,19 +709,25 @@ function createOpenAIRequestCompletionWithTools(params: {
   isStaged: boolean;
   retryOptions: RetryOptions;
   commitMessageLanguage: EffectiveDisplayLanguage;
+  cancellationToken?: CancellationSignal;
 }) {
   return (currentMessages: ChatCompletionMessageParam[]) =>
     withRetry(
       () =>
-        params.createCompletion({
-          model: params.modelName,
-          messages: currentMessages,
-          tools: toOpenAITools(
-            params.isStaged,
-            params.commitMessageLanguage,
-          ) as unknown as ChatCompletionTool[],
-          tool_choice: 'auto',
-        }),
+        runWithCancellationAbort(params.cancellationToken, (signal) =>
+          params.createCompletion(
+            {
+              model: params.modelName,
+              messages: currentMessages,
+              tools: toOpenAITools(
+                params.isStaged,
+                params.commitMessageLanguage,
+              ) as unknown as ChatCompletionTool[],
+              tool_choice: 'auto',
+            },
+            { signal },
+          ),
+        ),
       params.retryOptions,
     );
 }
@@ -716,21 +742,27 @@ async function requestOpenAIFinalCommitMessage(params: {
   language: EffectiveDisplayLanguage;
   commitMessageLanguage: EffectiveDisplayLanguage;
   progressStep: number;
+  cancellationToken?: CancellationSignal;
 }): Promise<string> {
   const completion = await withRetry(
     () =>
-      params.createCompletion({
-        model: params.modelName,
-        messages: params.messages,
-        tools: toOpenAITools(
-          params.isStaged,
-          params.commitMessageLanguage,
-        ) as unknown as ChatCompletionTool[],
-        tool_choice: {
-          type: 'function',
-          function: { name: FINAL_COMMIT_MESSAGE_TOOL_NAME },
-        },
-      }),
+      runWithCancellationAbort(params.cancellationToken, (signal) =>
+        params.createCompletion(
+          {
+            model: params.modelName,
+            messages: params.messages,
+            tools: toOpenAITools(
+              params.isStaged,
+              params.commitMessageLanguage,
+            ) as unknown as ChatCompletionTool[],
+            tool_choice: {
+              type: 'function',
+              function: { name: FINAL_COMMIT_MESSAGE_TOOL_NAME },
+            },
+          },
+          { signal },
+        ),
+      ),
     params.retryOptions,
   );
   const finalMessage = getAssistantMessage(completion);
@@ -798,8 +830,8 @@ async function runOpenAIAgentLoop(options: AgentLoopOptions): Promise<string> {
       apiKey,
       ...(baseUrl ? { baseURL: baseUrl } : {}),
     });
-    const createCompletion: OpenAICompletionCreate = (request) =>
-      client.chat.completions.create(request);
+    const createCompletion: OpenAICompletionCreate = (request, options) =>
+      client.chat.completions.create(request, options);
     const modelName = pickNonEmpty(model, DEFAULT_MODELS.openai);
     const resolvedCommitOutputOptions =
       normalizeCommitOutputOptions(commitOutputOptions);
@@ -837,8 +869,8 @@ async function runOpenAIAgentLoop(options: AgentLoopOptions): Promise<string> {
       language,
     });
     if (usesResponsesApi(modelName)) {
-      const createResponse: OpenAIResponseCreate = (request) =>
-        client.responses.create(request as never);
+      const createResponse: OpenAIResponseCreate = (request, options) =>
+        client.responses.create(request as never, options);
       return await executeOpenAIResponsesAgentLoop({
         createResponse,
         modelName,
@@ -864,6 +896,7 @@ async function runOpenAIAgentLoop(options: AgentLoopOptions): Promise<string> {
       isStaged,
       retryOptions,
       commitMessageLanguage,
+      cancellationToken,
     });
     const stepLimit = resolveStepLimit(maxAgentSteps);
     const progressState = { nextStep: 1 };
@@ -906,6 +939,7 @@ async function runOpenAIAgentLoop(options: AgentLoopOptions): Promise<string> {
       language,
       commitMessageLanguage,
       progressStep: progressState.nextStep,
+      cancellationToken,
     });
   } catch (error: unknown) {
     if (
