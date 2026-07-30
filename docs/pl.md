@@ -1,5 +1,7 @@
 # Informacje o aktualizacji Commit Copilot
 
-## Nowości w wersji 1.17.0
+## Nowości w wersji 1.18.0
 
-- Dodano obsługę Gemini 3.5 Flash-Lite oraz Gemini 3.6 Flash dla dostawcy Google Gemini.
+- Dodano obsługę pobierania diffów wielu plików w jednym wywołaniu narzędzia wraz ze zwracaniem pełnego, dokładnego diffu każdego żądanego pliku.
+- Wprowadzono wymóg pełnego pokrycia diff, aby upewnić się, że wszystkie zmodyfikowane pliki zostały sprawdzone przed wygenerowaniem wiadomości commitu.
+- Naprawiono anulowanie żądań, aby natychmiast przerywać aktywne połączenia HTTP z dostawcami LLM po anulowaniu generowania.

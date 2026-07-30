@@ -1,5 +1,7 @@
 # Informasi Pembaruan Commit Copilot
 
-## Fitur Baru di Versi 1.17.0
+## Fitur Baru di Versi 1.18.0
 
-- Menambahkan dukungan untuk Gemini 3.5 Flash-Lite dan Gemini 3.6 Flash di penyedia Google Gemini.
+- Menambahkan dukungan untuk mengambil diff beberapa file dalam satu permintaan alat sekaligus mengembalikan diff lengkap dan tepat untuk setiap file yang diminta.
+- Menerapkan verifikasi cakupan diff secara penuh untuk memastikan semua file yang diubah telah diperiksa sebelum menyelesaikan pembuatan pesan commit.
+- Memperbaiki pembatalan permintaan untuk segera menghentikan koneksi HTTP aktif ke penyedia LLM saat pembuatan dibatalkan.

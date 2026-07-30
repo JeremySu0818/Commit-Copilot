@@ -1,5 +1,7 @@
 # Commit Copilot Update Info
 
-## What's New in Version 1.17.0
+## What's New in Version 1.18.0
 
-- Added support for Gemini 3.5 Flash-Lite and Gemini 3.6 Flash in Google Gemini provider.
+- Added support for querying multiple file diffs in a single tool request while returning the complete exact diff for every requested file.
+- Enforced complete diff coverage inspection before finalizing commit message generation to prevent missing file changes.
+- Fixed request cancellation to immediately abort active HTTP connections to LLM providers when generation is cancelled.

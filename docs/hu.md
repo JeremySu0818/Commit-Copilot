@@ -1,5 +1,7 @@
 # Commit Copilot frissítési információk
 
-## Újdonságok az 1.17.0-s verzióban
+## Újdonságok az 1.18.0-s verzióban
 
-- Gemini 3.5 Flash-Lite és Gemini 3.6 Flash támogatás hozzáadása a Google Gemini szolgáltatóhoz.
+- Több fájl diff-jének lekérdezése egyetlen eszközkérésben, minden kért fájl teljes és pontos diffjének visszaadásával.
+- A teljes diff lefedettség kötelező ellenőrzése a commit üzenet generálásának befejezése előtt minden módosított fájl átvizsgálása érdekében.
+- A kérés megszakításának javítása, amely azonnal leállítja az aktív HTTP-kapcsolatokat az LLM szolgáltatók felé a generálás megszakításakor.

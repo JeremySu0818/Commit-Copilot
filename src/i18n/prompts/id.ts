@@ -79,14 +79,7 @@ export const idPrompt: LocalePromptBundle = {
   toolDescGetDiff:
     '- `get_diff` — Dapatkan git diff sebenarnya untuk file tertentu. Anda HARUS memberikan argumen `path`.',
   toolDescGetDiffBatch:
-    '- Bentuk batch: `get_diff` menerima array `paths` yang tidak kosong sebagai pengganti `path`; jika lebih ringkas, patch yang selaras dikembalikan sebagai ringkasan terverifikasi harness dengan satu exact diff perwakilan.',
-  diffInvestigationPlanTitle: '## Rencana Investigasi Harness Diff',
-  diffInvestigationPlanBody:
-    'Harness memeriksa setiap exact patch dan hanya membandingkan struktur umum baris yang berubah; tidak menyimpulkan tujuan atau semantik file. Gunakan `get_diff` dengan `paths` kelompok untuk menerima ringkasan terverifikasi dan satu exact diff perwakilan. Edit tambahan, hilang, diurutkan ulang, atau berbeda struktur tetap terpisah. Konten variabel anggota lain dihilangkan untuk mengurangi input token; kelompok bukan bukti bahwa makna atau nilai yang dihilangkan sama.',
-  diffInvestigationPlanGroup:
-    '- G{0} ({1} file selaras secara struktur; perwakilan: {2}): {3}',
-  diffInvestigationPlanStandalone:
-    'File yang berbeda secara struktur (periksa terpisah atau dalam batch eksplisit):',
+    '- Bentuk batch: `get_diff` menerima array `paths` yang tidak kosong sebagai pengganti `path` dan mengembalikan diff lengkap dan tepat untuk setiap file yang diminta.',
   toolDescReadFile:
     '- `read_file` — Baca konten file saat ini, secara opsional menentukan rentang baris.',
   toolDescGetFileOutline:

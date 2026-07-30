@@ -2,7 +2,7 @@ import {
   formatSelectedDiff,
   getRequestedDiffPaths,
   selectDiffFileBlocks,
-} from '../diff-groups';
+} from '../diff-files';
 
 function executeGetDiff(
   _repoRoot: string,
@@ -22,7 +22,7 @@ function executeGetDiff(
     return `No diff found for requested path(s): ${requestedPaths.join(', ')}`;
   }
 
-  return formatSelectedDiff(blocks, requestedPaths.length > 1);
+  return formatSelectedDiff(blocks);
 }
 
 export { executeGetDiff };

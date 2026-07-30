@@ -1,4 +1,4 @@
-import { getRequestedDiffPaths, parseDiffFileBlocks } from './diff-groups';
+import { getRequestedDiffPaths, parseDiffFileBlocks } from './diff-files';
 
 interface CoverageEntry {
   displayPath: string;

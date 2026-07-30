@@ -146,7 +146,7 @@ void test('buildInitialContext includes SCM draft as reference-only content', as
   }
 });
 
-void test('buildInitialContext includes generic diff investigation batches', async () => {
+void test('buildInitialContext does not include an automatic diff grouping plan', async () => {
   const repoRoot = createTempDir();
   try {
     const diff = [
@@ -179,17 +179,16 @@ void test('buildInitialContext includes generic diff investigation batches', asy
       true,
     );
 
-    assert.match(context, /## Harness Diff Investigation Plan/);
+    assert.doesNotMatch(context, /Harness Diff Investigation Plan/);
     assert.match(context, /locales\/en\.ts/);
     assert.match(context, /locales\/ja\.ts/);
-    assert.match(context, /Structurally distinct files/);
     assert.match(context, /locales\/fr\.ts/);
   } finally {
     cleanupTempDir(repoRoot);
   }
 });
 
-void test('batch diff guidance and investigation plan use the selected language', async () => {
+void test('batch diff guidance uses the selected language', async () => {
   const repoRoot = createTempDir();
   try {
     const diff = [
@@ -223,9 +222,8 @@ void test('batch diff guidance and investigation plan use the selected language'
     );
 
     assert.match(systemPrompt, /批次形式/);
+    assert.match(systemPrompt, /每個指定檔案的完整精確差異/);
     assert.doesNotMatch(systemPrompt, /Batch form/);
-    assert.match(context, /## Harness Diff 調查計畫/);
-    assert.match(context, /結構對齊的檔案/);
     assert.doesNotMatch(context, /Harness Diff Investigation Plan/);
   } finally {
     cleanupTempDir(repoRoot);

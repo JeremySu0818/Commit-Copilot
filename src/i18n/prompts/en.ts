@@ -79,14 +79,7 @@ export const enPrompt: LocalePromptBundle = {
   toolDescGetDiff:
     '- `get_diff` — Get the actual git diff for a specific file. You MUST provide the `path` argument.',
   toolDescGetDiffBatch:
-    '- Batch form: `get_diff` accepts a non-empty `paths` array instead of `path`; when smaller, structurally aligned patches are returned as a harness-verified summary with one representative exact diff.',
-  diffInvestigationPlanTitle: '## Harness Diff Investigation Plan',
-  diffInvestigationPlanBody:
-    "The harness inspected every exact patch and compared generic changed-line structure only; it did not infer file purpose or semantics. Use `get_diff` with a group's `paths` array to receive a verified summary and one representative exact diff. Extra, missing, reordered, or differently structured edits remain distinct. Variable payload from other members is omitted to reduce input tokens, so treat groups as an inspection plan, not as evidence that file meanings or omitted values are identical.",
-  diffInvestigationPlanGroup:
-    '- G{0} ({1} structurally aligned files; representative: {2}): {3}',
-  diffInvestigationPlanStandalone:
-    'Structurally distinct files (inspect separately or batch them explicitly):',
+    '- Batch form: `get_diff` accepts a non-empty `paths` array instead of `path` and returns the complete exact diff for every requested file.',
   toolDescReadFile:
     '- `read_file` — Read the current contents of a file, optionally specifying a line range.',
   toolDescGetFileOutline:

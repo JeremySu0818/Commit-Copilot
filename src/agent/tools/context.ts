@@ -6,7 +6,6 @@ import ignore from 'ignore';
 import type { GitOperations } from '../../git/git-operations';
 import {
   buildInitialContext as buildLocalizedInitialContext,
-  formatDiffInvestigationPlan,
   formatDraftCommitMessageSection,
   formatProjectStructureTruncated,
 } from '../../i18n/prompts';
@@ -17,7 +16,7 @@ import {
   normalizeCommitOutputOptions,
 } from '../../models/options';
 
-import { buildDiffInvestigationPlan, parseDiffFileBlocks } from './diff-groups';
+import { parseDiffFileBlocks } from './diff-files';
 
 interface DiffSummaryEntry {
   path: string;
@@ -299,7 +298,7 @@ export async function buildInitialContext(
   draftCommitMessage?: string,
   language: EffectiveDisplayLanguage = 'en',
 ): Promise<string> {
-  const initialContext = await buildLocalizedInitialContext(
+  return buildLocalizedInitialContext(
     diff,
     repoRoot,
     gitOps,
@@ -311,22 +310,6 @@ export async function buildInitialContext(
     getProjectStructure,
     parseDiffSummary,
   );
-  if (!enableTools) {
-    return initialContext;
-  }
-
-  const investigationPlan = buildDiffInvestigationPlan(diff);
-  if (investigationPlan.groups.length === 0) {
-    return initialContext;
-  }
-
-  return `${initialContext}
-
-${formatDiffInvestigationPlan(
-  investigationPlan.groups,
-  investigationPlan.standalonePaths,
-  language,
-)}`;
 }
 
 export { formatDraftCommitMessageSection };

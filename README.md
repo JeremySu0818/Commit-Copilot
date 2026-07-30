@@ -176,19 +176,19 @@ Direct Diff skips the investigation loop and sends the complete diff to the sele
 
 The agent can combine the following tools across multiple investigation steps:
 
-| Tool                   | Purpose                                                                                         |
-| ---------------------- | ----------------------------------------------------------------------------------------------- |
-| `get_diff`             | Retrieves one exact file diff or a verified structural summary for an aligned multi-file batch. |
-| `read_file`            | Reads file content, optionally within a line range. Staged analysis prefers Git-index content.  |
-| `get_file_outline`     | Returns structural information such as functions, classes, and exports.                         |
-| `find_references`      | Uses VS Code's Language Server Protocol to locate syntax-aware symbol references.               |
-| `get_recent_commits`   | Reads recent commit messages to infer the repository's existing style.                          |
-| `search_code`          | Searches the workspace for strings or patterns that imports alone cannot reveal.                |
-| `write_commit_message` | Submits the final structured commit message.                                                    |
+| Tool                   | Purpose                                                                                        |
+| ---------------------- | ---------------------------------------------------------------------------------------------- |
+| `get_diff`             | Retrieves the complete exact diff for one file or multiple requested files.                    |
+| `read_file`            | Reads file content, optionally within a line range. Staged analysis prefers Git-index content. |
+| `get_file_outline`     | Returns structural information such as functions, classes, and exports.                        |
+| `find_references`      | Uses VS Code's Language Server Protocol to locate syntax-aware symbol references.              |
+| `get_recent_commits`   | Reads recent commit messages to infer the repository's existing style.                         |
+| `search_code`          | Searches the workspace for strings or patterns that imports alone cannot reveal.               |
+| `write_commit_message` | Submits the final structured commit message.                                                   |
 
 Gemini, Anthropic, and OpenAI-compatible routes use structured tool calls. Ollama uses an equivalent text protocol with support for batched calls, application-assigned call IDs, structured results, per-call errors, and final submission.
 
-Before investigation, Commit-Copilot inspects every exact patch and compares generic changed-line structure without inferring file types or repository semantics. Structurally aligned files are offered as `get_diff` batches. When smaller, a batch returns the complete member list, an exact-patch-set digest, and one representative exact diff; variable payload from other members is intentionally omitted from model input. Extra, missing, reordered, or differently structured edits remain separate. Otherwise, `get_diff` returns the original diff blocks unchanged.
+`get_diff` accepts either one `path` or a non-empty `paths` array. Multi-file requests reduce tool round trips while returning every requested file's complete exact diff; no file content is summarized or omitted.
 
 Agentic generation also tracks diff coverage in the harness. `write_commit_message` is rejected until every changed file from a valid Git diff has been covered by a successful single-file or batched `get_diff` request.
 

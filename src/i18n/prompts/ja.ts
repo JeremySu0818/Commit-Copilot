@@ -74,14 +74,7 @@ export const jaPrompt: LocalePromptBundle = {
   toolDescGetDiff:
     '- `get_diff` — 特定のファイルの実際の git diff を取得します。必ず `path` 引数を指定してください。',
   toolDescGetDiffBatch:
-    '- バッチ形式：`get_diff` は `path` の代わりに空でない `paths` 配列を受け付けます。より小さくなる場合、構造が揃った patch は harness 検証済みの要約と代表 exact diff 1 件として返されます。',
-  diffInvestigationPlanTitle: '## Harness Diff 調査計画',
-  diffInvestigationPlanBody:
-    'Harness はすべての exact patch を検査し、汎用的な変更行構造のみを比較します。ファイルの用途や意味は推測しません。グループの `paths` 配列で `get_diff` を呼び出し、検証済み要約と代表 exact diff 1 件を取得してください。追加、欠落、並べ替え、構造の異なる編集は分離されます。他のメンバーの可変内容は input token 削減のため省略されるため、グループは調査計画であり、意味や省略値が同一という証拠ではありません。',
-  diffInvestigationPlanGroup:
-    '- G{0}（構造が揃った {1} ファイル、代表：{2}）：{3}',
-  diffInvestigationPlanStandalone:
-    '構造が異なるファイル（個別に、または明示的にバッチで調査）：',
+    '- バッチ形式：`get_diff` は `path` の代わりに空でない `paths` 配列を受け付け、指定された各ファイルの完全な正確な差分を返します。',
   toolDescReadFile:
     '- `read_file` — ファイルの現在の内容を読み取ります。必要に応じて行範囲を指定できます。',
   toolDescGetFileOutline:

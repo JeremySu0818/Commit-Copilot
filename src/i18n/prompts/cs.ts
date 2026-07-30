@@ -77,14 +77,7 @@ export const csPrompt: LocalePromptBundle = {
   toolDescGetDiff:
     '- `get_diff` — Získat skutečný git diff pro konkrétní soubor. MUSÍTE poskytnout argument `path`.',
   toolDescGetDiffBatch:
-    '- Dávková forma: `get_diff` přijímá neprázdné pole `paths` místo `path`; je-li výstup menší, strukturálně zarovnané patche vrátí jako souhrn ověřený harness spolu s jedním reprezentativním exact diff.',
-  diffInvestigationPlanTitle: '## Plán průzkumu Harness Diff',
-  diffInvestigationPlanBody:
-    'Harness zkontroluje každý exact patch a porovná pouze obecnou strukturu změněných řádků; neodvozuje účel ani význam souborů. Použijte `get_diff` s `paths` skupiny a získejte ověřený souhrn a jeden reprezentativní exact diff. Dodatečné, chybějící, přeuspořádané nebo jinak strukturované úpravy zůstávají oddělené. Proměnný obsah ostatních členů se kvůli úspoře input token vynechává; skupina proto není důkazem stejného významu či vynechaných hodnot.',
-  diffInvestigationPlanGroup:
-    '- G{0} ({1} strukturálně zarovnaných souborů; zástupce: {2}): {3}',
-  diffInvestigationPlanStandalone:
-    'Strukturálně odlišné soubory (zkontrolujte samostatně nebo v explicitní dávce):',
+    '- Dávková forma: `get_diff` přijímá neprázdné pole `paths` místo `path` a vrací úplný přesný diff každého požadovaného souboru.',
   toolDescReadFile:
     '- `read_file` — Číst aktuální obsah souboru, volitelně s určením rozsahu řádků.',
   toolDescGetFileOutline:

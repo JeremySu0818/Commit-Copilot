@@ -77,14 +77,7 @@ export const hiPrompt: LocalePromptBundle = {
   toolDescGetDiff:
     '- `get_diff` — किसी विशिष्ट फ़ाइल के लिए वास्तविक git diff प्राप्त करें। आपको `path` तर्क प्रदान करना होगा।',
   toolDescGetDiffBatch:
-    '- बैच रूप: `get_diff`, `path` के स्थान पर गैर-रिक्त `paths` array स्वीकार करता है; छोटा होने पर संरचनात्मक रूप से संरेखित patch, harness-सत्यापित सारांश और एक प्रतिनिधि exact diff के रूप में लौटते हैं।',
-  diffInvestigationPlanTitle: '## Harness Diff जाँच योजना',
-  diffInvestigationPlanBody:
-    'Harness हर exact patch जाँचता है और केवल बदली हुई पंक्तियों की सामान्य संरचना की तुलना करता है; वह फ़ाइल का उद्देश्य या अर्थ नहीं मानता। सत्यापित सारांश और एक प्रतिनिधि exact diff पाने के लिए समूह के `paths` के साथ `get_diff` उपयोग करें। अतिरिक्त, अनुपस्थित, पुनःक्रमित या अलग संरचना वाले संपादन अलग रहते हैं। अन्य सदस्यों की बदलती सामग्री input token घटाने के लिए हटाई जाती है; समूह समान अर्थ या हटाए गए मानों का प्रमाण नहीं है।',
-  diffInvestigationPlanGroup:
-    '- G{0} ({1} संरचनात्मक रूप से संरेखित फ़ाइलें; प्रतिनिधि: {2}): {3}',
-  diffInvestigationPlanStandalone:
-    'संरचनात्मक रूप से अलग फ़ाइलें (अलग या स्पष्ट बैच में जाँचें):',
+    '- बैच रूप: `get_diff`, `path` के स्थान पर गैर-रिक्त `paths` array स्वीकार करता है और प्रत्येक अनुरोधित फ़ाइल का पूरा सटीक diff लौटाता है।',
   toolDescReadFile:
     '- `read_file` — फ़ाइल की वर्तमान सामग्री पढ़ें, वैकल्पिक रूप से एक लाइन रेंज निर्दिष्ट करें।',
   toolDescGetFileOutline:

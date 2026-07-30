@@ -332,10 +332,6 @@ export interface LocalePromptBundle {
   toolUseSearchCode: string;
   toolUseCombine: string;
   toolUseSubmit: string;
-  diffInvestigationPlanTitle: string;
-  diffInvestigationPlanBody: string;
-  diffInvestigationPlanGroup: string;
-  diffInvestigationPlanStandalone: string;
   classificationRulesTitle: string;
   classificationRulesIntro: string;
   classificationRulesTableHeader: string;
