@@ -76,6 +76,15 @@ export const trPrompt: LocalePromptBundle = {
     '`get_diff` ile sınırlı DEĞİLSİNİZ. Durum için en iyi araçları seçin. Örneğin:',
   toolDescGetDiff:
     "- `get_diff` — Belirli bir dosya için gerçek git diff'i alın. `path` argümanını sağlamanız ZORUNLUDUR.",
+  toolDescGetDiffBatch:
+    '- Toplu biçim: `get_diff`, `path` yerine boş olmayan bir `paths` dizisi kabul eder; daha küçük olduğunda yapısal olarak hizalı patchler harness tarafından doğrulanmış özet ve bir temsilci exact diff olarak döndürülür.',
+  diffInvestigationPlanTitle: '## Harness Diff İnceleme Planı',
+  diffInvestigationPlanBody:
+    'Harness her exact patchi inceler ve yalnızca değişen satırların genel yapısını karşılaştırır; dosya amacı veya anlamı çıkarmaz. Doğrulanmış özet ve bir temsilci exact diff almak için grubun `paths` değeriyle `get_diff` kullanın. Ek, eksik, yeniden sıralanmış veya farklı yapılı düzenlemeler ayrı kalır. Diğer üyelerin değişken içeriği input token azaltmak için atlanır; grup aynı anlamın veya atlanan değerlerin kanıtı değildir.',
+  diffInvestigationPlanGroup:
+    '- G{0} ({1} yapısal olarak hizalı dosya; temsilci: {2}): {3}',
+  diffInvestigationPlanStandalone:
+    'Yapısal olarak farklı dosyalar (ayrı veya açık bir toplu çağrıyla inceleyin):',
   toolDescReadFile:
     '- `read_file` — İsteğe bağlı olarak bir satır aralığı belirterek bir dosyanın geçerli içeriğini okuyun.',
   toolDescGetFileOutline:

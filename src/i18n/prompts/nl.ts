@@ -80,6 +80,15 @@ export const nlPrompt: LocalePromptBundle = {
     'Je bent NIET beperkt tot `get_diff`. Kies het/de beste hulpmiddel(en) voor de situatie. Bijvoorbeeld:',
   toolDescGetDiff:
     '- `get_diff` — Haal de feitelijke git diff op voor een specifiek bestand. Je MOET het argument `path` opgeven.',
+  toolDescGetDiffBatch:
+    '- Batchvorm: `get_diff` accepteert een niet-lege `paths`-array in plaats van `path`; wanneer compacter worden structureel uitgelijnde patches teruggegeven als een door de harness geverifieerde samenvatting met één representatieve exact diff.',
+  diffInvestigationPlanTitle: '## Harness Diff-onderzoeksplan',
+  diffInvestigationPlanBody:
+    'De harness inspecteert elke exact patch en vergelijkt alleen de algemene structuur van gewijzigde regels; bestandsdoel of semantiek wordt niet afgeleid. Gebruik `get_diff` met de `paths` van de groep voor een geverifieerde samenvatting en één representatieve exact diff. Extra, ontbrekende, herschikte of anders gestructureerde bewerkingen blijven gescheiden. Variabele inhoud van andere leden wordt weggelaten om input token te beperken; de groep bewijst dus geen gelijke betekenis of weggelaten waarden.',
+  diffInvestigationPlanGroup:
+    '- G{0} ({1} structureel uitgelijnde bestanden; vertegenwoordiger: {2}): {3}',
+  diffInvestigationPlanStandalone:
+    'Structureel afwijkende bestanden (afzonderlijk of in een expliciete batch inspecteren):',
   toolDescReadFile:
     '- `read_file` — Lees de huidige inhoud van een bestand, eventueel met specificatie van een regelbereik.',
   toolDescGetFileOutline:

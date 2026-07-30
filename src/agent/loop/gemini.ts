@@ -31,6 +31,7 @@ import {
 } from '../../shared/retry';
 import { buildInitialContext } from '../tools/context';
 import { toGeminiFunctionDeclarations } from '../tools/definitions';
+import { DiffCoverageTracker } from '../tools/diff-coverage';
 import { executeToolCall } from '../tools/executors/execute-tool-call';
 
 import {
@@ -323,10 +324,27 @@ async function buildToolResultParts(params: {
   isStaged: boolean;
   gitOps?: GitOperations;
   cancellationToken?: CancellationSignal;
+  blockedFinalMessage?: string;
+  coverage: DiffCoverageTracker;
 }): Promise<UnknownRecord[]> {
   const toolResults: UnknownRecord[] = [];
   for (const functionCall of params.functionCalls) {
     throwIfCancellationRequested(params.cancellationToken);
+    if (
+      functionCall.name === FINAL_COMMIT_MESSAGE_TOOL_NAME &&
+      params.blockedFinalMessage
+    ) {
+      toolResults.push({
+        functionResponse: {
+          name: functionCall.name,
+          response: {
+            content: params.blockedFinalMessage,
+            error: true,
+          },
+        },
+      });
+      continue;
+    }
     const result = await executeToolCall(
       { name: functionCall.name, arguments: functionCall.args },
       params.repoRoot,
@@ -334,6 +352,9 @@ async function buildToolResultParts(params: {
       params.isStaged,
       params.gitOps,
     );
+    if (!result.error) {
+      params.coverage.recordToolCall(functionCall.name, functionCall.args);
+    }
     toolResults.push({
       functionResponse: {
         name: functionCall.name,
@@ -390,6 +411,7 @@ async function handleGeminiFunctionCallBatch(params: {
   isStaged: boolean;
   gitOps?: GitOperations;
   cancellationToken?: CancellationSignal;
+  coverage: DiffCoverageTracker;
 }): Promise<string | null> {
   params.onProgress?.(
     formatBatchProgressMessage(
@@ -405,11 +427,18 @@ async function handleGeminiFunctionCallBatch(params: {
   const finalFunctionCall = params.functionCalls.find(
     (call) => call.name === FINAL_COMMIT_MESSAGE_TOOL_NAME,
   );
+  let blockedFinalMessage: string | undefined;
   if (finalFunctionCall) {
+    if (params.functionCalls.length !== 1) {
+      blockedFinalMessage =
+        'write_commit_message must be submitted alone after reviewing all tool results';
+    } else if (!params.coverage.isComplete()) {
+      blockedFinalMessage = params.coverage.formatIncompleteMessage();
+    }
     const finalMessage = extractFinalCommitMessageFromArgs(
       finalFunctionCall.args,
     );
-    if (finalMessage) {
+    if (finalMessage && !blockedFinalMessage) {
       return finalMessage;
     }
   }
@@ -426,6 +455,8 @@ async function handleGeminiFunctionCallBatch(params: {
     isStaged: params.isStaged,
     gitOps: params.gitOps,
     cancellationToken: params.cancellationToken,
+    blockedFinalMessage,
+    coverage: params.coverage,
   });
   params.history.push({ role: 'user', parts: toolResults });
   return null;
@@ -448,6 +479,7 @@ async function executeGeminiInvestigationLoop(params: {
   commitOutputOptions: CommitOutputOptions;
   commitMessageLanguage: EffectiveDisplayLanguage;
   progressState: { nextStep: number };
+  coverage: DiffCoverageTracker;
 }): Promise<string | null> {
   let step = 0;
   let finalToolReminderSent = false;
@@ -468,6 +500,7 @@ async function executeGeminiInvestigationLoop(params: {
         finalToolReminderSent,
       });
       if (textResult.finalMessage) {
+        params.coverage.assertComplete();
         return textResult.finalMessage;
       }
       if (textResult.remindFinalTool) {
@@ -488,6 +521,7 @@ async function executeGeminiInvestigationLoop(params: {
         isStaged: params.isStaged,
         gitOps: params.gitOps,
         cancellationToken: params.cancellationToken,
+        coverage: params.coverage,
       });
       if (finalMessage) {
         return finalMessage;
@@ -657,6 +691,7 @@ async function runGeminiAgentLoop(options: AgentLoopOptions): Promise<string> {
     );
     const resolvedCommitOutputOptions =
       normalizeCommitOutputOptions(commitOutputOptions);
+    const coverage = new DiffCoverageTracker(diff);
 
     const systemPrompt = buildAgentSystemPrompt({
       includeFindReferences: true,
@@ -727,10 +762,12 @@ async function runGeminiAgentLoop(options: AgentLoopOptions): Promise<string> {
       commitOutputOptions: resolvedCommitOutputOptions,
       commitMessageLanguage,
       progressState,
+      coverage,
     });
     if (loopResult) {
       return loopResult;
     }
+    coverage.assertComplete();
 
     return await requestGeminiFinalCommitMessage({
       requestGeminiResponse,

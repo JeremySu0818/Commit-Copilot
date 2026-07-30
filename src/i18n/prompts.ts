@@ -313,6 +313,7 @@ ${outputRules}`;
 
   const toolLines = [
     bundle.toolDescGetDiff,
+    bundle.toolDescGetDiffBatch,
     bundle.toolDescReadFile,
     bundle.toolDescGetFileOutline,
   ];
@@ -420,6 +421,37 @@ async function formatCommitHistory(
     return bundle.historyHasCommitsSingular;
   }
   return t(bundle.historyHasCommitsPlural, String(count));
+}
+
+export function formatDiffInvestigationPlan(
+  groups: { paths: string[]; representative: string }[],
+  standalonePaths: string[],
+  language?: EffectiveDisplayLanguage,
+): string {
+  const bundle = getBundle(language);
+  const groupLines = groups.map((group, index) =>
+    t(
+      bundle.diffInvestigationPlanGroup,
+      String(index + 1),
+      String(group.paths.length),
+      group.representative,
+      JSON.stringify(group.paths),
+    ),
+  );
+  const standaloneLines =
+    standalonePaths.length > 0
+      ? [
+          '',
+          bundle.diffInvestigationPlanStandalone,
+          JSON.stringify(standalonePaths),
+        ]
+      : [];
+
+  return `${bundle.diffInvestigationPlanTitle}
+
+${bundle.diffInvestigationPlanBody}
+
+${[...groupLines, ...standaloneLines].join('\n')}`;
 }
 
 export async function buildInitialContext(

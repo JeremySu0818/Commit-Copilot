@@ -78,6 +78,15 @@ export const viPrompt: LocalePromptBundle = {
     'Bạn KHÔNG bị giới hạn ở `get_diff`. Chọn (các) công cụ tốt nhất cho tình huống. Ví dụ:',
   toolDescGetDiff:
     '- `get_diff` — Lấy diff git thực tế cho một tệp cụ thể. Bạn PHẢI cung cấp đối số `path`.',
+  toolDescGetDiffBatch:
+    '- Dạng lô: `get_diff` nhận mảng `paths` không rỗng thay cho `path`; khi nhỏ hơn, các patch đồng nhất về cấu trúc được trả về dưới dạng tóm tắt do harness xác minh cùng một exact diff đại diện.',
+  diffInvestigationPlanTitle: '## Kế hoạch điều tra Harness Diff',
+  diffInvestigationPlanBody:
+    'Harness kiểm tra từng exact patch và chỉ so sánh cấu trúc chung của các dòng thay đổi; không suy luận mục đích hay ngữ nghĩa của tệp. Dùng `get_diff` với `paths` của nhóm để nhận bản tóm tắt đã xác minh và một exact diff đại diện. Chỉnh sửa bổ sung, bị thiếu, đổi thứ tự hoặc khác cấu trúc vẫn tách biệt. Nội dung biến đổi của thành viên khác được bỏ qua để giảm input token; nhóm không chứng minh ý nghĩa hay giá trị bị bỏ qua là giống nhau.',
+  diffInvestigationPlanGroup:
+    '- G{0} ({1} tệp đồng nhất về cấu trúc; đại diện: {2}): {3}',
+  diffInvestigationPlanStandalone:
+    'Các tệp khác biệt về cấu trúc (kiểm tra riêng hoặc trong một lô rõ ràng):',
   toolDescReadFile:
     '- `read_file` — Đọc nội dung hiện tại của một tệp, tùy chọn chỉ định phạm vi dòng.',
   toolDescGetFileOutline:

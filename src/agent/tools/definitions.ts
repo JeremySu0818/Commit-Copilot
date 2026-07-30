@@ -56,8 +56,16 @@ function buildAgentTools(
             type: 'string',
             description: descriptions.pathArgument,
           },
+          paths: {
+            type: 'array',
+            items: {
+              type: 'string',
+            },
+            minItems: 1,
+            description: `Batch form of path. Each item: ${descriptions.pathArgument}`,
+          },
         },
-        required: ['path'],
+        anyOf: [{ required: ['path'] }, { required: ['paths'] }],
       },
     },
     {

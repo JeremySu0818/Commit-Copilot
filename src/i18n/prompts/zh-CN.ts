@@ -69,6 +69,15 @@ export const zhCNPrompt: LocalePromptBundle = {
     '您不限于使用 `get_diff`。请根据情况选择最佳工具。例如：',
   toolDescGetDiff:
     '- `get_diff` — 获取特定文件的实际 git diff。您必须提供 `path` 参数。',
+  toolDescGetDiffBatch:
+    '- 批量形式：`get_diff` 可用非空的 `paths` 数组代替 `path`；若更精简，结构对齐的 patch 会以 harness 验证摘要和一份代表 exact diff 返回。',
+  diffInvestigationPlanTitle: '## Harness Diff 调查计划',
+  diffInvestigationPlanBody:
+    'Harness 会检查每份 exact patch，并只比较通用的变更行结构，不推断文件用途或语义。请使用组的 `paths` 数组调用 `get_diff`，以获取验证摘要和一份代表 exact diff。额外、缺少、重排或结构不同的编辑会保持分离。其他成员的可变内容会省略以降低 input token，因此请将这些组视为检查计划，而非文件语义或省略值相同的证据。',
+  diffInvestigationPlanGroup:
+    '- G{0}（{1} 个结构对齐的文件；代表文件：{2}）：{3}',
+  diffInvestigationPlanStandalone:
+    '结构不同的文件（请分别检查，或明确批量检查）：',
   toolDescReadFile: '- `read_file` — 读取文件的当前内容，可选择指定行范围。',
   toolDescGetFileOutline:
     '- `get_file_outline` — 获取文件的结构大纲（函数、类、导出项）。',

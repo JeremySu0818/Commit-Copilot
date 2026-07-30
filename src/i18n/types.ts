@@ -318,6 +318,7 @@ export interface LocalePromptBundle {
   availableToolsIntro: string;
   availableToolsNotLimited: string;
   toolDescGetDiff: string;
+  toolDescGetDiffBatch: string;
   toolDescReadFile: string;
   toolDescGetFileOutline: string;
   toolDescFindReferences: string;
@@ -331,6 +332,10 @@ export interface LocalePromptBundle {
   toolUseSearchCode: string;
   toolUseCombine: string;
   toolUseSubmit: string;
+  diffInvestigationPlanTitle: string;
+  diffInvestigationPlanBody: string;
+  diffInvestigationPlanGroup: string;
+  diffInvestigationPlanStandalone: string;
   classificationRulesTitle: string;
   classificationRulesIntro: string;
   classificationRulesTableHeader: string;

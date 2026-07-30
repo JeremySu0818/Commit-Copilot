@@ -14,6 +14,7 @@ type UnknownRecord = Record<string, unknown>;
 
 interface ToolArgs {
   path?: string;
+  paths?: string[];
   line?: number;
   character?: number;
   count?: number;
@@ -32,6 +33,13 @@ function asNumber(value: unknown): number | undefined {
   return typeof value === 'number' ? value : undefined;
 }
 
+function asStringArray(value: unknown): string[] | undefined {
+  if (!Array.isArray(value)) {
+    return undefined;
+  }
+  return value.filter((item): item is string => typeof item === 'string');
+}
+
 function normalizeToolArgs(args: unknown): ToolArgs {
   if (!isRecord(args)) {
     return {};
@@ -39,6 +47,7 @@ function normalizeToolArgs(args: unknown): ToolArgs {
 
   return {
     path: asString(args.path),
+    paths: asStringArray(args.paths),
     line: asNumber(args.line),
     character: asNumber(args.character),
     count: asNumber(args.count),
@@ -123,7 +132,9 @@ function formatProgressMessage(
     case 'get_diff':
       return msgs.stepAnalyzingDiff(
         step,
-        normalizedArgs.path ?? 'unknown file',
+        normalizedArgs.path ??
+          normalizedArgs.paths?.join(', ') ??
+          'unknown file',
       );
     case 'read_file':
       return msgs.stepReadingFile(step, normalizedArgs.path ?? 'unknown file');
@@ -163,9 +174,10 @@ function formatProgressMessage(
 function getToolCallPaths(
   toolCalls: { name: string; args: unknown }[],
 ): string[] {
-  return toolCalls
-    .map((toolCall) => normalizeToolArgs(toolCall.args).path)
-    .filter((path): path is string => typeof path === 'string');
+  return toolCalls.flatMap((toolCall) => {
+    const args = normalizeToolArgs(toolCall.args);
+    return [...(args.path ? [args.path] : []), ...(args.paths ?? [])];
+  });
 }
 
 function getReferenceTargets(

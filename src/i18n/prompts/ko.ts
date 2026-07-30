@@ -73,6 +73,15 @@ export const koPrompt: LocalePromptBundle = {
     '`get_diff`에 국한되지 않습니다. 상황에 가장 적합한 도구를 선택하십시오. 예:',
   toolDescGetDiff:
     '- `get_diff` — 특정 파일에 대한 실제 git diff를 가져옵니다. 반드시 `path` 인수를 제공해야 합니다.',
+  toolDescGetDiffBatch:
+    '- 배치 형식: `get_diff`는 `path` 대신 비어 있지 않은 `paths` 배열을 받습니다. 더 작을 경우 구조가 정렬된 patch는 harness 검증 요약과 대표 exact diff 하나로 반환됩니다.',
+  diffInvestigationPlanTitle: '## Harness Diff 조사 계획',
+  diffInvestigationPlanBody:
+    'Harness는 모든 exact patch를 검사하고 일반적인 변경 줄 구조만 비교하며 파일 용도나 의미를 추론하지 않습니다. 그룹의 `paths` 배열로 `get_diff`를 호출하여 검증 요약과 대표 exact diff 하나를 받으십시오. 추가, 누락, 재정렬 또는 구조가 다른 편집은 분리됩니다. 다른 멤버의 가변 내용은 input token 절감을 위해 생략되므로, 그룹은 조사 계획일 뿐 의미나 생략 값이 같다는 증거가 아닙니다.',
+  diffInvestigationPlanGroup:
+    '- G{0} (구조가 정렬된 파일 {1}개, 대표: {2}): {3}',
+  diffInvestigationPlanStandalone:
+    '구조적으로 다른 파일(개별 조사 또는 명시적 배치 조사):',
   toolDescReadFile:
     '- `read_file` — 파일의 현재 내용을 읽으며, 선택적으로 행 범위를 지정할 수 있습니다.',
   toolDescGetFileOutline:

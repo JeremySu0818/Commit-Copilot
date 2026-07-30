@@ -72,6 +72,15 @@ export const arPrompt: LocalePromptBundle = {
     'أنت غير مقيد بـ `get_diff`. اختر أفضل أداة (أدوات) للموقف. على سبيل المثال:',
   toolDescGetDiff:
     '- `get_diff` — الحصول على فروق git الفعلية لملف معين. يجب عليك تقديم وسيطة `path`.',
+  toolDescGetDiffBatch:
+    '- صيغة الدفعة: يقبل `get_diff` مصفوفة `paths` غير فارغة بدلاً من `path`؛ وعندما يكون أصغر، يعيد ملخصاً بنيوياً تحقق منه harness مع exact diff تمثيلي واحد.',
+  diffInvestigationPlanTitle: '## خطة فحص Harness Diff',
+  diffInvestigationPlanBody:
+    'يفحص Harness كل exact patch ويقارن البنية العامة لأسطر التغيير فقط، دون استنتاج غرض الملفات أو دلالاتها. استخدم `get_diff` مع `paths` للمجموعة لاستلام ملخص متحقق منه وexact diff تمثيلي واحد. تبقى التعديلات الإضافية أو المفقودة أو المعاد ترتيبها أو المختلفة بنيوياً منفصلة. تُحذف القيم المتغيرة للأعضاء الآخرين لتقليل input token؛ لذا فالمجموعة خطة فحص وليست دليلاً على تطابق المعاني أو القيم المحذوفة.',
+  diffInvestigationPlanGroup:
+    '- G{0} ({1} ملفات متوافقة بنيوياً؛ الممثل: {2}): {3}',
+  diffInvestigationPlanStandalone:
+    'ملفات مختلفة بنيوياً (افحصها منفردة أو ضمن دفعة صريحة):',
   toolDescReadFile:
     '- `read_file` — قراءة المحتويات الحالية لملف، مع خيار تحديد نطاق الأسطر.',
   toolDescGetFileOutline:

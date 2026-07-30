@@ -78,6 +78,15 @@ export const huPrompt: LocalePromptBundle = {
     'Nem korlátozódik a `get_diff` használatára. Válassza ki a helyzetnek leginkább megfelelő eszközt (eszközöket). Például:',
   toolDescGetDiff:
     '- `get_diff` — A tényleges git diff lekérése egy adott fájlhoz. Kötelező megadni a `path` argumentumot.',
+  toolDescGetDiffBatch:
+    '- Kötegelt forma: a `get_diff` a `path` helyett nem üres `paths` tömböt fogad; ha kisebb, a szerkezetileg illeszkedő patcheket harness által ellenőrzött összegzésként és egy reprezentatív exact diffként adja vissza.',
+  diffInvestigationPlanTitle: '## Harness Diff vizsgálati terv',
+  diffInvestigationPlanBody:
+    'A harness minden exact patchet megvizsgál, és csak a módosított sorok általános szerkezetét hasonlítja össze; nem következtet a fájlok céljára vagy jelentésére. A csoport `paths` értékeivel hívott `get_diff` ellenőrzött összegzést és egy reprezentatív exact diffet ad. A többlet-, hiányzó, átrendezett vagy eltérő szerkezetű módosítások elkülönülnek. Más tagok változó tartalma az input token csökkentése érdekében kimarad; a csoport nem bizonyít azonos jelentést vagy kimaradt értékeket.',
+  diffInvestigationPlanGroup:
+    '- G{0} ({1} szerkezetileg illeszkedő fájl; képviselő: {2}): {3}',
+  diffInvestigationPlanStandalone:
+    'Szerkezetileg eltérő fájlok (külön vagy explicit kötegben vizsgálandók):',
   toolDescReadFile:
     '- `read_file` — Egy fájl aktuális tartalmának olvasása, opcionálisan megadva a sorok tartományát.',
   toolDescGetFileOutline:

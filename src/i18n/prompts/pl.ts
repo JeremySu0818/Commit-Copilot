@@ -80,6 +80,15 @@ export const plPrompt: LocalePromptBundle = {
     'NIE ograniczasz się do `get_diff`. Wybierz najlepsze narzędzie (lub narzędzia) do danej sytuacji. Na przykład:',
   toolDescGetDiff:
     '- `get_diff` — Pobierz rzeczywisty git diff dla określonego pliku. MUSISZ podać argument `path`.',
+  toolDescGetDiffBatch:
+    '- Forma wsadowa: `get_diff` przyjmuje niepustą tablicę `paths` zamiast `path`; jeśli wynik jest mniejszy, strukturalnie zgodne patche są zwracane jako podsumowanie zweryfikowane przez harness z jednym reprezentatywnym exact diff.',
+  diffInvestigationPlanTitle: '## Plan analizy Harness Diff',
+  diffInvestigationPlanBody:
+    'Harness sprawdza każdy exact patch i porównuje tylko ogólną strukturę zmienionych linii; nie wnioskuje o przeznaczeniu ani semantyce plików. Użyj `get_diff` z `paths` grupy, aby otrzymać zweryfikowane podsumowanie i jeden reprezentatywny exact diff. Dodatkowe, brakujące, przestawione lub inaczej zbudowane edycje pozostają oddzielne. Zmienna treść pozostałych członków jest pomijana, aby ograniczyć input token; grupa nie dowodzi identycznego znaczenia ani pominiętych wartości.',
+  diffInvestigationPlanGroup:
+    '- G{0} ({1} strukturalnie zgodnych plików; reprezentant: {2}): {3}',
+  diffInvestigationPlanStandalone:
+    'Pliki strukturalnie odmienne (sprawdź osobno lub w jawnej partii):',
   toolDescReadFile:
     '- `read_file` — Odczytaj bieżącą zawartość pliku, opcjonalnie określając zakres linii.',
   toolDescGetFileOutline:

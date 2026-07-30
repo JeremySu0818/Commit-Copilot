@@ -39,6 +39,7 @@ import {
 } from '../../shared/retry';
 import { buildInitialContext } from '../tools/context';
 import { toAnthropicTools } from '../tools/definitions';
+import { DiffCoverageTracker } from '../tools/diff-coverage';
 import { executeToolCall } from '../tools/executors/execute-tool-call';
 
 import {
@@ -160,10 +161,21 @@ async function executeToolUseBlocks(params: {
   isStaged: boolean;
   gitOps?: GitOperations;
   cancellationToken?: CancellationSignal;
+  blockedFinal?: { id: string; message: string };
+  coverage: DiffCoverageTracker;
 }): Promise<ToolResultBlockParam[]> {
   const toolResults: ToolResultBlockParam[] = [];
   for (const block of params.toolUseBlocks) {
     throwIfCancellationRequested(params.cancellationToken);
+    if (params.blockedFinal?.id === block.id) {
+      toolResults.push({
+        type: 'tool_result',
+        tool_use_id: block.id,
+        content: params.blockedFinal.message,
+        is_error: true,
+      });
+      continue;
+    }
     const result = await executeToolCall(
       { name: block.name, arguments: block.input },
       params.repoRoot,
@@ -171,6 +183,9 @@ async function executeToolUseBlocks(params: {
       params.isStaged,
       params.gitOps,
     );
+    if (!result.error) {
+      params.coverage.recordToolCall(block.name, block.input);
+    }
     toolResults.push({
       type: 'tool_result',
       tool_use_id: block.id,
@@ -226,6 +241,7 @@ async function handleAnthropicToolUseBatch(params: {
   isStaged: boolean;
   gitOps?: GitOperations;
   cancellationToken?: CancellationSignal;
+  coverage: DiffCoverageTracker;
 }): Promise<string | null> {
   params.onProgress?.(
     formatBatchProgressMessage(
@@ -241,11 +257,24 @@ async function handleAnthropicToolUseBatch(params: {
   const finalToolUseBlock = params.toolUseBlocks.find(
     (block) => block.name === FINAL_COMMIT_MESSAGE_TOOL_NAME,
   );
+  let blockedFinal: { id: string; message: string } | undefined;
   if (finalToolUseBlock) {
+    if (params.toolUseBlocks.length !== 1) {
+      blockedFinal = {
+        id: finalToolUseBlock.id,
+        message:
+          'write_commit_message must be submitted alone after reviewing all tool results',
+      };
+    } else if (!params.coverage.isComplete()) {
+      blockedFinal = {
+        id: finalToolUseBlock.id,
+        message: params.coverage.formatIncompleteMessage(),
+      };
+    }
     const finalMessage = extractFinalCommitMessageFromArgs(
       finalToolUseBlock.input,
     );
-    if (finalMessage) {
+    if (finalMessage && !blockedFinal) {
       return finalMessage;
     }
   }
@@ -261,6 +290,8 @@ async function handleAnthropicToolUseBatch(params: {
     isStaged: params.isStaged,
     gitOps: params.gitOps,
     cancellationToken: params.cancellationToken,
+    blockedFinal,
+    coverage: params.coverage,
   });
   params.messages.push({ role: 'user', content: toolResults });
   return null;
@@ -282,6 +313,7 @@ async function executeAnthropicInvestigationLoop(params: {
   commitOutputOptions: CommitOutputOptions;
   commitMessageLanguage: EffectiveDisplayLanguage;
   progressState: { nextStep: number };
+  coverage: DiffCoverageTracker;
 }): Promise<string | null> {
   let step = 0;
   let finalToolReminderSent = false;
@@ -304,6 +336,7 @@ async function executeAnthropicInvestigationLoop(params: {
         finalToolReminderSent,
       });
       if (textResult.finalMessage) {
+        params.coverage.assertComplete();
         return textResult.finalMessage;
       }
       if (textResult.remindFinalTool) {
@@ -332,6 +365,7 @@ async function executeAnthropicInvestigationLoop(params: {
       isStaged: params.isStaged,
       gitOps: params.gitOps,
       cancellationToken: params.cancellationToken,
+      coverage: params.coverage,
     });
     if (finalMessage) {
       return finalMessage;
@@ -492,6 +526,7 @@ async function runAnthropicAgentLoop(
     }
     const resolvedCommitOutputOptions =
       normalizeCommitOutputOptions(commitOutputOptions);
+    const coverage = new DiffCoverageTracker(diff);
 
     const initialContext = await buildInitialContext(
       diff,
@@ -562,10 +597,12 @@ async function runAnthropicAgentLoop(
       commitOutputOptions: resolvedCommitOutputOptions,
       commitMessageLanguage,
       progressState,
+      coverage,
     });
     if (loopResult) {
       return loopResult;
     }
+    coverage.assertComplete();
 
     messages.push({
       role: 'user',

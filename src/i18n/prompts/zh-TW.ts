@@ -69,6 +69,15 @@ export const zhTWPrompt: LocalePromptBundle = {
     '您不限於使用 `get_diff`。請根據情況選擇最佳工具。例如：',
   toolDescGetDiff:
     '- `get_diff` — 取得特定檔案的實際 git diff。您必須提供 `path` 參數。',
+  toolDescGetDiffBatch:
+    '- 批次形式：`get_diff` 可用非空的 `paths` 陣列取代 `path`；若較精簡，結構對齊的 patch 會以 harness 驗證摘要及一份代表 exact diff 回傳。',
+  diffInvestigationPlanTitle: '## Harness Diff 調查計畫',
+  diffInvestigationPlanBody:
+    'Harness 會檢查每份 exact patch，並只比較通用的變更行結構，不會推斷檔案用途或語意。請使用群組的 `paths` 陣列呼叫 `get_diff`，以取得驗證摘要及一份代表 exact diff。額外、缺少、重排或結構不同的編輯會保持分離。其他成員的可變內容會省略以降低 input token，因此請將群組視為檢查計畫，而非檔案語意或省略值相同的證據。',
+  diffInvestigationPlanGroup:
+    '- G{0}（{1} 個結構對齊的檔案；代表檔案：{2}）：{3}',
+  diffInvestigationPlanStandalone:
+    '結構不同的檔案（請分別檢查，或明確將其批次送入）：',
   toolDescReadFile: '- `read_file` — 讀取檔案的當前內容，可選擇指定行範圍。',
   toolDescGetFileOutline:
     '- `get_file_outline` — 取得檔案 of 結構大綱（函式、類別、匯出項）。',

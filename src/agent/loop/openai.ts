@@ -38,6 +38,7 @@ import {
 } from '../../shared/retry';
 import { buildInitialContext } from '../tools/context';
 import { getAgentTools, toOpenAITools } from '../tools/definitions';
+import { DiffCoverageTracker } from '../tools/diff-coverage';
 import { executeToolCall } from '../tools/executors/execute-tool-call';
 
 import {
@@ -230,6 +231,7 @@ async function handleOpenAIToolCallBatch(params: {
   isStaged: boolean;
   gitOps?: GitOperations;
   cancellationToken?: CancellationSignal;
+  coverage: DiffCoverageTracker;
 }): Promise<string | null> {
   params.onProgress?.(
     formatBatchProgressMessage(
@@ -244,8 +246,14 @@ async function handleOpenAIToolCallBatch(params: {
       toolCall.name === FINAL_COMMIT_MESSAGE_TOOL_NAME && !toolCall.parseError,
   );
   if (finalToolCall) {
+    if (params.parsedToolCalls.length !== 1) {
+      finalToolCall.parseError =
+        'write_commit_message must be submitted alone after reviewing all tool results';
+    } else if (!params.coverage.isComplete()) {
+      finalToolCall.parseError = params.coverage.formatIncompleteMessage();
+    }
     const finalMessage = extractFinalCommitMessageFromArgs(finalToolCall.args);
-    if (finalMessage) {
+    if (finalMessage && !finalToolCall.parseError) {
       return finalMessage;
     }
   }
@@ -257,6 +265,7 @@ async function handleOpenAIToolCallBatch(params: {
     isStaged: params.isStaged,
     gitOps: params.gitOps,
     cancellationToken: params.cancellationToken,
+    coverage: params.coverage,
   });
   return null;
 }
@@ -275,22 +284,27 @@ async function appendToolCallMessages(
     isStaged: boolean;
     gitOps?: GitOperations;
     cancellationToken?: CancellationSignal;
+    coverage: DiffCoverageTracker;
   },
 ): Promise<void> {
   for (const parsedToolCall of parsedToolCalls) {
     throwIfCancellationRequested(params.cancellationToken);
     const { toolCall, name, args, parseError } = parsedToolCall;
-    const content = parseError
-      ? `Tool execution error: Invalid JSON arguments for ${name}: ${parseError}`
-      : (
-          await executeToolCall(
-            { name, arguments: args },
-            params.repoRoot,
-            params.diff,
-            params.isStaged,
-            params.gitOps,
-          )
-        ).content;
+    const result = parseError
+      ? null
+      : await executeToolCall(
+          { name, arguments: args },
+          params.repoRoot,
+          params.diff,
+          params.isStaged,
+          params.gitOps,
+        );
+    if (result && !result.error) {
+      params.coverage.recordToolCall(name, args);
+    }
+    const content = result
+      ? result.content
+      : `Tool execution error: Invalid JSON arguments for ${name}: ${parseError ?? 'unknown error'}`;
 
     const toolMessage: ChatCompletionToolMessageParam = {
       role: 'tool',
@@ -317,6 +331,7 @@ async function executeOpenAIInvestigationLoop(params: {
   commitOutputOptions: CommitOutputOptions;
   commitMessageLanguage: EffectiveDisplayLanguage;
   progressState: { nextStep: number };
+  coverage: DiffCoverageTracker;
 }): Promise<string | null> {
   let step = 0;
   let finalToolReminderSent = false;
@@ -343,6 +358,7 @@ async function executeOpenAIInvestigationLoop(params: {
         assistantMessageContent: assistantMessage.content,
       });
       if (textResult.finalMessage) {
+        params.coverage.assertComplete();
         return textResult.finalMessage;
       }
       if (textResult.remindFinalTool) {
@@ -362,6 +378,7 @@ async function executeOpenAIInvestigationLoop(params: {
         isStaged: params.isStaged,
         gitOps: params.gitOps,
         cancellationToken: params.cancellationToken,
+        coverage: params.coverage,
       });
       if (finalMessage) {
         return finalMessage;
@@ -457,6 +474,7 @@ async function handleOpenAIResponsesToolCalls(params: {
   isStaged: boolean;
   gitOps?: GitOperations;
   cancellationToken?: CancellationSignal;
+  coverage: DiffCoverageTracker;
 }): Promise<{ finalMessage?: string; toolOutputs: UnknownRecord[] }> {
   const parsedToolCalls = params.toolCalls.map((toolCall) => {
     const parsed = parseToolArguments(toolCall.arguments);
@@ -479,8 +497,14 @@ async function handleOpenAIResponsesToolCalls(params: {
       toolCall.name === FINAL_COMMIT_MESSAGE_TOOL_NAME && !toolCall.parseError,
   );
   if (finalToolCall) {
+    if (parsedToolCalls.length !== 1) {
+      finalToolCall.parseError =
+        'write_commit_message must be submitted alone after reviewing all tool results';
+    } else if (!params.coverage.isComplete()) {
+      finalToolCall.parseError = params.coverage.formatIncompleteMessage();
+    }
     const finalMessage = extractFinalCommitMessageFromArgs(finalToolCall.args);
-    if (finalMessage) {
+    if (finalMessage && !finalToolCall.parseError) {
       return { finalMessage, toolOutputs: [] };
     }
   }
@@ -488,17 +512,21 @@ async function handleOpenAIResponsesToolCalls(params: {
   const toolOutputs: UnknownRecord[] = [];
   for (const { toolCall, name, args, parseError } of parsedToolCalls) {
     throwIfCancellationRequested(params.cancellationToken);
-    const output = parseError
-      ? `Tool execution error: Invalid JSON arguments for ${name}: ${parseError}`
-      : (
-          await executeToolCall(
-            { name, arguments: args },
-            params.repoRoot,
-            params.diff,
-            params.isStaged,
-            params.gitOps,
-          )
-        ).content;
+    const result = parseError
+      ? null
+      : await executeToolCall(
+          { name, arguments: args },
+          params.repoRoot,
+          params.diff,
+          params.isStaged,
+          params.gitOps,
+        );
+    if (result && !result.error) {
+      params.coverage.recordToolCall(name, args);
+    }
+    const output = result
+      ? result.content
+      : `Tool execution error: Invalid JSON arguments for ${name}: ${parseError ?? 'unknown error'}`;
     toolOutputs.push({
       type: 'function_call_output',
       call_id: toolCall.call_id,
@@ -524,6 +552,7 @@ async function executeOpenAIResponsesAgentLoop(params: {
   gitOps?: GitOperations;
   cancellationToken?: CancellationSignal;
   commitOutputOptions: CommitOutputOptions;
+  coverage: DiffCoverageTracker;
 }): Promise<string> {
   let previousResponseId: string | undefined;
   let input: unknown = params.initialContext;
@@ -560,6 +589,7 @@ async function executeOpenAIResponsesAgentLoop(params: {
         throw createEmptyTextResponseError('OpenAI API');
       }
       if (finalToolReminderSent) {
+        params.coverage.assertComplete();
         return extractCommitMessage(text);
       }
 
@@ -583,6 +613,7 @@ async function executeOpenAIResponsesAgentLoop(params: {
       isStaged: params.isStaged,
       gitOps: params.gitOps,
       cancellationToken: params.cancellationToken,
+      coverage: params.coverage,
     });
     if (toolCallResult.finalMessage) {
       return toolCallResult.finalMessage;
@@ -594,6 +625,7 @@ async function executeOpenAIResponsesAgentLoop(params: {
     step += 1;
   }
 
+  params.coverage.assertComplete();
   return requestOpenAIResponsesFinalCommitMessage({
     createResponse: params.createResponse,
     modelName: params.modelName,
@@ -771,6 +803,7 @@ async function runOpenAIAgentLoop(options: AgentLoopOptions): Promise<string> {
     const modelName = pickNonEmpty(model, DEFAULT_MODELS.openai);
     const resolvedCommitOutputOptions =
       normalizeCommitOutputOptions(commitOutputOptions);
+    const coverage = new DiffCoverageTracker(diff);
 
     const initialContext = await buildInitialContext(
       diff,
@@ -822,6 +855,7 @@ async function runOpenAIAgentLoop(options: AgentLoopOptions): Promise<string> {
         gitOps,
         cancellationToken,
         commitOutputOptions: resolvedCommitOutputOptions,
+        coverage,
       });
     }
     const requestCompletionWithTools = createOpenAIRequestCompletionWithTools({
@@ -847,10 +881,12 @@ async function runOpenAIAgentLoop(options: AgentLoopOptions): Promise<string> {
       commitOutputOptions: resolvedCommitOutputOptions,
       commitMessageLanguage,
       progressState,
+      coverage,
     });
     if (loopResult) {
       return loopResult;
     }
+    coverage.assertComplete();
 
     messages.push({
       role: 'user',

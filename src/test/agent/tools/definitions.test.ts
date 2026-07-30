@@ -9,6 +9,8 @@ import {
   toOpenAITools,
 } from '../../../agent/tools/definitions';
 
+const expectedGetDiffSchemaAlternatives = 2;
+
 void test('AGENT_TOOLS includes all expected tool names', () => {
   const names = AGENT_TOOLS.map((tool) => tool.name).sort((a, b) =>
     a.localeCompare(b),
@@ -75,4 +77,21 @@ void test('tool schemas localize descriptions without changing names or paramete
     String(parameters.properties?.path?.description),
     /相對於儲存庫根目錄/,
   );
+});
+
+void test('get_diff accepts either one path or a batched paths array', () => {
+  const getDiff = AGENT_TOOLS.find((tool) => tool.name === 'get_diff');
+  assert.ok(getDiff);
+  const schema = getDiff.parameters as {
+    properties?: {
+      paths?: { type?: unknown; minItems?: unknown };
+    };
+    anyOf?: unknown[];
+  };
+  const pathsSchema = schema.properties?.paths;
+  assert.ok(pathsSchema);
+  assert.equal(pathsSchema.type, 'array');
+  assert.equal(pathsSchema.minItems, 1);
+  assert.ok(schema.anyOf);
+  assert.equal(schema.anyOf.length, expectedGetDiffSchemaAlternatives);
 });

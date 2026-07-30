@@ -9,6 +9,8 @@ const MODULE_PATH = path.resolve(__dirname, '../../../agent/loop/openai');
 
 type OpenAIModule = typeof import('../../../agent/loop/openai');
 const expectedToolMessageCount = 2;
+const coverageDiffRequestNumber = 2;
+const expectedCoverageRequestCount = 3;
 
 interface ToolCallShape {
   name: string;
@@ -241,6 +243,95 @@ void test('runOpenAIAgentLoop returns write_commit_message argument without exec
   );
   assert.ok(finalProgressMessage);
   assert.match(finalProgressMessage, /^\[Step 1\]/);
+});
+
+void test('runOpenAIAgentLoop rejects final submission until every valid diff is covered', async () => {
+  const completionRequests: unknown[] = [];
+  const executedCalls: ToolCallShape[] = [];
+
+  class OpenAIMock {
+    chat = {
+      completions: {
+        create: (params: unknown) => {
+          completionRequests.push(params);
+          const requestNumber = completionRequests.length;
+          const toolCall =
+            requestNumber === coverageDiffRequestNumber
+              ? {
+                  id: 'tool-call-diff',
+                  type: 'function',
+                  function: {
+                    name: 'get_diff',
+                    arguments: '{"path":"a.ts"}',
+                  },
+                }
+              : {
+                  id: `tool-call-final-${String(requestNumber)}`,
+                  type: 'function',
+                  function: {
+                    name: 'write_commit_message',
+                    arguments:
+                      '{"message":"fix(agent): require complete diff coverage"}',
+                  },
+                };
+          return Promise.resolve({
+            choices: [{ message: { tool_calls: [toolCall] } }],
+          });
+        },
+      },
+    };
+  }
+
+  const agentToolsMock = {
+    buildInitialContext: () => Promise.resolve('mocked initial context'),
+    executeToolCall: (toolCall: unknown) => {
+      const call = asToolCallShape(toolCall);
+      if (!call) {
+        throw new Error('Invalid tool call shape');
+      }
+      executedCalls.push(call);
+      return Promise.resolve({ name: call.name, content: 'actual diff' });
+    },
+    toOpenAITools: () => [],
+  };
+  const validDiff = [
+    'diff --git a/a.ts b/a.ts',
+    '--- a/a.ts',
+    '+++ b/a.ts',
+    '@@ -1 +1 @@',
+    '-old',
+    '+new',
+  ].join('\n');
+
+  try {
+    const result = await withOpenAIModule(
+      OpenAIMock,
+      agentToolsMock,
+      async ({ runOpenAIAgentLoop }) =>
+        runOpenAIAgentLoop({
+          apiKey: 'openai-test-key',
+          model: 'gpt-test',
+          diff: validDiff,
+          repoRoot: process.cwd(),
+        }),
+    );
+
+    assert.equal(result, 'fix(agent): require complete diff coverage');
+  } finally {
+    clearRequireCache(MODULE_PATH);
+  }
+
+  assert.equal(completionRequests.length, expectedCoverageRequestCount);
+  assert.deepEqual(executedCalls, [
+    { name: 'get_diff', arguments: { path: 'a.ts' } },
+  ]);
+  const secondRequestMessages = getMessagesFromCompletionRequest(
+    completionRequests[1],
+  );
+  assert.match(
+    JSON.stringify(secondRequestMessages),
+    /diff coverage is incomplete/,
+  );
 });
 
 void test('runOpenAIAgentLoop uses Responses API for GPT-5.6 models', async () => {

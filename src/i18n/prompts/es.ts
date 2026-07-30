@@ -80,6 +80,15 @@ export const esPrompt: LocalePromptBundle = {
     'NO está limitado a `get_diff`. Elija la(s) mejor(es) herramienta(s) para la situación. Por ejemplo:',
   toolDescGetDiff:
     '- `get_diff` — Obtener el diff de git real para un archivo específico. DEBE proporcionar el argumento `path`.',
+  toolDescGetDiffBatch:
+    '- Forma por lotes: `get_diff` acepta un arreglo `paths` no vacío en lugar de `path`; cuando resulta más compacto, devuelve los patches alineados como un resumen verificado por el harness con un exact diff representativo.',
+  diffInvestigationPlanTitle: '## Plan de investigación de Harness Diff',
+  diffInvestigationPlanBody:
+    'El harness inspecciona cada exact patch y compara solo la estructura genérica de las líneas cambiadas; no deduce el propósito ni la semántica de los archivos. Use `get_diff` con los `paths` del grupo para recibir un resumen verificado y un exact diff representativo. Las ediciones adicionales, ausentes, reordenadas o con otra estructura permanecen separadas. El contenido variable de otros miembros se omite para reducir input token; el grupo no prueba que sus significados ni valores omitidos sean iguales.',
+  diffInvestigationPlanGroup:
+    '- G{0} ({1} archivos alineados estructuralmente; representante: {2}): {3}',
+  diffInvestigationPlanStandalone:
+    'Archivos estructuralmente distintos (inspecciónelos por separado o en un lote explícito):',
   toolDescReadFile:
     '- `read_file` — Leer el contenido actual de un archivo, opcionalmente especificando un rango de líneas.',
   toolDescGetFileOutline:

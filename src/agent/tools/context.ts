@@ -6,6 +6,7 @@ import ignore from 'ignore';
 import type { GitOperations } from '../../git/git-operations';
 import {
   buildInitialContext as buildLocalizedInitialContext,
+  formatDiffInvestigationPlan,
   formatDraftCommitMessageSection,
   formatProjectStructureTruncated,
 } from '../../i18n/prompts';
@@ -15,6 +16,8 @@ import {
   DEFAULT_COMMIT_OUTPUT_OPTIONS,
   normalizeCommitOutputOptions,
 } from '../../models/options';
+
+import { buildDiffInvestigationPlan, parseDiffFileBlocks } from './diff-groups';
 
 interface DiffSummaryEntry {
   path: string;
@@ -94,55 +97,28 @@ export function parseDiffSummary(
   diff: string,
 ): { path: string; type: string; added: number; removed: number }[] {
   const renamePathSeparator = ' → ';
-  const aPathMatchIndex = 1;
-  const bPathMatchIndex = 2;
-  const files: DiffSummaryEntry[] = [];
-  const lines = diff.split('\n');
-
-  let currentFile: DiffSummaryEntry | null = null;
-  let currentAPath = '';
-  let currentBPath = '';
-
-  for (const line of lines) {
-    const diffMatch = /^diff --git a\/(.+?) b\/(.+)$/.exec(line);
-    if (diffMatch) {
-      if (currentFile) {
-        files.push(currentFile);
+  return parseDiffFileBlocks(diff).map(({ aPath, bPath, raw }) => {
+    const entry = createInitialDiffSummaryEntry(
+      aPath,
+      bPath,
+      renamePathSeparator,
+    );
+    for (const line of raw.split('\n')) {
+      if (
+        updateDiffSummaryEntryType(
+          line,
+          entry,
+          aPath,
+          bPath,
+          renamePathSeparator,
+        )
+      ) {
+        continue;
       }
-
-      currentAPath = diffMatch[aPathMatchIndex];
-      currentBPath = diffMatch[bPathMatchIndex];
-
-      currentFile = createInitialDiffSummaryEntry(
-        currentAPath,
-        currentBPath,
-        renamePathSeparator,
-      );
-      continue;
+      updateDiffSummaryLineStats(line, entry);
     }
-
-    if (!currentFile) continue;
-
-    if (
-      updateDiffSummaryEntryType(
-        line,
-        currentFile,
-        currentAPath,
-        currentBPath,
-        renamePathSeparator,
-      )
-    ) {
-      continue;
-    }
-
-    updateDiffSummaryLineStats(line, currentFile);
-  }
-
-  if (currentFile) {
-    files.push(currentFile);
-  }
-
-  return files;
+    return entry;
+  });
 }
 
 export async function getProjectStructure(
@@ -323,7 +299,7 @@ export async function buildInitialContext(
   draftCommitMessage?: string,
   language: EffectiveDisplayLanguage = 'en',
 ): Promise<string> {
-  return buildLocalizedInitialContext(
+  const initialContext = await buildLocalizedInitialContext(
     diff,
     repoRoot,
     gitOps,
@@ -335,6 +311,22 @@ export async function buildInitialContext(
     getProjectStructure,
     parseDiffSummary,
   );
+  if (!enableTools) {
+    return initialContext;
+  }
+
+  const investigationPlan = buildDiffInvestigationPlan(diff);
+  if (investigationPlan.groups.length === 0) {
+    return initialContext;
+  }
+
+  return `${initialContext}
+
+${formatDiffInvestigationPlan(
+  investigationPlan.groups,
+  investigationPlan.standalonePaths,
+  language,
+)}`;
 }
 
 export { formatDraftCommitMessageSection };

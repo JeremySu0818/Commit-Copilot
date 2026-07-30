@@ -24,6 +24,7 @@ import {
 } from '../../shared/errors';
 import type { ProgressCallback } from '../../shared/progress';
 import { buildInitialContext } from '../tools/context';
+import { DiffCoverageTracker } from '../tools/diff-coverage';
 import { executeToolCall } from '../tools/executors/execute-tool-call';
 
 import {
@@ -176,6 +177,8 @@ async function executeOllamaToolCalls(params: {
   isStaged: boolean;
   gitOps?: GitOperations;
   cancellationToken?: CancellationSignal;
+  blockedFinal?: { index: number; message: string };
+  coverage: DiffCoverageTracker;
 }): Promise<string> {
   const results = await Promise.all(
     params.calls.map(async (call) => {
@@ -188,6 +191,14 @@ async function executeOllamaToolCalls(params: {
           content: `protocol_error:${call.error}`,
         };
       }
+      if (params.blockedFinal?.index === call.index) {
+        return {
+          id,
+          name: call.name,
+          success: false,
+          content: params.blockedFinal.message,
+        };
+      }
 
       throwIfCancellationRequested(params.cancellationToken);
       const result = await executeToolCall(
@@ -197,6 +208,9 @@ async function executeOllamaToolCalls(params: {
         params.isStaged,
         params.gitOps,
       );
+      if (!result.error) {
+        params.coverage.recordToolCall(call.name, call.arguments);
+      }
       return {
         id,
         name: call.name,
@@ -221,6 +235,7 @@ async function handleOllamaToolBatch(params: {
   isStaged: boolean;
   gitOps?: GitOperations;
   cancellationToken?: CancellationSignal;
+  coverage: DiffCoverageTracker;
 }): Promise<string | null> {
   params.onProgress?.(
     formatBatchProgressMessage(
@@ -237,9 +252,22 @@ async function handleOllamaToolBatch(params: {
     (call) =>
       call.name === FINAL_COMMIT_MESSAGE_TOOL_NAME && call.error === undefined,
   );
+  let blockedFinal: { index: number; message: string } | undefined;
   if (finalCall) {
+    if (params.calls.length !== 1) {
+      blockedFinal = {
+        index: finalCall.index,
+        message:
+          'write_commit_message must be submitted alone after reviewing all tool results',
+      };
+    } else if (!params.coverage.isComplete()) {
+      blockedFinal = {
+        index: finalCall.index,
+        message: params.coverage.formatIncompleteMessage(),
+      };
+    }
     const finalMessage = extractFinalCommitMessageFromArgs(finalCall.arguments);
-    if (finalMessage) {
+    if (finalMessage && !blockedFinal) {
       return finalMessage;
     }
   }
@@ -255,6 +283,8 @@ async function handleOllamaToolBatch(params: {
       isStaged: params.isStaged,
       gitOps: params.gitOps,
       cancellationToken: params.cancellationToken,
+      blockedFinal,
+      coverage: params.coverage,
     }),
   });
   return null;
@@ -274,6 +304,7 @@ async function executeOllamaInvestigationLoop(params: {
   cancellationToken?: CancellationSignal;
   commitMessageLanguage: EffectiveDisplayLanguage;
   progressState: { nextStep: number };
+  coverage: DiffCoverageTracker;
 }): Promise<string | null> {
   let step = 0;
   let textCorrectionSent = false;
@@ -300,6 +331,7 @@ async function executeOllamaInvestigationLoop(params: {
         isStaged: params.isStaged,
         gitOps: params.gitOps,
         cancellationToken: params.cancellationToken,
+        coverage: params.coverage,
       });
       if (finalMessage) {
         return finalMessage;
@@ -307,6 +339,7 @@ async function executeOllamaInvestigationLoop(params: {
       params.progressState.nextStep += 1;
     } else if (parsed.kind === 'text') {
       if (textCorrectionSent) {
+        params.coverage.assertComplete();
         return extractCommitMessage(parsed.text);
       }
       params.messages.push({ role: 'assistant', content: text });
@@ -414,6 +447,7 @@ async function runOllamaAgentLoop(options: AgentLoopOptions): Promise<string> {
     const modelName = pickNonEmpty(model, DEFAULT_MODELS.ollama);
     const resolvedCommitOutputOptions =
       normalizeCommitOutputOptions(commitOutputOptions);
+    const coverage = new DiffCoverageTracker(diff);
     const cancellationSubscription = subscribeToCancellation(
       cancellationToken,
       () => {
@@ -476,10 +510,12 @@ async function runOllamaAgentLoop(options: AgentLoopOptions): Promise<string> {
         cancellationToken,
         commitMessageLanguage,
         progressState,
+        coverage,
       });
       if (loopResult) {
         return loopResult;
       }
+      coverage.assertComplete();
       return await requestOllamaFinalCommitMessage({
         client,
         modelName,
