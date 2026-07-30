@@ -71,6 +71,8 @@ export const viPrompt: LocalePromptBundle = {
     '## QUAN TRỌNG: Ban đầu bạn nhận được thông tin BỊ GIỚI HẠN',
   limitedInfoBody:
     'Bạn CHỈ được cung cấp tên của các tệp đã thay đổi, số dòng và cấu trúc dự án.\nBạn KHÔNG thấy các thay đổi thực tế. Bạn PHẢI sử dụng các công cụ của mình để điều tra trước khi phân loại.',
+  diffCoverageRequirement:
+    'Chế độ bao phủ đầy đủ phần khác biệt đã được bật. Trước khi gọi `write_commit_message`, hãy gọi `get_diff` thành công cho mọi tệp đã thay đổi. Bạn có thể đưa nhiều tệp vào cùng một mảng `paths`.',
   availableToolsTitle: '## Công cụ có sẵn',
   availableToolsIntro:
     'Bạn có nhiều công cụ tùy ý sử dụng. Sử dụng bất kỳ công cụ nào cần thiết để điều tra chính xác:',

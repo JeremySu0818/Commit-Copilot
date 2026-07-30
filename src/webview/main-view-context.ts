@@ -13,6 +13,7 @@ import {
   type CustomProviderConfig,
 } from '../models/custom-provider';
 import type {
+  AgenticGenerationOptions,
   CommitOutputOptions,
   GenerateMode,
   HybridGenerationOptions,
@@ -59,6 +60,7 @@ export interface MainViewState {
   pendingStatusCheck: boolean;
   hasChanges: boolean;
   commitOutputOptions: CommitOutputOptions;
+  agenticGenerationOptions: AgenticGenerationOptions;
   hybridGenerationOptions: HybridGenerationOptions;
   displayLanguage: DisplayLanguage;
   effectiveLanguage: EffectiveDisplayLanguage;
@@ -89,6 +91,10 @@ export type MainViewAction =
   | { type: 'SET_PENDING_STATUS_CHECK'; value: boolean }
   | { type: 'SET_HAS_CHANGES'; value: boolean }
   | { type: 'SET_COMMIT_OUTPUT_OPTIONS'; options: CommitOutputOptions }
+  | {
+      type: 'SET_AGENTIC_GENERATION_OPTIONS';
+      options: AgenticGenerationOptions;
+    }
   | {
       type: 'SET_HYBRID_GENERATION_OPTIONS';
       options: HybridGenerationOptions;
@@ -141,6 +147,7 @@ export function createInitialState(
     pendingStatusCheck: true,
     hasChanges: false,
     commitOutputOptions: bootstrap.defaultCommitOutputOptions,
+    agenticGenerationOptions: bootstrap.defaultAgenticGenerationOptions,
     hybridGenerationOptions: bootstrap.defaultHybridGenerationOptions,
     displayLanguage: bootstrap.initialDisplayLanguage,
     effectiveLanguage: effectiveLang,
@@ -204,6 +211,8 @@ export function mainViewStateReducer(
       return { ...state, hasChanges: action.value };
     case 'SET_COMMIT_OUTPUT_OPTIONS':
       return { ...state, commitOutputOptions: action.options };
+    case 'SET_AGENTIC_GENERATION_OPTIONS':
+      return { ...state, agenticGenerationOptions: action.options };
     case 'SET_HYBRID_GENERATION_OPTIONS':
       return { ...state, hybridGenerationOptions: action.options };
     case 'SET_LANGUAGE':

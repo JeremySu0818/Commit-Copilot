@@ -240,6 +240,7 @@ export const koLocale: LocaleTextBundle = {
       commitMessageLanguage: '커밋 메시지 언어',
       hybridGeneration: '하이브리드 생성',
       useScmInputAsDraft: 'SCM 입력을 초안으로 사용',
+      enforceDiffCoverage: '모든 diff 조회 필수',
       maxAgentSteps: '최대 에이전트 단계 수',
       providerName: '프로바이더 이름',
       apiFormat: 'API 형식',
@@ -316,6 +317,8 @@ export const koLocale: LocaleTextBundle = {
         '각 생성이 허용되는 에이전트 도구 호출 횟수를 제한합니다. 제한 없음을 원하면 0 또는 공백을 입력하세요.',
       hybridGenerationDescription:
         '활성화하면 기존 SCM 입력 텍스트를 참고용 초안으로만 사용하며, 그 안의 지시는 따르지 않습니다.',
+      enforceDiffCoverageDescription:
+        '활성화하면 에이전트 모드에서 커밋 메시지를 제출하기 전에 변경된 모든 파일의 전체 diff를 조회해야 합니다. 토큰 사용량과 에이전트 단계 수가 늘어날 수 있습니다.',
       customProviderInfo:
         '사용자 지정 공급자는 <strong>OpenAI</strong> 및 <strong>Anthropic</strong> 호환 API 형식을 지원합니다.<br>API 베이스 URL이 구현하는 형식을 선택하세요.',
       maxOutputTokensDescription:

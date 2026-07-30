@@ -8,6 +8,7 @@ import type * as vscode from 'vscode';
 import { API_KEY_STORAGE_KEYS } from '../../../llm/provider-registry';
 import { OLLAMA_DEFAULT_HOST } from '../../../models/catalog';
 import {
+  DEFAULT_AGENTIC_GENERATION_OPTIONS,
   DEFAULT_COMMIT_OUTPUT_OPTIONS,
   DEFAULT_HYBRID_GENERATION_OPTIONS,
 } from '../../../models/options';
@@ -45,6 +46,11 @@ interface CurrentGenerateModeMessage extends PostedMessage {
 interface CurrentCommitOutputOptionsMessage extends PostedMessage {
   type: 'currentCommitOutputOptions';
   commitOutputOptions: unknown;
+}
+
+interface CurrentAgenticGenerationOptionsMessage extends PostedMessage {
+  type: 'currentAgenticGenerationOptions';
+  agenticGenerationOptions: unknown;
 }
 
 interface CurrentHybridGenerationOptionsMessage extends PostedMessage {
@@ -85,6 +91,12 @@ function isCurrentCommitOutputOptionsMessage(
   message: PostedMessage,
 ): message is CurrentCommitOutputOptionsMessage {
   return message.type === 'currentCommitOutputOptions';
+}
+
+function isCurrentAgenticGenerationOptionsMessage(
+  message: PostedMessage,
+): message is CurrentAgenticGenerationOptionsMessage {
+  return message.type === 'currentAgenticGenerationOptions';
 }
 
 function isCurrentHybridGenerationOptionsMessage(
@@ -296,6 +308,9 @@ void test('generate forwards normalized generateMode to command payload', async 
       hybridGenerationOptions: {
         enabled: true,
       },
+      agenticGenerationOptions: {
+        enforceDiffCoverage: true,
+      },
     });
     await harness.sendMessage({ type: 'generate', generateMode: 'unknown' });
 
@@ -313,6 +328,9 @@ void test('generate forwards normalized generateMode to command payload', async 
           includeFooter: true,
           includeGitmoji: true,
         },
+        agenticGenerationOptions: {
+          enforceDiffCoverage: true,
+        },
         hybridGenerationOptions: {
           enabled: true,
         },
@@ -323,6 +341,7 @@ void test('generate forwards normalized generateMode to command payload', async 
       {
         generateMode: 'agentic',
         commitOutputOptions: DEFAULT_COMMIT_OUTPUT_OPTIONS,
+        agenticGenerationOptions: DEFAULT_AGENTIC_GENERATION_OPTIONS,
         hybridGenerationOptions: DEFAULT_HYBRID_GENERATION_OPTIONS,
       },
     ]);
@@ -433,6 +452,51 @@ void test('getHybridGenerationOptions returns defaults when unset', async () => 
     assert.deepEqual(
       optionsMessage.hybridGenerationOptions,
       DEFAULT_HYBRID_GENERATION_OPTIONS,
+    );
+  } finally {
+    harness.dispose();
+  }
+});
+
+void test('getAgenticGenerationOptions returns defaults when unset', async () => {
+  const harness = await createHarness();
+
+  try {
+    await harness.sendMessage({ type: 'getAgenticGenerationOptions' });
+    const optionsMessage = harness.postedMessages.find((message) =>
+      isCurrentAgenticGenerationOptionsMessage(message),
+    );
+    if (!optionsMessage) {
+      throw new Error('currentAgenticGenerationOptions message not found');
+    }
+    assert.deepEqual(
+      optionsMessage.agenticGenerationOptions,
+      DEFAULT_AGENTIC_GENERATION_OPTIONS,
+    );
+  } finally {
+    harness.dispose();
+  }
+});
+
+void test('saveAgenticGenerationOptions persists normalized values', async () => {
+  const harness = await createHarness();
+
+  try {
+    await harness.sendMessage({
+      type: 'saveAgenticGenerationOptions',
+      value: { enforceDiffCoverage: true },
+    });
+    assert.deepEqual(harness.state.get('AGENTIC_GENERATION_OPTIONS'), {
+      enforceDiffCoverage: true,
+    });
+
+    await harness.sendMessage({
+      type: 'saveAgenticGenerationOptions',
+      value: { enforceDiffCoverage: 'yes' },
+    });
+    assert.deepEqual(
+      harness.state.get('AGENTIC_GENERATION_OPTIONS'),
+      DEFAULT_AGENTIC_GENERATION_OPTIONS,
     );
   } finally {
     harness.dispose();

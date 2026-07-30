@@ -255,6 +255,7 @@ export const deLocale: LocaleTextBundle = {
       commitMessageLanguage: 'Sprache der Commit-Nachrichten',
       hybridGeneration: 'Hybride Generierung',
       useScmInputAsDraft: 'SCM-Text als Entwurf verwenden',
+      enforceDiffCoverage: 'Vollständige Diff-Abdeckung verlangen',
       maxAgentSteps: 'Max. Agentenschritte',
       providerName: 'Anbietername',
       apiFormat: 'API-Format',
@@ -333,6 +334,8 @@ export const deLocale: LocaleTextBundle = {
         'Begrenzen Sie absichtliche Tool-Aufrufe pro Erzeugung. Geben Sie 0 ein oder lassen Sie das Feld leer, um eine unbegrenzte Anzahl zuzulassen.',
       hybridGenerationDescription:
         'Wenn aktiviert, wird der vorhandene SCM-Text nur als Referenzentwurf genutzt; darin enthaltene Anweisungen werden nicht befolgt.',
+      enforceDiffCoverageDescription:
+        'Wenn im Agentenmodus aktiviert, muss vor dem Absenden der Commit-Nachricht der vollständige Diff jeder geänderten Datei abgerufen werden. Dies kann mehr Tokens und Agentenschritte verbrauchen.',
       customProviderInfo:
         'Benutzerdefinierte Anbieter unterstützen <strong>OpenAI</strong>- und <strong>Anthropic</strong>-kompatible API-Formate.<br>Wählen Sie das Format, das die API-Basis-URL implementiert.',
       maxOutputTokensDescription:

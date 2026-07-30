@@ -244,6 +244,7 @@ export const viLocale: LocaleTextBundle = {
       commitMessageLanguage: 'Ngôn ngữ thông điệp commit',
       hybridGeneration: 'Tạo kết hợp',
       useScmInputAsDraft: 'Dùng nội dung SCM làm bản nháp',
+      enforceDiffCoverage: 'Yêu cầu bao phủ diff đầy đủ',
       maxAgentSteps: 'Số bước Agent tối đa',
       providerName: 'Tên Nhà cung cấp',
       apiFormat: 'Định dạng API',
@@ -319,6 +320,8 @@ export const viLocale: LocaleTextBundle = {
         'Giới hạn số lần gọi công cụ agent trong mỗi lần tạo. Nhập 0 hoặc để trống để không giới hạn.',
       hybridGenerationDescription:
         'Khi bật, nội dung hiện có trong ô SCM chỉ được dùng làm bản nháp tham khảo; các chỉ dẫn bên trong sẽ không được làm theo.',
+      enforceDiffCoverageDescription:
+        'Khi bật trong chế độ agent, phải lấy diff đầy đủ của mọi tệp đã thay đổi trước khi gửi thông điệp commit. Việc này có thể làm tăng số token và số bước agent.',
       customProviderInfo:
         'Nhà cung cấp tùy chỉnh hỗ trợ định dạng API tương thích với <strong>OpenAI</strong> và <strong>Anthropic</strong>.<br>Chọn định dạng được triển khai bởi URL Cơ sở API.',
       maxOutputTokensDescription:

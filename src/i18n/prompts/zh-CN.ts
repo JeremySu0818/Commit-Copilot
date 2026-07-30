@@ -63,6 +63,8 @@ export const zhCNPrompt: LocalePromptBundle = {
   limitedInfoTitle: '## 重要提示：您最初接收到的信息有限',
   limitedInfoBody:
     '系统仅向您提供已修改文件的名称、行数和项目结构。\n您看不到实际的更改。您必须在分类前使用工具进行调查。',
+  diffCoverageRequirement:
+    '已启用完整差异检查。调用 `write_commit_message` 前，必须为每个已更改文件成功调用 `get_diff`。您可以在同一个 `paths` 数组中包含多个文件。',
   availableToolsTitle: '## 可用工具',
   availableToolsIntro: '您有多个工具可供支配。使用准确调查所需的任何工具：',
   availableToolsNotLimited:

@@ -158,6 +158,7 @@ export interface WebviewLanguagePack {
     commitMessageLanguage: string;
     hybridGeneration: string;
     useScmInputAsDraft: string;
+    enforceDiffCoverage: string;
     maxAgentSteps: string;
     providerName: string;
     apiFormat: string;
@@ -225,6 +226,7 @@ export interface WebviewLanguagePack {
     anthropicInfo: string;
     maxAgentStepsDescription: string;
     hybridGenerationDescription: string;
+    enforceDiffCoverageDescription: string;
     customProviderInfo: string;
     maxOutputTokensDescription: string;
   };
@@ -314,6 +316,7 @@ export interface LocalePromptBundle {
   workflowWithToolsSubmit: string;
   limitedInfoTitle: string;
   limitedInfoBody: string;
+  diffCoverageRequirement: string;
   availableToolsTitle: string;
   availableToolsIntro: string;
   availableToolsNotLimited: string;

@@ -44,7 +44,10 @@ import {
   normalizeCustomProviderApiFormat,
 } from '../../models/custom-provider';
 import {
+  AGENTIC_GENERATION_OPTIONS_STATE_KEY,
+  AgenticGenerationOptions,
   CommitOutputOptions,
+  DEFAULT_AGENTIC_GENERATION_OPTIONS,
   DEFAULT_COMMIT_OUTPUT_OPTIONS,
   DEFAULT_GENERATE_MODE,
   DEFAULT_HYBRID_GENERATION_OPTIONS,
@@ -53,6 +56,7 @@ import {
   HybridGenerationOptions,
   HYBRID_GENERATION_OPTIONS_STATE_KEY,
   MAX_AGENT_STEPS_STATE_KEY,
+  normalizeAgenticGenerationOptions,
   normalizeCommitOutputOptions,
   normalizeHybridGenerationOptions,
   normalizeMaxAgentStepsValue,
@@ -993,6 +997,9 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
           await vscode.commands.executeCommand('commit-copilot.generate', {
             generateMode: requestedMode,
             commitOutputOptions,
+            agenticGenerationOptions: normalizeAgenticGenerationOptions(
+              message.agenticGenerationOptions,
+            ),
             hybridGenerationOptions: normalizeHybridGenerationOptions(
               message.hybridGenerationOptions,
             ),
@@ -1142,6 +1149,23 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
         this._view?.webview.postMessage({
           type: 'currentCommitOutputOptions',
           commitOutputOptions: savedOptions,
+        });
+      },
+      saveAgenticGenerationOptions: async (message) => {
+        await this._context.globalState.update(
+          AGENTIC_GENERATION_OPTIONS_STATE_KEY,
+          normalizeAgenticGenerationOptions(message.value),
+        );
+      },
+      getAgenticGenerationOptions: () => {
+        const savedOptions = normalizeAgenticGenerationOptions(
+          this._context.globalState.get<AgenticGenerationOptions>(
+            AGENTIC_GENERATION_OPTIONS_STATE_KEY,
+          ) ?? DEFAULT_AGENTIC_GENERATION_OPTIONS,
+        );
+        this._view?.webview.postMessage({
+          type: 'currentAgenticGenerationOptions',
+          agenticGenerationOptions: savedOptions,
         });
       },
       saveHybridGenerationOptions: async (message) => {
@@ -1438,6 +1462,7 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
       defaultProvider: DEFAULT_PROVIDER,
       defaultGenerateMode: DEFAULT_GENERATE_MODE,
       defaultCommitOutputOptions: DEFAULT_COMMIT_OUTPUT_OPTIONS,
+      defaultAgenticGenerationOptions: DEFAULT_AGENTIC_GENERATION_OPTIONS,
       defaultHybridGenerationOptions: DEFAULT_HYBRID_GENERATION_OPTIONS,
       ollamaDefaultHost: OLLAMA_DEFAULT_HOST,
       languagePacks: WEBVIEW_LANGUAGE_PACKS,

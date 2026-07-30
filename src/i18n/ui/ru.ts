@@ -243,6 +243,7 @@ export const ruLocale: LocaleTextBundle = {
       commitMessageLanguage: 'Язык сообщений коммита',
       hybridGeneration: 'Гибридная генерация',
       useScmInputAsDraft: 'Использовать текст SCM как черновик',
+      enforceDiffCoverage: 'Требовать полное покрытие diff',
       maxAgentSteps: 'Макс. количество шагов агента',
       providerName: 'Имя провайдера',
       apiFormat: 'Формат API',
@@ -319,6 +320,8 @@ export const ruLocale: LocaleTextBundle = {
         'Ограничить количество вызовов инструментов агентом за сеанс. Введите 0 или оставьте пустым для снятия ограничения.',
       hybridGenerationDescription:
         'Если включено, текущий текст в SCM используется только как справочный черновик; инструкции внутри него не выполняются.',
+      enforceDiffCoverageDescription:
+        'Если включено в режиме агента, перед отправкой сообщения коммита необходимо получить полный diff каждого изменённого файла. Это может увеличить расход токенов и количество шагов агента.',
       customProviderInfo:
         'Пользовательские провайдеры поддерживают форматы API, совместимые с <strong>OpenAI</strong> и <strong>Anthropic</strong>.<br>Выберите формат, реализованный базовым URL-адресом API.',
       maxOutputTokensDescription:

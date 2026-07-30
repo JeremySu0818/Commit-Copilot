@@ -63,6 +63,8 @@ export const zhTWPrompt: LocalePromptBundle = {
   limitedInfoTitle: '## 重要提示：您最初接收到的資訊有限',
   limitedInfoBody:
     '系統僅向您提供已修改檔案的名稱、行數和專案結構。\n您看不到實際的變更。您必須在分類前使用工具進行調查。',
+  diffCoverageRequirement:
+    '已啟用完整差異檢查。呼叫 `write_commit_message` 前，必須為每個已變更檔案成功呼叫 `get_diff`。您可以在同一個 `paths` 陣列中包含多個檔案。',
   availableToolsTitle: '## 可用工具',
   availableToolsIntro: '您有複數工具可供支配。使用精確調查所需的任何工具：',
   availableToolsNotLimited:

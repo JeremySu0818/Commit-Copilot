@@ -74,6 +74,8 @@ export const dePrompt: LocalePromptBundle = {
     '## WICHTIG: Sie erhalten anfangs nur BEGRENZTE Informationen',
   limitedInfoBody:
     'Sie erhalten nur die Namen der geänderten Dateien, Zeilenzahlen und die Projektstruktur.\nSie sehen die tatsächlichen Änderungen nicht. Sie MÜSSEN Ihre Werkzeuge verwenden, um vor der Klassifizierung zu untersuchen.',
+  diffCoverageRequirement:
+    'Die vollständige Diff-Abdeckung ist aktiviert. Bevor Sie `write_commit_message` aufrufen, müssen Sie `get_diff` für jede geänderte Datei erfolgreich aufrufen. Sie können mehrere Dateien in einem einzigen `paths`-Array angeben.',
   availableToolsTitle: '## Verfügbare Werkzeuge',
   availableToolsIntro:
     'Ihnen stehen mehrere Werkzeuge zur Verfügung. Verwenden Sie alle Werkzeuge, die für eine genaue Untersuchung erforderlich sind:',

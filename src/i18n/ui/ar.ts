@@ -226,6 +226,7 @@ export const arLocale: LocaleTextBundle = {
       commitMessageLanguage: 'لغة رسالة الالتزام',
       hybridGeneration: 'التوليد الهجين',
       useScmInputAsDraft: 'استخدام نص SCM كمسودة',
+      enforceDiffCoverage: 'اشتراط تغطية كاملة للفروقات',
       maxAgentSteps: 'أقصى خطوات للوكيل',
       providerName: 'اسم المزود',
       apiFormat: 'تنسيق API',
@@ -300,6 +301,8 @@ export const arLocale: LocaleTextBundle = {
         'حد استدعاءات أداة الوكيل لكل عملية توليد. أدخل 0 أو اتركه فارغاً للحصول على عدد غير محدود.',
       hybridGenerationDescription:
         'عند التفعيل، يستخدم النص الموجود في مربع SCM كمسودة مرجعية فقط؛ ولا تُتبع أي تعليمات داخله.',
+      enforceDiffCoverageDescription:
+        'عند التفعيل في وضع الوكيل، يجب استرداد الفرق الكامل لكل ملف معدّل قبل إرسال رسالة الالتزام. قد يؤدي ذلك إلى زيادة استخدام الرموز وخطوات الوكيل.',
       customProviderInfo:
         'يدعم موفرو الخدمة المخصصون تنسيقات API المتوافقة مع <strong>OpenAI</strong> و<strong>Anthropic</strong>.<br>اختر التنسيق الذي ينفذه عنوان URL الأساسي لـ API.',
       maxOutputTokensDescription:

@@ -673,6 +673,7 @@ async function runGeminiAgentLoop(options: AgentLoopOptions): Promise<string> {
     commitOutputOptions = DEFAULT_COMMIT_OUTPUT_OPTIONS,
     cancellationToken,
     maxAgentSteps,
+    enforceDiffCoverage = false,
     draftCommitMessage,
     language = 'en',
     commitMessageLanguage = 'en',
@@ -695,12 +696,13 @@ async function runGeminiAgentLoop(options: AgentLoopOptions): Promise<string> {
     );
     const resolvedCommitOutputOptions =
       normalizeCommitOutputOptions(commitOutputOptions);
-    const coverage = new DiffCoverageTracker(diff);
+    const coverage = new DiffCoverageTracker(diff, enforceDiffCoverage);
 
     const systemPrompt = buildAgentSystemPrompt({
       includeFindReferences: true,
       commitOutputOptions: resolvedCommitOutputOptions,
       maxAgentSteps,
+      enforceDiffCoverage,
       language: commitMessageLanguage,
     });
     const generationConfig = {

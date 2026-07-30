@@ -1,6 +1,7 @@
 import type { ModelConfig } from '../models/catalog';
 import type { CustomProviderConfig } from '../models/custom-provider';
 import type {
+  AgenticGenerationOptions,
   CommitOutputOptions,
   GenerateMode,
   HybridGenerationOptions,
@@ -21,6 +22,7 @@ export type WebviewToExtensionMessageType =
   | 'getAllKeys'
   | 'getCommitMessageLanguage'
   | 'getCommitOutputOptions'
+  | 'getAgenticGenerationOptions'
   | 'getCustomModels'
   | 'getCustomProviders'
   | 'getDisplayLanguage'
@@ -31,6 +33,7 @@ export type WebviewToExtensionMessageType =
   | 'getProvider'
   | 'saveCommitMessageLanguage'
   | 'saveCommitOutputOptions'
+  | 'saveAgenticGenerationOptions'
   | 'saveCustomProvider'
   | 'saveCustomProviderMaxTokens'
   | 'saveDisplayLanguage'
@@ -90,12 +93,14 @@ export interface GenerateMessage extends IncomingMessage {
   type: 'generate';
   generateMode?: GenerateMode;
   commitOutputOptions?: CommitOutputOptions;
+  agenticGenerationOptions?: AgenticGenerationOptions;
   hybridGenerationOptions?: HybridGenerationOptions;
 }
 
 export type ExtensionToWebviewMessageType =
   | 'allKeyStatuses'
   | 'commitMessageLanguageUpdated'
+  | 'currentAgenticGenerationOptions'
   | 'currentCommitOutputOptions'
   | 'currentGenerateMode'
   | 'currentHybridGenerationOptions'

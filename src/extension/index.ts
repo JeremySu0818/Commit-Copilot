@@ -29,7 +29,10 @@ import {
   normalizeCustomProviders,
 } from '../models/custom-provider';
 import {
+  AGENTIC_GENERATION_OPTIONS_STATE_KEY,
+  AgenticGenerationOptions,
   CommitOutputOptions,
+  DEFAULT_AGENTIC_GENERATION_OPTIONS,
   DEFAULT_COMMIT_OUTPUT_OPTIONS,
   DEFAULT_HYBRID_GENERATION_OPTIONS,
   GenerateMode,
@@ -37,6 +40,7 @@ import {
   HYBRID_GENERATION_OPTIONS_STATE_KEY,
   MAX_AGENT_STEPS_STATE_KEY,
   normalizeCommitOutputOptions,
+  normalizeAgenticGenerationOptions,
   normalizeHybridGenerationOptions,
   normalizeMaxAgentStepsValue,
   resolveGenerateMode,
@@ -52,6 +56,7 @@ type GenerateCommandArg =
       sourceControl?: vscode.SourceControl;
       generateMode?: GenerateMode;
       commitOutputOptions?: CommitOutputOptions;
+      agenticGenerationOptions?: AgenticGenerationOptions;
       hybridGenerationOptions?: HybridGenerationOptions;
     };
 
@@ -98,6 +103,15 @@ function parseCommitOutputOptions(
   return normalizeCommitOutputOptions(value);
 }
 
+function parseAgenticGenerationOptions(
+  value: unknown,
+): AgenticGenerationOptions | undefined {
+  if (typeof value === 'undefined') {
+    return undefined;
+  }
+  return normalizeAgenticGenerationOptions(value);
+}
+
 function parseHybridGenerationOptions(
   value: unknown,
 ): HybridGenerationOptions | undefined {
@@ -140,6 +154,7 @@ interface ParsedGenerateCommandArg {
   scm?: vscode.SourceControl;
   requestedGenerateMode?: GenerateMode;
   requestedCommitOutputOptions?: CommitOutputOptions;
+  requestedAgenticGenerationOptions?: AgenticGenerationOptions;
   requestedHybridGenerationOptions?: HybridGenerationOptions;
 }
 
@@ -182,6 +197,9 @@ function parseGenerateCommandArg(
     requestedGenerateMode: parseGenerateMode(arg.generateMode),
     requestedCommitOutputOptions: parseCommitOutputOptions(
       arg.commitOutputOptions,
+    ),
+    requestedAgenticGenerationOptions: parseAgenticGenerationOptions(
+      arg.agenticGenerationOptions,
     ),
     requestedHybridGenerationOptions: parseHybridGenerationOptions(
       arg.hybridGenerationOptions,
@@ -357,6 +375,18 @@ function resolveHybridGenerationOptions(
   return requestedHybridGenerationOptions ?? savedHybridGenerationOptions;
 }
 
+function resolveAgenticGenerationOptions(
+  context: vscode.ExtensionContext,
+  requestedAgenticGenerationOptions: AgenticGenerationOptions | undefined,
+): AgenticGenerationOptions {
+  const savedAgenticGenerationOptions = normalizeAgenticGenerationOptions(
+    context.globalState.get<AgenticGenerationOptions>(
+      AGENTIC_GENERATION_OPTIONS_STATE_KEY,
+    ) ?? DEFAULT_AGENTIC_GENERATION_OPTIONS,
+  );
+  return requestedAgenticGenerationOptions ?? savedAgenticGenerationOptions;
+}
+
 function readScmDraftCommitMessage(
   repository: GitRepository,
   hybridGenerationOptions: HybridGenerationOptions,
@@ -472,6 +502,7 @@ function createBaseGenerateOptions(args: {
   apiKey: string | undefined;
   currentGenerateMode: GenerateMode;
   currentCommitOutputOptions: CommitOutputOptions;
+  currentAgenticGenerationOptions: AgenticGenerationOptions;
   maxAgentSteps: number | undefined;
   draftCommitMessage: string | undefined;
   savedModel: string | undefined;
@@ -494,6 +525,7 @@ function createBaseGenerateOptions(args: {
     maxTokens: args.providerContext.customProviderConfig?.maxTokens,
     generateMode: args.currentGenerateMode,
     commitOutputOptions: args.currentCommitOutputOptions,
+    agenticGenerationOptions: args.currentAgenticGenerationOptions,
     maxAgentSteps: args.maxAgentSteps,
     draftCommitMessage: args.draftCommitMessage,
     model: args.savedModel,
@@ -748,6 +780,7 @@ async function runGenerationProgress(args: {
   apiKey: string | undefined;
   currentGenerateMode: GenerateMode;
   currentCommitOutputOptions: CommitOutputOptions;
+  currentAgenticGenerationOptions: AgenticGenerationOptions;
   maxAgentSteps: number | undefined;
   draftCommitMessage: string | undefined;
   cancellationSource: vscode.CancellationTokenSource;
@@ -773,6 +806,7 @@ async function runGenerationProgress(args: {
     apiKey: args.apiKey,
     currentGenerateMode: args.currentGenerateMode,
     currentCommitOutputOptions: args.currentCommitOutputOptions,
+    currentAgenticGenerationOptions: args.currentAgenticGenerationOptions,
     maxAgentSteps: args.maxAgentSteps,
     draftCommitMessage: args.draftCommitMessage,
     savedModel: args.savedModel,
@@ -904,6 +938,10 @@ async function executeGenerateCommand(
       context,
       parsedArg.requestedHybridGenerationOptions,
     );
+    const currentAgenticGenerationOptions = resolveAgenticGenerationOptions(
+      context,
+      parsedArg.requestedAgenticGenerationOptions,
+    );
     const draftCommitMessage = readScmDraftCommitMessage(
       repositoryResult.repository,
       currentHybridGenerationOptions,
@@ -963,6 +1001,7 @@ async function executeGenerateCommand(
           apiKey,
           currentGenerateMode,
           currentCommitOutputOptions,
+          currentAgenticGenerationOptions,
           maxAgentSteps,
           draftCommitMessage,
           cancellationSource,

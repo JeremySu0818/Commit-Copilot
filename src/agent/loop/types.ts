@@ -16,6 +16,7 @@ export interface AgentLoopOptions {
   commitOutputOptions?: CommitOutputOptions;
   cancellationToken?: CancellationSignal;
   maxAgentSteps?: number;
+  enforceDiffCoverage?: boolean;
   draftCommitMessage?: string;
   baseUrl?: string;
   apiFormat?: CustomProviderApiFormat;

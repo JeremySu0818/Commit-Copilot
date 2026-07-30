@@ -30,6 +30,7 @@ export interface AgentDispatcherOptions {
   commitOutputOptions: CommitOutputOptions;
   cancellationToken?: CancellationSignal;
   maxAgentSteps?: number;
+  enforceDiffCoverage?: boolean;
   draftCommitMessage?: string;
   language: EffectiveDisplayLanguage;
   commitMessageLanguage?: EffectiveDisplayLanguage;
@@ -49,6 +50,7 @@ export async function runAgentLoop(
     commitOutputOptions: options.commitOutputOptions,
     cancellationToken: options.cancellationToken,
     maxAgentSteps: options.maxAgentSteps,
+    enforceDiffCoverage: options.enforceDiffCoverage ?? false,
     draftCommitMessage: options.draftCommitMessage,
     language: options.language,
     commitMessageLanguage: options.commitMessageLanguage ?? 'en',

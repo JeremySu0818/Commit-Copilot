@@ -71,6 +71,8 @@ export const enPrompt: LocalePromptBundle = {
   limitedInfoTitle: '## IMPORTANT: You receive LIMITED information initially',
   limitedInfoBody:
     'You are given ONLY the names of changed files, line counts, and the project structure.\nYou do NOT see the actual changes. You MUST use your tools to investigate before classifying.',
+  diffCoverageRequirement:
+    'Complete diff coverage is enabled. Before calling `write_commit_message`, successfully call `get_diff` for every changed file. You may include multiple files in one `paths` array.',
   availableToolsTitle: '## Available Tools',
   availableToolsIntro:
     'You have multiple tools at your disposal. Use whichever tools are needed for accurate investigation:',

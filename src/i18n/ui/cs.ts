@@ -243,6 +243,7 @@ export const csLocale: LocaleTextBundle = {
       commitMessageLanguage: 'Jazyk zpráv commitu',
       hybridGeneration: 'Hybridní generování',
       useScmInputAsDraft: 'Použít text SCM jako koncept',
+      enforceDiffCoverage: 'Vyžadovat úplné pokrytí diffů',
       maxAgentSteps: 'Max. počet kroků agenta',
       providerName: 'Název poskytovatele',
       apiFormat: 'Formát API',
@@ -319,6 +320,8 @@ export const csLocale: LocaleTextBundle = {
         'Omezí volání nástrojů agenta za jedno generování. Zadejte 0 nebo nechte prázdné pro neomezený počet.',
       hybridGenerationDescription:
         'Je-li zapnuto, aktuální text v poli SCM se použije jen jako referenční koncept; pokyny v něm se neprovádějí.',
+      enforceDiffCoverageDescription:
+        'Je-li zapnuto v režimu agenta, před odesláním zprávy commitu je nutné načíst úplný diff každého změněného souboru. Může to zvýšit spotřebu tokenů a počet kroků agenta.',
       customProviderInfo:
         'Vlastní poskytovatelé podporují formáty API kompatibilní s <strong>OpenAI</strong> a <strong>Anthropic</strong>.<br>Vyberte formát implementovaný základní adresou URL API.',
       maxOutputTokensDescription:

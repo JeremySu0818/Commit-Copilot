@@ -16,7 +16,7 @@ const diff = [
 ].join('\n');
 
 void test('tracks single and batched get_diff coverage', () => {
-  const tracker = new DiffCoverageTracker(diff);
+  const tracker = new DiffCoverageTracker(diff, true);
   tracker.recordToolCall('get_diff', { path: 'src/a.ts' });
   assert.deepEqual(tracker.getMissingPaths(), ['src/old.ts → src/new.ts']);
 
@@ -25,7 +25,7 @@ void test('tracks single and batched get_diff coverage', () => {
 });
 
 void test('does not treat unrelated tools or unknown paths as coverage', () => {
-  const tracker = new DiffCoverageTracker(diff);
+  const tracker = new DiffCoverageTracker(diff, true);
   tracker.recordToolCall('read_file', { path: 'src/a.ts' });
   tracker.recordToolCall('get_diff', { path: 'src/missing.ts' });
   assert.deepEqual(tracker.getMissingPaths(), [
@@ -33,4 +33,12 @@ void test('does not treat unrelated tools or unknown paths as coverage', () => {
     'src/old.ts → src/new.ts',
   ]);
   assert.match(tracker.formatIncompleteMessage(), /coverage is incomplete/);
+});
+
+void test('disabled coverage never blocks commit submission', () => {
+  const tracker = new DiffCoverageTracker(diff, false);
+  assert.equal(tracker.isComplete(), true);
+  assert.doesNotThrow(() => {
+    tracker.assertComplete();
+  });
 });

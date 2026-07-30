@@ -223,7 +223,14 @@ void test('runOpenAIAgentLoop returns write_commit_message argument without exec
         runOpenAIAgentLoop({
           apiKey: 'openai-test-key',
           model: 'gpt-test',
-          diff: 'diff --git a/a.ts b/a.ts\n+line',
+          diff: [
+            'diff --git a/a.ts b/a.ts',
+            '--- a/a.ts',
+            '+++ b/a.ts',
+            '@@ -1 +1 @@',
+            '-old',
+            '+new',
+          ].join('\n'),
           repoRoot: process.cwd(),
           onProgress: (message) => {
             progressMessages.push(message);
@@ -313,6 +320,7 @@ void test('runOpenAIAgentLoop rejects final submission until every valid diff is
           model: 'gpt-test',
           diff: validDiff,
           repoRoot: process.cwd(),
+          enforceDiffCoverage: true,
         }),
     );
 

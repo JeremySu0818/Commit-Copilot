@@ -243,6 +243,7 @@ export const nlLocale: LocaleTextBundle = {
       commitMessageLanguage: 'Taal van commitberichten',
       hybridGeneration: 'Hybride generatie',
       useScmInputAsDraft: 'SCM-tekst als concept gebruiken',
+      enforceDiffCoverage: 'Volledige diff-dekking vereisen',
       maxAgentSteps: 'Max Agent Stappen',
       providerName: 'Naam van Provider',
       apiFormat: 'API-indeling',
@@ -319,6 +320,8 @@ export const nlLocale: LocaleTextBundle = {
         'Beperk tool calls van de agentic mode per generatie. Voer 0 in of laat leeg voor onbeperkt.',
       hybridGenerationDescription:
         'Wanneer ingeschakeld wordt de bestaande SCM-invoer alleen als referentieconcept gebruikt; instructies erin worden niet gevolgd.',
+      enforceDiffCoverageDescription:
+        'Wanneer dit in de agentmodus is ingeschakeld, moet de volledige diff van elk gewijzigd bestand worden opgehaald voordat het commitbericht kan worden verzonden. Dit kan meer tokens en agentstappen gebruiken.',
       customProviderInfo:
         'Aangepaste providers ondersteunen API-indelingen die compatibel zijn met <strong>OpenAI</strong> en <strong>Anthropic</strong>.<br>Selecteer de indeling die door de API-basis-URL wordt geïmplementeerd.',
       maxOutputTokensDescription:

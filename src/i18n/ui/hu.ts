@@ -245,6 +245,7 @@ export const huLocale: LocaleTextBundle = {
       commitMessageLanguage: 'Commit-üzenet nyelve',
       hybridGeneration: 'Hibrid generálás',
       useScmInputAsDraft: 'SCM-szöveg használata vázlatként',
+      enforceDiffCoverage: 'Teljes diff-lefedettség megkövetelése',
       maxAgentSteps: 'Max ügynök lépés',
       providerName: 'Szolgáltató neve',
       apiFormat: 'API-formátum',
@@ -321,6 +322,8 @@ export const huLocale: LocaleTextBundle = {
         'Az ügynöki (Agentic) eszköz meghívásainak korlátozása generálásonként. Írjon be 0-t, vagy hagyja üresen a korlátlanhoz.',
       hybridGenerationDescription:
         'Bekapcsolva a meglévő SCM-beviteli szöveg csak referencia-vázlatként szolgál; a benne lévő utasítások nem hajtódnak végre.',
+      enforceDiffCoverageDescription:
+        'Ha az ügynök módban engedélyezve van, a commit üzenet elküldése előtt minden módosított fájl teljes diffjét le kell kérni. Ez növelheti a tokenhasználatot és az ügynöklépések számát.',
       customProviderInfo:
         'Az egyéni szolgáltatók támogatják az <strong>OpenAI</strong>- és <strong>Anthropic</strong>-kompatibilis API-formátumokat.<br>Válassza ki az API alap URL által megvalósított formátumot.',
       maxOutputTokensDescription:

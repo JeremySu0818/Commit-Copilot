@@ -7,6 +7,7 @@ import * as path from 'path';
 import type { GitRepository } from '../../git/types';
 import { APIProvider, DEFAULT_MODELS } from '../../llm/provider-registry';
 import {
+  AgenticGenerationOptions,
   CommitOutputOptions,
   DEFAULT_COMMIT_OUTPUT_OPTIONS,
   GenerateMode,
@@ -50,6 +51,7 @@ interface AgentInputSummary {
   model: string;
   repoRoot: string;
   commitOutputOptions: CommitOutputOptions;
+  enforceDiffCoverage: boolean;
   draftCommitMessage?: string;
 }
 
@@ -74,7 +76,8 @@ function toAgentInputSummary(value: unknown): AgentInputSummary | null {
       value.provider !== 'ollama') ||
     typeof value.model !== 'string' ||
     typeof value.repoRoot !== 'string' ||
-    !isRecord(value.commitOutputOptions)
+    !isRecord(value.commitOutputOptions) ||
+    typeof value.enforceDiffCoverage !== 'boolean'
   ) {
     return null;
   }
@@ -99,6 +102,7 @@ function toAgentInputSummary(value: unknown): AgentInputSummary | null {
       includeFooter: commitOutputOptions.includeFooter,
       includeGitmoji: commitOutputOptions.includeGitmoji,
     },
+    enforceDiffCoverage: value.enforceDiffCoverage,
     draftCommitMessage:
       typeof value.draftCommitMessage === 'string'
         ? value.draftCommitMessage
@@ -194,6 +198,7 @@ async function runGenerate(options: {
   provider: APIProvider;
   generateMode?: GenerateMode;
   commitOutputOptions?: CommitOutputOptions;
+  agenticGenerationOptions?: AgenticGenerationOptions;
   draftCommitMessage?: string;
   runAgentLoop: RunAgentLoop;
   createLLMClient: CreateLLMClient;
@@ -219,6 +224,7 @@ async function runGenerate(options: {
     apiKey: 'token',
     generateMode: options.generateMode,
     commitOutputOptions: options.commitOutputOptions,
+    agenticGenerationOptions: options.agenticGenerationOptions,
     draftCommitMessage: options.draftCommitMessage,
     cancellationToken: options.cancellationToken,
     language: 'en',
@@ -239,6 +245,9 @@ void test('generateCommitMessage uses agent loop in agentic mode', async () => {
       includeBody: true,
       includeFooter: true,
       includeGitmoji: true,
+    },
+    agenticGenerationOptions: {
+      enforceDiffCoverage: true,
     },
     runAgentLoop: (input) => {
       capturedAgentInput = input;
@@ -274,6 +283,7 @@ void test('generateCommitMessage uses agent loop in agentic mode', async () => {
       includeFooter: true,
       includeGitmoji: true,
     });
+    assert.equal(agentInput.enforceDiffCoverage, true);
     assert.equal(agentInput.draftCommitMessage, undefined);
   } finally {
     cleanupTempDir(repoRoot);
@@ -403,6 +413,7 @@ void test('generateCommitMessage uses agent loop for ollama in agentic mode', as
       agentInput.commitOutputOptions,
       DEFAULT_COMMIT_OUTPUT_OPTIONS,
     );
+    assert.equal(agentInput.enforceDiffCoverage, false);
   } finally {
     cleanupTempDir(repoRoot);
   }

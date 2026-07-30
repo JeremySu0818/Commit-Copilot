@@ -810,6 +810,7 @@ async function runOpenAIAgentLoop(options: AgentLoopOptions): Promise<string> {
     commitOutputOptions = DEFAULT_COMMIT_OUTPUT_OPTIONS,
     cancellationToken,
     maxAgentSteps,
+    enforceDiffCoverage = false,
     draftCommitMessage,
     baseUrl,
     language = 'en',
@@ -835,7 +836,7 @@ async function runOpenAIAgentLoop(options: AgentLoopOptions): Promise<string> {
     const modelName = pickNonEmpty(model, DEFAULT_MODELS.openai);
     const resolvedCommitOutputOptions =
       normalizeCommitOutputOptions(commitOutputOptions);
-    const coverage = new DiffCoverageTracker(diff);
+    const coverage = new DiffCoverageTracker(diff, enforceDiffCoverage);
 
     const initialContext = await buildInitialContext(
       diff,
@@ -851,6 +852,7 @@ async function runOpenAIAgentLoop(options: AgentLoopOptions): Promise<string> {
       includeFindReferences: true,
       commitOutputOptions: resolvedCommitOutputOptions,
       maxAgentSteps,
+      enforceDiffCoverage,
       language: commitMessageLanguage,
     });
 

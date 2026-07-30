@@ -69,6 +69,8 @@ export const csPrompt: LocalePromptBundle = {
   limitedInfoTitle: '## DŮLEŽITÉ: Na začátku dostáváte OMEZENÉ informace',
   limitedInfoBody:
     'Dostáváte pouze názvy změněných souborů, počty řádků a strukturu projektu.\nNevidíte skutečné změny. Před klasifikací musíte k vyšetření použít své nástroje.',
+  diffCoverageRequirement:
+    'Je zapnuto úplné pokrytí rozdílů. Před voláním `write_commit_message` musíte úspěšně zavolat `get_diff` pro každý změněný soubor. Do jednoho pole `paths` můžete zahrnout více souborů.',
   availableToolsTitle: '## Dostupné nástroje',
   availableToolsIntro:
     'Máte k dispozici několik nástrojů. Použijte jakékoli nástroje potřebné pro přesné vyšetření:',

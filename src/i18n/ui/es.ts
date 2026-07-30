@@ -247,6 +247,7 @@ export const esLocale: LocaleTextBundle = {
       commitMessageLanguage: 'Idioma de los mensajes de commit',
       hybridGeneration: 'Generación híbrida',
       useScmInputAsDraft: 'Usar texto de SCM como borrador',
+      enforceDiffCoverage: 'Exigir cobertura completa de diffs',
       maxAgentSteps: 'Pasos Máximos del Agente',
       providerName: 'Nombre del Proveedor',
       apiFormat: 'Formato de API',
@@ -325,6 +326,8 @@ export const esLocale: LocaleTextBundle = {
         'Límite de llamadas de herramientas del agente por generación. Introduce 0 o deja vacío para ilimitado.',
       hybridGenerationDescription:
         'Si está activado, el texto actual del cuadro SCM se usa solo como borrador de referencia; no se siguen instrucciones incluidas en él.',
+      enforceDiffCoverageDescription:
+        'Si se activa en el modo de agente, se debe obtener el diff completo de cada archivo modificado antes de enviar el mensaje de commit. Esto puede aumentar el uso de tokens y los pasos del agente.',
       customProviderInfo:
         'Los proveedores personalizados admiten formatos de API compatibles con <strong>OpenAI</strong> y <strong>Anthropic</strong>.<br>Selecciona el formato implementado por la URL Base de API.',
       maxOutputTokensDescription:

@@ -45,6 +45,9 @@ void test('inline script serialization escapes html terminators and unicode sepa
   };
 
   const modelsMock = {
+    DEFAULT_AGENTIC_GENERATION_OPTIONS: {
+      enforceDiffCoverage: false,
+    },
     DEFAULT_COMMIT_OUTPUT_OPTIONS: {
       includeScope: true,
       includeBody: false,
@@ -71,6 +74,7 @@ void test('inline script serialization escapes html terminators and unicode sepa
     },
     OLLAMA_DEFAULT_HOST: `http://localhost${lineSeparator}${paragraphSeparator}`,
     normalizeCommitOutputOptions: (value: unknown) => value,
+    normalizeAgenticGenerationOptions: (value: unknown) => value,
     normalizeCustomProviderConfig: (value: unknown) => value,
     normalizeCustomProviders: (value: unknown) => ({
       providers: Array.isArray(value) ? value : [],

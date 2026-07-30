@@ -249,6 +249,7 @@ export const trLocale: LocaleTextBundle = {
       commitMessageLanguage: 'Commit Mesajı Dili',
       hybridGeneration: 'Hibrit oluşturma',
       useScmInputAsDraft: 'SCM metnini taslak olarak kullan',
+      enforceDiffCoverage: 'Tam diff kapsamını zorunlu kıl',
       maxAgentSteps: 'Maksimum Ajan Adımı',
       providerName: 'Sağlayıcı Adı',
       apiFormat: 'API Biçimi',
@@ -325,6 +326,8 @@ export const trLocale: LocaleTextBundle = {
         'Oluşturma başına ajan araç çağrılarını sınırlayın. Sınırsız için 0 girin veya boş bırakın.',
       hybridGenerationDescription:
         'Etkinleştirildiğinde mevcut SCM giriş metni yalnızca referans taslak olarak kullanılır; içindeki talimatlar izlenmez.',
+      enforceDiffCoverageDescription:
+        'Ajan modunda etkinleştirildiğinde, commit mesajı gönderilmeden önce değiştirilen her dosyanın tam diffi alınmalıdır. Bu, token kullanımını ve ajan adımlarını artırabilir.',
       customProviderInfo:
         'Özel sağlayıcılar <strong>OpenAI</strong> ve <strong>Anthropic</strong> uyumlu API biçimlerini destekler.<br>API Temel URL tarafından uygulanan biçimi seçin.',
       maxOutputTokensDescription:

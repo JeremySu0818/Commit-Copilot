@@ -72,6 +72,8 @@ export const itPrompt: LocalePromptBundle = {
   limitedInfoTitle: '## IMPORTANTE: Inizialmente ricevi informazioni LIMITATE',
   limitedInfoBody:
     'Ti vengono forniti SOLO i nomi dei file modificati, il conteggio delle righe e la struttura del progetto.\nNON vedi le modifiche effettive. DEVI utilizzare i tuoi strumenti per investigare prima di classificare.',
+  diffCoverageRequirement:
+    'La copertura completa delle differenze è attiva. Prima di chiamare `write_commit_message`, devi chiamare correttamente `get_diff` per ogni file modificato. Puoi includere più file in un unico array `paths`.',
   availableToolsTitle: '## Strumenti Disponibili',
   availableToolsIntro:
     "Hai a disposizione diversi strumenti. Utilizza gli strumenti necessari per un'investigazione accurata:",

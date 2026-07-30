@@ -221,6 +221,7 @@ export const zhCNLocale: LocaleTextBundle = {
       commitMessageLanguage: '提交信息语言',
       hybridGeneration: '混合式生成',
       useScmInputAsDraft: '将 SCM 输入作为草稿',
+      enforceDiffCoverage: '要求完整检查所有差异',
       maxAgentSteps: '最大 Agent 步数',
       providerName: '提供商名称',
       apiFormat: 'API 格式',
@@ -294,6 +295,8 @@ export const zhCNLocale: LocaleTextBundle = {
         '限制每次生成的 Agent 工具调用次数。输入 0 或留空表示无限制。',
       hybridGenerationDescription:
         '启用后，会将当前 SCM 输入框文字仅作为参考草稿提供给模型；其中的指令不会被执行。',
+      enforceDiffCoverageDescription:
+        '启用后，Agent 模式必须先获取每个变更文件的完整差异，才能提交 Commit 信息。这可能增加令牌用量和 Agent 步数。',
       customProviderInfo:
         '自定义供应商支持 <strong>OpenAI</strong> 与 <strong>Anthropic</strong> 兼容 API 格式。<br>请选择 API Base URL 实现的格式。',
       maxOutputTokensDescription:

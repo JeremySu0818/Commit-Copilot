@@ -73,6 +73,8 @@ export const plPrompt: LocalePromptBundle = {
   limitedInfoTitle: '## WAŻNE: Na początku otrzymujesz OGRANICZONE informacje',
   limitedInfoBody:
     'Otrzymujesz TYLKO nazwy zmienionych plików, liczbę linii oraz strukturę projektu.\nNIE widzisz rzeczywistych zmian. MUSISZ użyć swoich narzędzi do zbadania zmian przed klasyfikacją.',
+  diffCoverageRequirement:
+    'Pełne pokrycie różnic jest włączone. Przed wywołaniem `write_commit_message` musisz pomyślnie wywołać `get_diff` dla każdego zmienionego pliku. W jednej tablicy `paths` możesz uwzględnić wiele plików.',
   availableToolsTitle: '## Dostępne narzędzia',
   availableToolsIntro:
     'Masz do dyspozycji wiele narzędzi. Użyj tych narzędzi, które są niezbędne do dokładnego zbadania zmian:',

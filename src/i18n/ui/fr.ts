@@ -245,6 +245,7 @@ export const frLocale: LocaleTextBundle = {
       commitMessageLanguage: 'Langue des messages de commit',
       hybridGeneration: 'Génération hybride',
       useScmInputAsDraft: 'Utiliser le texte SCM comme brouillon',
+      enforceDiffCoverage: 'Exiger une couverture complète des diffs',
       maxAgentSteps: "Nombre maximal d'étapes de l'agent",
       providerName: 'Nom du fournisseur',
       apiFormat: "Format de l'API",
@@ -322,6 +323,8 @@ export const frLocale: LocaleTextBundle = {
         "Limiter les appels de l'outil de l'agent par génération. Entrez 0 ou laissez vide pour illimité.",
       hybridGenerationDescription:
         'Si activé, le texte existant dans SCM sert uniquement de brouillon de référence ; les instructions qu’il contient ne sont pas suivies.',
+      enforceDiffCoverageDescription:
+        "Si cette option est activée en mode agent, le diff complet de chaque fichier modifié doit être récupéré avant l'envoi du message de commit. Cela peut augmenter l'utilisation des jetons et le nombre d'étapes de l'agent.",
       customProviderInfo:
         "Les fournisseurs personnalisés prennent en charge les formats d'API compatibles avec <strong>OpenAI</strong> et <strong>Anthropic</strong>.<br>Sélectionnez le format implémenté par l'URL de base de l'API.",
       maxOutputTokensDescription:

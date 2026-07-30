@@ -274,6 +274,7 @@ export function buildAgentSystemPrompt(options: {
   enableTools?: boolean;
   commitOutputOptions?: CommitOutputOptions;
   maxAgentSteps?: number;
+  enforceDiffCoverage?: boolean;
   language?: EffectiveDisplayLanguage;
 }): string {
   const bundle = getBundle(options.language);
@@ -364,7 +365,9 @@ ${outputRules}`;
 ${bundle.commitLanguagePrompt}
 
 ${bundle.limitedInfoTitle}
-${bundle.limitedInfoBody}
+${bundle.limitedInfoBody}${
+    options.enforceDiffCoverage ? `\n\n${bundle.diffCoverageRequirement}` : ''
+  }
 
 ${bundle.promptInjectionTitle}
 ${bundle.promptInjectionBodyWithTools}

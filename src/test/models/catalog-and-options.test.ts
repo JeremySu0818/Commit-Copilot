@@ -11,7 +11,11 @@ import {
   DEFAULT_CUSTOM_PROVIDER_API_FORMAT,
   normalizeCustomProviderConfig,
 } from '../../models/custom-provider';
-import { resolveGenerateMode } from '../../models/options';
+import {
+  DEFAULT_AGENTIC_GENERATION_OPTIONS,
+  normalizeAgenticGenerationOptions,
+  resolveGenerateMode,
+} from '../../models/options';
 
 function toRequestUrl(input: unknown): string {
   if (typeof input === 'string') {
@@ -189,6 +193,23 @@ void test('resolveGenerateMode preserves an explicitly requested agentic mode', 
 void test('resolveGenerateMode falls back to saved and default modes', () => {
   assert.equal(resolveGenerateMode('direct-diff', undefined), 'direct-diff');
   assert.equal(resolveGenerateMode(undefined, undefined), 'agentic');
+});
+
+void test('normalizeAgenticGenerationOptions defaults coverage enforcement to off', () => {
+  assert.deepEqual(
+    normalizeAgenticGenerationOptions(undefined),
+    DEFAULT_AGENTIC_GENERATION_OPTIONS,
+  );
+  assert.deepEqual(
+    normalizeAgenticGenerationOptions({ enforceDiffCoverage: true }),
+    {
+      enforceDiffCoverage: true,
+    },
+  );
+  assert.deepEqual(
+    normalizeAgenticGenerationOptions({ enforceDiffCoverage: 'yes' }),
+    DEFAULT_AGENTIC_GENERATION_OPTIONS,
+  );
 });
 
 void test('normalizeCustomProviderConfig keeps legacy providers OpenAI-compatible', () => {

@@ -66,6 +66,8 @@ export const jaPrompt: LocalePromptBundle = {
   limitedInfoTitle: '## 重要：初期状態で受け取る情報は制限されています',
   limitedInfoBody:
     '変更されたファイル名、行数、およびプロジェクト構造のみが提供されます。\n実際の変更内容は表示されません。分類する前に、必ずツールを使用して調査する必要があります。',
+  diffCoverageRequirement:
+    '完全な差分確認が有効です。`write_commit_message` を呼び出す前に、変更されたすべてのファイルに対して `get_diff` を正常に呼び出してください。1 つの `paths` 配列に複数のファイルを含めることができます。',
   availableToolsTitle: '## 利用可能なツール',
   availableToolsIntro:
     '複数のツールを利用できます。正確な調査に必要なツールを使用してください：',

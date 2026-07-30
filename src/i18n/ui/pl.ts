@@ -250,6 +250,7 @@ export const plLocale: LocaleTextBundle = {
       commitMessageLanguage: 'Język wiadomości commita',
       hybridGeneration: 'Generowanie hybrydowe',
       useScmInputAsDraft: 'Użyj tekstu SCM jako szkicu',
+      enforceDiffCoverage: 'Wymagaj pełnego pokrycia diff',
       maxAgentSteps: 'Maks. kroków agenta',
       providerName: 'Nazwa dostawcy',
       apiFormat: 'Format API',
@@ -327,6 +328,8 @@ export const plLocale: LocaleTextBundle = {
         'Ogranicz wywołania narzędzi agenta na generowanie. Wpisz 0 lub pozostaw puste, aby usunąć limit.',
       hybridGenerationDescription:
         'Po włączeniu obecny tekst w polu SCM jest używany tylko jako szkic referencyjny; zawarte w nim instrukcje nie są wykonywane.',
+      enforceDiffCoverageDescription:
+        'Po włączeniu w trybie agenta przed wysłaniem wiadomości commitu musi zostać pobrany pełny diff każdego zmienionego pliku. Może to zwiększyć użycie tokenów i liczbę kroków agenta.',
       customProviderInfo:
         'Niestandardowi dostawcy obsługują formaty API zgodne z <strong>OpenAI</strong> i <strong>Anthropic</strong>.<br>Wybierz format implementowany przez bazowy adres URL API.',
       maxOutputTokensDescription:

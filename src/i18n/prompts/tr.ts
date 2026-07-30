@@ -69,6 +69,8 @@ export const trPrompt: LocalePromptBundle = {
   limitedInfoTitle: '## ÖNEMLİ: Başlangıçta SINIRLI bilgi alırsınız',
   limitedInfoBody:
     'Size YALNIZCA değiştirilen dosyaların adları, satır sayıları ve proje yapısı verilir.\nGerçek değişiklikleri göremezsiniz. Sınıflandırma yapmadan önce incelemek için araçlarınızı kullanmanız ZORUNLUDUR.',
+  diffCoverageRequirement:
+    'Tam diff kapsamı etkinleştirildi. `write_commit_message` çağrısından önce değiştirilen her dosya için `get_diff` çağrısını başarıyla yapmalısınız. Tek bir `paths` dizisine birden fazla dosya ekleyebilirsiniz.',
   availableToolsTitle: '## Mevcut Araçlar',
   availableToolsIntro:
     'Kullanabileceğiniz birden fazla araç var. Doğru inceleme için hangi araçlar gerekiyorsa onları kullanın:',

@@ -8,6 +8,7 @@ import type { APIProvider } from '../llm/provider-registry';
 import type { ModelConfig } from '../models/catalog';
 import type { CustomProviderConfig } from '../models/custom-provider';
 import type {
+  AgenticGenerationOptions,
   CommitOutputOptions,
   GenerateMode,
   HybridGenerationOptions,
@@ -24,6 +25,7 @@ export interface WebviewBootstrapData {
   defaultProvider: APIProvider;
   defaultGenerateMode: GenerateMode;
   defaultCommitOutputOptions: CommitOutputOptions;
+  defaultAgenticGenerationOptions: AgenticGenerationOptions;
   defaultHybridGenerationOptions: HybridGenerationOptions;
   ollamaDefaultHost: string;
   languagePacks: Record<EffectiveDisplayLanguage, WebviewLanguagePack>;

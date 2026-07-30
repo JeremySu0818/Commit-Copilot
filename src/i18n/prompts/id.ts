@@ -71,6 +71,8 @@ export const idPrompt: LocalePromptBundle = {
   limitedInfoTitle: '## PENTING: Anda menerima informasi TERBATAS pada awalnya',
   limitedInfoBody:
     'Anda HANYA diberikan nama file yang diubah, jumlah baris, dan struktur proyek.\nAnda TIDAK melihat perubahan sebenarnya. Anda HARUS menggunakan alat Anda untuk menyelidiki sebelum mengklasifikasikan.',
+  diffCoverageRequirement:
+    'Cakupan diff lengkap diaktifkan. Sebelum memanggil `write_commit_message`, panggil `get_diff` dengan sukses untuk setiap file yang berubah. Anda dapat menyertakan beberapa file dalam satu array `paths`.',
   availableToolsTitle: '## Alat yang Tersedia',
   availableToolsIntro:
     'Anda memiliki beberapa alat yang dapat Anda gunakan. Gunakan alat apa pun yang diperlukan untuk penyelidikan yang akurat:',

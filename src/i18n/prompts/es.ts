@@ -73,6 +73,8 @@ export const esPrompt: LocalePromptBundle = {
   limitedInfoTitle: '## IMPORTANTE: Inicialmente recibe información LIMITADA',
   limitedInfoBody:
     'Se le proporcionan únicamente los nombres de los archivos modificados, el recuento de líneas y la estructura del proyecto.\nNO ve los cambios reales. DEBE usar sus herramientas para investigar antes de clasificar.',
+  diffCoverageRequirement:
+    'La cobertura completa de diferencias está activada. Antes de llamar a `write_commit_message`, debe llamar correctamente a `get_diff` para cada archivo modificado. Puede incluir varios archivos en un único arreglo `paths`.',
   availableToolsTitle: '## Herramientas disponibles',
   availableToolsIntro:
     'Tiene múltiples herramientas a su disposición. Use las herramientas que sean necesarias para una investigación precisa:',

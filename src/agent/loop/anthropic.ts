@@ -493,6 +493,7 @@ async function runAnthropicAgentLoop(
     commitOutputOptions = DEFAULT_COMMIT_OUTPUT_OPTIONS,
     cancellationToken,
     maxAgentSteps,
+    enforceDiffCoverage = false,
     draftCommitMessage,
     language = 'en',
     commitMessageLanguage = 'en',
@@ -527,7 +528,7 @@ async function runAnthropicAgentLoop(
     }
     const resolvedCommitOutputOptions =
       normalizeCommitOutputOptions(commitOutputOptions);
-    const coverage = new DiffCoverageTracker(diff);
+    const coverage = new DiffCoverageTracker(diff, enforceDiffCoverage);
 
     const initialContext = await buildInitialContext(
       diff,
@@ -543,6 +544,7 @@ async function runAnthropicAgentLoop(
       includeFindReferences: true,
       commitOutputOptions: resolvedCommitOutputOptions,
       maxAgentSteps,
+      enforceDiffCoverage,
       language: commitMessageLanguage,
     });
 

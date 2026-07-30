@@ -245,6 +245,7 @@ export const jaLocale: LocaleTextBundle = {
       commitMessageLanguage: 'コミットメッセージの言語',
       hybridGeneration: 'ハイブリッド生成',
       useScmInputAsDraft: 'SCM 入力を下書きとして使用',
+      enforceDiffCoverage: 'すべての差分の取得を必須にする',
       maxAgentSteps: '最大エージェントステップ数',
       providerName: 'プロバイダー名',
       apiFormat: 'API 形式',
@@ -320,6 +321,8 @@ export const jaLocale: LocaleTextBundle = {
         '各生成のエージェントツール呼び出し回数を制限します。無制限にするには0を入力するか空白にしてください。',
       hybridGenerationDescription:
         '有効にすると、既存の SCM 入力テキストを参照用の下書きとしてのみ使用します。その中の指示には従いません。',
+      enforceDiffCoverageDescription:
+        '有効にすると、エージェントモードではコミットメッセージを送信する前に、変更されたすべてのファイルの完全な差分を取得する必要があります。トークン使用量とエージェントステップ数が増える場合があります。',
       customProviderInfo:
         'カスタムプロバイダーは <strong>OpenAI</strong> および <strong>Anthropic</strong> 互換の API 形式をサポートします。<br>API ベース URL が実装する形式を選択してください。',
       maxOutputTokensDescription:

@@ -190,7 +190,7 @@ Gemini, Anthropic, and OpenAI-compatible routes use structured tool calls. Ollam
 
 `get_diff` accepts either one `path` or a non-empty `paths` array. Multi-file requests reduce tool round trips while returning every requested file's complete exact diff; no file content is summarized or omitted.
 
-Agentic generation also tracks diff coverage in the harness. `write_commit_message` is rejected until every changed file from a valid Git diff has been covered by a successful single-file or batched `get_diff` request.
+Agentic generation can optionally enforce complete diff coverage. When enabled in Settings, `write_commit_message` is rejected until every changed file from a valid Git diff has been covered by a successful single-file or batched `get_diff` request. This setting is disabled by default to preserve existing generation behavior and token usage.
 
 ---
 

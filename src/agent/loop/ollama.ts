@@ -430,6 +430,7 @@ async function runOllamaAgentLoop(options: AgentLoopOptions): Promise<string> {
     commitOutputOptions = DEFAULT_COMMIT_OUTPUT_OPTIONS,
     cancellationToken,
     maxAgentSteps,
+    enforceDiffCoverage = false,
     draftCommitMessage,
     language = 'en',
     commitMessageLanguage = 'en',
@@ -447,7 +448,7 @@ async function runOllamaAgentLoop(options: AgentLoopOptions): Promise<string> {
     const modelName = pickNonEmpty(model, DEFAULT_MODELS.ollama);
     const resolvedCommitOutputOptions =
       normalizeCommitOutputOptions(commitOutputOptions);
-    const coverage = new DiffCoverageTracker(diff);
+    const coverage = new DiffCoverageTracker(diff, enforceDiffCoverage);
     const cancellationSubscription = subscribeToCancellation(
       cancellationToken,
       () => {
@@ -484,6 +485,7 @@ async function runOllamaAgentLoop(options: AgentLoopOptions): Promise<string> {
         includeFindReferences: true,
         commitOutputOptions: resolvedCommitOutputOptions,
         maxAgentSteps,
+        enforceDiffCoverage,
         language: commitMessageLanguage,
       });
       const messages: OllamaMessage[] = [

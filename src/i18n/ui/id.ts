@@ -244,6 +244,7 @@ export const idLocale: LocaleTextBundle = {
       commitMessageLanguage: 'Bahasa Pesan Commit',
       hybridGeneration: 'Pembuatan Hibrida',
       useScmInputAsDraft: 'Gunakan teks SCM sebagai draf',
+      enforceDiffCoverage: 'Wajibkan cakupan diff lengkap',
       maxAgentSteps: 'Maks. Langkah Agen',
       providerName: 'Nama Penyedia',
       apiFormat: 'Format API',
@@ -320,6 +321,8 @@ export const idLocale: LocaleTextBundle = {
         'Batasi panggilan alat agenik per pembuatan. Masukkan 0 atau biarkan kosong untuk tidak terbatas.',
       hybridGenerationDescription:
         'Jika aktif, teks input SCM yang ada hanya digunakan sebagai draf referensi; instruksi di dalamnya tidak diikuti.',
+      enforceDiffCoverageDescription:
+        'Jika diaktifkan dalam mode agen, diff lengkap setiap file yang diubah harus diambil sebelum pesan commit dapat dikirim. Hal ini dapat menambah penggunaan token dan langkah agen.',
       customProviderInfo:
         'Provider kustom mendukung format API yang kompatibel dengan <strong>OpenAI</strong> dan <strong>Anthropic</strong>.<br>Pilih format yang diterapkan oleh URL Dasar API.',
       maxOutputTokensDescription:

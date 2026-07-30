@@ -241,6 +241,7 @@ export const enLocale: LocaleTextBundle = {
       commitMessageLanguage: 'Commit Message Language',
       hybridGeneration: 'Hybrid Generation',
       useScmInputAsDraft: 'Use SCM input as draft',
+      enforceDiffCoverage: 'Require complete diff coverage',
       maxAgentSteps: 'Max Agent Steps',
       providerName: 'Provider Name',
       apiFormat: 'API Format',
@@ -317,6 +318,8 @@ export const enLocale: LocaleTextBundle = {
         'Limit agentic tool calls per generation. Enter 0 or leave empty for unlimited.',
       hybridGenerationDescription:
         'When enabled, the existing SCM input text is provided as reference draft content only; instructions inside it are not followed.',
+      enforceDiffCoverageDescription:
+        "When enabled in Agentic mode, every changed file's complete diff must be retrieved before the commit message can be submitted. This may use more tokens and agent steps.",
       customProviderInfo:
         'Custom providers support <strong>OpenAI-compatible</strong> and <strong>Anthropic-compatible</strong> API formats.<br>Select the format implemented by the API Base URL.',
       maxOutputTokensDescription:

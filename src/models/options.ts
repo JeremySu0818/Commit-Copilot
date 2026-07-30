@@ -11,6 +11,10 @@ export interface HybridGenerationOptions {
   enabled: boolean;
 }
 
+export interface AgenticGenerationOptions {
+  enforceDiffCoverage: boolean;
+}
+
 export const GENERATE_MODE_DISPLAY_NAMES: Record<GenerateMode, string> = {
   agentic: 'Agentic Generate',
   'direct-diff': 'Direct Diff',
@@ -20,6 +24,12 @@ export const DEFAULT_HYBRID_GENERATION_OPTIONS: HybridGenerationOptions = {
   enabled: false,
 };
 
+export const DEFAULT_AGENTIC_GENERATION_OPTIONS: AgenticGenerationOptions = {
+  enforceDiffCoverage: false,
+};
+
+export const AGENTIC_GENERATION_OPTIONS_STATE_KEY =
+  'AGENTIC_GENERATION_OPTIONS';
 export const HYBRID_GENERATION_OPTIONS_STATE_KEY = 'HYBRID_GENERATION_OPTIONS';
 export const DEFAULT_GENERATE_MODE: GenerateMode = 'agentic';
 export const MAX_AGENT_STEPS_STATE_KEY = 'MAX_AGENT_STEPS';
@@ -80,6 +90,22 @@ export function normalizeHybridGenerationOptions(
       typeof candidate.enabled === 'boolean'
         ? candidate.enabled
         : DEFAULT_HYBRID_GENERATION_OPTIONS.enabled,
+  };
+}
+
+export function normalizeAgenticGenerationOptions(
+  options: unknown,
+): AgenticGenerationOptions {
+  const candidate =
+    options && typeof options === 'object'
+      ? (options as Partial<AgenticGenerationOptions>)
+      : {};
+
+  return {
+    enforceDiffCoverage:
+      typeof candidate.enforceDiffCoverage === 'boolean'
+        ? candidate.enforceDiffCoverage
+        : DEFAULT_AGENTIC_GENERATION_OPTIONS.enforceDiffCoverage,
   };
 }
 

@@ -6,8 +6,10 @@ import { createLLMClient } from '../llm/clients';
 import { APIProvider, DEFAULT_MODELS } from '../llm/provider-registry';
 import type { CustomProviderApiFormat } from '../models/custom-provider';
 import {
+  AgenticGenerationOptions,
   CommitOutputOptions,
   GenerateMode,
+  normalizeAgenticGenerationOptions,
   normalizeCommitOutputOptions,
 } from '../models/options';
 import type { ProgressCallback } from '../shared/progress';
@@ -22,6 +24,7 @@ export async function generateMessageWithProvider(params: {
   model?: string;
   generateMode: GenerateMode;
   commitOutputOptions: CommitOutputOptions;
+  agenticGenerationOptions: AgenticGenerationOptions;
   onProgress?: ProgressCallback;
   cancellationToken?: import('../shared/cancellation').CancellationSignal;
   maxAgentSteps?: number;
@@ -38,6 +41,9 @@ export async function generateMessageWithProvider(params: {
       : DEFAULT_MODELS[params.provider];
   const resolvedCommitOutputOptions = normalizeCommitOutputOptions(
     params.commitOutputOptions,
+  );
+  const resolvedAgenticGenerationOptions = normalizeAgenticGenerationOptions(
+    params.agenticGenerationOptions,
   );
   const repoRoot = params.repository.rootUri.fsPath;
 
@@ -57,6 +63,7 @@ export async function generateMessageWithProvider(params: {
       commitOutputOptions: resolvedCommitOutputOptions,
       cancellationToken: params.cancellationToken,
       maxAgentSteps: params.maxAgentSteps,
+      enforceDiffCoverage: resolvedAgenticGenerationOptions.enforceDiffCoverage,
       draftCommitMessage: params.draftCommitMessage,
       language: params.language,
       commitMessageLanguage: params.commitMessageLanguage,

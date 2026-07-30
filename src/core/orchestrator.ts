@@ -4,7 +4,9 @@ import type { EffectiveDisplayLanguage } from '../i18n/types';
 import type { APIProvider } from '../llm/provider-registry';
 import type { CustomProviderApiFormat } from '../models/custom-provider';
 import {
+  AgenticGenerationOptions,
   CommitOutputOptions,
+  DEFAULT_AGENTIC_GENERATION_OPTIONS,
   DEFAULT_COMMIT_OUTPUT_OPTIONS,
   DEFAULT_GENERATE_MODE,
   GenerateMode,
@@ -31,6 +33,7 @@ export interface GenerateCommitMessageOptions {
   model?: string;
   generateMode?: GenerateMode;
   commitOutputOptions?: CommitOutputOptions;
+  agenticGenerationOptions?: AgenticGenerationOptions;
   stageChanges?: boolean;
   ignoreUntracked?: boolean;
   onProgress?: ProgressCallback;
@@ -61,6 +64,7 @@ export async function generateCommitMessage(
     model,
     generateMode = DEFAULT_GENERATE_MODE,
     commitOutputOptions = DEFAULT_COMMIT_OUTPUT_OPTIONS,
+    agenticGenerationOptions = DEFAULT_AGENTIC_GENERATION_OPTIONS,
     stageChanges = false,
     ignoreUntracked = false,
     onProgress,
@@ -104,6 +108,7 @@ export async function generateCommitMessage(
       model,
       generateMode,
       commitOutputOptions,
+      agenticGenerationOptions,
       onProgress,
       cancellationToken,
       maxAgentSteps,

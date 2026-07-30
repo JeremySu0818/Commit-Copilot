@@ -73,6 +73,8 @@ export const ptBRPrompt: LocalePromptBundle = {
     '## IMPORTANTE: Você recebe informações LIMITADAS inicialmente',
   limitedInfoBody:
     'Você recebe APENAS os nomes dos arquivos alterados, contagem de linhas e a estrutura do projeto.\nVocê NÃO vê as alterações reais. Você DEVE usar suas ferramentas para investigar antes de classificar.',
+  diffCoverageRequirement:
+    'A cobertura completa das diferenças está ativada. Antes de chamar `write_commit_message`, chame `get_diff` com sucesso para cada arquivo alterado. Você pode incluir vários arquivos em uma única matriz `paths`.',
   availableToolsTitle: '## Ferramentas Disponíveis',
   availableToolsIntro:
     'Você tem várias ferramentas à sua disposição. Use as ferramentas necessárias para uma investigação precisa:',

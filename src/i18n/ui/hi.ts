@@ -243,6 +243,7 @@ export const hiLocale: LocaleTextBundle = {
       commitMessageLanguage: 'कमिट संदेश की भाषा',
       hybridGeneration: 'हाइब्रिड जनरेशन',
       useScmInputAsDraft: 'SCM टेक्स्ट को ड्राफ्ट की तरह उपयोग करें',
+      enforceDiffCoverage: 'पूर्ण diff कवरेज आवश्यक करें',
       maxAgentSteps: 'अधिकतम एजेंट कदम',
       providerName: 'प्रदाता का नाम',
       apiFormat: 'API प्रारूप',
@@ -318,6 +319,8 @@ export const hiLocale: LocaleTextBundle = {
         'प्रति उत्पादन एजेंटिक टूल कॉल को सीमित करें। 0 दर्ज करें या असीमित के लिए खाली छोड़ दें।',
       hybridGenerationDescription:
         'सक्षम होने पर, मौजूदा SCM इनपुट टेक्स्ट केवल संदर्भ ड्राफ्ट के रूप में उपयोग होता है; उसके अंदर के निर्देशों का पालन नहीं किया जाता।',
+      enforceDiffCoverageDescription:
+        'एजेंट मोड में सक्षम होने पर, कमिट संदेश भेजने से पहले हर बदली हुई फ़ाइल का पूरा diff प्राप्त करना आवश्यक है। इससे टोकन उपयोग और एजेंट चरण बढ़ सकते हैं।',
       customProviderInfo:
         'कस्टम प्रदाता <strong>OpenAI</strong> और <strong>Anthropic</strong> संगत API प्रारूपों का समर्थन करते हैं।<br>API बेस URL द्वारा लागू प्रारूप चुनें।',
       maxOutputTokensDescription:

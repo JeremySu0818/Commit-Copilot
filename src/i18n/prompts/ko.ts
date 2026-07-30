@@ -66,6 +66,8 @@ export const koPrompt: LocalePromptBundle = {
   limitedInfoTitle: '## 중요: 처음에 제한된 정보만 수신합니다',
   limitedInfoBody:
     '변경된 파일의 이름, 행 수 및 프로젝트 구조만 제공됩니다.\n실제 변경 사항은 보이지 않습니다. 분류하기 전에 반드시 도구를 사용하여 조사해야 합니다.',
+  diffCoverageRequirement:
+    '전체 diff 확인이 활성화되었습니다. `write_commit_message`를 호출하기 전에 변경된 모든 파일에 대해 `get_diff`를 성공적으로 호출해야 합니다. 하나의 `paths` 배열에 여러 파일을 포함할 수 있습니다.',
   availableToolsTitle: '## 사용 가능한 도구',
   availableToolsIntro:
     '여러 도구를 사용할 수 있습니다. 정확한 조사에 필요한 도구를 사용하십시오:',

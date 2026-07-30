@@ -7,6 +7,7 @@ import {
   type CustomProviderConfig,
 } from '../models/custom-provider';
 import type {
+  AgenticGenerationOptions,
   CommitOutputOptions,
   HybridGenerationOptions,
 } from '../models/options';
@@ -172,6 +173,19 @@ function normalizeCommitOutputOptions(
   };
 }
 
+function normalizeAgenticGenerationOptions(
+  value: unknown,
+  defaults: AgenticGenerationOptions,
+): AgenticGenerationOptions {
+  const options = isRecord(value) ? value : {};
+  return {
+    enforceDiffCoverage:
+      typeof options.enforceDiffCoverage === 'boolean'
+        ? options.enforceDiffCoverage
+        : defaults.enforceDiffCoverage,
+  };
+}
+
 function normalizeHybridGenerationOptions(
   value: unknown,
   defaults: HybridGenerationOptions,
@@ -206,6 +220,7 @@ export function useMainViewMessageHandler(
     vscode.postMessage({ type: 'getCustomProviders' });
     vscode.postMessage({ type: 'getGenerateMode' });
     vscode.postMessage({ type: 'getCommitOutputOptions' });
+    vscode.postMessage({ type: 'getAgenticGenerationOptions' });
     vscode.postMessage({ type: 'getHybridGenerationOptions' });
     vscode.postMessage({ type: 'getMaxAgentSteps' });
     vscode.postMessage({ type: 'checkGit' });
@@ -355,6 +370,15 @@ export function useMainViewMessageHandler(
             options: normalizeCommitOutputOptions(
               message.commitOutputOptions,
               bootstrap.defaultCommitOutputOptions,
+            ),
+          });
+        },
+        currentAgenticGenerationOptions: (message) => {
+          dispatch({
+            type: 'SET_AGENTIC_GENERATION_OPTIONS',
+            options: normalizeAgenticGenerationOptions(
+              message.agenticGenerationOptions,
+              bootstrap.defaultAgenticGenerationOptions,
             ),
           });
         },

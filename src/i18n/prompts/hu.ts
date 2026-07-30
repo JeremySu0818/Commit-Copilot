@@ -71,6 +71,8 @@ export const huPrompt: LocalePromptBundle = {
   limitedInfoTitle: '## FONTOS: Kezdetben KORLÁTOZOTT információkat kap',
   limitedInfoBody:
     'Kizárólag a módosított fájlok nevét, a sorszámokat és a projekt szerkezetét kapja meg.\nNem látja a tényleges változtatásokat. Az osztályozás előtt kötelező eszközeit használni a vizsgálathoz.',
+  diffCoverageRequirement:
+    'A teljes diff-lefedettség be van kapcsolva. A `write_commit_message` meghívása előtt minden módosított fájlhoz sikeresen meg kell hívnia a `get_diff` eszközt. Egyetlen `paths` tömbben több fájlt is megadhat.',
   availableToolsTitle: '## Elérhető eszközök',
   availableToolsIntro:
     'Több eszköz áll rendelkezésére. Használja a szükséges eszközöket a pontos vizsgálathoz:',

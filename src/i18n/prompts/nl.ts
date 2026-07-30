@@ -73,6 +73,8 @@ export const nlPrompt: LocalePromptBundle = {
     '## BELANGRIJK: Je ontvangt aanvankelijk BEPERKTE informatie',
   limitedInfoBody:
     'Je krijgt UITSLUITEND de namen van gewijzigde bestanden, regelaantallen en de projectstructuur.\nJe ziet de feitelijke wijzigingen NIET. Je MOET je hulpmiddelen gebruiken om te onderzoeken voordat je classificeert.',
+  diffCoverageRequirement:
+    'Volledige diff-dekking is ingeschakeld. Voordat je `write_commit_message` aanroept, moet je `get_diff` met succes aanroepen voor elk gewijzigd bestand. Je kunt meerdere bestanden in één `paths`-array opnemen.',
   availableToolsTitle: '## Beschikbare Hulpmiddelen',
   availableToolsIntro:
     'Je hebt meerdere hulpmiddelen tot je beschikking. Gebruik de hulpmiddelen die nodig zijn voor nauwkeurig onderzoek:',

@@ -86,6 +86,26 @@ void test('tool-enabled agent prompt requires untrusted data handling and final 
   assert.match(prompt, /structured `message` argument/);
 });
 
+void test('agent prompt includes complete diff coverage only when enabled', () => {
+  const defaultPrompt = buildAgentSystemPrompt({
+    includeFindReferences: false,
+  });
+  const strictPrompt = buildAgentSystemPrompt({
+    includeFindReferences: false,
+    enforceDiffCoverage: true,
+  });
+  const localizedStrictPrompt = buildAgentSystemPrompt({
+    includeFindReferences: false,
+    enforceDiffCoverage: true,
+    language: 'zh-TW',
+  });
+
+  assert.doesNotMatch(defaultPrompt, /Complete diff coverage is enabled/);
+  assert.match(strictPrompt, /Complete diff coverage is enabled/);
+  assert.match(strictPrompt, /every changed file/);
+  assert.match(localizedStrictPrompt, /已啟用完整差異檢查/);
+});
+
 void test('agent prompt applies the selected commit message language', () => {
   const prompt = buildAgentSystemPrompt({
     includeFindReferences: false,

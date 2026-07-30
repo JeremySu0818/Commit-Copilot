@@ -27,14 +27,16 @@ function containsInspectableChange(raw: string): boolean {
 export class DiffCoverageTracker {
   private readonly entries: CoverageEntry[];
 
-  constructor(diffContent: string) {
-    this.entries = parseDiffFileBlocks(diffContent)
-      .filter(({ raw }) => containsInspectableChange(raw))
-      .map(({ aPath, bPath, displayPath }) => ({
-        displayPath,
-        aliases: new Set([normalizePath(aPath), normalizePath(bPath)]),
-        covered: false,
-      }));
+  constructor(diffContent: string, enabled: boolean) {
+    this.entries = enabled
+      ? parseDiffFileBlocks(diffContent)
+          .filter(({ raw }) => containsInspectableChange(raw))
+          .map(({ aPath, bPath, displayPath }) => ({
+            displayPath,
+            aliases: new Set([normalizePath(aPath), normalizePath(bPath)]),
+            covered: false,
+          }))
+      : [];
   }
 
   recordToolCall(name: string, args: Record<string, unknown>): void {
