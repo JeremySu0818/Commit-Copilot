@@ -1,7 +1,9 @@
 # Commit Copilot Güncelleme Bilgisi
 
-## Sürüm 1.18.0 ile Gelen Yenilikler
+## Sürüm 1.19.0 ile Gelen Yenilikler
 
-- Tek bir araç isteğinde birden fazla dosyanın diff'ini sorgulama ve istenen her dosyanın eksiksiz, tam diff'ini döndürme desteği eklendi.
-- Varsayılan olarak kapalı olan isteğe bağlı tam diff kapsamı ayarı eklendi; etkinleştirildiğinde commit mesajı tamamlanmadan önce tüm değiştirilen dosyaların incelenmesini zorunlu kılar.
-- Üretim iptal edildiğinde LLM sağlayıcılarına giden etkin HTTP isteklerini anında sonlandıracak şekilde istek iptali düzeltildi.
+- Google Gemini sağlayıcısı için Gemini 3.7 Flash desteği eklendi ve varsayılan Google modeli Gemini 3.7 Flash olarak güncellendi.
+- Anthropic Claude sağlayıcısı için Claude Opus 5 desteği eklendi.
+- xAI Grok sağlayıcısı için Grok 4.5 ve Grok 4.6 desteği eklendi ve varsayılan Grok modeli Grok 4.6 olarak güncellendi.
+- Groq model kataloğu MiniMax M2.7 ve Qwen 3.6 27b ile güncellendi ve kullanım dışı bırakılan modeller kaldırıldı.
+- Özel Base URL kullanılırken OpenAI uyumlu özel sağlayıcılar için model çözümleme mekanizması iyileştirildi.

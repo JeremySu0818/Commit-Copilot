@@ -1,7 +1,9 @@
 # Informacje o aktualizacji Commit Copilot
 
-## Nowości w wersji 1.18.0
+## Nowości w wersji 1.19.0
 
-- Dodano obsługę pobierania diffów wielu plików w jednym wywołaniu narzędzia wraz ze zwracaniem pełnego, dokładnego diffu każdego żądanego pliku.
-- Dodano opcjonalne ustawienie pełnego pokrycia diff, domyślnie wyłączone, które po włączeniu wymaga sprawdzenia wszystkich zmodyfikowanych plików przed ukończeniem wiadomości commitu.
-- Naprawiono anulowanie żądań, aby natychmiast przerywać aktywne połączenia HTTP z dostawcami LLM po anulowaniu generowania.
+- Dodano obsługę Gemini 3.7 Flash dla dostawcy Google Gemini oraz zaktualizowano domyślny model Google do Gemini 3.7 Flash.
+- Dodano obsługę Claude Opus 5 dla dostawcy Anthropic Claude.
+- Dodano obsługę Grok 4.5 i Grok 4.6 dla dostawcy xAI Grok oraz zaktualizowano domyślny model Grok do Grok 4.6.
+- Zaktualizowano katalog modeli Groq o MiniMax M2.7 i Qwen 3.6 27b oraz usunięto przestarzałe modele.
+- Usprawniono rozpoznawanie modeli dla niestandardowych dostawców zgodnych z OpenAI podczas korzystania z niestandardowych adresów Base URL.

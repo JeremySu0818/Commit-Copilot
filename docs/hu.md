@@ -1,7 +1,9 @@
 # Commit Copilot frissítési információk
 
-## Újdonságok az 1.18.0-s verzióban
+## Újdonságok az 1.19.0-s verzióban
 
-- Több fájl diff-jének lekérdezése egyetlen eszközkérésben, minden kért fájl teljes és pontos diffjének visszaadásával.
-- Opcionális, alapértelmezés szerint kikapcsolt teljes diff-lefedettségi beállítás, amely bekapcsolva minden módosított fájl ellenőrzését megköveteli a commit üzenet véglegesítése előtt.
-- A kérés megszakításának javítása, amely azonnal leállítja az aktív HTTP-kapcsolatokat az LLM szolgáltatók felé a generálás megszakításakor.
+- Gemini 3.7 Flash támogatás hozzáadása a Google Gemini szolgáltatóhoz, és az alapértelmezett Google modell frissítése Gemini 3.7 Flash-re.
+- Claude Opus 5 támogatás hozzáadása az Anthropic Claude szolgáltatóhoz.
+- Grok 4.5 és Grok 4.6 támogatás hozzáadása az xAI Grok szolgáltatóhoz, és az alapértelmezett Grok modell frissítése Grok 4.6-ra.
+- A Groq modellkatalógus frissítése a MiniMax M2.7 és a Qwen 3.6 27b modellekkel, valamint az elavult modellek eltávolítása.
+- Továbbfejlesztett modellfeloldás az OpenAI-kompatibilis egyéni szolgáltatókhoz egyéni Base URL használata esetén.

@@ -3,6 +3,7 @@ import { createRequire } from 'node:module';
 import test from 'node:test';
 import * as path from 'path';
 
+import { DEFAULT_MODELS } from '../../../llm/provider-registry';
 import { OLLAMA_DEFAULT_HOST } from '../../../models/catalog';
 import { EXIT_CODES } from '../../../shared/errors';
 import { clearRequireCache, withModuleMock } from '../../helpers/module-mock';
@@ -144,7 +145,7 @@ void test('runOllamaAgentLoop executes batched text-protocol tools and returns f
       async ({ runOllamaAgentLoop }) =>
         runOllamaAgentLoop({
           apiKey: '',
-          model: 'llama3-test',
+          model: DEFAULT_MODELS.qwen,
           diff: 'diff --git a/a.ts b/a.ts\n+line',
           repoRoot: process.cwd(),
           onProgress: (message: string, increment?: number) => {
@@ -160,7 +161,7 @@ void test('runOllamaAgentLoop executes batched text-protocol tools and returns f
   }
 
   assert.equal(pullRequests[0]?.host, OLLAMA_DEFAULT_HOST);
-  assert.equal(pullRequests[0]?.model, 'llama3-test');
+  assert.equal(pullRequests[0]?.model, DEFAULT_MODELS.qwen);
   assert.equal(pullRequests[0]?.stream, true);
 
   const firstMessages = isRecord(chatRequests[0])
@@ -258,7 +259,7 @@ void test('runOllamaAgentLoop aborts an active model pull when cancelled', async
       async ({ runOllamaAgentLoop }) => {
         const generation = runOllamaAgentLoop({
           apiKey: '',
-          model: 'llama3-test',
+          model: DEFAULT_MODELS.qwen,
           diff: 'diff --git a/a.ts b/a.ts\n+cancel pull',
           repoRoot: process.cwd(),
           isStaged: false,
@@ -314,7 +315,7 @@ void test('runOllamaAgentLoop maps connection failures to friendly host error', 
           () =>
             runOllamaAgentLoop({
               apiKey: host,
-              model: 'llama3-test',
+              model: DEFAULT_MODELS.qwen,
               diff: 'diff --git a/a.ts b/a.ts\n+line',
               repoRoot: process.cwd(),
               isStaged: true,
@@ -365,7 +366,7 @@ void test('runOllamaAgentLoop sends a localized correction after malformed proto
       async ({ runOllamaAgentLoop }) =>
         runOllamaAgentLoop({
           apiKey: '',
-          model: 'llama3-test',
+          model: DEFAULT_MODELS.qwen,
           diff: 'diff --git a/a.ts b/a.ts\n+line',
           repoRoot: process.cwd(),
           onProgress: (message: string) => {
@@ -434,7 +435,7 @@ void test('runOllamaAgentLoop forces final tool submission after max agent steps
       async ({ runOllamaAgentLoop }) =>
         runOllamaAgentLoop({
           apiKey: '',
-          model: 'llama3-test',
+          model: DEFAULT_MODELS.qwen,
           diff: 'diff --git a/a.ts b/a.ts\n+line',
           repoRoot: process.cwd(),
           onProgress: (message: string) => {

@@ -1,7 +1,9 @@
 # Commit Copilot 更新信息
 
-## 版本 1.18.0 的新功能
+## 版本 1.19.0 的新功能
 
-- 新增支持在单次工具请求中查询多个文件的差异，并完整返回每个指定文件的精确差异内容。
-- 新增可选的完整差异覆盖设置；该设置默认关闭，启用后会要求在完成 Commit 信息前检查所有变更文件。
-- 修复取消生成时的请求中断问题，取消时能立即终止与 LLM 服务商的 HTTP 连接。
+- 新增支持 Google Gemini 服务商的 Gemini 3.7 Flash，并将 Google 默认模型升级为 Gemini 3.7 Flash。
+- 新增支持 Anthropic Claude 服务商的 Claude Opus 5。
+- 新增支持 xAI Grok 服务商的 Grok 4.5 与 Grok 4.6，并将 Grok 默认模型升级为 Grok 4.6。
+- 更新 Groq 模型目录，新增 MiniMax M2.7 与 Qwen 3.6 27b，并清理已下线的旧模型。
+- 优化配置自定义 Base URL 时的 OpenAI 兼容服务商模型解析机制。

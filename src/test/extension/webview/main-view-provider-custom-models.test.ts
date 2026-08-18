@@ -296,42 +296,42 @@ void test('deleteCustomModel clears saved selection when deleting the last avail
 
 void test('addCustomModel persists the first manual model selection for ollama', async () => {
   const harness = await createHarness();
+  const manualModel = 'manual-model';
 
   try {
     await harness.sendMessage({
       type: 'addCustomModel',
       provider: 'ollama',
-      modelName: 'llama3.2:3b',
+      modelName: manualModel,
     });
 
-    assert.equal(harness.state.get('OLLAMA_MODEL'), 'llama3.2:3b');
+    assert.equal(harness.state.get('OLLAMA_MODEL'), manualModel);
     assert.deepEqual(harness.state.get('OLLAMA_MODELS'), [
-      { id: 'llama3.2:3b', alias: 'llama3.2:3b' },
+      { id: manualModel, alias: manualModel },
     ]);
     const message = findPostedMessage(
       harness.postedMessages,
       'customModelAdded',
     );
-    assert.equal(message.currentModel, 'llama3.2:3b');
-    assert.deepEqual(message.models, [
-      { id: 'llama3.2:3b', alias: 'llama3.2:3b' },
-    ]);
+    assert.equal(message.currentModel, manualModel);
+    assert.deepEqual(message.models, [{ id: manualModel, alias: manualModel }]);
   } finally {
     harness.dispose();
   }
 });
 
 void test('deleteCustomModel clears ollama selection when deleting the last available model', async () => {
+  const manualModel = 'manual-model';
   const harness = await createHarness({
-    OLLAMA_MODEL: 'llama3.2:3b',
-    OLLAMA_MODELS: [{ id: 'llama3.2:3b', alias: 'llama3.2:3b' }],
+    OLLAMA_MODEL: manualModel,
+    OLLAMA_MODELS: [{ id: manualModel, alias: manualModel }],
   });
 
   try {
     await harness.sendMessage({
       type: 'deleteCustomModel',
       provider: 'ollama',
-      modelId: 'llama3.2:3b',
+      modelId: manualModel,
     });
 
     assert.equal(harness.state.get('OLLAMA_MODEL'), undefined);
@@ -349,13 +349,15 @@ void test('deleteCustomModel clears ollama selection when deleting the last avai
 });
 
 void test('fetchOllamaModels cleans up manual models present in API tags response', async () => {
+  const apiModel = 'api-model';
+  const unlistedModel = 'custom-unlisted-model';
   const originalFetch = global.fetch;
   const mockFetch = () =>
     Promise.resolve({
       ok: true,
       json: () =>
         Promise.resolve({
-          models: [{ name: 'llama3:latest' }],
+          models: [{ name: apiModel }],
         }),
     } as Response);
 
@@ -363,8 +365,8 @@ void test('fetchOllamaModels cleans up manual models present in API tags respons
 
   const harness = await createHarness({
     OLLAMA_MODELS: [
-      { id: 'llama3:latest', alias: 'llama3:latest' },
-      { id: 'custom-unlisted-model', alias: 'custom-unlisted-model' },
+      { id: apiModel, alias: apiModel },
+      { id: unlistedModel, alias: unlistedModel },
     ],
   });
 
@@ -382,12 +384,12 @@ void test('fetchOllamaModels cleans up manual models present in API tags respons
     );
 
     assert.deepEqual(harness.state.get('OLLAMA_MODELS'), [
-      { id: 'custom-unlisted-model', alias: 'custom-unlisted-model' },
+      { id: unlistedModel, alias: unlistedModel },
     ]);
 
     assert.deepEqual(result, [
-      { id: 'llama3:latest', alias: 'llama3:latest' },
-      { id: 'custom-unlisted-model', alias: 'custom-unlisted-model' },
+      { id: apiModel, alias: apiModel },
+      { id: unlistedModel, alias: unlistedModel },
     ]);
 
     const message = findPostedMessage(
@@ -395,7 +397,7 @@ void test('fetchOllamaModels cleans up manual models present in API tags respons
       'customModelsList',
     );
     assert.deepEqual(message.customModels, [
-      { id: 'custom-unlisted-model', alias: 'custom-unlisted-model' },
+      { id: unlistedModel, alias: unlistedModel },
     ]);
   } finally {
     global.fetch = originalFetch;
@@ -404,13 +406,15 @@ void test('fetchOllamaModels cleans up manual models present in API tags respons
 });
 
 void test('fetchCustomProviderModels cleans up manual models present in API models response', async () => {
+  const apiModel = 'api-model';
+  const unlistedModel = 'custom-unlisted-model';
   class MockOpenAI {
     models = {
       list: () => {
         const mockModelIterator = {
           [Symbol.asyncIterator]() {
             let step = 0;
-            const models = [{ id: 'gpt-4o' }];
+            const models = [{ id: apiModel }];
             return {
               next() {
                 if (step < models.length) {
@@ -442,8 +446,8 @@ void test('fetchCustomProviderModels cleans up manual models present in API mode
           },
         ],
         [getCustomProviderModelsStorageKey(customId)]: [
-          { id: 'gpt-4o', alias: 'gpt-4o' },
-          { id: 'custom-unlisted-model', alias: 'custom-unlisted-model' },
+          { id: apiModel, alias: apiModel },
+          { id: unlistedModel, alias: unlistedModel },
         ],
       });
 
@@ -467,12 +471,12 @@ void test('fetchCustomProviderModels cleans up manual models present in API mode
 
         assert.deepEqual(
           harness.state.get(getCustomProviderModelsStorageKey(customId)),
-          [{ id: 'custom-unlisted-model', alias: 'custom-unlisted-model' }],
+          [{ id: unlistedModel, alias: unlistedModel }],
         );
 
         assert.deepEqual(result, [
-          { id: 'gpt-4o', alias: 'gpt-4o' },
-          { id: 'custom-unlisted-model', alias: 'custom-unlisted-model' },
+          { id: apiModel, alias: apiModel },
+          { id: unlistedModel, alias: unlistedModel },
         ]);
 
         const message = findPostedMessage(
@@ -480,7 +484,7 @@ void test('fetchCustomProviderModels cleans up manual models present in API mode
           'customModelsList',
         );
         assert.deepEqual(message.customModels, [
-          { id: 'custom-unlisted-model', alias: 'custom-unlisted-model' },
+          { id: unlistedModel, alias: unlistedModel },
         ]);
       } finally {
         harness.dispose();

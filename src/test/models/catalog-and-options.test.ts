@@ -111,12 +111,12 @@ void test('fetchQwenModels fetches endpoint models and keeps Qwen text generatio
         JSON.stringify({
           data: [
             { id: 'qwen-plus' },
-            { id: 'qwen3.5-flash', name: 'Qwen 3.5 Flash' },
+            { id: 'qwen3.7-plus', name: 'Qwen 3.7 Plus' },
             { id: 'qwen3-coder-plus' },
             { id: 'qwen-vl-plus' },
             { id: 'text-embedding-v4' },
             { id: 'wan2.6-t2i' },
-            { id: 'deepseek-v3.2' },
+            { id: 'deepseek-v4-flash' },
           ],
         }),
         {
@@ -140,7 +140,7 @@ void test('fetchQwenModels fetches endpoint models and keeps Qwen text generatio
       Authorization: 'Bearer qwen-test-key',
     });
     assert.deepEqual(models, [
-      { id: 'qwen3.5-flash', alias: 'Qwen 3.5 Flash' },
+      { id: 'qwen3.7-plus', alias: 'Qwen 3.7 Plus' },
       { id: 'qwen-plus', alias: 'qwen-plus' },
       { id: 'qwen3-coder-plus', alias: 'qwen3-coder-plus' },
     ]);
@@ -150,21 +150,19 @@ void test('fetchQwenModels fetches endpoint models and keeps Qwen text generatio
 });
 
 void test('resolveDefaultModel keeps saved model when it is available', () => {
+  const savedModel = 'custom-saved-model';
   const models = [
-    { id: 'gpt-5-mini', alias: 'GPT-5 mini' },
-    { id: DEFAULT_MODELS.openai, alias: 'GPT-5.5' },
+    { id: savedModel, alias: 'Custom Saved Model' },
+    { id: DEFAULT_MODELS.openai, alias: 'OpenAI Default' },
   ];
 
-  assert.equal(
-    resolveDefaultModel('openai', models, 'gpt-5-mini'),
-    'gpt-5-mini',
-  );
+  assert.equal(resolveDefaultModel('openai', models, savedModel), savedModel);
 });
 
 void test('resolveDefaultModel falls back to provider default when saved model is unavailable', () => {
   const models = [
-    { id: 'gpt-5-mini', alias: 'GPT-5 mini' },
-    { id: DEFAULT_MODELS.openai, alias: 'GPT-5.5' },
+    { id: 'other-model', alias: 'Other Model' },
+    { id: DEFAULT_MODELS.openai, alias: 'OpenAI Default' },
   ];
 
   assert.equal(

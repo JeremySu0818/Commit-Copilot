@@ -27,7 +27,7 @@ void test('createLLMClient uses explicit ollamaHost when provided', () => {
     provider: 'ollama',
     apiKey: 'https://legacy-host:11434',
     ollamaHost: 'https://custom-host:11434',
-    model: 'qwen2.5:latest',
+    model: DEFAULT_MODELS.qwen,
   });
 
   assert.equal(getOllamaHost(client), 'https://custom-host:11434');
@@ -37,7 +37,7 @@ void test('createLLMClient keeps backward compatibility for ollama apiKey host',
   const client = createLLMClient({
     provider: 'ollama',
     apiKey: 'https://legacy-host:11434',
-    model: 'qwen2.5:latest',
+    model: DEFAULT_MODELS.qwen,
   });
 
   assert.equal(getOllamaHost(client), 'https://legacy-host:11434');
@@ -47,7 +47,7 @@ void test('createLLMClient falls back to default ollama host when host is empty'
   const client = createLLMClient({
     provider: 'ollama',
     apiKey: '',
-    model: 'qwen2.5:latest',
+    model: DEFAULT_MODELS.qwen,
   });
 
   assert.equal(getOllamaHost(client), OLLAMA_DEFAULT_HOST);
@@ -106,7 +106,7 @@ void test('Ollama direct diff aborts an active model pull when cancelled', async
     const client = createLLMClient({
       provider: 'ollama',
       apiKey: OLLAMA_DEFAULT_HOST,
-      model: 'qwen2.5:latest',
+      model: DEFAULT_MODELS.qwen,
     });
     const generation = client.generateCommitMessage(
       'diff --git a/file.txt b/file.txt\n+cancel pull',
@@ -217,7 +217,7 @@ void test('custom Anthropic direct diff uses configured base URL and max tokens'
         baseUrl: 'https://anthropic.example',
         apiFormat: 'anthropic',
         maxTokens: customAnthropicMaxTokens,
-        model: 'custom-claude-model',
+        model: DEFAULT_MODELS.anthropic,
       });
 
       const message = await client.generateCommitMessage(
@@ -233,7 +233,7 @@ void test('custom Anthropic direct diff uses configured base URL and max tokens'
       baseURL: 'https://anthropic.example',
     },
   ]);
-  assert.equal(streamParams[0]?.model, 'custom-claude-model');
+  assert.equal(streamParams[0]?.model, DEFAULT_MODELS.anthropic);
   assert.equal(streamParams[0]?.max_tokens, customAnthropicMaxTokens);
 });
 
@@ -265,7 +265,7 @@ void test('custom Anthropic direct diff omits max_tokens when custom endpoint le
         apiKey: 'custom-key',
         baseUrl: 'https://anthropic.example',
         apiFormat: 'anthropic',
-        model: 'custom-claude-model',
+        model: DEFAULT_MODELS.anthropic,
       });
 
       const message = await client.generateCommitMessage(
@@ -275,7 +275,7 @@ void test('custom Anthropic direct diff omits max_tokens when custom endpoint le
     },
   );
 
-  assert.equal(streamParams[0]?.model, 'custom-claude-model');
+  assert.equal(streamParams[0]?.model, DEFAULT_MODELS.anthropic);
   assert.equal('max_tokens' in (streamParams[0] ?? {}), false);
 });
 

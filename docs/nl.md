@@ -1,7 +1,9 @@
 # Commit Copilot Update-info
 
-## Nieuw in versie 1.18.0
+## Nieuw in versie 1.19.0
 
-- Ondersteuning toegevoegd voor het opvragen van meerdere bestand-diffs in één tool-verzoek, waarbij de volledige exacte diff van elk aangevraagd bestand wordt teruggegeven.
-- Een optionele instelling voor volledige diff-dekking toegevoegd, standaard uitgeschakeld, die na inschakeling vereist dat alle gewijzigde bestanden worden geïnspecteerd voordat het commitbericht wordt voltooid.
-- Annulering van verzoeken gecorrigeerd om actieve HTTP-verbindingen met LLM-providers onmiddellijk af te breken wanneer het genereren wordt geannuleerd.
+- Ondersteuning toegevoegd voor Gemini 3.7 Flash in de Google Gemini-provider en het standaard Google-model bijgewerkt naar Gemini 3.7 Flash.
+- Ondersteuning toegevoegd voor Claude Opus 5 in de Anthropic Claude-provider.
+- Ondersteuning toegevoegd voor Grok 4.5 en Grok 4.6 in de xAI Grok-provider, en het standaard Grok-model bijgewerkt naar Grok 4.6.
+- Groq-modelcatalogus bijgewerkt met MiniMax M2.7 en Qwen 3.6 27b, en verouderde modellen verwijderd.
+- Modelresolutie verbeterd voor OpenAI-compatibele aangepaste providers bij gebruik van aangepaste basis-URL's.

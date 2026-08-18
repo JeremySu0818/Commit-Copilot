@@ -267,7 +267,7 @@ void test('runGeminiAgentLoop maps API_KEY_INVALID to APIKeyInvalidError', async
           () =>
             runGeminiAgentLoop({
               apiKey: 'gemini-test-key',
-              model: 'gemini-test',
+              model: `models/${DEFAULT_MODELS.google}`,
               diff: 'diff --git a/a.ts b/a.ts\n+line',
               repoRoot: process.cwd(),
             }),

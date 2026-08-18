@@ -427,7 +427,9 @@ export class OpenAIClient implements ILLMClient {
     }
     this.apiKey = apiKey;
     this.commitMessageLanguage = commitMessageLanguage;
-    this.model = pickNonEmpty(model, DEFAULT_MODELS.openai);
+    this.model = baseURL
+      ? (model ?? '')
+      : pickNonEmpty(model, DEFAULT_MODELS.openai);
     this.baseURL = baseURL;
     this.systemPrompt = buildAgentSystemPrompt({
       includeFindReferences: false,

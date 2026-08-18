@@ -60,6 +60,7 @@ export const GEMINI_MODELS: ModelConfig[] = [
   { id: 'gemini-3.5-flash-lite', alias: 'Gemini 3.5 Flash-Lite' },
   { id: 'gemini-3.5-flash', alias: 'Gemini 3.5 Flash' },
   { id: 'gemini-3.6-flash', alias: 'Gemini 3.6 Flash' },
+  { id: 'gemini-3.7-flash', alias: 'Gemini 3.7 Flash' },
 ];
 
 export const OPENAI_MODELS: ModelConfig[] = [
@@ -142,6 +143,11 @@ export const ANTHROPIC_MODELS: ModelConfig[] = [
     max_tokens: 128000,
   },
   {
+    id: 'claude-opus-5',
+    alias: 'Claude Opus 5',
+    max_tokens: 128000,
+  },
+  {
     id: 'claude-fable-5',
     alias: 'Claude Fable 5',
     max_tokens: 128000,
@@ -154,19 +160,16 @@ export const GROK_MODELS: ModelConfig[] = [
   { id: 'grok-4.20-0309-non-reasoning', alias: 'Grok 4.20 (non-reasoning)' },
   { id: 'grok-4.20-0309-reasoning', alias: 'Grok 4.20 (reasoning)' },
   { id: 'grok-4.3', alias: 'Grok 4.3' },
+  { id: 'grok-4.5', alias: 'Grok 4.5' },
+  { id: 'grok-4.6', alias: 'Grok 4.6' },
 ];
 
 export const GROQ_MODELS: ModelConfig[] = [
-  { id: 'llama-3.1-8b-instant', alias: 'Llama 3.1 8B (Instant)' },
-  { id: 'llama-3.3-70b-versatile', alias: 'Llama 3.3 70B (Versatile)' },
-  {
-    id: 'meta-llama/llama-4-scout-17b-16e-instruct',
-    alias: 'Llama 4 Scout 17B 16e (Instruct)',
-  },
   { id: 'openai/gpt-oss-20b', alias: 'gpt-oss-20B' },
   { id: 'openai/gpt-oss-120b', alias: 'gpt-oss-120B' },
-  { id: 'openai/gpt-oss-safeguard-20b', alias: 'gpt-oss-safeguard-20B' },
-  { id: 'qwen/qwen3-32b', alias: 'Qwen 3 32b' },
+  { id: 'minimaxai/minimax-m2.7', alias: 'MiniMax M2.7' },
+  { id: 'openai/gpt-oss-safeguard-20b', alias: 'Safety GPT OSS 20B' },
+  { id: 'qwen/qwen3.6-27b', alias: 'Qwen 3.6 27b' },
 ];
 
 export const OPENROUTER_MODELS: ModelConfig[] = [];

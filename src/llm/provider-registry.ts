@@ -22,15 +22,15 @@ export const PROVIDER_DISPLAY_NAMES: Record<APIProvider, string> = {
 };
 
 export const DEFAULT_MODELS: Record<APIProvider, string> = {
-  google: 'gemini-3.6-flash',
+  google: 'gemini-3.7-flash',
   openai: 'gpt-5.6-terra',
   anthropic: 'claude-sonnet-5',
   ollama: '',
-  grok: 'grok-4.3',
+  grok: 'grok-4.6',
   groq: 'openai/gpt-oss-120b',
-  openrouter: 'google/gemini-3.5-flash',
+  openrouter: '',
   deepseek: 'deepseek-v4-flash',
-  qwen: 'qwen3.7-plus',
+  qwen: '',
 };
 
 export const DEFAULT_PROVIDER: APIProvider = 'google';
