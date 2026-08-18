@@ -10,6 +10,8 @@
 
 Commit-Copilot is a VS Code extension that investigates your repository with a multi-step AI agent, classifies changes using strict Conventional Commits rules, and writes polished commit messages directly into Source Control.
 
+It works seamlessly with major cloud LLMs (Gemini, OpenAI, Anthropic Claude, DeepSeek), privacy-first local Ollama models, and custom endpoints (OpenAI & Anthropic compatible formats).
+
 [![VS Marketplace](https://img.shields.io/badge/VS%20Marketplace-Install-007ACC?logo=visualstudiocode&logoColor=white)](https://marketplace.visualstudio.com/items?itemName=JeremySu0818.commit-copilot)
 [![Open VSX](https://img.shields.io/open-vsx/v/JeremySu0818/commit-copilot?label=Open%20VSX)](https://open-vsx.org/extension/JeremySu0818/commit-copilot)
 [![Open VSX Downloads](https://img.shields.io/open-vsx/dt/JeremySu0818/commit-copilot?label=Open%20VSX%20Downloads)](https://open-vsx.org/extension/JeremySu0818/commit-copilot)
@@ -262,7 +264,7 @@ Generated messages are inserted into the standard Source Control input box, wher
 | **OpenAI**          | Reasoning, general-purpose, compact, and GPT-5-series models           |
 | **Anthropic**       | Claude Haiku, Sonnet, Opus, and Fable families                         |
 | **xAI Grok**        | Reasoning and non-reasoning Grok variants                              |
-| **Groq**            | Fast hosted Llama, Qwen, and `gpt-oss` models                          |
+| **Groq**            | Fast hosted MiniMax, Qwen, and `gpt-oss` models                        |
 | **OpenRouter**      | Dynamic access to compatible models with tool-support filtering        |
 | **DeepSeek**        | Chat, Reasoner, and V4 variants                                        |
 | **Alibaba Qwen**    | DashScope integration with dynamic model discovery                     |
@@ -277,7 +279,9 @@ Generated messages are inserted into the standard Source Control input box, wher
 - Gemini 2.5 Flash-Lite, Flash, and Pro
 - Gemini 3 Flash
 - Gemini 3.1 Flash-Lite and Pro
-- Gemini 3.5 Flash
+- Gemini 3.5 Flash-Lite and Flash
+- Gemini 3.6 Flash
+- Gemini 3.7 Flash
 
 ### OpenAI
 
@@ -300,22 +304,22 @@ Generated messages are inserted into the standard Source Control input box, wher
 - Claude Sonnet and Opus 4.6
 - Claude Opus 4.7
 - Claude Opus 4.8
-- Claude Sonnet 5 and Fable 5
+- Claude Sonnet 5, Opus 5, and Fable 5
 
 ### xAI Grok
 
 - Grok 4.20, reasoning and non-reasoning
-- Grok 4.3
+- Grok 4.3,
+- Grok 4.5
+- Grok 4.6
 
 ### Groq
 
-- Llama 3.1 8B
-- Llama 3.3 70B
-- Llama 4 Scout
 - `gpt-oss-20B`
 - `gpt-oss-120B`
 - `gpt-oss-safeguard-20B`
-- Qwen 3 32B
+- MiniMax M2.7
+- Qwen 3.6 27b
 
 ### DeepSeek
 

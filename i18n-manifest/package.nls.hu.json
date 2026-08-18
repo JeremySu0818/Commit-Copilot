@@ -1,6 +1,6 @@
 {
   "extension.displayName": "Commit Copilot",
-  "extension.description": "Hagyományos commit üzenetek generálása LLM-ek segítségével.",
+  "extension.description": "Hagyományos commit üzenetek generálása ágens alapú MI-vel, felhős LLM-ek, helyi Ollama és egyéni végpontok támogatásával.",
   "command.generate.title": "Commit üzenet generálása",
   "command.cancelGeneration.title": "Generálás megszakítása",
   "command.openSettings.title": "Beállítások megnyitása",

@@ -1,6 +1,6 @@
 {
   "extension.displayName": "Commit Copilot",
-  "extension.description": "Genereer conventionele commitberichten met behulp van LLM's.",
+  "extension.description": "Genereer conventionele commitberichten met agentische AI, met ondersteuning voor cloud-LLM's, lokale Ollama en aangepaste eindpunten.",
   "command.generate.title": "Genereer Commitbericht",
   "command.cancelGeneration.title": "Annuleer Generatie",
   "command.openSettings.title": "Instellingen openen",

@@ -1,6 +1,6 @@
 {
   "extension.displayName": "Commit Copilot",
-  "extension.description": "LLM kullanarak geleneksel (conventional) commit mesajları oluşturur.",
+  "extension.description": "Ajan tabanlı yapay zeka ile geleneksel commit mesajları oluşturun. Bulut LLM'leri, yerel Ollama ve özel uç noktaları destekler.",
   "command.generate.title": "Commit Mesajı Oluştur",
   "command.cancelGeneration.title": "Oluşturmayı İptal Et",
   "command.openSettings.title": "Ayarları Aç",

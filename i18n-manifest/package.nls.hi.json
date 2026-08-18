@@ -1,6 +1,6 @@
 {
   "extension.displayName": "Commit Copilot",
-  "extension.description": "एलएलएम का उपयोग करके पारंपरिक कमिट संदेश उत्पन्न करें।",
+  "extension.description": "एजेंटिक AI के साथ पारंपरिक कमिट संदेश उत्पन्न करें, जो क्लाउड LLM, स्थानीय Ollama और कस्टम एंडपॉइंट्स का समर्थन करता है।",
   "command.generate.title": "कमिट संदेश उत्पन्न करें",
   "command.cancelGeneration.title": "उत्पादन रद्द करें",
   "command.openSettings.title": "सेटिंग्स खोलें",

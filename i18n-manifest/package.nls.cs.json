@@ -1,6 +1,6 @@
 {
   "extension.displayName": "Commit Copilot",
-  "extension.description": "Generování konvenčních zpráv o potvrzení (commit) pomocí LLM.",
+  "extension.description": "Generování konvenčních commit zpráv pomocí agentního AI s podporou cloudových LLM, lokálního Ollama a vlastních koncových bodů.",
   "command.generate.title": "Generovat zprávu o potvrzení",
   "command.cancelGeneration.title": "Zrušit generování",
   "command.openSettings.title": "Otevřít nastavení",

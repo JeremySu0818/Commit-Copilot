@@ -1,6 +1,6 @@
 {
   "extension.displayName": "Commit Copilot",
-  "extension.description": "LLM을 사용하여 커밋 메시지 생성",
+  "extension.description": "Agent AI로 리포지토리를 분석하여 Conventional Commit을 생성합니다. 클라우드 LLM, 로컬 Ollama 및 커스텀 엔드포인트를 지원합니다.",
   "command.generate.title": "커밋 메시지 생성",
   "command.cancelGeneration.title": "생성 취소",
   "command.openSettings.title": "설정 열기",

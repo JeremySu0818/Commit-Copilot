@@ -1,6 +1,6 @@
 {
   "extension.displayName": "Commit Copilot",
-  "extension.description": "LLMを使用したConventional Commitメッセージの生成。",
+  "extension.description": "Agent AI でリポジトリを分析し Conventional Commit を生成。クラウド LLM、ローカル Ollama、カスタムエンドポイントに対応。",
   "command.generate.title": "コミットメッセージを生成",
   "command.cancelGeneration.title": "生成をキャンセル",
   "command.openSettings.title": "設定を開く",

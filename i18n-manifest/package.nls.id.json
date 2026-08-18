@@ -1,6 +1,6 @@
 {
   "extension.displayName": "Commit Copilot",
-  "extension.description": "Hasilkan pesan komit konvensional menggunakan LLMs.",
+  "extension.description": "Hasilkan pesan commit konvensional dengan AI berbasis agen, mendukung LLM cloud, Ollama lokal, dan endpoint kustom.",
   "command.generate.title": "Hasilkan Pesan Komit",
   "command.cancelGeneration.title": "Batalkan Pembuatan",
   "command.openSettings.title": "Buka Pengaturan",

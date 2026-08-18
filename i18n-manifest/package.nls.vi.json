@@ -1,6 +1,6 @@
 {
   "extension.displayName": "Commit Copilot",
-  "extension.description": "Tạo thông báo commit theo chuẩn bằng LLM.",
+  "extension.description": "Tạo thông báo commit theo chuẩn bằng AI dạng Agent, hỗ trợ LLM đám mây, Ollama cục bộ và endpoint tùy chỉnh.",
   "command.generate.title": "Tạo thông báo commit",
   "command.cancelGeneration.title": "Hủy tạo",
   "command.openSettings.title": "Mở cài đặt",

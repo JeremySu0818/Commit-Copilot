@@ -1,6 +1,6 @@
 {
   "extension.displayName": "Commit Copilot",
-  "extension.description": "使用 LLM 產生符合慣例的 Commit 訊息。",
+  "extension.description": "透過 Agent 深度分析產生符合慣例的 Commit 訊息，支援主流雲端 LLM、本地 Ollama 及自訂端點。",
   "command.generate.title": "產生 Commit 訊息",
   "command.cancelGeneration.title": "取消產生",
   "command.openSettings.title": "開啟設定",

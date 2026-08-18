@@ -1,6 +1,6 @@
 {
   "extension.displayName": "Commit Copilot",
-  "extension.description": "توليد رسائل الالتزام باستخدام نماذج اللغة (LLMs).",
+  "extension.description": "توليد رسائل الالتزام التقليدية باستخدام الذكاء الاصطناعي الوكيل، مع دعم نماذج السحابة وOllama المحلي ونقاط النهاية المخصصة.",
   "command.generate.title": "توليد رسالة الالتزام",
   "command.cancelGeneration.title": "إلغاء التوليد",
   "command.openSettings.title": "فتح الإعدادات",

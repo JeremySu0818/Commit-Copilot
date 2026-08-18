@@ -1,6 +1,6 @@
 {
   "extension.displayName": "Commit Copilot",
-  "extension.description": "Generuj konwencjonalne komunikaty commitów za pomocą LLM.",
+  "extension.description": "Generuj konwencjonalne komunikaty commitów za pomocą agencyjnej AI, ze wsparciem dla chmurowych LLM, lokalnego Ollama i własnych punktów końcowych.",
   "command.generate.title": "Generuj komunikat commita",
   "command.cancelGeneration.title": "Anuluj generowanie",
   "command.openSettings.title": "Otwórz ustawienia",

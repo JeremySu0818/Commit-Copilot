@@ -1,6 +1,6 @@
 {
   "extension.displayName": "Commit Copilot",
-  "extension.description": "Gere mensagens de commit convencionais usando LLMs.",
+  "extension.description": "Gere mensagens de commit convencionais com IA baseada em agentes, com suporte a LLMs em nuvem, Ollama local e endpoints personalizados.",
   "command.generate.title": "Gerar Mensagem de Commit",
   "command.cancelGeneration.title": "Cancelar Geração",
   "command.openSettings.title": "Abrir Configurações",
