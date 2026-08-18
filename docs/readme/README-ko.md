@@ -24,26 +24,26 @@ Commit-Copilot은 자율형 AI 에이전트가 다단계로 저장소를 조사�
 
 <p align="center">
   <b>번역:</b>
-  <a href="../../README.md">English</a> |
-  <a href="README-zh-tw.md">繁體中文</a> |
-  <a href="README-zh-cn.md">简体中文</a> |
-  <a href="README-ja.md">日本語</a> |
-  <a href="README-ko.md">한국어</a> |
-  <a href="README-de.md">Deutsch</a> |
-  <a href="README-fr.md">Français</a> |
-  <a href="README-es.md">Español</a> |
-  <a href="README-pt-br.md">Português (Brasil)</a> |
-  <a href="README-ru.md">Русский</a> |
-  <a href="README-it.md">Italiano</a> |
-  <a href="README-nl.md">Nederlands</a> |
-  <a href="README-pl.md">Polski</a> |
-  <a href="README-tr.md">Türkçe</a> |
-  <a href="README-vi.md">Tiếng Việt</a> |
-  <a href="README-id.md">Bahasa Indonesia</a> |
-  <a href="README-hu.md">Magyar</a> |
-  <a href="README-cs.md">Čeština</a> |
-  <a href="README-hi.md">हिन्दी</a> |
-  <a href="README-ar.md">العربية</a>
+  <a href="https://github.com/JeremySu0818/Commit-Copilot#readme">English</a> |
+  <a href="https://github.com/JeremySu0818/Commit-Copilot/blob/main/docs/readme/README-zh-tw.md">繁體中文</a> |
+  <a href="https://github.com/JeremySu0818/Commit-Copilot/blob/main/docs/readme/README-zh-cn.md">简体中文</a> |
+  <a href="https://github.com/JeremySu0818/Commit-Copilot/blob/main/docs/readme/README-ja.md">日本語</a> |
+  <a href="https://github.com/JeremySu0818/Commit-Copilot/blob/main/docs/readme/README-ko.md">한국어</a> |
+  <a href="https://github.com/JeremySu0818/Commit-Copilot/blob/main/docs/readme/README-de.md">Deutsch</a> |
+  <a href="https://github.com/JeremySu0818/Commit-Copilot/blob/main/docs/readme/README-fr.md">Français</a> |
+  <a href="https://github.com/JeremySu0818/Commit-Copilot/blob/main/docs/readme/README-es.md">Español</a> |
+  <a href="https://github.com/JeremySu0818/Commit-Copilot/blob/main/docs/readme/README-pt-br.md">Português (Brasil)</a> |
+  <a href="https://github.com/JeremySu0818/Commit-Copilot/blob/main/docs/readme/README-ru.md">Русский</a> |
+  <a href="https://github.com/JeremySu0818/Commit-Copilot/blob/main/docs/readme/README-it.md">Italiano</a> |
+  <a href="https://github.com/JeremySu0818/Commit-Copilot/blob/main/docs/readme/README-nl.md">Nederlands</a> |
+  <a href="https://github.com/JeremySu0818/Commit-Copilot/blob/main/docs/readme/README-pl.md">Polski</a> |
+  <a href="https://github.com/JeremySu0818/Commit-Copilot/blob/main/docs/readme/README-tr.md">Türkçe</a> |
+  <a href="https://github.com/JeremySu0818/Commit-Copilot/blob/main/docs/readme/README-vi.md">Tiếng Việt</a> |
+  <a href="https://github.com/JeremySu0818/Commit-Copilot/blob/main/docs/readme/README-id.md">Bahasa Indonesia</a> |
+  <a href="https://github.com/JeremySu0818/Commit-Copilot/blob/main/docs/readme/README-hu.md">Magyar</a> |
+  <a href="https://github.com/JeremySu0818/Commit-Copilot/blob/main/docs/readme/README-cs.md">Čeština</a> |
+  <a href="https://github.com/JeremySu0818/Commit-Copilot/blob/main/docs/readme/README-hi.md">हिन्दी</a> |
+  <a href="https://github.com/JeremySu0818/Commit-Copilot/blob/main/docs/readme/README-ar.md">العربية</a>
 </p>
 
 </div>
