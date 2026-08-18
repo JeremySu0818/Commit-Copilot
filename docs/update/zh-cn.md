@@ -7,3 +7,4 @@
 - 新增支持 xAI Grok 服务商的 Grok 4.5 与 Grok 4.6，并将 Grok 默认模型升级为 Grok 4.6。
 - 更新 Groq 模型目录，新增 MiniMax M2.7 与 Qwen 3.6 27b，并清理已下线的旧模型。
 - 优化配置自定义 Base URL 时的 OpenAI 兼容服务商模型解析机制。
+- 新增多语言（i18n）README.md 支持与跨语言快速导航。

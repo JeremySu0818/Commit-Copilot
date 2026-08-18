@@ -22,6 +22,30 @@ It works seamlessly with major cloud LLMs (Gemini, OpenAI, Anthropic Claude, Dee
 
 **Agentic investigation · 9 built-in providers · Custom endpoints · Local Ollama support · 20 languages**
 
+<p align="center">
+  <b>Translations:</b>
+  <a href="README.md">English</a> |
+  <a href="docs/readme/README-zh-tw.md">繁體中文</a> |
+  <a href="docs/readme/README-zh-cn.md">简体中文</a> |
+  <a href="docs/readme/README-ja.md">日本語</a> |
+  <a href="docs/readme/README-ko.md">한국어</a> |
+  <a href="docs/readme/README-de.md">Deutsch</a> |
+  <a href="docs/readme/README-fr.md">Français</a> |
+  <a href="docs/readme/README-es.md">Español</a> |
+  <a href="docs/readme/README-pt-br.md">Português (Brasil)</a> |
+  <a href="docs/readme/README-ru.md">Русский</a> |
+  <a href="docs/readme/README-it.md">Italiano</a> |
+  <a href="docs/readme/README-nl.md">Nederlands</a> |
+  <a href="docs/readme/README-pl.md">Polski</a> |
+  <a href="docs/readme/README-tr.md">Türkçe</a> |
+  <a href="docs/readme/README-vi.md">Tiếng Việt</a> |
+  <a href="docs/readme/README-id.md">Bahasa Indonesia</a> |
+  <a href="docs/readme/README-hu.md">Magyar</a> |
+  <a href="docs/readme/README-cs.md">Čeština</a> |
+  <a href="docs/readme/README-hi.md">हिन्दी</a> |
+  <a href="docs/readme/README-ar.md">العربية</a>
+</p>
+
 </div>
 
 ---
@@ -486,34 +510,34 @@ The extension UI can follow VS Code automatically or be pinned to one of 20 lang
 
 <table>
 <tr>
-<td>العربية</td>
-<td>Čeština</td>
-<td>Deutsch</td>
-<td>English</td>
+<td><a href="docs/readme/README-ar.md">العربية</a></td>
+<td><a href="docs/readme/README-cs.md">Čeština</a></td>
+<td><a href="docs/readme/README-de.md">Deutsch</a></td>
+<td><a href="README.md">English</a></td>
 </tr>
 <tr>
-<td>Español</td>
-<td>Français</td>
-<td>हिन्दी</td>
-<td>Magyar</td>
+<td><a href="docs/readme/README-es.md">Español</a></td>
+<td><a href="docs/readme/README-fr.md">Français</a></td>
+<td><a href="docs/readme/README-hi.md">हिन्दी</a></td>
+<td><a href="docs/readme/README-hu.md">Magyar</a></td>
 </tr>
 <tr>
-<td>Bahasa Indonesia</td>
-<td>Italiano</td>
-<td>日本語</td>
-<td>한국어</td>
+<td><a href="docs/readme/README-id.md">Bahasa Indonesia</a></td>
+<td><a href="docs/readme/README-it.md">Italiano</a></td>
+<td><a href="docs/readme/README-ja.md">日本語</a></td>
+<td><a href="docs/readme/README-ko.md">한국어</a></td>
 </tr>
 <tr>
-<td>Nederlands</td>
-<td>Polski</td>
-<td>Português (Brasil)</td>
-<td>Русский</td>
+<td><a href="docs/readme/README-nl.md">Nederlands</a></td>
+<td><a href="docs/readme/README-pl.md">Polski</a></td>
+<td><a href="docs/readme/README-pt-br.md">Português (Brasil)</a></td>
+<td><a href="docs/readme/README-ru.md">Русский</a></td>
 </tr>
 <tr>
-<td>Türkçe</td>
-<td>Tiếng Việt</td>
-<td>简体中文</td>
-<td>繁體中文</td>
+<td><a href="docs/readme/README-tr.md">Türkçe</a></td>
+<td><a href="docs/readme/README-vi.md">Tiếng Việt</a></td>
+<td><a href="docs/readme/README-zh-cn.md">简体中文</a></td>
+<td><a href="docs/readme/README-zh-tw.md">繁體中文</a></td>
 </tr>
 </table>
 

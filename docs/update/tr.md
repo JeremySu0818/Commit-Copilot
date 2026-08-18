@@ -7,3 +7,4 @@
 - xAI Grok sağlayıcısı için Grok 4.5 ve Grok 4.6 desteği eklendi ve varsayılan Grok modeli Grok 4.6 olarak güncellendi.
 - Groq model kataloğu MiniMax M2.7 ve Qwen 3.6 27b ile güncellendi ve kullanım dışı bırakılan modeller kaldırıldı.
 - Özel Base URL kullanılırken OpenAI uyumlu özel sağlayıcılar için model çözümleme mekanizması iyileştirildi.
+- Diller arası geçiş bağlantılarına sahip çok dilli (i18n) README.md dokümantasyon desteği eklendi.

@@ -7,3 +7,4 @@
 - Ajout de la prise en charge de Grok 4.5 et Grok 4.6 pour le fournisseur xAI Grok, et mise à niveau du modèle Grok par défaut vers Grok 4.6.
 - Mise à jour du catalogue de modèles Groq avec MiniMax M2.7 et Qwen 3.6 27b, et suppression des modèles obsolètes.
 - Amélioration de la résolution des modèles pour les fournisseurs personnalisés compatibles OpenAI avec des URL de base personnalisées.
+- Ajout de la documentation README.md multilingue (i18n) avec navigation entre les différentes langues.

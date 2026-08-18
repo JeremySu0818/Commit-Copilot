@@ -7,3 +7,4 @@
 - Ondersteuning toegevoegd voor Grok 4.5 en Grok 4.6 in de xAI Grok-provider, en het standaard Grok-model bijgewerkt naar Grok 4.6.
 - Groq-modelcatalogus bijgewerkt met MiniMax M2.7 en Qwen 3.6 27b, en verouderde modellen verwijderd.
 - Modelresolutie verbeterd voor OpenAI-compatibele aangepaste providers bij gebruik van aangepaste basis-URL's.
+- Ondersteuning toegevoegd voor meertalige (i18n) README.md-documentatie met navigatie tussen talen.

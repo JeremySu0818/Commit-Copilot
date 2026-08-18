@@ -121,9 +121,15 @@ void test('MainViewProvider.showUpdateInfo reads and renders update info markdow
   await provider.showUpdateInfo();
 
   assert.ok(statCalledUri);
-  assert.ok((statCalledUri as string).endsWith('en.md'));
+  assert.ok(
+    (statCalledUri as string).endsWith(path.join('docs', 'update', 'en.md')),
+  );
   assert.ok(readFileCalledUri);
-  assert.ok((readFileCalledUri as string).endsWith('en.md'));
+  assert.ok(
+    (readFileCalledUri as string).endsWith(
+      path.join('docs', 'update', 'en.md'),
+    ),
+  );
   assert.ok(webviewPanelCreated);
   assert.match(webviewTitle, /Commit Copilot/);
   assert.match(webviewHtml, /<h1>Mock Release Notes<\/h1>/);
@@ -239,9 +245,13 @@ void test('MainViewProvider.showUpdateInfo falls back to en.md when requested la
 
   const expectedCalls = 1;
   assert.equal(statCalls.length, expectedCalls);
-  assert.ok(statCalls[0].endsWith('ja.md'));
+  assert.ok(statCalls[0].endsWith(path.join('docs', 'update', 'ja.md')));
   assert.ok(readFileCalledUri);
-  assert.ok((readFileCalledUri as string).endsWith('en.md'));
+  assert.ok(
+    (readFileCalledUri as string).endsWith(
+      path.join('docs', 'update', 'en.md'),
+    ),
+  );
   assert.ok(webviewPanelCreated);
   assert.match(webviewTitle, /Commit Copilot/);
   assert.match(
