@@ -290,7 +290,7 @@ Los mensajes generados se insertan directamente en el cuadro de entrada estánda
 | **xAI Grok**        | Variantes de Grok estándar y con razonamiento                                    |
 | **Groq**            | Modelos alojados ultrarrápidos MiniMax, Qwen y `gpt-oss`                         |
 | **OpenRouter**      | Acceso dinámico a modelos compatibles con filtrado por soporte de herramientas   |
-| **DeepSeek**        | Variantes Chat, Reasoner (R1) y V4                                               |
+| **DeepSeek**        | DeepSeek V4.1 Flash                                                              |
 | **Alibaba Qwen**    | Integración DashScope con descubrimiento dinámico de modelos                     |
 | **Ollama**          | Modelos locales con descubrimiento dinámico y protocolo de herramientas de texto |
 | **Custom Provider** | Puntos finales compatibles con los formatos de API de OpenAI o Anthropic         |
@@ -306,6 +306,7 @@ Los mensajes generados se insertan directamente en el cuadro de entrada estánda
 - Gemini 3.5 Flash-Lite y Flash
 - Gemini 3.6 Flash
 - Gemini 3.7 Flash
+- Gemini 3.8 Flash
 
 ### OpenAI
 
@@ -319,6 +320,7 @@ Los mensajes generados se insertan directamente en el cuadro de entrada estánda
 - GPT-5.4 nano, mini y GPT-5.4
 - GPT-5.5
 - GPT-5.6 Luna, Terra y Sol
+- GPT-6 Astra
 
 ### Anthropic
 
@@ -329,6 +331,7 @@ Los mensajes generados se insertan directamente en el cuadro de entrada estánda
 - Claude Opus 4.7
 - Claude Opus 4.8
 - Claude Sonnet 5, Opus 5 y Fable 5
+- Claude Fable 5.1
 
 ### xAI Grok
 
@@ -347,9 +350,7 @@ Los mensajes generados se insertan directamente en el cuadro de entrada estánda
 
 ### DeepSeek
 
-- DeepSeek Chat
-- DeepSeek R1 / Reasoner
-- DeepSeek V4 Flash y Pro
+- DeepSeek V4.1 Flash
 
 > [!IMPORTANT]
 > La disponibilidad de modelos depende del proveedor, cuenta, región, punto final y catálogo actual del proveedor. Las listas para OpenRouter, Qwen, Ollama y proveedores personalizados pueden descubrirse dinámicamente.

@@ -290,7 +290,7 @@ Gegenereerde berichten worden rechtstreeks in het standaard invoerveld van Sourc
 | **xAI Grok**        | Standaard- en redeneringsvarianten van Grok                                        |
 | **Groq**            | Supersnel gehoste MiniMax-, Qwen- en `gpt-oss`-modellen                            |
 | **OpenRouter**      | Dynamische toegang tot compatibele modellen met filtering op toolondersteuning     |
-| **DeepSeek**        | Chat-, Reasoner- (R1) en V4-varianten                                              |
+| **DeepSeek**        | DeepSeek V4.1 Flash                                                                |
 | **Alibaba Qwen**    | DashScope-integratie met dynamische modeldetectie                                  |
 | **Ollama**          | Lokale modellen met dynamische detectie en ingebouwd teksttoolprotocol             |
 | **Custom Provider** | Aangepaste eindpunten compatibel met OpenAI- of Anthropic-API-indelingen           |
@@ -306,6 +306,7 @@ Gegenereerde berichten worden rechtstreeks in het standaard invoerveld van Sourc
 - Gemini 3.5 Flash-Lite en Flash
 - Gemini 3.6 Flash
 - Gemini 3.7 Flash
+- Gemini 3.8 Flash
 
 ### OpenAI
 
@@ -319,6 +320,7 @@ Gegenereerde berichten worden rechtstreeks in het standaard invoerveld van Sourc
 - GPT-5.4 nano, mini en GPT-5.4
 - GPT-5.5
 - GPT-5.6 Luna, Terra en Sol
+- GPT-6 Astra
 
 ### Anthropic
 
@@ -329,6 +331,7 @@ Gegenereerde berichten worden rechtstreeks in het standaard invoerveld van Sourc
 - Claude Opus 4.7
 - Claude Opus 4.8
 - Claude Sonnet 5, Opus 5 en Fable 5
+- Claude Fable 5.1
 
 ### xAI Grok
 
@@ -347,9 +350,7 @@ Gegenereerde berichten worden rechtstreeks in het standaard invoerveld van Sourc
 
 ### DeepSeek
 
-- DeepSeek Chat
-- DeepSeek R1 / Reasoner
-- DeepSeek V4 Flash en Pro
+- DeepSeek V4.1 Flash
 
 > [!IMPORTANT]
 > De beschikbaarheid van modellen is afhankelijk van de provider, het account, de regio, het eindpunt en de actuele providercatalogus. Lijsten voor OpenRouter, Qwen, Ollama en aangepaste providers kunnen dynamisch worden opgehaald.

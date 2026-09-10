@@ -290,7 +290,7 @@ Generated messages are inserted into the standard Source Control input box, wher
 | **xAI Grok**        | Reasoning and non-reasoning Grok variants                              |
 | **Groq**            | Fast hosted MiniMax, Qwen, and `gpt-oss` models                        |
 | **OpenRouter**      | Dynamic access to compatible models with tool-support filtering        |
-| **DeepSeek**        | Chat, Reasoner, and V4 variants                                        |
+| **DeepSeek**        | DeepSeek V4.1 Flash                                                    |
 | **Alibaba Qwen**    | DashScope integration with dynamic model discovery                     |
 | **Ollama**          | Local models with dynamic discovery and a built-in agent tool protocol |
 | **Custom Provider** | OpenAI-compatible or Anthropic-compatible endpoints                    |
@@ -306,6 +306,7 @@ Generated messages are inserted into the standard Source Control input box, wher
 - Gemini 3.5 Flash-Lite and Flash
 - Gemini 3.6 Flash
 - Gemini 3.7 Flash
+- Gemini 3.8 Flash
 
 ### OpenAI
 
@@ -319,6 +320,7 @@ Generated messages are inserted into the standard Source Control input box, wher
 - GPT-5.4 nano, mini, and GPT-5.4
 - GPT-5.5
 - GPT-5.6 Luna, Terra, and Sol
+- GPT-6 Astra
 
 ### Anthropic
 
@@ -329,6 +331,7 @@ Generated messages are inserted into the standard Source Control input box, wher
 - Claude Opus 4.7
 - Claude Opus 4.8
 - Claude Sonnet 5, Opus 5, and Fable 5
+- Claude Fable 5.1
 
 ### xAI Grok
 
@@ -347,9 +350,7 @@ Generated messages are inserted into the standard Source Control input box, wher
 
 ### DeepSeek
 
-- DeepSeek Chat
-- DeepSeek R1 / Reasoner
-- DeepSeek V4 Flash and Pro
+- DeepSeek V4.1 Flash
 
 > [!IMPORTANT]
 > Model availability depends on the provider, account, region, endpoint, and current provider catalog. OpenRouter, Qwen, Ollama, and custom-provider lists may be discovered dynamically.

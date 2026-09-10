@@ -290,7 +290,7 @@ As mensagens geradas são inseridas diretamente na caixa de entrada padrão do S
 | **xAI Grok**        | Variantes do Grok convencionais e com raciocínio                                     |
 | **Groq**            | Modelos hospedados ultrarrápidos MiniMax, Qwen e `gpt-oss`                           |
 | **OpenRouter**      | Acesso dinâmico a modelos compatíveis com filtragem por suporte a ferramentas        |
-| **DeepSeek**        | Variantes Chat, Reasoner (R1) e V4                                                   |
+| **DeepSeek**        | DeepSeek V4.1 Flash                                                                  |
 | **Alibaba Qwen**    | Integração DashScope com descoberta dinâmica de modelos                              |
 | **Ollama**          | Modelos locais com descoberta dinâmica e protocolo de ferramentas de texto integrado |
 | **Custom Provider** | Endpoints personalizados compatíveis com os formatos de API OpenAI ou Anthropic      |
@@ -306,6 +306,7 @@ As mensagens geradas são inseridas diretamente na caixa de entrada padrão do S
 - Gemini 3.5 Flash-Lite e Flash
 - Gemini 3.6 Flash
 - Gemini 3.7 Flash
+- Gemini 3.8 Flash
 
 ### OpenAI
 
@@ -319,6 +320,7 @@ As mensagens geradas são inseridas diretamente na caixa de entrada padrão do S
 - GPT-5.4 nano, mini e GPT-5.4
 - GPT-5.5
 - GPT-5.6 Luna, Terra e Sol
+- GPT-6 Astra
 
 ### Anthropic
 
@@ -329,6 +331,7 @@ As mensagens geradas são inseridas diretamente na caixa de entrada padrão do S
 - Claude Opus 4.7
 - Claude Opus 4.8
 - Claude Sonnet 5, Opus 5 e Fable 5
+- Claude Fable 5.1
 
 ### xAI Grok
 
@@ -347,9 +350,7 @@ As mensagens geradas são inseridas diretamente na caixa de entrada padrão do S
 
 ### DeepSeek
 
-- DeepSeek Chat
-- DeepSeek R1 / Reasoner
-- DeepSeek V4 Flash e Pro
+- DeepSeek V4.1 Flash
 
 > [!IMPORTANT]
 > A disponibilidade de modelos depende do provedor, conta, região, endpoint e catálogo ativo do provedor. As listas para OpenRouter, Qwen, Ollama e provedores personalizados podem ser descobertas dinamicamente.

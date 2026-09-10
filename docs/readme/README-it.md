@@ -290,7 +290,7 @@ I messaggi generati vengono inseriti direttamente nella casella di input standar
 | **xAI Grok**        | Varianti di Grok standard e con ragionamento                                       |
 | **Groq**            | Modelli ospitati ad altissima velocità MiniMax, Qwen e `gpt-oss`                   |
 | **OpenRouter**      | Accesso dinamico a modelli compatibili con filtro per il supporto degli strumenti  |
-| **DeepSeek**        | Varianti Chat, Reasoner (R1) e V4                                                  |
+| **DeepSeek**        | DeepSeek V4.1 Flash                                                                |
 | **Alibaba Qwen**    | Integrazione con DashScope e rilevamento dinamico dei modelli                      |
 | **Ollama**          | Modelli locali con rilevamento dinamico e protocollo testuale integrato per agenti |
 | **Custom Provider** | Endpoint personalizzati compatibili con le specifiche API di OpenAI o Anthropic    |
@@ -306,6 +306,7 @@ I messaggi generati vengono inseriti direttamente nella casella di input standar
 - Gemini 3.5 Flash-Lite e Flash
 - Gemini 3.6 Flash
 - Gemini 3.7 Flash
+- Gemini 3.8 Flash
 
 ### OpenAI
 
@@ -319,6 +320,7 @@ I messaggi generati vengono inseriti direttamente nella casella di input standar
 - GPT-5.4 nano, mini e GPT-5.4
 - GPT-5.5
 - GPT-5.6 Luna, Terra e Sol
+- GPT-6 Astra
 
 ### Anthropic
 
@@ -329,6 +331,7 @@ I messaggi generati vengono inseriti direttamente nella casella di input standar
 - Claude Opus 4.7
 - Claude Opus 4.8
 - Claude Sonnet 5, Opus 5 e Fable 5
+- Claude Fable 5.1
 
 ### xAI Grok
 
@@ -347,9 +350,7 @@ I messaggi generati vengono inseriti direttamente nella casella di input standar
 
 ### DeepSeek
 
-- DeepSeek Chat
-- DeepSeek R1 / Reasoner
-- DeepSeek V4 Flash e Pro
+- DeepSeek V4.1 Flash
 
 > [!IMPORTANT]
 > La disponibilità dei modelli dipende dal provider, dall'account, dall'area geografica, dall'endpoint e dal catalogo attivo del provider. Gli elenchi per OpenRouter, Qwen, Ollama e provider personalizzati possono essere individuati dinamicamente.

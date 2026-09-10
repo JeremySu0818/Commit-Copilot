@@ -290,7 +290,7 @@ Wygenerowana wiadomość jest wstawiana do standardowego pola tekstowego Source 
 | **xAI Grok**                | Warianty Grok z rozumowaniem oraz bez rozumowania                          |
 | **Groq**                    | Szybki hosting modeli MiniMax, Qwen oraz `gpt-oss`                         |
 | **OpenRouter**              | Dynamiczny dostęp do modeli z filtrowaniem obsługi narzędzi (tool calling) |
-| **DeepSeek**                | Modele DeepSeek Chat, Reasoner (R1) oraz V4                                |
+| **DeepSeek**                | DeepSeek V4.1 Flash                                                        |
 | **Alibaba Qwen**            | Integracja z DashScope i dynamiczne wykrywanie modeli                      |
 | **Ollama**                  | Modele lokalne z dynamicznym wykrywaniem i wbudowanym protokołem narzędzi  |
 | **Niestandardowy dostawca** | Dowolne punkty końcowe zgodne ze standardem OpenAI lub Anthropic           |
@@ -306,6 +306,7 @@ Wygenerowana wiadomość jest wstawiana do standardowego pola tekstowego Source 
 - Gemini 3.5 Flash-Lite oraz Flash
 - Gemini 3.6 Flash
 - Gemini 3.7 Flash
+- Gemini 3.8 Flash
 
 ### OpenAI
 
@@ -319,6 +320,7 @@ Wygenerowana wiadomość jest wstawiana do standardowego pola tekstowego Source 
 - GPT-5.4 nano, mini oraz GPT-5.4
 - GPT-5.5
 - GPT-5.6 Luna, Terra oraz Sol
+- GPT-6 Astra
 
 ### Anthropic
 
@@ -329,6 +331,7 @@ Wygenerowana wiadomość jest wstawiana do standardowego pola tekstowego Source 
 - Claude Opus 4.7
 - Claude Opus 4.8
 - Claude Sonnet 5, Opus 5 oraz Fable 5
+- Claude Fable 5.1
 
 ### xAI Grok
 
@@ -347,9 +350,7 @@ Wygenerowana wiadomość jest wstawiana do standardowego pola tekstowego Source 
 
 ### DeepSeek
 
-- DeepSeek Chat
-- DeepSeek R1 / Reasoner
-- DeepSeek V4 Flash oraz Pro
+- DeepSeek V4.1 Flash
 
 > [!IMPORTANT]
 > Dostępność modeli zależy od dostawcy, konta, regionu i aktualnego katalogu API. Listy modeli dla OpenRouter, Qwen, Ollama i dostawców niestandardowych mogą być pobierane dynamicznie.

@@ -290,7 +290,7 @@ flowchart LR
 | **xAI Grok**            | Варианты Grok с поддержкой рассуждений и без нее                               |
 | **Groq**                | Высокоскоростной хостинг моделей MiniMax, Qwen и `gpt-oss`                     |
 | **OpenRouter**          | Динамический доступ к моделям с фильтрацией по поддержке инструментов          |
-| **DeepSeek**            | Модели DeepSeek Chat, Reasoner (R1) и V4                                       |
+| **DeepSeek**            | DeepSeek V4.1 Flash                                                            |
 | **Alibaba Qwen**        | Интеграция с DashScope и динамическое обнаружение моделей                      |
 | **Ollama**              | Локальные модели, динамический список и встроенный протокол инструментов       |
 | **Кастомный провайдер** | Любые эндпоинты, совместимые с OpenAI или Anthropic                            |
@@ -306,6 +306,7 @@ flowchart LR
 - Gemini 3.5 Flash-Lite и Flash
 - Gemini 3.6 Flash
 - Gemini 3.7 Flash
+- Gemini 3.8 Flash
 
 ### OpenAI
 
@@ -319,6 +320,7 @@ flowchart LR
 - GPT-5.4 nano, mini и GPT-5.4
 - GPT-5.5
 - GPT-5.6 Luna, Terra и Sol
+- GPT-6 Astra
 
 ### Anthropic
 
@@ -329,6 +331,7 @@ flowchart LR
 - Claude Opus 4.7
 - Claude Opus 4.8
 - Claude Sonnet 5, Opus 5 и Fable 5
+- Claude Fable 5.1
 
 ### xAI Grok
 
@@ -347,9 +350,7 @@ flowchart LR
 
 ### DeepSeek
 
-- DeepSeek Chat
-- DeepSeek R1 / Reasoner
-- DeepSeek V4 Flash и Pro
+- DeepSeek V4.1 Flash
 
 > [!IMPORTANT]
 > Доступность конкретных моделей зависит от провайдера, вашего аккаунта, региона и каталога API. Списки моделей для OpenRouter, Qwen, Ollama и кастомных провайдеров могут подгружаться динамически.

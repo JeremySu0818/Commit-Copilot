@@ -1,10 +1,8 @@
 # Informações de Atualização do Commit Copilot
 
-## Novidades na Versão 1.19.0
+## Novidades na Versão 1.20.0
 
-- Adicionado suporte para Gemini 3.7 Flash no provedor Google Gemini e atualizado o modelo padrão do Google para Gemini 3.7 Flash.
-- Adicionado suporte para Claude Opus 5 no provedor Anthropic Claude.
-- Adicionado suporte para Grok 4.5 e Grok 4.6 no provedor xAI Grok, atualizando o modelo padrão para Grok 4.6.
-- Atualizado o catálogo de modelos Groq com MiniMax M2.7 e Qwen 3.6 27b, e removidos os modelos descontinuados.
-- Melhorada a resolução de modelos para provedores personalizados compatíveis com OpenAI ao usar URLs base personalizadas.
-- Adicionado suporte para documentação README.md multilíngue (i18n) com navegação entre idiomas.
+- Adicionado suporte para Gemini 3.8 Flash no provedor Google Gemini e atualizado o modelo padrão do Google para Gemini 3.8 Flash.
+- Adicionado suporte para GPT-6 Astra no provedor OpenAI.
+- Adicionado suporte para Claude Fable 5.1 no provedor Anthropic Claude.
+- Atualizado o catálogo de modelos DeepSeek com DeepSeek V4.1 Flash, e removidos os modelos descontinuados.

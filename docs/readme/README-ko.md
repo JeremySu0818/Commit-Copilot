@@ -290,7 +290,7 @@ Agentic 모드에서는 설정에서 "모든 diff 조회 필수" 옵션을 활�
 | **xAI Grok**               | 추론 및 일반 Grok 시리즈                                         |
 | **Groq**                   | 초고속 호스팅 MiniMax, Qwen, `gpt-oss` 오픈소스 모델             |
 | **OpenRouter**             | 방대한 호환 모델 목록 및 Tool Calling 지원 스마트 필터링         |
-| **DeepSeek**               | DeepSeek Chat, Reasoner(R1), V4 시리즈                           |
+| **DeepSeek**               | DeepSeek V4.1 Flash                                              |
 | **Alibaba Qwen**           | 통의천문(DashScope) 연동 및 동적 모델 검색                       |
 | **Ollama**                 | 동적 모델 목록 및 내장 텍스트 도구 프로토콜을 지원하는 로컬 모델 |
 | **사용자 지정 프로바이더** | OpenAI 호환 또는 Anthropic 호환 사ード파티 엔드포인트 지원       |
@@ -306,6 +306,7 @@ Agentic 모드에서는 설정에서 "모든 diff 조회 필수" 옵션을 활�
 - Gemini 3.5 Flash-Lite, Flash
 - Gemini 3.6 Flash
 - Gemini 3.7 Flash
+- Gemini 3.8 Flash
 
 ### OpenAI
 
@@ -319,6 +320,7 @@ Agentic 모드에서는 설정에서 "모든 diff 조회 필수" 옵션을 활�
 - GPT-5.4 nano, mini, GPT-5.4
 - GPT-5.5
 - GPT-5.6 Luna, Terra, Sol
+- GPT-6 Astra
 
 ### Anthropic
 
@@ -329,6 +331,7 @@ Agentic 모드에서는 설정에서 "모든 diff 조회 필수" 옵션을 활�
 - Claude Opus 4.7
 - Claude Opus 4.8
 - Claude Sonnet 5, Opus 5, Fable 5
+- Claude Fable 5.1
 
 ### xAI Grok
 
@@ -347,9 +350,7 @@ Agentic 모드에서는 설정에서 "모든 diff 조회 필수" 옵션을 활�
 
 ### DeepSeek
 
-- DeepSeek Chat
-- DeepSeek R1 / Reasoner
-- DeepSeek V4 Flash, Pro
+- DeepSeek V4.1 Flash
 
 > [!IMPORTANT]
 > 모델의 실제 사용 가능 여부는 프로바이더 계정 권한, 지역, 엔드포인트 상태에 따라 다릅니다. OpenRouter, Qwen, Ollama, 사용자 지정 프로바이더의 모델 목록은 동적으로 가져올 수 있습니다.

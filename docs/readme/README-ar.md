@@ -290,7 +290,7 @@ flowchart LR
 | **xAI Grok**      | إصدارات Grok الداعمة للتفكير والإصدارات القياسية                   |
 | **Groq**          | استضافة فائقة السرعة لنماذج MiniMax و Qwen و `gpt-oss`             |
 | **OpenRouter**    | وصول ديناميكي إلى كتالوج نماذج واسع مع تصفية دعم استدعاء الأدوات   |
-| **DeepSeek**      | نماذج DeepSeek Chat و Reasoner (R1) و V4                           |
+| **DeepSeek**      | DeepSeek V4.1 Flash                                                |
 | **Alibaba Qwen**  | تكامل DashScope مع استكشاف النماذج ديناميكياً                      |
 | **Ollama**        | نماذج محلية مع قائمة ديناميكية وبروتوكول أدوات نصي مدمج            |
 | **مزود مخصص**     | أي نقطة نهاية متوافقة مع معايير OpenAI أو Anthropic                |
@@ -306,6 +306,7 @@ flowchart LR
 - Gemini 3.5 Flash-Lite و Flash
 - Gemini 3.6 Flash
 - Gemini 3.7 Flash
+- Gemini 3.8 Flash
 
 ### OpenAI
 
@@ -319,6 +320,7 @@ flowchart LR
 - GPT-5.4 nano و mini و GPT-5.4
 - GPT-5.5
 - GPT-5.6 Luna و Terra و Sol
+- GPT-6 Astra
 
 ### Anthropic
 
@@ -329,6 +331,7 @@ flowchart LR
 - Claude Opus 4.7
 - Claude Opus 4.8
 - Claude Sonnet 5 و Opus 5 و Fable 5
+- Claude Fable 5.1
 
 ### xAI Grok
 
@@ -347,9 +350,7 @@ flowchart LR
 
 ### DeepSeek
 
-- DeepSeek Chat
-- DeepSeek R1 / Reasoner
-- DeepSeek V4 Flash و Pro
+- DeepSeek V4.1 Flash
 
 > [!IMPORTANT]
 > يعتمد توفر النماذج على المزود وحسابك ومنطقتك وكتالوج واجهة برمجة التطبيقات الحالي. يمكن استكشاف قوائم نماذج OpenRouter و Qwen و Ollama والمزودين المخصصين ديناميكياً.

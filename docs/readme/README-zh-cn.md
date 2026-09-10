@@ -290,7 +290,7 @@ Agentic 模式可选用“要求完整检查所有差异”选项。在设置中
 | **xAI Grok**         | 包含推理与非推理版本的 Grok 系列                      |
 | **Groq**             | 高速托管之 MiniMax、Qwen 与 `gpt-oss` 开源模型        |
 | **OpenRouter**       | 动态访问庞大模型目录，支持 Tool Calling 智能筛选      |
-| **DeepSeek**         | DeepSeek Chat、Reasoner（R1）与 V4 系列               |
+| **DeepSeek**         | DeepSeek V4.1 Flash                                   |
 | **Alibaba Qwen**     | 集成通义千问 DashScope 端点，支持动态模型探索         |
 | **Ollama**           | 本地私有模型，支持动态列表与内置文本工具协议          |
 | **自定义兼容提供商** | 支持任何兼容 OpenAI 或 Anthropic API 规范的第三方端点 |
@@ -306,6 +306,7 @@ Agentic 模式可选用“要求完整检查所有差异”选项。在设置中
 - Gemini 3.5 Flash-Lite 与 Flash
 - Gemini 3.6 Flash
 - Gemini 3.7 Flash
+- Gemini 3.8 Flash
 
 ### OpenAI
 
@@ -319,6 +320,7 @@ Agentic 模式可选用“要求完整检查所有差异”选项。在设置中
 - GPT-5.4 nano、mini 与 GPT-5.4
 - GPT-5.5
 - GPT-5.6 Luna、Terra 与 Sol
+- GPT-6 Astra
 
 ### Anthropic
 
@@ -329,6 +331,7 @@ Agentic 模式可选用“要求完整检查所有差异”选项。在设置中
 - Claude Opus 4.7
 - Claude Opus 4.8
 - Claude Sonnet 5、Opus 5 与 Fable 5
+- Claude Fable 5.1
 
 ### xAI Grok
 
@@ -347,9 +350,7 @@ Agentic 模式可选用“要求完整检查所有差异”选项。在设置中
 
 ### DeepSeek
 
-- DeepSeek Chat
-- DeepSeek R1 / Reasoner
-- DeepSeek V4 Flash 与 Pro
+- DeepSeek V4.1 Flash
 
 > [!IMPORTANT]
 > 模型的实际可用性取决于提供商、账号权限、地区与端点状态。OpenRouter、Qwen、Ollama 与自定义端点的模型列表可动态获取。

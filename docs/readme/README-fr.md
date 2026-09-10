@@ -290,7 +290,7 @@ Les messages générés sont directement insérés dans le champ de saisie stand
 | **xAI Grok**        | Variantes Grok standards et avec raisonnement                                     |
 | **Groq**            | Hébergement ultra-rapide des modèles MiniMax, Qwen et `gpt-oss`                   |
 | **OpenRouter**      | Accès dynamique à un vaste catalogue de modèles avec filtrage du support d'outils |
-| **DeepSeek**        | Variantes Chat, Reasoner (R1) et V4                                               |
+| **DeepSeek**        | DeepSeek V4.1 Flash                                                               |
 | **Alibaba Qwen**    | Intégration DashScope avec découverte dynamique de modèles                        |
 | **Ollama**          | Modèles locaux avec découverte dynamique et protocole d'outils textuels intégré   |
 | **Custom Provider** | Points de terminaison compatibles avec les formats d'API OpenAI ou Anthropic      |
@@ -306,6 +306,7 @@ Les messages générés sont directement insérés dans le champ de saisie stand
 - Gemini 3.5 Flash-Lite et Flash
 - Gemini 3.6 Flash
 - Gemini 3.7 Flash
+- Gemini 3.8 Flash
 
 ### OpenAI
 
@@ -319,6 +320,7 @@ Les messages générés sont directement insérés dans le champ de saisie stand
 - GPT-5.4 nano, mini et GPT-5.4
 - GPT-5.5
 - GPT-5.6 Luna, Terra et Sol
+- GPT-6 Astra
 
 ### Anthropic
 
@@ -329,6 +331,7 @@ Les messages générés sont directement insérés dans le champ de saisie stand
 - Claude Opus 4.7
 - Claude Opus 4.8
 - Claude Sonnet 5, Opus 5 et Fable 5
+- Claude Fable 5.1
 
 ### xAI Grok
 
@@ -347,9 +350,7 @@ Les messages générés sont directement insérés dans le champ de saisie stand
 
 ### DeepSeek
 
-- DeepSeek Chat
-- DeepSeek R1 / Reasoner
-- DeepSeek V4 Flash et Pro
+- DeepSeek V4.1 Flash
 
 > [!IMPORTANT]
 > La disponibilité des modèles dépend du fournisseur, du compte, de la région, du point de terminaison et du catalogue en vigueur. Les listes pour OpenRouter, Qwen, Ollama et les fournisseurs personnalisés peuvent être découvertes dynamiquement.

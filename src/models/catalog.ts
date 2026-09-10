@@ -61,6 +61,7 @@ export const GEMINI_MODELS: ModelConfig[] = [
   { id: 'gemini-3.5-flash', alias: 'Gemini 3.5 Flash' },
   { id: 'gemini-3.6-flash', alias: 'Gemini 3.6 Flash' },
   { id: 'gemini-3.7-flash', alias: 'Gemini 3.7 Flash' },
+  { id: 'gemini-3.8-flash', alias: 'Gemini 3.8 Flash' },
 ];
 
 export const OPENAI_MODELS: ModelConfig[] = [
@@ -84,6 +85,7 @@ export const OPENAI_MODELS: ModelConfig[] = [
   { id: 'gpt-5.6-luna', alias: 'GPT-5.6 Luna' },
   { id: 'gpt-5.6-terra', alias: 'GPT-5.6 Terra' },
   { id: 'gpt-5.6-sol', alias: 'GPT-5.6 Sol' },
+  { id: 'gpt-6-astra', alias: 'GPT-6 Astra' },
 ];
 
 export const ANTHROPIC_MODELS: ModelConfig[] = [
@@ -150,6 +152,11 @@ export const ANTHROPIC_MODELS: ModelConfig[] = [
   {
     id: 'claude-fable-5',
     alias: 'Claude Fable 5',
+    max_tokens: 128000,
+  },
+  {
+    id: 'claude-fable-5-1',
+    alias: 'Claude Fable 5.1',
     max_tokens: 128000,
   },
 ];
@@ -315,10 +322,7 @@ export async function fetchQwenModels(apiKey?: string): Promise<ModelConfig[]> {
 }
 
 export const DEEPSEEK_MODELS: ModelConfig[] = [
-  { id: 'deepseek-chat', alias: 'DeepSeek Chat' },
-  { id: 'deepseek-reasoner', alias: 'DeepSeek R1 (Reasoner)' },
-  { id: 'deepseek-v4-flash', alias: 'DeepSeek V4 Flash' },
-  { id: 'deepseek-v4-pro', alias: 'DeepSeek V4 Pro' },
+  { id: 'deepseek-flash', alias: 'DeepSeek V4.1 Flash' },
 ];
 
 export const QWEN_MODELS: ModelConfig[] = [];

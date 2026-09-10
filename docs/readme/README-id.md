@@ -290,7 +290,7 @@ Pesan yang dihasilkan otomatis dimasukkan ke dalam kotak input SCM standar VS Co
 | **xAI Grok**        | Varian Grok penalaran dan non-penalaran                          |
 | **Groq**            | Hosting berkecepatan tinggi untuk model MiniMax, Qwen, `gpt-oss` |
 | **OpenRouter**      | Akses katalog model luas dengan filter dukungan Tool Calling     |
-| **DeepSeek**        | Seri DeepSeek Chat, Reasoner (R1), dan V4                        |
+| **DeepSeek**        | DeepSeek V4.1 Flash                                              |
 | **Alibaba Qwen**    | Integrasi DashScope dengan penemuan model dinamis                |
 | **Ollama**          | Model lokal dengan daftar dinamis dan protokol alat teks bawaan  |
 | **Penyedia Kustom** | Mendukung titik akhir pihak ketiga kompatibel OpenAI/Anthropic   |
@@ -306,6 +306,7 @@ Pesan yang dihasilkan otomatis dimasukkan ke dalam kotak input SCM standar VS Co
 - Gemini 3.5 Flash-Lite, Flash
 - Gemini 3.6 Flash
 - Gemini 3.7 Flash
+- Gemini 3.8 Flash
 
 ### OpenAI
 
@@ -319,6 +320,7 @@ Pesan yang dihasilkan otomatis dimasukkan ke dalam kotak input SCM standar VS Co
 - GPT-5.4 nano, mini, GPT-5.4
 - GPT-5.5
 - GPT-5.6 Luna, Terra, Sol
+- GPT-6 Astra
 
 ### Anthropic
 
@@ -329,6 +331,7 @@ Pesan yang dihasilkan otomatis dimasukkan ke dalam kotak input SCM standar VS Co
 - Claude Opus 4.7
 - Claude Opus 4.8
 - Claude Sonnet 5, Opus 5, Fable 5
+- Claude Fable 5.1
 
 ### xAI Grok
 
@@ -347,9 +350,7 @@ Pesan yang dihasilkan otomatis dimasukkan ke dalam kotak input SCM standar VS Co
 
 ### DeepSeek
 
-- DeepSeek Chat
-- DeepSeek R1 / Reasoner
-- DeepSeek V4 Flash, Pro
+- DeepSeek V4.1 Flash
 
 > [!IMPORTANT]
 > Ketersediaan model sebenarnya bergantung pada penyedia, izin akun, wilayah, dan status titik akhir. Daftar model OpenRouter, Qwen, Ollama, dan penyedia kustom dapat diambil secara dinamis.

@@ -290,7 +290,7 @@ A generált üzenetek a szabványos Forrásvezérlés beviteli mezőbe kerülnek
 | **xAI Grok**           | Érvelési és szabványos Grok változatok                                    |
 | **Groq**               | Gyors MiniMax, Qwen és `gpt-oss` modellek futtatása                       |
 | **OpenRouter**         | Dinamikus hozzáférés széles modellkatalógushoz eszközhívás-szűréssel      |
-| **DeepSeek**           | DeepSeek Chat, Reasoner (R1) és V4 modellek                               |
+| **DeepSeek**           | DeepSeek V4.1 Flash                                                       |
 | **Alibaba Qwen**       | DashScope integráció és dinamikus modellfelderítés                        |
 | **Ollama**             | Helyi modellek dinamikus listával és beépített szöveges eszközprotokollal |
 | **Egyéni szolgáltató** | Bármilyen OpenAI- vagy Anthropic-kompatibilis egyéni végpont              |
@@ -306,6 +306,7 @@ A generált üzenetek a szabványos Forrásvezérlés beviteli mezőbe kerülnek
 - Gemini 3.5 Flash-Lite és Flash
 - Gemini 3.6 Flash
 - Gemini 3.7 Flash
+- Gemini 3.8 Flash
 
 ### OpenAI
 
@@ -319,6 +320,7 @@ A generált üzenetek a szabványos Forrásvezérlés beviteli mezőbe kerülnek
 - GPT-5.4 nano, mini és GPT-5.4
 - GPT-5.5
 - GPT-5.6 Luna, Terra és Sol
+- GPT-6 Astra
 
 ### Anthropic
 
@@ -329,6 +331,7 @@ A generált üzenetek a szabványos Forrásvezérlés beviteli mezőbe kerülnek
 - Claude Opus 4.7
 - Claude Opus 4.8
 - Claude Sonnet 5, Opus 5 és Fable 5
+- Claude Fable 5.1
 
 ### xAI Grok
 
@@ -347,9 +350,7 @@ A generált üzenetek a szabványos Forrásvezérlés beviteli mezőbe kerülnek
 
 ### DeepSeek
 
-- DeepSeek Chat
-- DeepSeek R1 / Reasoner
-- DeepSeek V4 Flash és Pro
+- DeepSeek V4.1 Flash
 
 > [!IMPORTANT]
 > A modellek elérhetősége a szolgáltatótól, fióktól, régiótól és az aktuális API-katalógustól függ. Az OpenRouter, Qwen, Ollama és egyéni szolgáltatók modell-listái dinamikusan lekérhetők.

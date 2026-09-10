@@ -290,7 +290,7 @@ Oluşturulan mesajlar, commit öncesinde incelenebilecekleri ve düzenlenebilece
 | **xAI Grok**       | Muhakeme yetenekli ve standart Grok modelleri                        |
 | **Groq**           | Yüksek hızlı MiniMax, Qwen ve `gpt-oss` barındırma                   |
 | **OpenRouter**     | Araç çağırma filtrelemesiyle geniş model kataloğuna dinamik erişim   |
-| **DeepSeek**       | DeepSeek Chat, Reasoner (R1) ve V4 modelleri                         |
+| **DeepSeek**       | DeepSeek V4.1 Flash                                                  |
 | **Alibaba Qwen**   | DashScope entegrasyonu ve dinamik model keşfi                        |
 | **Ollama**         | Dinamik model listesi ve yerleşik araç protokolüyle yerel modeller   |
 | **Özel Sağlayıcı** | OpenAI veya Anthropic uyumlu herhangi bir özel uç nokta              |
@@ -306,6 +306,7 @@ Oluşturulan mesajlar, commit öncesinde incelenebilecekleri ve düzenlenebilece
 - Gemini 3.5 Flash-Lite ve Flash
 - Gemini 3.6 Flash
 - Gemini 3.7 Flash
+- Gemini 3.8 Flash
 
 ### OpenAI
 
@@ -319,6 +320,7 @@ Oluşturulan mesajlar, commit öncesinde incelenebilecekleri ve düzenlenebilece
 - GPT-5.4 nano, mini ve GPT-5.4
 - GPT-5.5
 - GPT-5.6 Luna, Terra ve Sol
+- GPT-6 Astra
 
 ### Anthropic
 
@@ -329,6 +331,7 @@ Oluşturulan mesajlar, commit öncesinde incelenebilecekleri ve düzenlenebilece
 - Claude Opus 4.7
 - Claude Opus 4.8
 - Claude Sonnet 5, Opus 5 ve Fable 5
+- Claude Fable 5.1
 
 ### xAI Grok
 
@@ -347,9 +350,7 @@ Oluşturulan mesajlar, commit öncesinde incelenebilecekleri ve düzenlenebilece
 
 ### DeepSeek
 
-- DeepSeek Chat
-- DeepSeek R1 / Reasoner
-- DeepSeek V4 Flash ve Pro
+- DeepSeek V4.1 Flash
 
 > [!IMPORTANT]
 > Model kullanılabilirliği sağlayıcıya, hesabınıza, bölgenize ve geçerli API kataloğuna bağlıdır. OpenRouter, Qwen, Ollama ve özel sağlayıcı model listeleri dinamik olarak keşfedilebilir.

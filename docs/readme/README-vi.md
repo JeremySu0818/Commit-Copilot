@@ -290,7 +290,7 @@ Thông điệp tạo ra sẽ tự động điền vào hộp nhập SCM tiêu ch
 | **xAI Grok**               | Các phiên bản Grok suy luận và phi suy luận                     |
 | **Groq**                   | Lưu trữ tốc độ cao các mô hình MiniMax, Qwen và `gpt-oss`       |
 | **OpenRouter**             | Truy cập danh mục mô hình phong phú kèm bộ lọc Tool Calling     |
-| **DeepSeek**               | Các dòng DeepSeek Chat, Reasoner (R1) và V4                     |
+| **DeepSeek**               | DeepSeek V4.1 Flash                                             |
 | **Alibaba Qwen**           | Tích hợp DashScope với khả năng khám phá mô hình động           |
 | **Ollama**                 | Mô hình cục bộ với danh sách động và giao thức công cụ tích hợp |
 | **Nhà cung cấp tùy chỉnh** | Hỗ trợ mọi điểm cuối bên thứ ba tương thích OpenAI / Anthropic  |
@@ -306,6 +306,7 @@ Thông điệp tạo ra sẽ tự động điền vào hộp nhập SCM tiêu ch
 - Gemini 3.5 Flash-Lite, Flash
 - Gemini 3.6 Flash
 - Gemini 3.7 Flash
+- Gemini 3.8 Flash
 
 ### OpenAI
 
@@ -319,6 +320,7 @@ Thông điệp tạo ra sẽ tự động điền vào hộp nhập SCM tiêu ch
 - GPT-5.4 nano, mini, GPT-5.4
 - GPT-5.5
 - GPT-5.6 Luna, Terra, Sol
+- GPT-6 Astra
 
 ### Anthropic
 
@@ -329,6 +331,7 @@ Thông điệp tạo ra sẽ tự động điền vào hộp nhập SCM tiêu ch
 - Claude Opus 4.7
 - Claude Opus 4.8
 - Claude Sonnet 5, Opus 5, Fable 5
+- Claude Fable 5.1
 
 ### xAI Grok
 
@@ -347,9 +350,7 @@ Thông điệp tạo ra sẽ tự động điền vào hộp nhập SCM tiêu ch
 
 ### DeepSeek
 
-- DeepSeek Chat
-- DeepSeek R1 / Reasoner
-- DeepSeek V4 Flash, Pro
+- DeepSeek V4.1 Flash
 
 > [!IMPORTANT]
 > Tính khả dụng thực tế của mô hình phụ thuộc vào nhà cung cấp, quyền tài khoản, khu vực và trạng thái điểm cuối. Danh sách mô hình của OpenRouter, Qwen, Ollama và nhà cung cấp tùy chỉnh có thể được khám phá động.

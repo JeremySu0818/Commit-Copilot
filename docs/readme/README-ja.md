@@ -290,7 +290,7 @@ Agentic モードでは、設定で「すべての差分の取得を必須にす
 | **xAI Grok**             | 推論モデルおよび通常版 Grok シリーズ                                 |
 | **Groq**                 | 高速ホスティングされた MiniMax、Qwen、`gpt-oss` モデル               |
 | **OpenRouter**           | 膨大な互換モデル群へのアクセスと Tool Calling 対応フィルタリング     |
-| **DeepSeek**             | DeepSeek Chat、Reasoner（R1）、V4 シリーズ                           |
+| **DeepSeek**             | DeepSeek V4.1 Flash                                                  |
 | **Alibaba Qwen**         | DashScope 統合による動的モデル探索（通義千問）                       |
 | **Ollama**               | 動的モデル検出と内蔵テキストツールプロトコルを備えたローカルモデル   |
 | **カスタムプロバイダー** | OpenAI 互換または Anthropic 互換の任意のサードパーティエンドポイント |
@@ -306,6 +306,7 @@ Agentic モードでは、設定で「すべての差分の取得を必須にす
 - Gemini 3.5 Flash-Lite, Flash
 - Gemini 3.6 Flash
 - Gemini 3.7 Flash
+- Gemini 3.8 Flash
 
 ### OpenAI
 
@@ -319,6 +320,7 @@ Agentic モードでは、設定で「すべての差分の取得を必須にす
 - GPT-5.4 nano, mini, GPT-5.4
 - GPT-5.5
 - GPT-5.6 Luna, Terra, Sol
+- GPT-6 Astra
 
 ### Anthropic
 
@@ -329,6 +331,7 @@ Agentic モードでは、設定で「すべての差分の取得を必須にす
 - Claude Opus 4.7
 - Claude Opus 4.8
 - Claude Sonnet 5, Opus 5, Fable 5
+- Claude Fable 5.1
 
 ### xAI Grok
 
@@ -347,9 +350,7 @@ Agentic モードでは、設定で「すべての差分の取得を必須にす
 
 ### DeepSeek
 
-- DeepSeek Chat
-- DeepSeek R1 / Reasoner
-- DeepSeek V4 Flash, Pro
+- DeepSeek V4.1 Flash
 
 > [!IMPORTANT]
 > 実際に利用可能なモデルはプロバイダーのアカウント権限、リージョン、エンドポイント状況により異なります。OpenRouter、Qwen、Ollama、カスタムプロバイダーの一覧は動的に取得できます。

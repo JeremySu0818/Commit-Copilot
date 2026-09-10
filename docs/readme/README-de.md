@@ -290,7 +290,7 @@ Generierte Nachrichten werden direkt in das Standard-Eingabefeld der Quellcodeve
 | **xAI Grok**        | Reasoning- und Standard-Grok-Varianten                                        |
 | **Groq**            | Extrem schnelle gehostete MiniMax-, Qwen- und `gpt-oss`-Modelle               |
 | **OpenRouter**      | Dynamischer Zugriff auf kompatible Modelle mit Tool-Calling-Filterung         |
-| **DeepSeek**        | Chat-, Reasoner- (R1) und V4-Varianten                                        |
+| **DeepSeek**        | DeepSeek V4.1 Flash                                                           |
 | **Alibaba Qwen**    | DashScope-Integration mit dynamischer Modellerkennung                         |
 | **Ollama**          | Lokale Modelle mit dynamischer Erkennung und integriertem Text-Tool-Protokoll |
 | **Custom Provider** | Beliebige OpenAI-kompatible oder Anthropic-kompatible Endpunkte               |
@@ -306,6 +306,7 @@ Generierte Nachrichten werden direkt in das Standard-Eingabefeld der Quellcodeve
 - Gemini 3.5 Flash-Lite und Flash
 - Gemini 3.6 Flash
 - Gemini 3.7 Flash
+- Gemini 3.8 Flash
 
 ### OpenAI
 
@@ -319,6 +320,7 @@ Generierte Nachrichten werden direkt in das Standard-Eingabefeld der Quellcodeve
 - GPT-5.4 nano, mini und GPT-5.4
 - GPT-5.5
 - GPT-5.6 Luna, Terra und Sol
+- GPT-6 Astra
 
 ### Anthropic
 
@@ -329,6 +331,7 @@ Generierte Nachrichten werden direkt in das Standard-Eingabefeld der Quellcodeve
 - Claude Opus 4.7
 - Claude Opus 4.8
 - Claude Sonnet 5, Opus 5 und Fable 5
+- Claude Fable 5.1
 
 ### xAI Grok
 
@@ -347,9 +350,7 @@ Generierte Nachrichten werden direkt in das Standard-Eingabefeld der Quellcodeve
 
 ### DeepSeek
 
-- DeepSeek Chat
-- DeepSeek R1 / Reasoner
-- DeepSeek V4 Flash und Pro
+- DeepSeek V4.1 Flash
 
 > [!IMPORTANT]
 > Die Modellverfügbarkeit hängt vom Anbieter, Konto, der Region, dem Endpunkt und dem aktuellen Anbieterkatalog ab. Listen für OpenRouter, Qwen, Ollama und benutzerdefinierte Anbieter können dynamisch ermittelt werden.

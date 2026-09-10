@@ -290,7 +290,7 @@ Vygenerovaná zpráva se vloží do standardního vstupního pole Source Control
 | **xAI Grok**             | Modely Grok s podporou uvažování i standardní varianty                   |
 | **Groq**                 | Vysoce rychlý hosting modelů MiniMax, Qwen a `gpt-oss`                   |
 | **OpenRouter**           | Dynamický přístup k rozsáhlému katalogu s filtrováním podpory nástrojů   |
-| **DeepSeek**             | Modely DeepSeek Chat, Reasoner (R1) a V4                                 |
+| **DeepSeek**             | DeepSeek V4.1 Flash                                                      |
 | **Alibaba Qwen**         | Integrace s DashScope a dynamické objevování modelů                      |
 | **Ollama**               | Lokální modely s dynamickým seznamem a vestavěným protokolem nástrojů    |
 | **Vlastní poskytovatel** | Jakékoli koncové body kompatibilní se standardy OpenAI nebo Anthropic    |
@@ -306,6 +306,7 @@ Vygenerovaná zpráva se vloží do standardního vstupního pole Source Control
 - Gemini 3.5 Flash-Lite a Flash
 - Gemini 3.6 Flash
 - Gemini 3.7 Flash
+- Gemini 3.8 Flash
 
 ### OpenAI
 
@@ -319,6 +320,7 @@ Vygenerovaná zpráva se vloží do standardního vstupního pole Source Control
 - GPT-5.4 nano, mini a GPT-5.4
 - GPT-5.5
 - GPT-5.6 Luna, Terra a Sol
+- GPT-6 Astra
 
 ### Anthropic
 
@@ -329,6 +331,7 @@ Vygenerovaná zpráva se vloží do standardního vstupního pole Source Control
 - Claude Opus 4.7
 - Claude Opus 4.8
 - Claude Sonnet 5, Opus 5 a Fable 5
+- Claude Fable 5.1
 
 ### xAI Grok
 
@@ -347,9 +350,7 @@ Vygenerovaná zpráva se vloží do standardního vstupního pole Source Control
 
 ### DeepSeek
 
-- DeepSeek Chat
-- DeepSeek R1 / Reasoner
-- DeepSeek V4 Flash a Pro
+- DeepSeek V4.1 Flash
 
 > [!IMPORTANT]
 > Dostupnost modelů závisí na poskytovateli, účtu, regionu a aktuálním katalogu API. Seznamy modelů pro OpenRouter, Qwen, Ollama a vlastní poskytovatele lze zjišťovat dynamicky.

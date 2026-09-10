@@ -290,7 +290,7 @@ Commit-Copilot को अपनी सुविधानुसार प्र�
 | **xAI Grok**      | रीजनिंग और मानक Grok मॉडल संस्करण                                    |
 | **Groq**          | उच्च गति होस्टेड MiniMax, Qwen और `gpt-oss` मॉडल                     |
 | **OpenRouter**    | टूल कॉलिंग फ़िल्टरिंग के साथ विशाल मॉडल कैटलॉग तक गतिशील पहुंच       |
-| **DeepSeek**      | DeepSeek Chat, Reasoner (R1) और V4 मॉडल                              |
+| **DeepSeek**      | DeepSeek V4.1 Flash                                                  |
 | **Alibaba Qwen**  | DashScope एकीकरण और गतिशील मॉडल खोज                                  |
 | **Ollama**        | गतिशील सूची और अंतर्निहित टेक्स्ट टूल प्रोटोकॉल के साथ स्थानीय मॉडल  |
 | **कस्टम प्रदाता** | OpenAI या Anthropic संगत कोई भी कस्टम एंडपॉइंट                       |
@@ -306,6 +306,7 @@ Commit-Copilot को अपनी सुविधानुसार प्र�
 - Gemini 3.5 Flash-Lite और Flash
 - Gemini 3.6 Flash
 - Gemini 3.7 Flash
+- Gemini 3.8 Flash
 
 ### OpenAI
 
@@ -319,6 +320,7 @@ Commit-Copilot को अपनी सुविधानुसार प्र�
 - GPT-5.4 nano, mini और GPT-5.4
 - GPT-5.5
 - GPT-5.6 Luna, Terra और Sol
+- GPT-6 Astra
 
 ### Anthropic
 
@@ -329,6 +331,7 @@ Commit-Copilot को अपनी सुविधानुसार प्र�
 - Claude Opus 4.7
 - Claude Opus 4.8
 - Claude Sonnet 5, Opus 5 और Fable 5
+- Claude Fable 5.1
 
 ### xAI Grok
 
@@ -347,9 +350,7 @@ Commit-Copilot को अपनी सुविधानुसार प्र�
 
 ### DeepSeek
 
-- DeepSeek Chat
-- DeepSeek R1 / Reasoner
-- DeepSeek V4 Flash और Pro
+- DeepSeek V4.1 Flash
 
 > [!IMPORTANT]
 > मॉडल की उपलब्धता प्रदाता, खाते, क्षेत्र और वर्तमान API कैटलॉग पर निर्भर करती है। OpenRouter, Qwen, Ollama और कस्टम प्रदाता मॉडल सूचियां गतिशील रूप से खोजी जा सकती हैं।
