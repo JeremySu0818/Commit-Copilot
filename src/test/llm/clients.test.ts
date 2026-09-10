@@ -128,6 +128,46 @@ void test('Ollama direct diff aborts an active model pull when cancelled', async
   assert.equal(listenerDisposed, true);
 });
 
+void test('Ollama direct diff disables thinking so content is returned', async () => {
+  const chatRequests: Record<string, unknown>[] = [];
+
+  class OllamaMock {
+    pull() {
+      return Promise.resolve({
+        [Symbol.asyncIterator]() {
+          return {
+            next: () => Promise.resolve({ done: true, value: undefined }),
+          };
+        },
+      });
+    }
+
+    chat(params: Record<string, unknown>) {
+      chatRequests.push(params);
+      return Promise.resolve({ message: { content: 'fix: return content' } });
+    }
+
+    abort() {
+      return undefined;
+    }
+  }
+
+  await withModuleMock('ollama', { Ollama: OllamaMock }, async () => {
+    const client = createLLMClient({
+      provider: 'ollama',
+      apiKey: OLLAMA_DEFAULT_HOST,
+      model: DEFAULT_MODELS.qwen,
+    });
+    const message = await client.generateCommitMessage(
+      'diff --git a/file.txt b/file.txt\n+line',
+    );
+
+    assert.equal(message, 'fix: return content');
+  });
+
+  assert.equal(chatRequests[0]?.think, false);
+});
+
 void test('Anthropic direct diff uses streaming API', async () => {
   const calls = {
     apiKeys: [] as string[],

@@ -196,7 +196,7 @@ export function toGeminiFunctionDeclarations(
   return getAvailableTools(isStaged, language).map((tool) => ({
     name: tool.name,
     description: tool.description,
-    parameters: tool.parameters,
+    parametersJsonSchema: tool.parameters,
   }));
 }
 

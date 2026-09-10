@@ -746,6 +746,7 @@ export class OllamaClient implements ILLMClient {
               ),
             },
           ],
+          think: false,
           options: {
             temperature: 0.7,
             top_p: 0.95,

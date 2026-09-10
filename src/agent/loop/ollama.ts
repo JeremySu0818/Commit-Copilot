@@ -57,6 +57,7 @@ interface OllamaChatClient {
   chat(params: {
     model: string;
     messages: OllamaMessage[];
+    think: false;
     options: {
       temperature: number;
       top_p: number;
@@ -153,6 +154,7 @@ async function requestOllamaResponse(params: {
   const response = await params.client.chat({
     model: params.modelName,
     messages: [...params.messages],
+    think: false,
     options: {
       temperature: ollamaTemperature,
       top_p: ollamaTopP,

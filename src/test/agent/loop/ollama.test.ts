@@ -163,6 +163,7 @@ void test('runOllamaAgentLoop executes batched text-protocol tools and returns f
   assert.equal(pullRequests[0]?.host, OLLAMA_DEFAULT_HOST);
   assert.equal(pullRequests[0]?.model, DEFAULT_MODELS.qwen);
   assert.equal(pullRequests[0]?.stream, true);
+  assert.equal(chatRequests[0]?.think, false);
 
   const firstMessages = isRecord(chatRequests[0])
     ? chatRequests[0].messages

@@ -26,14 +26,19 @@ void test('AGENT_TOOLS includes all expected tool names', () => {
   ]);
 });
 
-void test('toGeminiFunctionDeclarations mirrors tool definitions', () => {
+void test('toGeminiFunctionDeclarations uses raw JSON Schema parameters', () => {
   const declarations = toGeminiFunctionDeclarations();
   assert.equal(declarations.length, AGENT_TOOLS.length);
-  assert.deepEqual(declarations[0], {
-    name: AGENT_TOOLS[0].name,
-    description: AGENT_TOOLS[0].description,
-    parameters: AGENT_TOOLS[0].parameters,
-  });
+  const getDiff = declarations[0] as {
+    name: string;
+    description: string;
+    parameters?: unknown;
+    parametersJsonSchema?: unknown;
+  };
+  assert.equal(getDiff.name, AGENT_TOOLS[0].name);
+  assert.equal(getDiff.description, AGENT_TOOLS[0].description);
+  assert.equal(getDiff.parameters, undefined);
+  assert.deepEqual(getDiff.parametersJsonSchema, AGENT_TOOLS[0].parameters);
 });
 
 void test('toOpenAITools wraps each tool as function type', () => {
