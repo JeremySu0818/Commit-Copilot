@@ -282,18 +282,18 @@ Commit-Copilot को अपनी सुविधानुसार प्र�
 
 ## समर्थित प्रदाता
 
-| प्रदाता           | मुख्य विशेषताएं                                                      |
-| ----------------- | -------------------------------------------------------------------- |
-| **Google Gemini** | देशी संरचित टूल्स और कई Gemini मॉडल पीढ़ियों का समर्थन               |
-| **OpenAI**        | रीजनिंग (तर्क), सामान्य प्रयोजन, कॉम्पैक्ट और GPT-5 श्रृंखला के मॉडल |
-| **Anthropic**     | Claude Haiku, Sonnet, Opus और Fable मॉडल परिवार                      |
-| **xAI Grok**      | रीजनिंग और मानक Grok मॉडल संस्करण                                    |
-| **Groq**          | उच्च गति होस्टेड MiniMax, Qwen और `gpt-oss` मॉडल                     |
-| **OpenRouter**    | टूल कॉलिंग फ़िल्टरिंग के साथ विशाल मॉडल कैटलॉग तक गतिशील पहुंच       |
-| **DeepSeek**      | DeepSeek V4.1 Flash                                                  |
-| **Alibaba Qwen**  | DashScope एकीकरण और गतिशील मॉडल खोज                                  |
-| **Ollama**        | गतिशील सूची और अंतर्निहित टेक्स्ट टूल प्रोटोकॉल के साथ स्थानीय मॉडल  |
-| **कस्टम प्रदाता** | OpenAI या Anthropic संगत कोई भी कस्टम एंडपॉइंट                       |
+| प्रदाता           | मुख्य विशेषताएं                                                        |
+| ----------------- | ---------------------------------------------------------------------- |
+| **Google Gemini** | देशी संरचित टूल्स और कई Gemini मॉडल पीढ़ियों का समर्थन                 |
+| **OpenAI**        | रीजनिंग (तर्क), सामान्य प्रयोजन, कॉम्पैक्ट और GPT-5/6 श्रृंखला के मॉडल |
+| **Anthropic**     | Claude Haiku, Sonnet, Opus और Fable मॉडल परिवार                        |
+| **xAI Grok**      | रीजनिंग और मानक Grok मॉडल संस्करण                                      |
+| **Groq**          | उच्च गति होस्टेड Qwen और `gpt-oss` मॉडल                                |
+| **OpenRouter**    | टूल कॉलिंग फ़िल्टरिंग के साथ विशाल मॉडल कैटलॉग तक गतिशील पहुंच         |
+| **DeepSeek**      | DeepSeek V4.1 Flash                                                    |
+| **Alibaba Qwen**  | DashScope एकीकरण और गतिशील मॉडल खोज                                    |
+| **Ollama**        | गतिशील सूची और अंतर्निहित टेक्स्ट टूल प्रोटोकॉल के साथ स्थानीय मॉडल    |
+| **कस्टम प्रदाता** | OpenAI या Anthropic संगत कोई भी कस्टम एंडपॉइंट                         |
 
 <details>
 <summary><strong>Commit-Copilot द्वारा समर्थित मॉडल परिवार देखें</strong></summary>
@@ -320,7 +320,8 @@ Commit-Copilot को अपनी सुविधानुसार प्र�
 - GPT-5.4 nano, mini और GPT-5.4
 - GPT-5.5
 - GPT-5.6 Luna, Terra और Sol
-- GPT-6 Astra
+- GPT-6 Luna, Sol और Astra
+- GPT-6.1 Sol
 
 ### Anthropic
 
@@ -332,6 +333,7 @@ Commit-Copilot को अपनी सुविधानुसार प्र�
 - Claude Opus 4.8
 - Claude Sonnet 5, Opus 5 और Fable 5
 - Claude Fable 5.1
+- Claude Opus 5.5
 
 ### xAI Grok
 
@@ -339,14 +341,14 @@ Commit-Copilot को अपनी सुविधानुसार प्र�
 - Grok 4.3
 - Grok 4.5
 - Grok 4.6
+- Grok 4.7
 
 ### Groq
 
 - `gpt-oss-20B`
 - `gpt-oss-120B`
 - `gpt-oss-safeguard-20B`
-- MiniMax M2.7
-- Qwen 3.6 27b
+- Qwen 3.8 27b
 
 ### DeepSeek
 

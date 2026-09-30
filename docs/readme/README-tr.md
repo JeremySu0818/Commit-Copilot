@@ -282,18 +282,18 @@ Oluşturulan mesajlar, commit öncesinde incelenebilecekleri ve düzenlenebilece
 
 ## Desteklenen Sağlayıcılar
 
-| Sağlayıcı          | Öne Çıkan Özellikler                                                 |
-| ------------------ | -------------------------------------------------------------------- |
-| **Google Gemini**  | Yerel yapılandırılmış araçlar ve birden çok Gemini nesli desteği     |
-| **OpenAI**         | Muhakeme (reasoning), genel amaçlı, kompakt ve GPT-5 serisi modeller |
-| **Anthropic**      | Claude Haiku, Sonnet, Opus ve Fable aileleri                         |
-| **xAI Grok**       | Muhakeme yetenekli ve standart Grok modelleri                        |
-| **Groq**           | Yüksek hızlı MiniMax, Qwen ve `gpt-oss` barındırma                   |
-| **OpenRouter**     | Araç çağırma filtrelemesiyle geniş model kataloğuna dinamik erişim   |
-| **DeepSeek**       | DeepSeek V4.1 Flash                                                  |
-| **Alibaba Qwen**   | DashScope entegrasyonu ve dinamik model keşfi                        |
-| **Ollama**         | Dinamik model listesi ve yerleşik araç protokolüyle yerel modeller   |
-| **Özel Sağlayıcı** | OpenAI veya Anthropic uyumlu herhangi bir özel uç nokta              |
+| Sağlayıcı          | Öne Çıkan Özellikler                                                   |
+| ------------------ | ---------------------------------------------------------------------- |
+| **Google Gemini**  | Yerel yapılandırılmış araçlar ve birden çok Gemini nesli desteği       |
+| **OpenAI**         | Muhakeme (reasoning), genel amaçlı, kompakt ve GPT-5/6 serisi modeller |
+| **Anthropic**      | Claude Haiku, Sonnet, Opus ve Fable aileleri                           |
+| **xAI Grok**       | Muhakeme yetenekli ve standart Grok modelleri                          |
+| **Groq**           | Yüksek hızlı Qwen ve `gpt-oss` barındırma                              |
+| **OpenRouter**     | Araç çağırma filtrelemesiyle geniş model kataloğuna dinamik erişim     |
+| **DeepSeek**       | DeepSeek V4.1 Flash                                                    |
+| **Alibaba Qwen**   | DashScope entegrasyonu ve dinamik model keşfi                          |
+| **Ollama**         | Dinamik model listesi ve yerleşik araç protokolüyle yerel modeller     |
+| **Özel Sağlayıcı** | OpenAI veya Anthropic uyumlu herhangi bir özel uç nokta                |
 
 <details>
 <summary><strong>Commit-Copilot tarafından listelenen model ailelerini görüntüleyin</strong></summary>
@@ -320,7 +320,8 @@ Oluşturulan mesajlar, commit öncesinde incelenebilecekleri ve düzenlenebilece
 - GPT-5.4 nano, mini ve GPT-5.4
 - GPT-5.5
 - GPT-5.6 Luna, Terra ve Sol
-- GPT-6 Astra
+- GPT-6 Luna, Sol ve Astra
+- GPT-6.1 Sol
 
 ### Anthropic
 
@@ -332,6 +333,7 @@ Oluşturulan mesajlar, commit öncesinde incelenebilecekleri ve düzenlenebilece
 - Claude Opus 4.8
 - Claude Sonnet 5, Opus 5 ve Fable 5
 - Claude Fable 5.1
+- Claude Opus 5.5
 
 ### xAI Grok
 
@@ -339,14 +341,14 @@ Oluşturulan mesajlar, commit öncesinde incelenebilecekleri ve düzenlenebilece
 - Grok 4.3
 - Grok 4.5
 - Grok 4.6
+- Grok 4.7
 
 ### Groq
 
 - `gpt-oss-20B`
 - `gpt-oss-120B`
 - `gpt-oss-safeguard-20B`
-- MiniMax M2.7
-- Qwen 3.6 27b
+- Qwen 3.8 27b
 
 ### DeepSeek
 

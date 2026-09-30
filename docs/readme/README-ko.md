@@ -285,10 +285,10 @@ Agentic 모드에서는 설정에서 "모든 diff 조회 필수" 옵션을 활�
 | 프로바이더                 | 주요 특징                                                        |
 | -------------------------- | ---------------------------------------------------------------- |
 | **Google Gemini**          | 네이티브 구조화 도구 지원 및 다세대 Gemini 모델군                |
-| **OpenAI**                 | 추론 모델, 범용 모델, 소형 모델 및 GPT-5 시리즈                  |
+| **OpenAI**                 | 추론 모델, 범용 모델, 소형 모델 및 GPT-5/6 시리즈                |
 | **Anthropic**              | Claude Haiku, Sonnet, Opus, Fable 전 시리즈                      |
 | **xAI Grok**               | 추론 및 일반 Grok 시리즈                                         |
-| **Groq**                   | 초고속 호스팅 MiniMax, Qwen, `gpt-oss` 오픈소스 모델             |
+| **Groq**                   | 초고속 호스팅 Qwen, `gpt-oss` 오픈소스 모델                      |
 | **OpenRouter**             | 방대한 호환 모델 목록 및 Tool Calling 지원 스마트 필터링         |
 | **DeepSeek**               | DeepSeek V4.1 Flash                                              |
 | **Alibaba Qwen**           | 통의천문(DashScope) 연동 및 동적 모델 검색                       |
@@ -320,7 +320,8 @@ Agentic 모드에서는 설정에서 "모든 diff 조회 필수" 옵션을 활�
 - GPT-5.4 nano, mini, GPT-5.4
 - GPT-5.5
 - GPT-5.6 Luna, Terra, Sol
-- GPT-6 Astra
+- GPT-6 Luna, Sol, Astra
+- GPT-6.1 Sol
 
 ### Anthropic
 
@@ -332,6 +333,7 @@ Agentic 모드에서는 설정에서 "모든 diff 조회 필수" 옵션을 활�
 - Claude Opus 4.8
 - Claude Sonnet 5, Opus 5, Fable 5
 - Claude Fable 5.1
+- Claude Opus 5.5
 
 ### xAI Grok
 
@@ -339,14 +341,14 @@ Agentic 모드에서는 설정에서 "모든 diff 조회 필수" 옵션을 활�
 - Grok 4.3
 - Grok 4.5
 - Grok 4.6
+- Grok 4.7
 
 ### Groq
 
 - `gpt-oss-20B`
 - `gpt-oss-120B`
 - `gpt-oss-safeguard-20B`
-- MiniMax M2.7
-- Qwen 3.6 27b
+- Qwen 3.8 27b
 
 ### DeepSeek
 

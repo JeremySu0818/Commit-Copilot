@@ -831,6 +831,10 @@ export function useMainViewMessageHandler(
       };
 
     const handler = (event: MessageEvent<unknown>) => {
+      if (event.origin !== window.location.origin) {
+        return;
+      }
+
       const message = toMessagePayload(event.data);
       if (!message) {
         return;

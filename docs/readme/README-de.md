@@ -285,10 +285,10 @@ Generierte Nachrichten werden direkt in das Standard-Eingabefeld der Quellcodeve
 | Anbieter            | Highlights                                                                    |
 | ------------------- | ----------------------------------------------------------------------------- |
 | **Google Gemini**   | Native strukturierte Tools und mehrere Gemini-Modellgenerationen              |
-| **OpenAI**          | Reasoning-, Allzweck-, kompakte Modelle und die GPT-5-Serie                   |
+| **OpenAI**          | Reasoning-, Allzweck-, kompakte Modelle und die GPT-5/6-Serie                 |
 | **Anthropic**       | Claude Haiku-, Sonnet-, Opus- und Fable-Familien                              |
 | **xAI Grok**        | Reasoning- und Standard-Grok-Varianten                                        |
-| **Groq**            | Extrem schnelle gehostete MiniMax-, Qwen- und `gpt-oss`-Modelle               |
+| **Groq**            | Extrem schnelle gehostete Qwen- und `gpt-oss`-Modelle                         |
 | **OpenRouter**      | Dynamischer Zugriff auf kompatible Modelle mit Tool-Calling-Filterung         |
 | **DeepSeek**        | DeepSeek V4.1 Flash                                                           |
 | **Alibaba Qwen**    | DashScope-Integration mit dynamischer Modellerkennung                         |
@@ -320,7 +320,8 @@ Generierte Nachrichten werden direkt in das Standard-Eingabefeld der Quellcodeve
 - GPT-5.4 nano, mini und GPT-5.4
 - GPT-5.5
 - GPT-5.6 Luna, Terra und Sol
-- GPT-6 Astra
+- GPT-6 Luna, Sol und Astra
+- GPT-6.1 Sol
 
 ### Anthropic
 
@@ -332,6 +333,7 @@ Generierte Nachrichten werden direkt in das Standard-Eingabefeld der Quellcodeve
 - Claude Opus 4.8
 - Claude Sonnet 5, Opus 5 und Fable 5
 - Claude Fable 5.1
+- Claude Opus 5.5
 
 ### xAI Grok
 
@@ -339,14 +341,14 @@ Generierte Nachrichten werden direkt in das Standard-Eingabefeld der Quellcodeve
 - Grok 4.3
 - Grok 4.5
 - Grok 4.6
+- Grok 4.7
 
 ### Groq
 
 - `gpt-oss-20B`
 - `gpt-oss-120B`
 - `gpt-oss-safeguard-20B`
-- MiniMax M2.7
-- Qwen 3.6 27b
+- Qwen 3.8 27b
 
 ### DeepSeek
 

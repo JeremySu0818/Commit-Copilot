@@ -282,18 +282,18 @@ Pesan yang dihasilkan otomatis dimasukkan ke dalam kotak input SCM standar VS Co
 
 ## Penyedia yang Didukung
 
-| Penyedia            | Sorotan Utama                                                    |
-| ------------------- | ---------------------------------------------------------------- |
-| **Google Gemini**   | Dukungan alat terstruktur native dan berbagai generasi Gemini    |
-| **OpenAI**          | Model penalaran, serbaguna, ringkas, dan seri GPT-5              |
-| **Anthropic**       | Lini lengkap Claude Haiku, Sonnet, Opus, dan Fable               |
-| **xAI Grok**        | Varian Grok penalaran dan non-penalaran                          |
-| **Groq**            | Hosting berkecepatan tinggi untuk model MiniMax, Qwen, `gpt-oss` |
-| **OpenRouter**      | Akses katalog model luas dengan filter dukungan Tool Calling     |
-| **DeepSeek**        | DeepSeek V4.1 Flash                                              |
-| **Alibaba Qwen**    | Integrasi DashScope dengan penemuan model dinamis                |
-| **Ollama**          | Model lokal dengan daftar dinamis dan protokol alat teks bawaan  |
-| **Penyedia Kustom** | Mendukung titik akhir pihak ketiga kompatibel OpenAI/Anthropic   |
+| Penyedia            | Sorotan Utama                                                   |
+| ------------------- | --------------------------------------------------------------- |
+| **Google Gemini**   | Dukungan alat terstruktur native dan berbagai generasi Gemini   |
+| **OpenAI**          | Model penalaran, serbaguna, ringkas, dan seri GPT-5/6           |
+| **Anthropic**       | Lini lengkap Claude Haiku, Sonnet, Opus, dan Fable              |
+| **xAI Grok**        | Varian Grok penalaran dan non-penalaran                         |
+| **Groq**            | Hosting berkecepatan tinggi untuk model Qwen, `gpt-oss`         |
+| **OpenRouter**      | Akses katalog model luas dengan filter dukungan Tool Calling    |
+| **DeepSeek**        | DeepSeek V4.1 Flash                                             |
+| **Alibaba Qwen**    | Integrasi DashScope dengan penemuan model dinamis               |
+| **Ollama**          | Model lokal dengan daftar dinamis dan protokol alat teks bawaan |
+| **Penyedia Kustom** | Mendukung titik akhir pihak ketiga kompatibel OpenAI/Anthropic  |
 
 <details>
 <summary><strong>Buka untuk melihat daftar seri model yang didukung Commit-Copilot</strong></summary>
@@ -320,7 +320,8 @@ Pesan yang dihasilkan otomatis dimasukkan ke dalam kotak input SCM standar VS Co
 - GPT-5.4 nano, mini, GPT-5.4
 - GPT-5.5
 - GPT-5.6 Luna, Terra, Sol
-- GPT-6 Astra
+- GPT-6 Luna, Sol, Astra
+- GPT-6.1 Sol
 
 ### Anthropic
 
@@ -332,6 +333,7 @@ Pesan yang dihasilkan otomatis dimasukkan ke dalam kotak input SCM standar VS Co
 - Claude Opus 4.8
 - Claude Sonnet 5, Opus 5, Fable 5
 - Claude Fable 5.1
+- Claude Opus 5.5
 
 ### xAI Grok
 
@@ -339,14 +341,14 @@ Pesan yang dihasilkan otomatis dimasukkan ke dalam kotak input SCM standar VS Co
 - Grok 4.3
 - Grok 4.5
 - Grok 4.6
+- Grok 4.7
 
 ### Groq
 
 - `gpt-oss-20B`
 - `gpt-oss-120B`
 - `gpt-oss-safeguard-20B`
-- MiniMax M2.7
-- Qwen 3.6 27b
+- Qwen 3.8 27b
 
 ### DeepSeek
 

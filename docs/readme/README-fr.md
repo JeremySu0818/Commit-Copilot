@@ -285,10 +285,10 @@ Les messages générés sont directement insérés dans le champ de saisie stand
 | Fournisseur         | Points forts                                                                      |
 | ------------------- | --------------------------------------------------------------------------------- |
 | **Google Gemini**   | Outils structurés natifs et générations multiples de modèles Gemini               |
-| **OpenAI**          | Modèles de raisonnement, généralistes, compacts et séries GPT-5                   |
+| **OpenAI**          | Modèles de raisonnement, généralistes, compacts et séries GPT-5/6                 |
 | **Anthropic**       | Familles complètes Claude Haiku, Sonnet, Opus et Fable                            |
 | **xAI Grok**        | Variantes Grok standards et avec raisonnement                                     |
-| **Groq**            | Hébergement ultra-rapide des modèles MiniMax, Qwen et `gpt-oss`                   |
+| **Groq**            | Hébergement ultra-rapide des modèles Qwen et `gpt-oss`                            |
 | **OpenRouter**      | Accès dynamique à un vaste catalogue de modèles avec filtrage du support d'outils |
 | **DeepSeek**        | DeepSeek V4.1 Flash                                                               |
 | **Alibaba Qwen**    | Intégration DashScope avec découverte dynamique de modèles                        |
@@ -320,7 +320,8 @@ Les messages générés sont directement insérés dans le champ de saisie stand
 - GPT-5.4 nano, mini et GPT-5.4
 - GPT-5.5
 - GPT-5.6 Luna, Terra et Sol
-- GPT-6 Astra
+- GPT-6 Luna, Sol et Astra
+- GPT-6.1 Sol
 
 ### Anthropic
 
@@ -332,6 +333,7 @@ Les messages générés sont directement insérés dans le champ de saisie stand
 - Claude Opus 4.8
 - Claude Sonnet 5, Opus 5 et Fable 5
 - Claude Fable 5.1
+- Claude Opus 5.5
 
 ### xAI Grok
 
@@ -339,14 +341,14 @@ Les messages générés sont directement insérés dans le champ de saisie stand
 - Grok 4.3
 - Grok 4.5
 - Grok 4.6
+- Grok 4.7
 
 ### Groq
 
 - `gpt-oss-20B`
 - `gpt-oss-120B`
 - `gpt-oss-safeguard-20B`
-- MiniMax M2.7
-- Qwen 3.6 27b
+- Qwen 3.8 27b
 
 ### DeepSeek
 

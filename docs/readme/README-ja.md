@@ -285,10 +285,10 @@ Agentic モードでは、設定で「すべての差分の取得を必須にす
 | プロバイダー             | 主な特徴                                                             |
 | ------------------------ | -------------------------------------------------------------------- |
 | **Google Gemini**        | ネイティブ構造化ツール対応とマルチ世代 Gemini モデル群               |
-| **OpenAI**               | 推論モデル、汎用モデル、軽量モデル、GPT-5 シリーズ                   |
+| **OpenAI**               | 推論モデル、汎用モデル、軽量モデル、GPT-5/6 シリーズ                 |
 | **Anthropic**            | Claude Haiku、Sonnet、Opus、Fable 各シリーズ                         |
 | **xAI Grok**             | 推論モデルおよび通常版 Grok シリーズ                                 |
-| **Groq**                 | 高速ホスティングされた MiniMax、Qwen、`gpt-oss` モデル               |
+| **Groq**                 | 高速ホスティングされた Qwen、`gpt-oss` モデル                        |
 | **OpenRouter**           | 膨大な互換モデル群へのアクセスと Tool Calling 対応フィルタリング     |
 | **DeepSeek**             | DeepSeek V4.1 Flash                                                  |
 | **Alibaba Qwen**         | DashScope 統合による動的モデル探索（通義千問）                       |
@@ -320,7 +320,8 @@ Agentic モードでは、設定で「すべての差分の取得を必須にす
 - GPT-5.4 nano, mini, GPT-5.4
 - GPT-5.5
 - GPT-5.6 Luna, Terra, Sol
-- GPT-6 Astra
+- GPT-6 Luna, Sol, Astra
+- GPT-6.1 Sol
 
 ### Anthropic
 
@@ -332,6 +333,7 @@ Agentic モードでは、設定で「すべての差分の取得を必須にす
 - Claude Opus 4.8
 - Claude Sonnet 5, Opus 5, Fable 5
 - Claude Fable 5.1
+- Claude Opus 5.5
 
 ### xAI Grok
 
@@ -339,14 +341,14 @@ Agentic モードでは、設定で「すべての差分の取得を必須にす
 - Grok 4.3
 - Grok 4.5
 - Grok 4.6
+- Grok 4.7
 
 ### Groq
 
 - `gpt-oss-20B`
 - `gpt-oss-120B`
 - `gpt-oss-safeguard-20B`
-- MiniMax M2.7
-- Qwen 3.6 27b
+- Qwen 3.8 27b
 
 ### DeepSeek
 

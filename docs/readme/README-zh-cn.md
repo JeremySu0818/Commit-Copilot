@@ -285,10 +285,10 @@ Agentic 模式可选用“要求完整检查所有差异”选项。在设置中
 | 提供商               | 亮点介绍                                              |
 | -------------------- | ----------------------------------------------------- |
 | **Google Gemini**    | 原生结构化工具支持与多代 Gemini 模型                  |
-| **OpenAI**           | 推理模型、通用模型、小型模型与 GPT-5 系列             |
+| **OpenAI**           | 推理模型、通用模型、小型模型与 GPT-5/6 系列           |
 | **Anthropic**        | Claude Haiku、Sonnet、Opus 与 Fable 全系列            |
 | **xAI Grok**         | 包含推理与非推理版本的 Grok 系列                      |
-| **Groq**             | 高速托管之 MiniMax、Qwen 与 `gpt-oss` 开源模型        |
+| **Groq**             | 高速托管之 Qwen 与 `gpt-oss` 开源模型                 |
 | **OpenRouter**       | 动态访问庞大模型目录，支持 Tool Calling 智能筛选      |
 | **DeepSeek**         | DeepSeek V4.1 Flash                                   |
 | **Alibaba Qwen**     | 集成通义千问 DashScope 端点，支持动态模型探索         |
@@ -320,7 +320,8 @@ Agentic 模式可选用“要求完整检查所有差异”选项。在设置中
 - GPT-5.4 nano、mini 与 GPT-5.4
 - GPT-5.5
 - GPT-5.6 Luna、Terra 与 Sol
-- GPT-6 Astra
+- GPT-6 Luna、Sol 与 Astra
+- GPT-6.1 Sol
 
 ### Anthropic
 
@@ -332,6 +333,7 @@ Agentic 模式可选用“要求完整检查所有差异”选项。在设置中
 - Claude Opus 4.8
 - Claude Sonnet 5、Opus 5 与 Fable 5
 - Claude Fable 5.1
+- Claude Opus 5.5
 
 ### xAI Grok
 
@@ -339,14 +341,14 @@ Agentic 模式可选用“要求完整检查所有差异”选项。在设置中
 - Grok 4.3
 - Grok 4.5
 - Grok 4.6
+- Grok 4.7
 
 ### Groq
 
 - `gpt-oss-20B`
 - `gpt-oss-120B`
 - `gpt-oss-safeguard-20B`
-- MiniMax M2.7
-- Qwen 3.6 27b
+- Qwen 3.8 27b
 
 ### DeepSeek
 

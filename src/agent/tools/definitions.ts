@@ -24,6 +24,25 @@ export interface ToolCallResult {
 
 export const FINAL_COMMIT_MESSAGE_TOOL_NAME = 'write_commit_message';
 
+const OPENAI_FORBIDDEN_ROOT_SCHEMA_KEYWORDS = new Set([
+  'oneOf',
+  'anyOf',
+  'allOf',
+  'enum',
+  'const',
+  'not',
+]);
+
+export function toOpenAIParametersSchema(
+  parameters: Record<string, unknown>,
+): Record<string, unknown> {
+  return Object.fromEntries(
+    Object.entries(parameters).filter(
+      ([key]) => !OPENAI_FORBIDDEN_ROOT_SCHEMA_KEYWORDS.has(key),
+    ),
+  );
+}
+
 function buildAgentTools(
   bundle: LocalePromptBundle,
   descriptions: AgentToolPromptBundle,
@@ -209,7 +228,7 @@ export function toOpenAITools(
     function: {
       name: tool.name,
       description: tool.description,
-      parameters: tool.parameters,
+      parameters: toOpenAIParametersSchema(tool.parameters),
     },
   }));
 }

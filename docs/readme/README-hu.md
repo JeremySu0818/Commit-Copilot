@@ -282,18 +282,18 @@ A generált üzenetek a szabványos Forrásvezérlés beviteli mezőbe kerülnek
 
 ## Támogatott szolgáltatók
 
-| Szolgáltató            | Főbb jellemzők                                                            |
-| ---------------------- | ------------------------------------------------------------------------- |
-| **Google Gemini**      | Natív strukturált eszközök és több Gemini modellgeneráció támogatása      |
-| **OpenAI**             | Érvelési (reasoning), általános célú, kompakt és GPT-5 sorozatú modellek  |
-| **Anthropic**          | Claude Haiku, Sonnet, Opus és Fable modellcsaládok                        |
-| **xAI Grok**           | Érvelési és szabványos Grok változatok                                    |
-| **Groq**               | Gyors MiniMax, Qwen és `gpt-oss` modellek futtatása                       |
-| **OpenRouter**         | Dinamikus hozzáférés széles modellkatalógushoz eszközhívás-szűréssel      |
-| **DeepSeek**           | DeepSeek V4.1 Flash                                                       |
-| **Alibaba Qwen**       | DashScope integráció és dinamikus modellfelderítés                        |
-| **Ollama**             | Helyi modellek dinamikus listával és beépített szöveges eszközprotokollal |
-| **Egyéni szolgáltató** | Bármilyen OpenAI- vagy Anthropic-kompatibilis egyéni végpont              |
+| Szolgáltató            | Főbb jellemzők                                                             |
+| ---------------------- | -------------------------------------------------------------------------- |
+| **Google Gemini**      | Natív strukturált eszközök és több Gemini modellgeneráció támogatása       |
+| **OpenAI**             | Érvelési (reasoning), általános célú, kompakt és GPT-5/6 sorozatú modellek |
+| **Anthropic**          | Claude Haiku, Sonnet, Opus és Fable modellcsaládok                         |
+| **xAI Grok**           | Érvelési és szabványos Grok változatok                                     |
+| **Groq**               | Gyors Qwen és `gpt-oss` modellek futtatása                                 |
+| **OpenRouter**         | Dinamikus hozzáférés széles modellkatalógushoz eszközhívás-szűréssel       |
+| **DeepSeek**           | DeepSeek V4.1 Flash                                                        |
+| **Alibaba Qwen**       | DashScope integráció és dinamikus modellfelderítés                         |
+| **Ollama**             | Helyi modellek dinamikus listával és beépített szöveges eszközprotokollal  |
+| **Egyéni szolgáltató** | Bármilyen OpenAI- vagy Anthropic-kompatibilis egyéni végpont               |
 
 <details>
 <summary><strong>A Commit-Copilot által támogatott modellcsaládok megtekintése</strong></summary>
@@ -320,7 +320,8 @@ A generált üzenetek a szabványos Forrásvezérlés beviteli mezőbe kerülnek
 - GPT-5.4 nano, mini és GPT-5.4
 - GPT-5.5
 - GPT-5.6 Luna, Terra és Sol
-- GPT-6 Astra
+- GPT-6 Luna, Sol és Astra
+- GPT-6.1 Sol
 
 ### Anthropic
 
@@ -332,6 +333,7 @@ A generált üzenetek a szabványos Forrásvezérlés beviteli mezőbe kerülnek
 - Claude Opus 4.8
 - Claude Sonnet 5, Opus 5 és Fable 5
 - Claude Fable 5.1
+- Claude Opus 5.5
 
 ### xAI Grok
 
@@ -339,14 +341,14 @@ A generált üzenetek a szabványos Forrásvezérlés beviteli mezőbe kerülnek
 - Grok 4.3
 - Grok 4.5
 - Grok 4.6
+- Grok 4.7
 
 ### Groq
 
 - `gpt-oss-20B`
 - `gpt-oss-120B`
 - `gpt-oss-safeguard-20B`
-- MiniMax M2.7
-- Qwen 3.6 27b
+- Qwen 3.8 27b
 
 ### DeepSeek
 

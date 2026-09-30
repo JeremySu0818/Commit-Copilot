@@ -282,18 +282,18 @@ flowchart LR
 
 ## المزودون المدعومون
 
-| المزود            | أبرز الخصائص                                                       |
-| ----------------- | ------------------------------------------------------------------ |
-| **Google Gemini** | أدوات منظمة أصلية ودعم لأجيال Gemini المتعددة                      |
-| **OpenAI**        | نماذج التفكير (reasoning)، ونماذج عامة، ونماذج مدمجة، وسلسلة GPT-5 |
-| **Anthropic**     | عائلات Claude Haiku و Sonnet و Opus و Fable                        |
-| **xAI Grok**      | إصدارات Grok الداعمة للتفكير والإصدارات القياسية                   |
-| **Groq**          | استضافة فائقة السرعة لنماذج MiniMax و Qwen و `gpt-oss`             |
-| **OpenRouter**    | وصول ديناميكي إلى كتالوج نماذج واسع مع تصفية دعم استدعاء الأدوات   |
-| **DeepSeek**      | DeepSeek V4.1 Flash                                                |
-| **Alibaba Qwen**  | تكامل DashScope مع استكشاف النماذج ديناميكياً                      |
-| **Ollama**        | نماذج محلية مع قائمة ديناميكية وبروتوكول أدوات نصي مدمج            |
-| **مزود مخصص**     | أي نقطة نهاية متوافقة مع معايير OpenAI أو Anthropic                |
+| المزود            | أبرز الخصائص                                                         |
+| ----------------- | -------------------------------------------------------------------- |
+| **Google Gemini** | أدوات منظمة أصلية ودعم لأجيال Gemini المتعددة                        |
+| **OpenAI**        | نماذج التفكير (reasoning)، ونماذج عامة، ونماذج مدمجة، وسلسلة GPT-5/6 |
+| **Anthropic**     | عائلات Claude Haiku و Sonnet و Opus و Fable                          |
+| **xAI Grok**      | إصدارات Grok الداعمة للتفكير والإصدارات القياسية                     |
+| **Groq**          | استضافة فائقة السرعة لنماذج Qwen و `gpt-oss`                         |
+| **OpenRouter**    | وصول ديناميكي إلى كتالوج نماذج واسع مع تصفية دعم استدعاء الأدوات     |
+| **DeepSeek**      | DeepSeek V4.1 Flash                                                  |
+| **Alibaba Qwen**  | تكامل DashScope مع استكشاف النماذج ديناميكياً                        |
+| **Ollama**        | نماذج محلية مع قائمة ديناميكية وبروتوكول أدوات نصي مدمج              |
+| **مزود مخصص**     | أي نقطة نهاية متوافقة مع معايير OpenAI أو Anthropic                  |
 
 <details>
 <summary><strong>عرض عائلات النماذج المدعومة في Commit-Copilot</strong></summary>
@@ -320,7 +320,8 @@ flowchart LR
 - GPT-5.4 nano و mini و GPT-5.4
 - GPT-5.5
 - GPT-5.6 Luna و Terra و Sol
-- GPT-6 Astra
+- GPT-6 Luna و Sol و Astra
+- GPT-6.1 Sol
 
 ### Anthropic
 
@@ -332,6 +333,7 @@ flowchart LR
 - Claude Opus 4.8
 - Claude Sonnet 5 و Opus 5 و Fable 5
 - Claude Fable 5.1
+- Claude Opus 5.5
 
 ### xAI Grok
 
@@ -339,14 +341,14 @@ flowchart LR
 - Grok 4.3
 - Grok 4.5
 - Grok 4.6
+- Grok 4.7
 
 ### Groq
 
 - `gpt-oss-20B`
 - `gpt-oss-120B`
 - `gpt-oss-safeguard-20B`
-- MiniMax M2.7
-- Qwen 3.6 27b
+- Qwen 3.8 27b
 
 ### DeepSeek
 

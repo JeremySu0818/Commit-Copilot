@@ -285,10 +285,10 @@ Thông điệp tạo ra sẽ tự động điền vào hộp nhập SCM tiêu ch
 | Nhà cung cấp               | Điểm nổi bật                                                    |
 | -------------------------- | --------------------------------------------------------------- |
 | **Google Gemini**          | Hỗ trợ công cụ cấu trúc gốc và nhiều thế hệ mô hình Gemini      |
-| **OpenAI**                 | Các mô hình suy luận, đa năng, nhỏ gọn và dòng GPT-5            |
+| **OpenAI**                 | Các mô hình suy luận, đa năng, nhỏ gọn và dòng GPT-5/6          |
 | **Anthropic**              | Đầy đủ các dòng Claude Haiku, Sonnet, Opus và Fable             |
 | **xAI Grok**               | Các phiên bản Grok suy luận và phi suy luận                     |
-| **Groq**                   | Lưu trữ tốc độ cao các mô hình MiniMax, Qwen và `gpt-oss`       |
+| **Groq**                   | Lưu trữ tốc độ cao các mô hình Qwen và `gpt-oss`                |
 | **OpenRouter**             | Truy cập danh mục mô hình phong phú kèm bộ lọc Tool Calling     |
 | **DeepSeek**               | DeepSeek V4.1 Flash                                             |
 | **Alibaba Qwen**           | Tích hợp DashScope với khả năng khám phá mô hình động           |
@@ -320,7 +320,8 @@ Thông điệp tạo ra sẽ tự động điền vào hộp nhập SCM tiêu ch
 - GPT-5.4 nano, mini, GPT-5.4
 - GPT-5.5
 - GPT-5.6 Luna, Terra, Sol
-- GPT-6 Astra
+- GPT-6 Luna, Sol, Astra
+- GPT-6.1 Sol
 
 ### Anthropic
 
@@ -332,6 +333,7 @@ Thông điệp tạo ra sẽ tự động điền vào hộp nhập SCM tiêu ch
 - Claude Opus 4.8
 - Claude Sonnet 5, Opus 5, Fable 5
 - Claude Fable 5.1
+- Claude Opus 5.5
 
 ### xAI Grok
 
@@ -339,14 +341,14 @@ Thông điệp tạo ra sẽ tự động điền vào hộp nhập SCM tiêu ch
 - Grok 4.3
 - Grok 4.5
 - Grok 4.6
+- Grok 4.7
 
 ### Groq
 
 - `gpt-oss-20B`
 - `gpt-oss-120B`
 - `gpt-oss-safeguard-20B`
-- MiniMax M2.7
-- Qwen 3.6 27b
+- Qwen 3.8 27b
 
 ### DeepSeek
 

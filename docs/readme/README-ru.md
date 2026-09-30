@@ -285,10 +285,10 @@ flowchart LR
 | Провайдер               | Особенности                                                                    |
 | ----------------------- | ------------------------------------------------------------------------------ |
 | **Google Gemini**       | Нативные структурированные инструменты и поддержка нескольких поколений Gemini |
-| **OpenAI**              | Модели рассуждения (reasoning), универсальные, компактные и серия GPT-5        |
+| **OpenAI**              | Модели рассуждения (reasoning), универсальные, компактные и серия GPT-5/6      |
 | **Anthropic**           | Семейства Claude Haiku, Sonnet, Opus и Fable                                   |
 | **xAI Grok**            | Варианты Grok с поддержкой рассуждений и без нее                               |
-| **Groq**                | Высокоскоростной хостинг моделей MiniMax, Qwen и `gpt-oss`                     |
+| **Groq**                | Высокоскоростной хостинг моделей Qwen и `gpt-oss`                              |
 | **OpenRouter**          | Динамический доступ к моделям с фильтрацией по поддержке инструментов          |
 | **DeepSeek**            | DeepSeek V4.1 Flash                                                            |
 | **Alibaba Qwen**        | Интеграция с DashScope и динамическое обнаружение моделей                      |
@@ -320,7 +320,8 @@ flowchart LR
 - GPT-5.4 nano, mini и GPT-5.4
 - GPT-5.5
 - GPT-5.6 Luna, Terra и Sol
-- GPT-6 Astra
+- GPT-6 Luna, Sol и Astra
+- GPT-6.1 Sol
 
 ### Anthropic
 
@@ -332,6 +333,7 @@ flowchart LR
 - Claude Opus 4.8
 - Claude Sonnet 5, Opus 5 и Fable 5
 - Claude Fable 5.1
+- Claude Opus 5.5
 
 ### xAI Grok
 
@@ -339,14 +341,14 @@ flowchart LR
 - Grok 4.3
 - Grok 4.5
 - Grok 4.6
+- Grok 4.7
 
 ### Groq
 
 - `gpt-oss-20B`
 - `gpt-oss-120B`
 - `gpt-oss-safeguard-20B`
-- MiniMax M2.7
-- Qwen 3.6 27b
+- Qwen 3.8 27b
 
 ### DeepSeek
 

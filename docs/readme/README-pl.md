@@ -285,10 +285,10 @@ Wygenerowana wiadomość jest wstawiana do standardowego pola tekstowego Source 
 | Dostawca                    | Najważniejsze cechy                                                        |
 | --------------------------- | -------------------------------------------------------------------------- |
 | **Google Gemini**           | Natywne narzędzia ustrukturyzowane i obsługa wielu generacji Gemini        |
-| **OpenAI**                  | Modele rozumowania (reasoning), uniwersalne, kompaktowe oraz seria GPT-5   |
+| **OpenAI**                  | Modele rozumowania (reasoning), uniwersalne, kompaktowe oraz seria GPT-5/6 |
 | **Anthropic**               | Rodziny Claude Haiku, Sonnet, Opus i Fable                                 |
 | **xAI Grok**                | Warianty Grok z rozumowaniem oraz bez rozumowania                          |
-| **Groq**                    | Szybki hosting modeli MiniMax, Qwen oraz `gpt-oss`                         |
+| **Groq**                    | Szybki hosting modeli Qwen oraz `gpt-oss`                                  |
 | **OpenRouter**              | Dynamiczny dostęp do modeli z filtrowaniem obsługi narzędzi (tool calling) |
 | **DeepSeek**                | DeepSeek V4.1 Flash                                                        |
 | **Alibaba Qwen**            | Integracja z DashScope i dynamiczne wykrywanie modeli                      |
@@ -320,7 +320,8 @@ Wygenerowana wiadomość jest wstawiana do standardowego pola tekstowego Source 
 - GPT-5.4 nano, mini oraz GPT-5.4
 - GPT-5.5
 - GPT-5.6 Luna, Terra oraz Sol
-- GPT-6 Astra
+- GPT-6 Luna, Sol oraz Astra
+- GPT-6.1 Sol
 
 ### Anthropic
 
@@ -332,6 +333,7 @@ Wygenerowana wiadomość jest wstawiana do standardowego pola tekstowego Source 
 - Claude Opus 4.8
 - Claude Sonnet 5, Opus 5 oraz Fable 5
 - Claude Fable 5.1
+- Claude Opus 5.5
 
 ### xAI Grok
 
@@ -339,14 +341,14 @@ Wygenerowana wiadomość jest wstawiana do standardowego pola tekstowego Source 
 - Grok 4.3
 - Grok 4.5
 - Grok 4.6
+- Grok 4.7
 
 ### Groq
 
 - `gpt-oss-20B`
 - `gpt-oss-120B`
 - `gpt-oss-safeguard-20B`
-- MiniMax M2.7
-- Qwen 3.6 27b
+- Qwen 3.8 27b
 
 ### DeepSeek
 

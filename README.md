@@ -285,10 +285,10 @@ Generated messages are inserted into the standard Source Control input box, wher
 | Provider            | Highlights                                                             |
 | ------------------- | ---------------------------------------------------------------------- |
 | **Google Gemini**   | Native structured tools and multiple Gemini generations                |
-| **OpenAI**          | Reasoning, general-purpose, compact, and GPT-5-series models           |
+| **OpenAI**          | Reasoning, general-purpose, compact, and GPT-5/6-series models         |
 | **Anthropic**       | Claude Haiku, Sonnet, Opus, and Fable families                         |
 | **xAI Grok**        | Reasoning and non-reasoning Grok variants                              |
-| **Groq**            | Fast hosted MiniMax, Qwen, and `gpt-oss` models                        |
+| **Groq**            | Fast hosted Qwen and `gpt-oss` models                                  |
 | **OpenRouter**      | Dynamic access to compatible models with tool-support filtering        |
 | **DeepSeek**        | DeepSeek V4.1 Flash                                                    |
 | **Alibaba Qwen**    | DashScope integration with dynamic model discovery                     |
@@ -320,7 +320,8 @@ Generated messages are inserted into the standard Source Control input box, wher
 - GPT-5.4 nano, mini, and GPT-5.4
 - GPT-5.5
 - GPT-5.6 Luna, Terra, and Sol
-- GPT-6 Astra
+- GPT-6 Luna, Sol, and Astra
+- GPT-6.1 Sol
 
 ### Anthropic
 
@@ -332,21 +333,22 @@ Generated messages are inserted into the standard Source Control input box, wher
 - Claude Opus 4.8
 - Claude Sonnet 5, Opus 5, and Fable 5
 - Claude Fable 5.1
+- Claude Opus 5.5
 
 ### xAI Grok
 
 - Grok 4.20, reasoning and non-reasoning
-- Grok 4.3,
+- Grok 4.3
 - Grok 4.5
 - Grok 4.6
+- Grok 4.7
 
 ### Groq
 
 - `gpt-oss-20B`
 - `gpt-oss-120B`
 - `gpt-oss-safeguard-20B`
-- MiniMax M2.7
-- Qwen 3.6 27b
+- Qwen 3.8 27b
 
 ### DeepSeek
 

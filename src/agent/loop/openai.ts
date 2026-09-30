@@ -38,7 +38,11 @@ import {
   withRetry,
 } from '../../shared/retry';
 import { buildInitialContext } from '../tools/context';
-import { getAgentTools, toOpenAITools } from '../tools/definitions';
+import {
+  getAgentTools,
+  toOpenAIParametersSchema,
+  toOpenAITools,
+} from '../tools/definitions';
 import { DiffCoverageTracker } from '../tools/diff-coverage';
 import { executeToolCall } from '../tools/executors/execute-tool-call';
 
@@ -119,7 +123,7 @@ function isResponsesFunctionToolCall(
 }
 
 function usesResponsesApi(modelName: string): boolean {
-  return /^gpt-5\.6-(?:luna|terra|sol)(?:-|$)/i.test(modelName);
+  return /^gpt-(?:5\.6|6(?:\.\d+)?)(?:-|$)/i.test(modelName);
 }
 
 function getAssistantMessage(completion: unknown): UnknownRecord | null {
@@ -452,7 +456,7 @@ function toOpenAIResponsesTools(language: EffectiveDisplayLanguage): object[] {
     type: 'function',
     name: tool.name,
     description: tool.description,
-    parameters: tool.parameters,
+    parameters: toOpenAIParametersSchema(tool.parameters),
     strict: false,
   }));
 }

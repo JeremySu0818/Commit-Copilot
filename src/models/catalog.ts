@@ -85,7 +85,10 @@ export const OPENAI_MODELS: ModelConfig[] = [
   { id: 'gpt-5.6-luna', alias: 'GPT-5.6 Luna' },
   { id: 'gpt-5.6-terra', alias: 'GPT-5.6 Terra' },
   { id: 'gpt-5.6-sol', alias: 'GPT-5.6 Sol' },
+  { id: 'gpt-6-luna', alias: 'GPT-6 Luna' },
+  { id: 'gpt-6-sol', alias: 'GPT-6 Sol' },
   { id: 'gpt-6-astra', alias: 'GPT-6 Astra' },
+  { id: 'gpt-6.1-sol', alias: 'GPT-6.1 Sol' },
 ];
 
 export const ANTHROPIC_MODELS: ModelConfig[] = [
@@ -159,6 +162,7 @@ export const ANTHROPIC_MODELS: ModelConfig[] = [
     alias: 'Claude Fable 5.1',
     max_tokens: 128000,
   },
+  { id: 'claude-opus-5-5', alias: 'Claude Opus 5.5', max_tokens: 128000 },
 ];
 
 export const OLLAMA_MODELS: ModelConfig[] = [];
@@ -169,14 +173,14 @@ export const GROK_MODELS: ModelConfig[] = [
   { id: 'grok-4.3', alias: 'Grok 4.3' },
   { id: 'grok-4.5', alias: 'Grok 4.5' },
   { id: 'grok-4.6', alias: 'Grok 4.6' },
+  { id: 'grok-4.7', alias: 'Grok 4.7' },
 ];
 
 export const GROQ_MODELS: ModelConfig[] = [
   { id: 'openai/gpt-oss-20b', alias: 'gpt-oss-20B' },
   { id: 'openai/gpt-oss-120b', alias: 'gpt-oss-120B' },
-  { id: 'minimaxai/minimax-m2.7', alias: 'MiniMax M2.7' },
   { id: 'openai/gpt-oss-safeguard-20b', alias: 'Safety GPT OSS 20B' },
-  { id: 'qwen/qwen3.6-27b', alias: 'Qwen 3.6 27b' },
+  { id: 'qwen/qwen3.8-27b', alias: 'Qwen 3.8 27b' },
 ];
 
 export const OPENROUTER_MODELS: ModelConfig[] = [];

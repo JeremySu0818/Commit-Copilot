@@ -285,10 +285,10 @@ Vygenerovaná zpráva se vloží do standardního vstupního pole Source Control
 | Poskytovatel             | Hlavní přednosti                                                         |
 | ------------------------ | ------------------------------------------------------------------------ |
 | **Google Gemini**        | Nativní strukturované nástroje a podpora několika generací modelů Gemini |
-| **OpenAI**               | Modely uvažování (reasoning), univerzální, kompaktní i řada GPT-5        |
+| **OpenAI**               | Modely uvažování (reasoning), univerzální, kompaktní i řada GPT-5/6      |
 | **Anthropic**            | Rodiny modelů Claude Haiku, Sonnet, Opus a Fable                         |
 | **xAI Grok**             | Modely Grok s podporou uvažování i standardní varianty                   |
-| **Groq**                 | Vysoce rychlý hosting modelů MiniMax, Qwen a `gpt-oss`                   |
+| **Groq**                 | Vysoce rychlý hosting modelů Qwen a `gpt-oss`                            |
 | **OpenRouter**           | Dynamický přístup k rozsáhlému katalogu s filtrováním podpory nástrojů   |
 | **DeepSeek**             | DeepSeek V4.1 Flash                                                      |
 | **Alibaba Qwen**         | Integrace s DashScope a dynamické objevování modelů                      |
@@ -320,7 +320,8 @@ Vygenerovaná zpráva se vloží do standardního vstupního pole Source Control
 - GPT-5.4 nano, mini a GPT-5.4
 - GPT-5.5
 - GPT-5.6 Luna, Terra a Sol
-- GPT-6 Astra
+- GPT-6 Luna, Sol a Astra
+- GPT-6.1 Sol
 
 ### Anthropic
 
@@ -332,6 +333,7 @@ Vygenerovaná zpráva se vloží do standardního vstupního pole Source Control
 - Claude Opus 4.8
 - Claude Sonnet 5, Opus 5 a Fable 5
 - Claude Fable 5.1
+- Claude Opus 5.5
 
 ### xAI Grok
 
@@ -339,14 +341,14 @@ Vygenerovaná zpráva se vloží do standardního vstupního pole Source Control
 - Grok 4.3
 - Grok 4.5
 - Grok 4.6
+- Grok 4.7
 
 ### Groq
 
 - `gpt-oss-20B`
 - `gpt-oss-120B`
 - `gpt-oss-safeguard-20B`
-- MiniMax M2.7
-- Qwen 3.6 27b
+- Qwen 3.8 27b
 
 ### DeepSeek
 
