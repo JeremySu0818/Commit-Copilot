@@ -310,7 +310,7 @@ Generierte Nachrichten werden direkt in das Standard-Eingabefeld der Quellcodeve
 
 ### OpenAI
 
-- o3 und o3-mini
+- o3-mini und o3
 - o4-mini
 - GPT-4o mini und GPT-4o
 - GPT-4.1 nano, mini und GPT-4.1
@@ -325,19 +325,19 @@ Generierte Nachrichten werden direkt in das Standard-Eingabefeld der Quellcodeve
 
 ### Anthropic
 
-- Claude Sonnet 4 und Opus 4
+- Claude Sonnet und Opus 4
 - Claude Opus 4.1
 - Claude Haiku, Sonnet und Opus 4.5
 - Claude Sonnet und Opus 4.6
 - Claude Opus 4.7
 - Claude Opus 4.8
-- Claude Sonnet 5, Opus 5 und Fable 5
+- Claude Sonnet, Opus und Fable 5
 - Claude Fable 5.1
-- Claude Opus 5.5
+- Claude Sonnet und Opus 5.5
 
 ### xAI Grok
 
-- Grok 4.20, Reasoning und Standard
+- Grok 4.20 (Standard und Reasoning)
 - Grok 4.3
 - Grok 4.5
 - Grok 4.6
@@ -345,9 +345,9 @@ Generierte Nachrichten werden direkt in das Standard-Eingabefeld der Quellcodeve
 
 ### Groq
 
-- `gpt-oss-20B`
-- `gpt-oss-120B`
-- `gpt-oss-safeguard-20B`
+- gpt-oss-20B
+- gpt-oss-safeguard-20B
+- gpt-oss-120B
 - Qwen 3.8 27b
 
 ### DeepSeek

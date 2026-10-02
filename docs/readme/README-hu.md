@@ -310,7 +310,7 @@ A generált üzenetek a szabványos Forrásvezérlés beviteli mezőbe kerülnek
 
 ### OpenAI
 
-- o3 és o3-mini
+- o3-mini és o3
 - o4-mini
 - GPT-4o mini és GPT-4o
 - GPT-4.1 nano, mini és GPT-4.1
@@ -325,19 +325,19 @@ A generált üzenetek a szabványos Forrásvezérlés beviteli mezőbe kerülnek
 
 ### Anthropic
 
-- Claude Sonnet 4 és Opus 4
+- Claude Sonnet és Opus 4
 - Claude Opus 4.1
 - Claude Haiku, Sonnet és Opus 4.5
 - Claude Sonnet és Opus 4.6
 - Claude Opus 4.7
 - Claude Opus 4.8
-- Claude Sonnet 5, Opus 5 és Fable 5
+- Claude Sonnet, Opus és Fable 5
 - Claude Fable 5.1
-- Claude Opus 5.5
+- Claude Sonnet és Opus 5.5
 
 ### xAI Grok
 
-- Grok 4.20 (érvelési és szabványos)
+- Grok 4.20 (szabványos és érvelési)
 - Grok 4.3
 - Grok 4.5
 - Grok 4.6
@@ -345,9 +345,9 @@ A generált üzenetek a szabványos Forrásvezérlés beviteli mezőbe kerülnek
 
 ### Groq
 
-- `gpt-oss-20B`
-- `gpt-oss-120B`
-- `gpt-oss-safeguard-20B`
+- gpt-oss-20B
+- gpt-oss-safeguard-20B
+- gpt-oss-120B
 - Qwen 3.8 27b
 
 ### DeepSeek

@@ -310,7 +310,7 @@ Gegenereerde berichten worden rechtstreeks in het standaard invoerveld van Sourc
 
 ### OpenAI
 
-- o3 en o3-mini
+- o3-mini en o3
 - o4-mini
 - GPT-4o mini en GPT-4o
 - GPT-4.1 nano, mini en GPT-4.1
@@ -325,19 +325,19 @@ Gegenereerde berichten worden rechtstreeks in het standaard invoerveld van Sourc
 
 ### Anthropic
 
-- Claude Sonnet 4 en Opus 4
+- Claude Sonnet en Opus 4
 - Claude Opus 4.1
 - Claude Haiku, Sonnet en Opus 4.5
 - Claude Sonnet en Opus 4.6
 - Claude Opus 4.7
 - Claude Opus 4.8
-- Claude Sonnet 5, Opus 5 en Fable 5
+- Claude Sonnet, Opus en Fable 5
 - Claude Fable 5.1
-- Claude Opus 5.5
+- Claude Sonnet en Opus 5.5
 
 ### xAI Grok
 
-- Grok 4.20, met en zonder redenering
+- Grok 4.20 (zonder en met redenering)
 - Grok 4.3
 - Grok 4.5
 - Grok 4.6
@@ -345,9 +345,9 @@ Gegenereerde berichten worden rechtstreeks in het standaard invoerveld van Sourc
 
 ### Groq
 
-- `gpt-oss-20B`
-- `gpt-oss-120B`
-- `gpt-oss-safeguard-20B`
+- gpt-oss-20B
+- gpt-oss-safeguard-20B
+- gpt-oss-120B
 - Qwen 3.8 27b
 
 ### DeepSeek

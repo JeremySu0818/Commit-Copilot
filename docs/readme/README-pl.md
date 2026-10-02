@@ -310,7 +310,7 @@ Wygenerowana wiadomość jest wstawiana do standardowego pola tekstowego Source 
 
 ### OpenAI
 
-- o3 oraz o3-mini
+- o3-mini oraz o3
 - o4-mini
 - GPT-4o mini oraz GPT-4o
 - GPT-4.1 nano, mini oraz GPT-4.1
@@ -325,19 +325,19 @@ Wygenerowana wiadomość jest wstawiana do standardowego pola tekstowego Source 
 
 ### Anthropic
 
-- Claude Sonnet 4 oraz Opus 4
+- Claude Sonnet oraz Opus 4
 - Claude Opus 4.1
 - Claude Haiku, Sonnet oraz Opus 4.5
 - Claude Sonnet oraz Opus 4.6
 - Claude Opus 4.7
 - Claude Opus 4.8
-- Claude Sonnet 5, Opus 5 oraz Fable 5
+- Claude Sonnet, Opus oraz Fable 5
 - Claude Fable 5.1
-- Claude Opus 5.5
+- Claude Sonnet oraz Opus 5.5
 
 ### xAI Grok
 
-- Grok 4.20 (z rozumowaniem i standardowy)
+- Grok 4.20 (standardowy oraz z rozumowaniem)
 - Grok 4.3
 - Grok 4.5
 - Grok 4.6
@@ -345,9 +345,9 @@ Wygenerowana wiadomość jest wstawiana do standardowego pola tekstowego Source 
 
 ### Groq
 
-- `gpt-oss-20B`
-- `gpt-oss-120B`
-- `gpt-oss-safeguard-20B`
+- gpt-oss-20B
+- gpt-oss-safeguard-20B
+- gpt-oss-120B
 - Qwen 3.8 27b
 
 ### DeepSeek

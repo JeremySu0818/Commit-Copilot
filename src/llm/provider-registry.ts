@@ -24,12 +24,12 @@ export const PROVIDER_DISPLAY_NAMES: Record<APIProvider, string> = {
 export const DEFAULT_MODELS: Record<APIProvider, string> = {
   google: 'gemini-3.8-flash',
   openai: 'gpt-6.1-sol',
-  anthropic: 'claude-sonnet-5',
+  anthropic: 'claude-sonnet-5-5',
   ollama: '',
-  grok: 'grok-4.6',
+  grok: 'grok-4.7',
   groq: 'openai/gpt-oss-120b',
   openrouter: '',
-  deepseek: 'deepseek-v4-flash',
+  deepseek: 'deepseek-flash',
   qwen: '',
 };
 

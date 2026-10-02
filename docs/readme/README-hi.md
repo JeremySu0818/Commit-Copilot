@@ -310,7 +310,7 @@ Commit-Copilot को अपनी सुविधानुसार प्र�
 
 ### OpenAI
 
-- o3 और o3-mini
+- o3-mini और o3
 - o4-mini
 - GPT-4o mini और GPT-4o
 - GPT-4.1 nano, mini और GPT-4.1
@@ -325,19 +325,19 @@ Commit-Copilot को अपनी सुविधानुसार प्र�
 
 ### Anthropic
 
-- Claude Sonnet 4 और Opus 4
+- Claude Sonnet और Opus 4
 - Claude Opus 4.1
 - Claude Haiku, Sonnet और Opus 4.5
 - Claude Sonnet और Opus 4.6
 - Claude Opus 4.7
 - Claude Opus 4.8
-- Claude Sonnet 5, Opus 5 और Fable 5
+- Claude Sonnet, Opus और Fable 5
 - Claude Fable 5.1
-- Claude Opus 5.5
+- Claude Sonnet और Opus 5.5
 
 ### xAI Grok
 
-- Grok 4.20 (रीजनिंग और मानक)
+- Grok 4.20 (मानक और रीजनिंग)
 - Grok 4.3
 - Grok 4.5
 - Grok 4.6
@@ -345,9 +345,9 @@ Commit-Copilot को अपनी सुविधानुसार प्र�
 
 ### Groq
 
-- `gpt-oss-20B`
-- `gpt-oss-120B`
-- `gpt-oss-safeguard-20B`
+- gpt-oss-20B
+- gpt-oss-safeguard-20B
+- gpt-oss-120B
 - Qwen 3.8 27b
 
 ### DeepSeek

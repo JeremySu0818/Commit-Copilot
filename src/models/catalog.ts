@@ -162,6 +162,7 @@ export const ANTHROPIC_MODELS: ModelConfig[] = [
     alias: 'Claude Fable 5.1',
     max_tokens: 128000,
   },
+  { id: 'claude-sonnet-5-5', alias: 'Claude Sonnet 5.5', max_tokens: 128000 },
   { id: 'claude-opus-5-5', alias: 'Claude Opus 5.5', max_tokens: 128000 },
 ];
 

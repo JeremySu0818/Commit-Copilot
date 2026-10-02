@@ -310,7 +310,7 @@ Agentic 模式可選用「要求完整檢查所有差異」選項。在設定中
 
 ### OpenAI
 
-- o3 與 o3-mini
+- o3-mini 與 o3
 - o4-mini
 - GPT-4o mini 與 GPT-4o
 - GPT-4.1 nano、mini 與 GPT-4.1
@@ -325,19 +325,19 @@ Agentic 模式可選用「要求完整檢查所有差異」選項。在設定中
 
 ### Anthropic
 
-- Claude Sonnet 4 與 Opus 4
+- Claude Sonnet 與 Opus 4
 - Claude Opus 4.1
 - Claude Haiku、Sonnet 與 Opus 4.5
 - Claude Sonnet 與 Opus 4.6
 - Claude Opus 4.7
 - Claude Opus 4.8
-- Claude Sonnet 5、Opus 5 與 Fable 5
+- Claude Sonnet、Opus 與 Fable 5
 - Claude Fable 5.1
-- Claude Opus 5.5
+- Claude Sonnet 與 Opus 5.5
 
 ### xAI Grok
 
-- Grok 4.20（含推理與非推理版本）
+- Grok 4.20（含非推理與推理版本）
 - Grok 4.3
 - Grok 4.5
 - Grok 4.6
@@ -345,9 +345,9 @@ Agentic 模式可選用「要求完整檢查所有差異」選項。在設定中
 
 ### Groq
 
-- `gpt-oss-20B`
-- `gpt-oss-120B`
-- `gpt-oss-safeguard-20B`
+- gpt-oss-20B
+- gpt-oss-safeguard-20B
+- gpt-oss-120B
 - Qwen 3.8 27b
 
 ### DeepSeek

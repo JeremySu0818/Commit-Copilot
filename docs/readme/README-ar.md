@@ -310,7 +310,7 @@ flowchart LR
 
 ### OpenAI
 
-- o3 و o3-mini
+- o3-mini و o3
 - o4-mini
 - GPT-4o mini و GPT-4o
 - GPT-4.1 nano و mini و GPT-4.1
@@ -325,19 +325,19 @@ flowchart LR
 
 ### Anthropic
 
-- Claude Sonnet 4 و Opus 4
+- Claude Sonnet و Opus 4
 - Claude Opus 4.1
 - Claude Haiku و Sonnet و Opus 4.5
 - Claude Sonnet و Opus 4.6
 - Claude Opus 4.7
 - Claude Opus 4.8
-- Claude Sonnet 5 و Opus 5 و Fable 5
+- Claude Sonnet و Opus و Fable 5
 - Claude Fable 5.1
-- Claude Opus 5.5
+- Claude Sonnet و Opus 5.5
 
 ### xAI Grok
 
-- Grok 4.20 (مع تفكير وبدون)
+- Grok 4.20 (بدون تفكير ومع)
 - Grok 4.3
 - Grok 4.5
 - Grok 4.6
@@ -345,9 +345,9 @@ flowchart LR
 
 ### Groq
 
-- `gpt-oss-20B`
-- `gpt-oss-120B`
-- `gpt-oss-safeguard-20B`
+- gpt-oss-20B
+- gpt-oss-safeguard-20B
+- gpt-oss-120B
 - Qwen 3.8 27b
 
 ### DeepSeek

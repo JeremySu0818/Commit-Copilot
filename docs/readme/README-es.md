@@ -310,7 +310,7 @@ Los mensajes generados se insertan directamente en el cuadro de entrada estánda
 
 ### OpenAI
 
-- o3 y o3-mini
+- o3-mini y o3
 - o4-mini
 - GPT-4o mini y GPT-4o
 - GPT-4.1 nano, mini y GPT-4.1
@@ -325,19 +325,19 @@ Los mensajes generados se insertan directamente en el cuadro de entrada estánda
 
 ### Anthropic
 
-- Claude Sonnet 4 y Opus 4
+- Claude Sonnet y Opus 4
 - Claude Opus 4.1
 - Claude Haiku, Sonnet y Opus 4.5
 - Claude Sonnet y Opus 4.6
 - Claude Opus 4.7
 - Claude Opus 4.8
-- Claude Sonnet 5, Opus 5 y Fable 5
+- Claude Sonnet, Opus y Fable 5
 - Claude Fable 5.1
-- Claude Opus 5.5
+- Claude Sonnet y Opus 5.5
 
 ### xAI Grok
 
-- Grok 4.20, con y sin razonamiento
+- Grok 4.20 (sin y con razonamiento)
 - Grok 4.3
 - Grok 4.5
 - Grok 4.6
@@ -345,9 +345,9 @@ Los mensajes generados se insertan directamente en el cuadro de entrada estánda
 
 ### Groq
 
-- `gpt-oss-20B`
-- `gpt-oss-120B`
-- `gpt-oss-safeguard-20B`
+- gpt-oss-20B
+- gpt-oss-safeguard-20B
+- gpt-oss-120B
 - Qwen 3.8 27b
 
 ### DeepSeek

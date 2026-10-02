@@ -310,7 +310,7 @@ Thông điệp tạo ra sẽ tự động điền vào hộp nhập SCM tiêu ch
 
 ### OpenAI
 
-- o3, o3-mini
+- o3-mini, o3
 - o4-mini
 - GPT-4o mini, GPT-4o
 - GPT-4.1 nano, mini, GPT-4.1
@@ -325,19 +325,19 @@ Thông điệp tạo ra sẽ tự động điền vào hộp nhập SCM tiêu ch
 
 ### Anthropic
 
-- Claude Sonnet 4, Opus 4
+- Claude Sonnet, Opus 4
 - Claude Opus 4.1
 - Claude Haiku, Sonnet, Opus 4.5
 - Claude Sonnet, Opus 4.6
 - Claude Opus 4.7
 - Claude Opus 4.8
-- Claude Sonnet 5, Opus 5, Fable 5
+- Claude Sonnet, Opus, Fable 5
 - Claude Fable 5.1
-- Claude Opus 5.5
+- Claude Sonnet, Opus 5.5
 
 ### xAI Grok
 
-- Grok 4.20 (suy luận và phi suy luận)
+- Grok 4.20 (phi suy luận và suy luận)
 - Grok 4.3
 - Grok 4.5
 - Grok 4.6
@@ -345,9 +345,9 @@ Thông điệp tạo ra sẽ tự động điền vào hộp nhập SCM tiêu ch
 
 ### Groq
 
-- `gpt-oss-20B`
-- `gpt-oss-120B`
-- `gpt-oss-safeguard-20B`
+- gpt-oss-20B
+- gpt-oss-safeguard-20B
+- gpt-oss-120B
 - Qwen 3.8 27b
 
 ### DeepSeek
