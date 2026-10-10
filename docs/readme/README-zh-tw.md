@@ -333,7 +333,7 @@ Agentic 模式可選用「要求完整檢查所有差異」選項。在設定中
 - Claude Opus 4.8
 - Claude Sonnet、Opus 與 Fable 5
 - Claude Fable 5.1
-- Claude Sonnet 與 Opus 5.5
+- Claude Haiku、Sonnet 與 Opus 5.5
 
 ### xAI Grok
 

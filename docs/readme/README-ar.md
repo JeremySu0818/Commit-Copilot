@@ -333,7 +333,7 @@ flowchart LR
 - Claude Opus 4.8
 - Claude Sonnet و Opus و Fable 5
 - Claude Fable 5.1
-- Claude Sonnet و Opus 5.5
+- Claude Haiku و Sonnet و Opus 5.5
 
 ### xAI Grok
 

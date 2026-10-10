@@ -333,7 +333,7 @@ Les messages générés sont directement insérés dans le champ de saisie stand
 - Claude Opus 4.8
 - Claude Sonnet, Opus et Fable 5
 - Claude Fable 5.1
-- Claude Sonnet et Opus 5.5
+- Claude Haiku, Sonnet et Opus 5.5
 
 ### xAI Grok
 

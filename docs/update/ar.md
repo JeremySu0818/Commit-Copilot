@@ -1,7 +1,6 @@
 # معلومات تحديث Commit Copilot
 
-## الميزات الجديدة في الإصدار 1.22.0
+## الميزات الجديدة في الإصدار 1.23.0
 
-- تمت إضافة دعم لنموذج Claude Sonnet 5.5 لمزود Anthropic Claude، وترقية نموذج Anthropic الافتراضي إلى Claude Sonnet 5.5.
-- ترقية نموذج Grok الافتراضي إلى Grok 4.7 في مزود xAI Grok.
-- تحديث نموذج DeepSeek الافتراضي إلى DeepSeek V4.1 Flash.
+- تمت إضافة دعم لنموذج Claude Haiku 5.5 لمزود Anthropic Claude.
+- تم إصلاح مشكلة في سجلات تقدم diff في وضع Agent كانت تعرض ملفًا واحدًا فقط عندما يتضمن استدعاء get_diff كلا المعاملين path و paths.

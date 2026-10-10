@@ -333,7 +333,7 @@ Vygenerovaná zpráva se vloží do standardního vstupního pole Source Control
 - Claude Opus 4.8
 - Claude Sonnet, Opus a Fable 5
 - Claude Fable 5.1
-- Claude Sonnet a Opus 5.5
+- Claude Haiku, Sonnet a Opus 5.5
 
 ### xAI Grok
 

@@ -333,7 +333,7 @@ Generated messages are inserted into the standard Source Control input box, wher
 - Claude Opus 4.8
 - Claude Sonnet, Opus, and Fable 5
 - Claude Fable 5.1
-- Claude Sonnet and Opus 5.5
+- Claude Haiku, Sonnet, and Opus 5.5
 
 ### xAI Grok
 

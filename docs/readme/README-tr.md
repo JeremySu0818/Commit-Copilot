@@ -333,7 +333,7 @@ Oluşturulan mesajlar, commit öncesinde incelenebilecekleri ve düzenlenebilece
 - Claude Opus 4.8
 - Claude Sonnet, Opus ve Fable 5
 - Claude Fable 5.1
-- Claude Sonnet ve Opus 5.5
+- Claude Haiku, Sonnet ve Opus 5.5
 
 ### xAI Grok
 

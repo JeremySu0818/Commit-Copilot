@@ -7,6 +7,8 @@ import { OLLAMA_DEFAULT_HOST } from '../../models/catalog';
 import { APIRequestError, EXIT_CODES } from '../../shared/errors';
 import { withModuleMock } from '../helpers/module-mock';
 
+const anthropicMaxOutputTokens = 128000;
+
 const customAnthropicMaxTokens = 12288;
 
 function getOllamaHost(client: unknown): string {
@@ -168,62 +170,77 @@ void test('Ollama direct diff disables thinking so content is returned', async (
   assert.equal(chatRequests[0]?.think, false);
 });
 
-void test('Anthropic direct diff uses streaming API', async () => {
-  const calls = {
-    apiKeys: [] as string[],
-    streamCalls: 0,
-    finalMessageCalls: 0,
-    createCalls: 0,
-  };
-
-  class AnthropicMock {
-    messages = {
-      create: () => {
-        calls.createCalls += 1;
-        return Promise.reject(
-          new Error('messages.create should not be called in direct diff'),
-        );
-      },
-      stream: (_params: Record<string, unknown>) => {
-        calls.streamCalls += 1;
-        return {
-          finalMessage: () => {
-            calls.finalMessageCalls += 1;
-            return Promise.resolve({
-              content: [{ type: 'text', text: 'fix(core): stream anthropic' }],
-            });
-          },
-        };
-      },
+for (const model of [DEFAULT_MODELS.anthropic, 'claude-haiku-5-5']) {
+  void test(`Anthropic direct diff streams text after thinking for ${model}`, async () => {
+    const calls = {
+      apiKeys: [] as string[],
+      streamCalls: 0,
+      finalMessageCalls: 0,
+      createCalls: 0,
     };
 
-    constructor(options: { apiKey: string }) {
-      calls.apiKeys.push(options.apiKey);
+    class AnthropicMock {
+      messages = {
+        create: () => {
+          calls.createCalls += 1;
+          return Promise.reject(
+            new Error('messages.create should not be called in direct diff'),
+          );
+        },
+        stream: (params: Record<string, unknown>) => {
+          assert.equal(params.model, model);
+          assert.equal(params.max_tokens, anthropicMaxOutputTokens);
+          for (const key of ['temperature', 'top_p', 'top_k', 'thinking']) {
+            assert.equal(key in params, false);
+          }
+          calls.streamCalls += 1;
+          return {
+            finalMessage: () => {
+              calls.finalMessageCalls += 1;
+              return Promise.resolve({
+                content: [
+                  {
+                    type: 'thinking',
+                    thinking: '',
+                    signature: 'test-signature',
+                  },
+                  { type: 'text', text: 'fix(core): stream anthropic' },
+                ],
+              });
+            },
+          };
+        },
+      };
+
+      constructor(options: { apiKey: string }) {
+        calls.apiKeys.push(options.apiKey);
+      }
     }
-  }
 
-  await withModuleMock(
-    '@anthropic-ai/sdk',
-    { __esModule: true, default: AnthropicMock },
-    async () => {
-      const client = createLLMClient({
-        provider: 'anthropic',
-        apiKey: 'anthropic-test-key',
-      });
+    await withModuleMock(
+      '@anthropic-ai/sdk',
+      { __esModule: true, default: AnthropicMock },
+      async () => {
+        const client = createLLMClient({
+          provider: 'anthropic',
+          apiKey: 'anthropic-test-key',
+          model,
+        });
 
-      const message = await client.generateCommitMessage(
-        'diff --git a/file.txt b/file.txt\n+streamed',
-      );
+        const message = await client.generateCommitMessage(
+          'diff --git a/file.txt b/file.txt\n+streamed',
+        );
 
-      assert.equal(message, 'fix(core): stream anthropic');
-    },
-  );
+        assert.equal(message, 'fix(core): stream anthropic');
+      },
+    );
 
-  assert.deepEqual(calls.apiKeys, ['anthropic-test-key']);
-  assert.equal(calls.streamCalls, 1);
-  assert.equal(calls.finalMessageCalls, 1);
-  assert.equal(calls.createCalls, 0);
-});
+    assert.deepEqual(calls.apiKeys, ['anthropic-test-key']);
+    assert.equal(calls.streamCalls, 1);
+    assert.equal(calls.finalMessageCalls, 1);
+    assert.equal(calls.createCalls, 0);
+  });
+}
 
 void test('custom Anthropic direct diff uses configured base URL and max tokens', async () => {
   const constructorOptions: Record<string, unknown>[] = [];

@@ -1,7 +1,6 @@
 # Commit Copilot Update-info
 
-## Nieuw in versie 1.22.0
+## Nieuw in versie 1.23.0
 
-- Ondersteuning toegevoegd voor Claude Sonnet 5.5 in de Anthropic Claude-provider en het standaard Anthropic-model bijgewerkt naar Claude Sonnet 5.5.
-- Het standaard Grok-model in de xAI Grok-provider bijgewerkt naar Grok 4.7.
-- Het standaard DeepSeek-model bijgewerkt naar DeepSeek V4.1 Flash.
+- Ondersteuning toegevoegd voor Claude Haiku 5.5 in de Anthropic Claude-provider.
+- Een probleem opgelost waarbij de diff-voortgangslogboeken in de Agent-modus slechts één bestand toonden wanneer een get_diff-aanroep zowel path als paths bevatte.

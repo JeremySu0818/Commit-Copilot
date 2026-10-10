@@ -333,7 +333,7 @@ Agentic 모드에서는 설정에서 "모든 diff 조회 필수" 옵션을 활�
 - Claude Opus 4.8
 - Claude Sonnet, Opus, Fable 5
 - Claude Fable 5.1
-- Claude Sonnet, Opus 5.5
+- Claude Haiku, Sonnet, Opus 5.5
 
 ### xAI Grok
 

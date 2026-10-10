@@ -7,6 +7,7 @@ import {
 import type { EffectiveDisplayLanguage } from '../../i18n/types';
 import { LOCALES } from '../../i18n/ui';
 import { FINAL_COMMIT_MESSAGE_TOOL_NAME } from '../tools/definitions';
+import { getRequestedDiffPaths } from '../tools/diff-files';
 const MAX_AGENT_STEPS = Infinity;
 const compactBatchSizeThreshold = 2;
 
@@ -132,8 +133,7 @@ function formatProgressMessage(
     case 'get_diff':
       return msgs.stepAnalyzingDiff(
         step,
-        normalizedArgs.path ??
-          normalizedArgs.paths?.join(', ') ??
+        getRequestedDiffPaths({ ...normalizedArgs }).join(', ') ||
           'unknown file',
       );
     case 'read_file':

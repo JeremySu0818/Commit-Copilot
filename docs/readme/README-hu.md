@@ -333,7 +333,7 @@ A generált üzenetek a szabványos Forrásvezérlés beviteli mezőbe kerülnek
 - Claude Opus 4.8
 - Claude Sonnet, Opus és Fable 5
 - Claude Fable 5.1
-- Claude Sonnet és Opus 5.5
+- Claude Haiku, Sonnet és Opus 5.5
 
 ### xAI Grok
 

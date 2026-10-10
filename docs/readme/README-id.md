@@ -333,7 +333,7 @@ Pesan yang dihasilkan otomatis dimasukkan ke dalam kotak input SCM standar VS Co
 - Claude Opus 4.8
 - Claude Sonnet, Opus, Fable 5
 - Claude Fable 5.1
-- Claude Sonnet, Opus 5.5
+- Claude Haiku, Sonnet, Opus 5.5
 
 ### xAI Grok
 

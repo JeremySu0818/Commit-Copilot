@@ -1,7 +1,6 @@
 # Informasi Pembaruan Commit Copilot
 
-## Fitur Baru di Versi 1.22.0
+## Fitur Baru di Versi 1.23.0
 
-- Menambahkan dukungan untuk Claude Sonnet 5.5 di penyedia Anthropic Claude dan memperbarui model default Anthropic ke Claude Sonnet 5.5.
-- Memperbarui model default Grok ke Grok 4.7 di penyedia xAI Grok.
-- Memperbarui model default DeepSeek ke DeepSeek V4.1 Flash.
+- Menambahkan dukungan untuk Claude Haiku 5.5 di penyedia Anthropic Claude.
+- Memperbaiki masalah log progres diff dalam mode Agent yang hanya menampilkan satu file saat panggilan get_diff menyertakan path dan paths sekaligus.

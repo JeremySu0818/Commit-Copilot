@@ -333,7 +333,7 @@ I messaggi generati vengono inseriti direttamente nella casella di input standar
 - Claude Opus 4.8
 - Claude Sonnet, Opus e Fable 5
 - Claude Fable 5.1
-- Claude Sonnet e Opus 5.5
+- Claude Haiku, Sonnet e Opus 5.5
 
 ### xAI Grok
 

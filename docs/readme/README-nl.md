@@ -333,7 +333,7 @@ Gegenereerde berichten worden rechtstreeks in het standaard invoerveld van Sourc
 - Claude Opus 4.8
 - Claude Sonnet, Opus en Fable 5
 - Claude Fable 5.1
-- Claude Sonnet en Opus 5.5
+- Claude Haiku, Sonnet en Opus 5.5
 
 ### xAI Grok
 

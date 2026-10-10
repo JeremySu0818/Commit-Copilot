@@ -8,6 +8,8 @@ import { clearRequireCache, withModulesMock } from '../../helpers/module-mock';
 
 const MODULE_PATH = path.resolve(__dirname, '../../../agent/loop/anthropic');
 
+const anthropicMaxOutputTokens = 128000;
+
 type AnthropicModule = typeof import('../../../agent/loop/anthropic');
 
 interface ToolCallShape {
@@ -69,95 +71,121 @@ async function withAnthropicModule<T>(
   );
 }
 
-void test('runAnthropicAgentLoop executes tool_use blocks and sends tool_result messages', async () => {
-  const streamRequests: unknown[] = [];
-  const executedCalls: ToolCallShape[] = [];
+for (const model of [DEFAULT_MODELS.anthropic, 'claude-haiku-5-5']) {
+  void test(`runAnthropicAgentLoop preserves thinking and tool results for ${model}`, async () => {
+    const streamRequests: unknown[] = [];
+    const executedCalls: ToolCallShape[] = [];
 
-  class AnthropicMock {
-    messages = {
-      stream: (params: unknown) => {
-        streamRequests.push(params);
-        const currentCall = streamRequests.length;
-        return {
-          finalMessage: () => {
-            if (currentCall === 1) {
+    class AnthropicMock {
+      messages = {
+        stream: (params: unknown) => {
+          streamRequests.push(params);
+          assert.ok(isRecord(params));
+          assert.equal(params.model, model);
+          assert.equal(params.max_tokens, anthropicMaxOutputTokens);
+          for (const key of ['temperature', 'top_p', 'top_k', 'thinking']) {
+            assert.equal(key in params, false);
+          }
+          const currentCall = streamRequests.length;
+          return {
+            finalMessage: () => {
+              if (currentCall === 1) {
+                return Promise.resolve({
+                  content: [
+                    {
+                      type: 'thinking',
+                      thinking: '',
+                      signature: 'test-signature',
+                    },
+                    {
+                      type: 'tool_use',
+                      id: 'tool-1',
+                      name: 'read_file',
+                      input: { path: 'src/a.ts' },
+                    },
+                  ],
+                  stop_reason: 'tool_use',
+                });
+              }
+
               return Promise.resolve({
                 content: [
-                  {
-                    type: 'tool_use',
-                    id: 'tool-1',
-                    name: 'read_file',
-                    input: { path: 'src/a.ts' },
-                  },
+                  { type: 'text', text: 'feat(agent): anthropic tool ok' },
                 ],
-                stop_reason: 'tool_use',
+                stop_reason: 'end_turn',
               });
-            }
+            },
+          };
+        },
+      };
+    }
 
-            return Promise.resolve({
-              content: [
-                { type: 'text', text: 'feat(agent): anthropic tool ok' },
-              ],
-              stop_reason: 'end_turn',
-            });
-          },
-        };
+    const agentToolsMock = {
+      buildInitialContext: () => Promise.resolve('initial context'),
+      executeToolCall: (toolCall: unknown) => {
+        const call = asToolCallShape(toolCall);
+        if (!call) {
+          throw new Error('Invalid tool call shape');
+        }
+        executedCalls.push(call);
+        return Promise.resolve({ name: call.name, content: 'tool result ok' });
       },
+      toAnthropicTools: () => [],
     };
-  }
 
-  const agentToolsMock = {
-    buildInitialContext: () => Promise.resolve('initial context'),
-    executeToolCall: (toolCall: unknown) => {
-      const call = asToolCallShape(toolCall);
-      if (!call) {
-        throw new Error('Invalid tool call shape');
-      }
-      executedCalls.push(call);
-      return Promise.resolve({ name: call.name, content: 'tool result ok' });
-    },
-    toAnthropicTools: () => [],
-  };
+    try {
+      const result = await withAnthropicModule(
+        AnthropicMock,
+        agentToolsMock,
+        async ({ runAnthropicAgentLoop }) =>
+          runAnthropicAgentLoop({
+            apiKey: 'anthropic-test-key',
+            model,
+            diff: 'diff --git a/a.ts b/a.ts\n+line',
+            repoRoot: process.cwd(),
+          }),
+      );
 
-  try {
-    const result = await withAnthropicModule(
-      AnthropicMock,
-      agentToolsMock,
-      async ({ runAnthropicAgentLoop }) =>
-        runAnthropicAgentLoop({
-          apiKey: 'anthropic-test-key',
-          model: DEFAULT_MODELS.anthropic,
-          diff: 'diff --git a/a.ts b/a.ts\n+line',
-          repoRoot: process.cwd(),
-        }),
+      assert.equal(result, 'feat(agent): anthropic tool ok');
+    } finally {
+      clearRequireCache(MODULE_PATH);
+    }
+
+    assert.deepEqual(executedCalls, [
+      {
+        name: 'read_file',
+        arguments: { path: 'src/a.ts' },
+      },
+    ]);
+
+    const secondRequestMessages = getMessagesFromStreamRequest(
+      streamRequests[1],
     );
-
-    assert.equal(result, 'feat(agent): anthropic tool ok');
-  } finally {
-    clearRequireCache(MODULE_PATH);
-  }
-
-  assert.deepEqual(executedCalls, [
-    {
-      name: 'read_file',
-      arguments: { path: 'src/a.ts' },
-    },
-  ]);
-
-  const secondRequestMessages = getMessagesFromStreamRequest(streamRequests[1]);
-  const lastMessage = secondRequestMessages[secondRequestMessages.length - 1];
-  if (!isRecord(lastMessage)) {
-    throw new Error('Expected final user message');
-  }
-  assert.equal(lastMessage.role, 'user');
-  assert.deepEqual(lastMessage.content, [
-    {
-      type: 'tool_result',
-      tool_use_id: 'tool-1',
-      content: 'tool result ok',
-    },
-  ]);
-});
+    const assistantMessage = secondRequestMessages.find(
+      (message) => isRecord(message) && message.role === 'assistant',
+    );
+    assert.ok(isRecord(assistantMessage));
+    assert.equal(assistantMessage.role, 'assistant');
+    assert.ok(Array.isArray(assistantMessage.content));
+    assert.deepEqual(assistantMessage.content[0], {
+      type: 'thinking',
+      thinking: '',
+      signature: 'test-signature',
+    });
+    const lastMessage = secondRequestMessages[secondRequestMessages.length - 1];
+    if (!isRecord(lastMessage)) {
+      throw new Error('Expected final user message');
+    }
+    assert.equal(lastMessage.role, 'user');
+    assert.deepEqual(lastMessage.content, [
+      {
+        type: 'tool_result',
+        tool_use_id: 'tool-1',
+        content: 'tool result ok',
+      },
+    ]);
+  });
+}
 
 void test('runAnthropicAgentLoop returns write_commit_message input without tool_result', async () => {
   const streamRequests: unknown[] = [];

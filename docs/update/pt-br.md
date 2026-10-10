@@ -1,7 +1,6 @@
 # Informações de Atualização do Commit Copilot
 
-## Novidades na Versão 1.22.0
+## Novidades na Versão 1.23.0
 
-- Adicionado suporte para Claude Sonnet 5.5 no provedor Anthropic Claude e atualizado o modelo padrão da Anthropic para Claude Sonnet 5.5.
-- Atualizado o modelo padrão do Grok para Grok 4.7 no provedor xAI Grok.
-- Atualizado o modelo padrão do DeepSeek para DeepSeek V4.1 Flash.
+- Adicionado suporte para Claude Haiku 5.5 no provedor Anthropic Claude.
+- Corrigido um problema em que os logs de progresso do diff no modo Agent exibiam apenas um arquivo quando uma chamada get_diff incluía path e paths ao mesmo tempo.

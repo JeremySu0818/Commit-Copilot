@@ -333,7 +333,7 @@ Wygenerowana wiadomość jest wstawiana do standardowego pola tekstowego Source 
 - Claude Opus 4.8
 - Claude Sonnet, Opus oraz Fable 5
 - Claude Fable 5.1
-- Claude Sonnet oraz Opus 5.5
+- Claude Haiku, Sonnet oraz Opus 5.5
 
 ### xAI Grok
 
