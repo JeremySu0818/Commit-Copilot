@@ -16,7 +16,7 @@ Commit-Copilot 是一款 VS Code 扩展，通过多步骤自主 AI Agent 深入�
 [![Open VSX](https://img.shields.io/open-vsx/v/JeremySu0818/commit-copilot?label=Open%20VSX)](https://open-vsx.org/extension/JeremySu0818/commit-copilot)
 [![Open VSX Downloads](https://img.shields.io/open-vsx/dt/JeremySu0818/commit-copilot?label=Open%20VSX%20Downloads)](https://open-vsx.org/extension/JeremySu0818/commit-copilot)
 [![VS Code](https://img.shields.io/badge/VS%20Code-%E2%89%A5%201.101.0-007ACC?logo=visualstudiocode&logoColor=white)](#系统需求)
-[![Node.js](https://img.shields.io/badge/Node.js-20%2B-339933?logo=nodedotjs&logoColor=white)](#开发指南)
+[![Node.js](https://img.shields.io/badge/Node.js-22%2B-339933?logo=nodedotjs&logoColor=white)](#开发指南)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-FE5196?logo=conventionalcommits&logoColor=white)](#约定式提交分类规范)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../../LICENSE)
 
@@ -282,82 +282,26 @@ Agentic 模式可选用“要求完整检查所有差异”选项。在设置中
 
 ## 支持的提供商
 
-| 提供商               | 亮点介绍                                              |
-| -------------------- | ----------------------------------------------------- |
-| **Google Gemini**    | 原生结构化工具支持与多代 Gemini 模型                  |
-| **OpenAI**           | 推理模型、通用模型、小型模型与 GPT-5/6 系列           |
-| **Anthropic**        | Claude Haiku、Sonnet、Opus 与 Fable 全系列            |
-| **xAI Grok**         | 包含推理与非推理版本的 Grok 系列                      |
-| **Groq**             | 高速托管之 Qwen 与 `gpt-oss` 开源模型                 |
-| **OpenRouter**       | 动态访问庞大模型目录，支持 Tool Calling 智能筛选      |
-| **DeepSeek**         | DeepSeek V4.1 Flash                                   |
-| **Alibaba Qwen**     | 集成通义千问 DashScope 端点，支持动态模型探索         |
-| **Ollama**           | 本地私有模型，支持动态列表与内置文本工具协议          |
-| **自定义兼容提供商** | 支持任何兼容 OpenAI 或 Anthropic API 规范的第三方端点 |
+| 提供商               | 亮点介绍                                          |
+| -------------------- | ------------------------------------------------- |
+| **Google Gemini**    | Google Gen AI API                                 |
+| **OpenAI**           | Responses / Chat Completions                      |
+| **Anthropic**        | Anthropic Messages API                            |
+| **xAI Grok**         | Responses API                                     |
+| **Groq**             | Chat Completions API                              |
+| **OpenRouter**       | Text output / tool filtering                      |
+| **DeepSeek**         | Chat Completions API                              |
+| **Alibaba Qwen**     | DashScope API                                     |
+| **Ollama**           | Ollama / text tool protocol                       |
+| **自定义兼容提供商** | Chat Completions / Responses / Anthropic Messages |
 
-<details>
-<summary><strong>展开查看 Commit-Copilot 内置支持之模型系列</strong></summary>
+### 模型可用性与兼容性
 
-### Google Gemini
+模型列表从所选提供商动态获取，可用性取决于账户、密钥、地区和端点。Ollama 列出已安装模型；Ollama 和自定义提供商允许手动添加模型 ID。
 
-- Gemini 2.5 Flash-Lite、Flash 与 Pro
-- Gemini 3 Flash
-- Gemini 3.1 Flash-Lite 与 Pro
-- Gemini 3.5 Flash-Lite 与 Flash
-- Gemini 3.6 Flash
-- Gemini 3.7 Flash
-- Gemini 3.8 Flash
+出现在列表中不保证兼容：其中可能包含视频生成、计算机使用或其他非文本模型。Direct Diff 需要文本生成；云端和自定义提供商的 Agentic 需要函数调用，Ollama 则使用文本工具协议。HTTP 400 可能表示模型或设置不受支持，也可能是其他参数无效；请尝试其他模型。
 
-### OpenAI
-
-- o3-mini 与 o3
-- o4-mini
-- GPT-4o mini 与 GPT-4o
-- GPT-4.1 nano、mini 与 GPT-4.1
-- GPT-5 nano、mini 与 GPT-5
-- GPT-5.1
-- GPT-5.2
-- GPT-5.4 nano、mini 与 GPT-5.4
-- GPT-5.5
-- GPT-5.6 Luna、Terra 与 Sol
-- GPT-6 Luna、Sol 与 Astra
-- GPT-6.1 Sol
-
-### Anthropic
-
-- Claude Sonnet 与 Opus 4
-- Claude Opus 4.1
-- Claude Haiku、Sonnet 与 Opus 4.5
-- Claude Sonnet 与 Opus 4.6
-- Claude Opus 4.7
-- Claude Opus 4.8
-- Claude Sonnet、Opus 与 Fable 5
-- Claude Fable 5.1
-- Claude Haiku、Sonnet 与 Opus 5.5
-
-### xAI Grok
-
-- Grok 4.20（含非推理与推理版本）
-- Grok 4.3
-- Grok 4.5
-- Grok 4.6
-- Grok 4.7
-
-### Groq
-
-- gpt-oss-20B
-- gpt-oss-safeguard-20B
-- gpt-oss-120B
-- Qwen 3.8 27b
-
-### DeepSeek
-
-- DeepSeek V4.1 Flash
-
-> [!IMPORTANT]
-> 模型的实际可用性取决于提供商、账号权限、地区与端点状态。OpenRouter、Qwen、Ollama 与自定义端点的模型列表可动态获取。
-
-</details>
+[Model discovery](../model-discovery.md)
 
 ---
 
@@ -372,7 +316,7 @@ Agentic 模式可选用“要求完整检查所有差异”选项。在设置中
 
 若需进行本地开发：
 
-- **Node.js** `20+`
+- **Node.js** `22+`
 - **npm**
 
 ---
@@ -400,7 +344,7 @@ Agentic 模式可选用“要求完整检查所有差异”选项。在设置中
 6. 验证成功后选择具体模型。
 
 > [!IMPORTANT]
-> 针对 Ollama 模型，每次生成前扩展均会主动执行 `ollama pull` 以确保模型为最新状态，并在通知区显示进度。这可能会在模型已存在时重新下载层数据。
+> Ollama 直接使用已安装模型；模型缺失时会尝试通过 `ollama pull` 下载并显示进度。
 
 ### 选项配置
 
@@ -688,9 +632,9 @@ npm test
 </details>
 
 <details>
-<summary><strong>为什么 Ollama 每次生成前都要执行 pull？</strong></summary>
+<summary><strong>Ollama 何时下载模型？</strong></summary>
 
-扩展在每次生成前主动执行 `ollama pull`，是为了确保所选模型在本地可用且处于最新版本状态。依据本地缓存情况，这可能会重新确认或下载模型层。
+已安装的模型，包括本地导入的模型，都会直接使用；仅在模型缺失时执行 `ollama pull`。
 
 </details>
 

@@ -16,7 +16,7 @@ Zökkenőmentesen működik a vezető felhős LLM-ekkel (Gemini, OpenAI, Anthrop
 [![Open VSX](https://img.shields.io/open-vsx/v/JeremySu0818/commit-copilot?label=Open%20VSX)](https://open-vsx.org/extension/JeremySu0818/commit-copilot)
 [![Open VSX Downloads](https://img.shields.io/open-vsx/dt/JeremySu0818/commit-copilot?label=Open%20VSX%20Downloads)](https://open-vsx.org/extension/JeremySu0818/commit-copilot)
 [![VS Code](https://img.shields.io/badge/VS%20Code-%E2%89%A5%201.101.0-007ACC?logo=visualstudiocode&logoColor=white)](#követelmények)
-[![Node.js](https://img.shields.io/badge/Node.js-20%2B-339933?logo=nodedotjs&logoColor=white)](#fejlesztés)
+[![Node.js](https://img.shields.io/badge/Node.js-22%2B-339933?logo=nodedotjs&logoColor=white)](#fejlesztés)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-FE5196?logo=conventionalcommits&logoColor=white)](#conventional-commits-osztályozás)
 [![Licenc: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../../LICENSE)
 
@@ -282,82 +282,26 @@ A generált üzenetek a szabványos Forrásvezérlés beviteli mezőbe kerülnek
 
 ## Támogatott szolgáltatók
 
-| Szolgáltató            | Főbb jellemzők                                                             |
-| ---------------------- | -------------------------------------------------------------------------- |
-| **Google Gemini**      | Natív strukturált eszközök és több Gemini modellgeneráció támogatása       |
-| **OpenAI**             | Érvelési (reasoning), általános célú, kompakt és GPT-5/6 sorozatú modellek |
-| **Anthropic**          | Claude Haiku, Sonnet, Opus és Fable modellcsaládok                         |
-| **xAI Grok**           | Érvelési és szabványos Grok változatok                                     |
-| **Groq**               | Gyors Qwen és `gpt-oss` modellek futtatása                                 |
-| **OpenRouter**         | Dinamikus hozzáférés széles modellkatalógushoz eszközhívás-szűréssel       |
-| **DeepSeek**           | DeepSeek V4.1 Flash                                                        |
-| **Alibaba Qwen**       | DashScope integráció és dinamikus modellfelderítés                         |
-| **Ollama**             | Helyi modellek dinamikus listával és beépített szöveges eszközprotokollal  |
-| **Egyéni szolgáltató** | Bármilyen OpenAI- vagy Anthropic-kompatibilis egyéni végpont               |
+| Szolgáltató            | Főbb jellemzők                                    |
+| ---------------------- | ------------------------------------------------- |
+| **Google Gemini**      | Google Gen AI API                                 |
+| **OpenAI**             | Responses / Chat Completions                      |
+| **Anthropic**          | Anthropic Messages API                            |
+| **xAI Grok**           | Responses API                                     |
+| **Groq**               | Chat Completions API                              |
+| **OpenRouter**         | Text output / tool filtering                      |
+| **DeepSeek**           | Chat Completions API                              |
+| **Alibaba Qwen**       | DashScope API                                     |
+| **Ollama**             | Ollama / text tool protocol                       |
+| **Egyéni szolgáltató** | Chat Completions / Responses / Anthropic Messages |
 
-<details>
-<summary><strong>A Commit-Copilot által támogatott modellcsaládok megtekintése</strong></summary>
+### Modellek elérhetősége és kompatibilitása
 
-### Google Gemini
+A modellek listája dinamikusan érkezik a szolgáltatótól, és függ a fióktól, kulcstól, régiótól és végponttól. Az Ollama a telepített modelleket mutatja; Ollama és egyéni szolgáltatók esetén azonosító kézzel is hozzáadható.
 
-- Gemini 2.5 Flash-Lite, Flash és Pro
-- Gemini 3 Flash
-- Gemini 3.1 Flash-Lite és Pro
-- Gemini 3.5 Flash-Lite és Flash
-- Gemini 3.6 Flash
-- Gemini 3.7 Flash
-- Gemini 3.8 Flash
+A listában szereplés nem garantál kompatibilitást: videós, számítógép-vezérlő vagy egyéb nem szöveges modellek is megjelenhetnek. A Direct Diff szöveggenerálást, a felhős és egyéni Agentic függvényhívást igényel; az Ollama szöveges eszközprotokollt használ. A HTTP 400 inkompatibilis modellt, beállítást vagy más érvénytelen paramétert jelezhet; próbáljon másik modellt.
 
-### OpenAI
-
-- o3-mini és o3
-- o4-mini
-- GPT-4o mini és GPT-4o
-- GPT-4.1 nano, mini és GPT-4.1
-- GPT-5 nano, mini és GPT-5
-- GPT-5.1
-- GPT-5.2
-- GPT-5.4 nano, mini és GPT-5.4
-- GPT-5.5
-- GPT-5.6 Luna, Terra és Sol
-- GPT-6 Luna, Sol és Astra
-- GPT-6.1 Sol
-
-### Anthropic
-
-- Claude Sonnet és Opus 4
-- Claude Opus 4.1
-- Claude Haiku, Sonnet és Opus 4.5
-- Claude Sonnet és Opus 4.6
-- Claude Opus 4.7
-- Claude Opus 4.8
-- Claude Sonnet, Opus és Fable 5
-- Claude Fable 5.1
-- Claude Haiku, Sonnet és Opus 5.5
-
-### xAI Grok
-
-- Grok 4.20 (szabványos és érvelési)
-- Grok 4.3
-- Grok 4.5
-- Grok 4.6
-- Grok 4.7
-
-### Groq
-
-- gpt-oss-20B
-- gpt-oss-safeguard-20B
-- gpt-oss-120B
-- Qwen 3.8 27b
-
-### DeepSeek
-
-- DeepSeek V4.1 Flash
-
-> [!IMPORTANT]
-> A modellek elérhetősége a szolgáltatótól, fióktól, régiótól és az aktuális API-katalógustól függ. Az OpenRouter, Qwen, Ollama és egyéni szolgáltatók modell-listái dinamikusan lekérhetők.
-
-</details>
+[Model discovery](../model-discovery.md)
 
 ---
 
@@ -372,7 +316,7 @@ A generált üzenetek a szabványos Forrásvezérlés beviteli mezőbe kerülnek
 
 Fejlesztéshez:
 
-- **Node.js** `20+`
+- **Node.js** `22+`
 - **npm**
 
 ---
@@ -400,7 +344,7 @@ A telepítés után nyisson meg egy Git kódtárat a VS Code-ban, és kattintson
 6. Válasszon egy modellt az elérhető listából.
 
 > [!IMPORTANT]
-> Az Ollama használatakor a kiterjesztés minden generálás előtt lefuttatja az `ollama pull` parancsot a kiválasztott modellre, és megjeleníti a folyamatot az értesítési területen. Ez frissíti a modellt, de a rétegek újbóli ellenőrzését eredményezheti akkor is, ha a modell már létezik helyben.
+> Az Ollama közvetlenül használja a telepített modelleket, a hiányzókat `ollama pull` segítségével próbálja letölteni, a folyamatot megjelenítve.
 
 ### Beállítási lehetőségek
 
@@ -688,9 +632,9 @@ Igen. Hozzáadhatja OpenAI- vagy Anthropic-kompatibilis egyéni szolgáltatóké
 </details>
 
 <details>
-<summary><strong>Miért tölti le (pull) az Ollama a modellt minden generálás előtt?</strong></summary>
+<summary><strong>Mikor tölt le modellt az Ollama?</strong></summary>
 
-A kiterjesztés minden generálás előtt lefuttatja az `ollama pull` parancsot annak érdekében, hogy a kiválasztott modell biztosan elérhető és naprakész legyen. A helyi állapottól függően ez újraellenőrizheti vagy letöltheti a modell rétegeit.
+A telepített, köztük helyben importált modellek közvetlenül használhatók; az `ollama pull` csak hiányzó modellnél fut.
 
 </details>
 

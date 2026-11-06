@@ -1,6 +1,7 @@
-# Commit Copilot frissítési információk
+# Commit Copilot Frissítési információk
 
-## Újdonságok az 1.23.0-s verzióban
+## Újdonságok az 1.24.0 verzióban
 
-- Claude Haiku 5.5 támogatás hozzáadása az Anthropic Claude szolgáltatóhoz.
-- Javítva az a hiba, amely miatt az Agent mód diff-folyamatnaplója csak egy fájlt jelenített meg, ha a get_diff hívás path és paths paramétert is tartalmazott.
+- Frissültek az AI SDK-k és a szolgáltatói API-k, dinamikus modellfelderítéssel. Az elérhetőség és a kompatibilitás a szolgáltatótól és a fióktól függ. A modellnevek már nincsenek beégetve a modellistába.
+- Javult az OpenAI Responses, az egyéni végpontok, a Qwen és a helyi Ollama-modellek támogatása.
+- Generáláskor kapott HTTP 400 esetén a bővítmény másik modellt javasol, mert a modell vagy a beállítások esetleg nem támogatottak.

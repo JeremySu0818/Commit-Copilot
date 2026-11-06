@@ -16,7 +16,7 @@ Het werkt naadloos samen met toonaangevende cloud-LLM's (Gemini, OpenAI, Anthrop
 [![Open VSX](https://img.shields.io/open-vsx/v/JeremySu0818/commit-copilot?label=Open%20VSX)](https://open-vsx.org/extension/JeremySu0818/commit-copilot)
 [![Open VSX Downloads](https://img.shields.io/open-vsx/dt/JeremySu0818/commit-copilot?label=Open%20VSX%20Downloads)](https://open-vsx.org/extension/JeremySu0818/commit-copilot)
 [![VS Code](https://img.shields.io/badge/VS%20Code-%E2%89%A5%201.101.0-007ACC?logo=visualstudiocode&logoColor=white)](#vereisten)
-[![Node.js](https://img.shields.io/badge/Node.js-20%2B-339933?logo=nodedotjs&logoColor=white)](#ontwikkeling)
+[![Node.js](https://img.shields.io/badge/Node.js-22%2B-339933?logo=nodedotjs&logoColor=white)](#ontwikkeling)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-FE5196?logo=conventionalcommits&logoColor=white)](#conventionele-commit-classificatie)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../../LICENSE)
 
@@ -282,82 +282,26 @@ Gegenereerde berichten worden rechtstreeks in het standaard invoerveld van Sourc
 
 ## Ondersteunde providers
 
-| Provider            | Belangrijkste kenmerken                                                            |
-| ------------------- | ---------------------------------------------------------------------------------- |
-| **Google Gemini**   | Native gestructureerde tools en ondersteuning voor meerdere Gemini-modelgeneraties |
-| **OpenAI**          | Redenerings-, algemene, compacte modellen en de GPT-5/6-serie                      |
-| **Anthropic**       | Volledige families Claude Haiku, Sonnet, Opus en Fable                             |
-| **xAI Grok**        | Standaard- en redeneringsvarianten van Grok                                        |
-| **Groq**            | Supersnel gehoste Qwen- en `gpt-oss`-modellen                                      |
-| **OpenRouter**      | Dynamische toegang tot compatibele modellen met filtering op toolondersteuning     |
-| **DeepSeek**        | DeepSeek V4.1 Flash                                                                |
-| **Alibaba Qwen**    | DashScope-integratie met dynamische modeldetectie                                  |
-| **Ollama**          | Lokale modellen met dynamische detectie en ingebouwd teksttoolprotocol             |
-| **Custom Provider** | Aangepaste eindpunten compatibel met OpenAI- of Anthropic-API-indelingen           |
+| Provider            | Belangrijkste kenmerken                           |
+| ------------------- | ------------------------------------------------- |
+| **Google Gemini**   | Google Gen AI API                                 |
+| **OpenAI**          | Responses / Chat Completions                      |
+| **Anthropic**       | Anthropic Messages API                            |
+| **xAI Grok**        | Responses API                                     |
+| **Groq**            | Chat Completions API                              |
+| **OpenRouter**      | Text output / tool filtering                      |
+| **DeepSeek**        | Chat Completions API                              |
+| **Alibaba Qwen**    | DashScope API                                     |
+| **Ollama**          | Ollama / text tool protocol                       |
+| **Custom Provider** | Chat Completions / Responses / Anthropic Messages |
 
-<details>
-<summary><strong>Bekijk de modelfamilies die door Commit-Copilot worden vermeld</strong></summary>
+### Beschikbaarheid en compatibiliteit van modellen
 
-### Google Gemini
+Modellen worden dynamisch opgehaald bij de aanbieder en zijn afhankelijk van account, sleutel, regio en eindpunt. Ollama toont geïnstalleerde modellen; bij Ollama en aangepaste aanbieders kunnen ID’s handmatig worden toegevoegd.
 
-- Gemini 2.5 Flash-Lite, Flash en Pro
-- Gemini 3 Flash
-- Gemini 3.1 Flash-Lite en Pro
-- Gemini 3.5 Flash-Lite en Flash
-- Gemini 3.6 Flash
-- Gemini 3.7 Flash
-- Gemini 3.8 Flash
+Een vermelding garandeert geen compatibiliteit: video-, computergebruiks- of andere niet-tekstmodellen kunnen voorkomen. Direct Diff vereist tekstgeneratie; Agentic bij cloud- en aangepaste aanbieders vereist functieaanroepen, terwijl Ollama een tekstprotocol voor tools gebruikt. HTTP 400 kan wijzen op een niet-ondersteund model of instellingen, of andere ongeldige parameters; probeer een ander model.
 
-### OpenAI
-
-- o3-mini en o3
-- o4-mini
-- GPT-4o mini en GPT-4o
-- GPT-4.1 nano, mini en GPT-4.1
-- GPT-5 nano, mini en GPT-5
-- GPT-5.1
-- GPT-5.2
-- GPT-5.4 nano, mini en GPT-5.4
-- GPT-5.5
-- GPT-5.6 Luna, Terra en Sol
-- GPT-6 Luna, Sol en Astra
-- GPT-6.1 Sol
-
-### Anthropic
-
-- Claude Sonnet en Opus 4
-- Claude Opus 4.1
-- Claude Haiku, Sonnet en Opus 4.5
-- Claude Sonnet en Opus 4.6
-- Claude Opus 4.7
-- Claude Opus 4.8
-- Claude Sonnet, Opus en Fable 5
-- Claude Fable 5.1
-- Claude Haiku, Sonnet en Opus 5.5
-
-### xAI Grok
-
-- Grok 4.20 (zonder en met redenering)
-- Grok 4.3
-- Grok 4.5
-- Grok 4.6
-- Grok 4.7
-
-### Groq
-
-- gpt-oss-20B
-- gpt-oss-safeguard-20B
-- gpt-oss-120B
-- Qwen 3.8 27b
-
-### DeepSeek
-
-- DeepSeek V4.1 Flash
-
-> [!IMPORTANT]
-> De beschikbaarheid van modellen is afhankelijk van de provider, het account, de regio, het eindpunt en de actuele providercatalogus. Lijsten voor OpenRouter, Qwen, Ollama en aangepaste providers kunnen dynamisch worden opgehaald.
-
-</details>
+[Model discovery](../model-discovery.md)
 
 ---
 
@@ -372,7 +316,7 @@ Gegenereerde berichten worden rechtstreeks in het standaard invoerveld van Sourc
 
 Voor ontwikkeling:
 
-- **Node.js** `20+`
+- **Node.js** `22+`
 - **npm**
 
 ---
@@ -400,7 +344,7 @@ Open na de installatie een Git-repository in VS Code en klik op het **Commit Cop
 6. Kies een model zodra de modelselectie beschikbaar is.
 
 > [!IMPORTANT]
-> Bij het genereren met Ollama wordt vóór elke generatie automatisch `ollama pull` uitgevoerd voor het geselecteerde model en wordt de downloadvoortgang in het meldingengebied weergegeven. Dit zorgt ervoor dat het model up-to-date is, maar kan ertoe leiden dat modellagen opnieuw worden gedownload, zelfs als het model lokaal al aanwezig is.
+> Ollama gebruikt geïnstalleerde modellen direct en probeert ontbrekende modellen met `ollama pull` te downloaden, met voortgangsweergave.
 
 ### Opties
 
@@ -688,9 +632,9 @@ Ja. Voeg het toe als een OpenAI-compatibele of Anthropic-compatibele aangepaste 
 </details>
 
 <details>
-<summary><strong>Waarom downloadt (pullt) Ollama het model telkens opnieuw?</strong></summary>
+<summary><strong>Wanneer downloadt Ollama een model?</strong></summary>
 
-De extensie voert vóór elke generatie bewust `ollama pull` uit om ervoor te zorgen dat het geselecteerde model lokaal aanwezig en actueel is. Afhankelijk van de lokale cache kan dit modellagen controleren of opnieuw downloaden.
+Geïnstalleerde modellen, inclusief lokaal geïmporteerde modellen, worden direct gebruikt; `ollama pull` draait alleen als het model ontbreekt.
 
 </details>
 

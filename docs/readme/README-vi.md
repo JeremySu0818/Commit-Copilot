@@ -16,7 +16,7 @@ Nó hoạt động liền mạch với các LLM đám mây hàng đầu (Gemini,
 [![Open VSX](https://img.shields.io/open-vsx/v/JeremySu0818/commit-copilot?label=Open%20VSX)](https://open-vsx.org/extension/JeremySu0818/commit-copilot)
 [![Open VSX Downloads](https://img.shields.io/open-vsx/dt/JeremySu0818/commit-copilot?label=Open%20VSX%20Downloads)](https://open-vsx.org/extension/JeremySu0818/commit-copilot)
 [![VS Code](https://img.shields.io/badge/VS%20Code-%E2%89%A5%201.101.0-007ACC?logo=visualstudiocode&logoColor=white)](#yêu-cầu-hệ-thống)
-[![Node.js](https://img.shields.io/badge/Node.js-20%2B-339933?logo=nodedotjs&logoColor=white)](#phát-triển)
+[![Node.js](https://img.shields.io/badge/Node.js-22%2B-339933?logo=nodedotjs&logoColor=white)](#phát-triển)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-FE5196?logo=conventionalcommits&logoColor=white)](#phân-loại-conventional-commits)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../../LICENSE)
 
@@ -282,82 +282,26 @@ Thông điệp tạo ra sẽ tự động điền vào hộp nhập SCM tiêu ch
 
 ## Nhà cung cấp được hỗ trợ
 
-| Nhà cung cấp               | Điểm nổi bật                                                    |
-| -------------------------- | --------------------------------------------------------------- |
-| **Google Gemini**          | Hỗ trợ công cụ cấu trúc gốc và nhiều thế hệ mô hình Gemini      |
-| **OpenAI**                 | Các mô hình suy luận, đa năng, nhỏ gọn và dòng GPT-5/6          |
-| **Anthropic**              | Đầy đủ các dòng Claude Haiku, Sonnet, Opus và Fable             |
-| **xAI Grok**               | Các phiên bản Grok suy luận và phi suy luận                     |
-| **Groq**                   | Lưu trữ tốc độ cao các mô hình Qwen và `gpt-oss`                |
-| **OpenRouter**             | Truy cập danh mục mô hình phong phú kèm bộ lọc Tool Calling     |
-| **DeepSeek**               | DeepSeek V4.1 Flash                                             |
-| **Alibaba Qwen**           | Tích hợp DashScope với khả năng khám phá mô hình động           |
-| **Ollama**                 | Mô hình cục bộ với danh sách động và giao thức công cụ tích hợp |
-| **Nhà cung cấp tùy chỉnh** | Hỗ trợ mọi điểm cuối bên thứ ba tương thích OpenAI / Anthropic  |
+| Nhà cung cấp               | Điểm nổi bật                                      |
+| -------------------------- | ------------------------------------------------- |
+| **Google Gemini**          | Google Gen AI API                                 |
+| **OpenAI**                 | Responses / Chat Completions                      |
+| **Anthropic**              | Anthropic Messages API                            |
+| **xAI Grok**               | Responses API                                     |
+| **Groq**                   | Chat Completions API                              |
+| **OpenRouter**             | Text output / tool filtering                      |
+| **DeepSeek**               | Chat Completions API                              |
+| **Alibaba Qwen**           | DashScope API                                     |
+| **Ollama**                 | Ollama / text tool protocol                       |
+| **Nhà cung cấp tùy chỉnh** | Chat Completions / Responses / Anthropic Messages |
 
-<details>
-<summary><strong>Xem danh sách các dòng mô hình được Commit-Copilot hỗ trợ sẵn</strong></summary>
+### Tính khả dụng và tương thích của mô hình
 
-### Google Gemini
+Danh sách mô hình được lấy động từ nhà cung cấp và phụ thuộc vào tài khoản, khóa, khu vực và điểm cuối. Ollama liệt kê mô hình đã cài; Ollama và nhà cung cấp tùy chỉnh cho phép thêm ID thủ công.
 
-- Gemini 2.5 Flash-Lite, Flash, Pro
-- Gemini 3 Flash
-- Gemini 3.1 Flash-Lite, Pro
-- Gemini 3.5 Flash-Lite, Flash
-- Gemini 3.6 Flash
-- Gemini 3.7 Flash
-- Gemini 3.8 Flash
+Có tên trong danh sách không đảm bảo tương thích: có thể xuất hiện mô hình video, sử dụng máy tính hoặc phi văn bản. Direct Diff cần khả năng tạo văn bản; Agentic với nhà cung cấp đám mây và tùy chỉnh cần gọi hàm, còn Ollama dùng giao thức công cụ văn bản. HTTP 400 có thể do mô hình hoặc thiết lập không được hỗ trợ hay tham số khác không hợp lệ; hãy thử mô hình khác.
 
-### OpenAI
-
-- o3-mini, o3
-- o4-mini
-- GPT-4o mini, GPT-4o
-- GPT-4.1 nano, mini, GPT-4.1
-- GPT-5 nano, mini, GPT-5
-- GPT-5.1
-- GPT-5.2
-- GPT-5.4 nano, mini, GPT-5.4
-- GPT-5.5
-- GPT-5.6 Luna, Terra, Sol
-- GPT-6 Luna, Sol, Astra
-- GPT-6.1 Sol
-
-### Anthropic
-
-- Claude Sonnet, Opus 4
-- Claude Opus 4.1
-- Claude Haiku, Sonnet, Opus 4.5
-- Claude Sonnet, Opus 4.6
-- Claude Opus 4.7
-- Claude Opus 4.8
-- Claude Sonnet, Opus, Fable 5
-- Claude Fable 5.1
-- Claude Haiku, Sonnet, Opus 5.5
-
-### xAI Grok
-
-- Grok 4.20 (phi suy luận và suy luận)
-- Grok 4.3
-- Grok 4.5
-- Grok 4.6
-- Grok 4.7
-
-### Groq
-
-- gpt-oss-20B
-- gpt-oss-safeguard-20B
-- gpt-oss-120B
-- Qwen 3.8 27b
-
-### DeepSeek
-
-- DeepSeek V4.1 Flash
-
-> [!IMPORTANT]
-> Tính khả dụng thực tế của mô hình phụ thuộc vào nhà cung cấp, quyền tài khoản, khu vực và trạng thái điểm cuối. Danh sách mô hình của OpenRouter, Qwen, Ollama và nhà cung cấp tùy chỉnh có thể được khám phá động.
-
-</details>
+[Model discovery](../model-discovery.md)
 
 ---
 
@@ -372,7 +316,7 @@ Thông điệp tạo ra sẽ tự động điền vào hộp nhập SCM tiêu ch
 
 Dành cho phát triển:
 
-- **Node.js** `20+`
+- **Node.js** `22+`
 - **npm**
 
 ---
@@ -400,7 +344,7 @@ Sau khi cài đặt, mở một kho lưu trữ Git trong VS Code và nhấp vào
 6. Chọn mô hình cụ thể sau khi xác thực thành công.
 
 > [!IMPORTANT]
-> Đối với mô hình Ollama, tiện ích luôn tự động chạy `ollama pull` trước mỗi lần tạo để đảm bảo mô hình luôn sẵn sàng và mới nhất, đồng thời hiển thị tiến trình tải trong vùng thông báo. Quá trình này có thể tải lại các tầng dữ liệu ngay cả khi mô hình đã có sẵn trên máy.
+> Ollama dùng trực tiếp mô hình đã cài và thử tải mô hình còn thiếu bằng `ollama pull`, đồng thời hiển thị tiến trình.
 
 ### Tùy chọn cấu hình
 
@@ -688,9 +632,9 @@ Có. Bạn có thể thêm nó dưới dạng nhà cung cấp tùy chỉnh tươ
 </details>
 
 <details>
-<summary><strong>Tại sao Ollama luôn chạy pull trước mỗi lần tạo?</strong></summary>
+<summary><strong>Khi nào Ollama tải mô hình?</strong></summary>
 
-Tiện ích chủ động chạy `ollama pull` trước mỗi lần tạo để đảm bảo mô hình đã chọn khả dụng và ở phiên bản mới nhất trên máy. Tùy theo trạng thái bộ nhớ đệm cục bộ, điều này có thể kiểm tra lại hoặc tải lại các tầng mô hình.
+Mô hình đã cài, kể cả mô hình nhập cục bộ, được dùng trực tiếp; `ollama pull` chỉ chạy khi thiếu mô hình.
 
 </details>
 

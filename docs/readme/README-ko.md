@@ -16,7 +16,7 @@ Commit-Copilot은 자율형 AI 에이전트가 다단계로 저장소를 조사�
 [![Open VSX](https://img.shields.io/open-vsx/v/JeremySu0818/commit-copilot?label=Open%20VSX)](https://open-vsx.org/extension/JeremySu0818/commit-copilot)
 [![Open VSX Downloads](https://img.shields.io/open-vsx/dt/JeremySu0818/commit-copilot?label=Open%20VSX%20Downloads)](https://open-vsx.org/extension/JeremySu0818/commit-copilot)
 [![VS Code](https://img.shields.io/badge/VS%20Code-%E2%89%A5%201.101.0-007ACC?logo=visualstudiocode&logoColor=white)](#시스템-요구-사항)
-[![Node.js](https://img.shields.io/badge/Node.js-20%2B-339933?logo=nodedotjs&logoColor=white)](#개발-가이드)
+[![Node.js](https://img.shields.io/badge/Node.js-22%2B-339933?logo=nodedotjs&logoColor=white)](#개발-가이드)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-FE5196?logo=conventionalcommits&logoColor=white)](#conventional-commits-분류-규칙)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../../LICENSE)
 
@@ -282,82 +282,26 @@ Agentic 모드에서는 설정에서 "모든 diff 조회 필수" 옵션을 활�
 
 ## 지원 프로바이더
 
-| 프로바이더                 | 주요 특징                                                        |
-| -------------------------- | ---------------------------------------------------------------- |
-| **Google Gemini**          | 네이티브 구조화 도구 지원 및 다세대 Gemini 모델군                |
-| **OpenAI**                 | 추론 모델, 범용 모델, 소형 모델 및 GPT-5/6 시리즈                |
-| **Anthropic**              | Claude Haiku, Sonnet, Opus, Fable 전 시리즈                      |
-| **xAI Grok**               | 추론 및 일반 Grok 시리즈                                         |
-| **Groq**                   | 초고속 호스팅 Qwen, `gpt-oss` 오픈소스 모델                      |
-| **OpenRouter**             | 방대한 호환 모델 목록 및 Tool Calling 지원 스마트 필터링         |
-| **DeepSeek**               | DeepSeek V4.1 Flash                                              |
-| **Alibaba Qwen**           | 통의천문(DashScope) 연동 및 동적 모델 검색                       |
-| **Ollama**                 | 동적 모델 목록 및 내장 텍스트 도구 프로토콜을 지원하는 로컬 모델 |
-| **사용자 지정 프로바이더** | OpenAI 호환 또는 Anthropic 호환 사ード파티 엔드포인트 지원       |
+| 프로바이더                 | 주요 특징                                         |
+| -------------------------- | ------------------------------------------------- |
+| **Google Gemini**          | Google Gen AI API                                 |
+| **OpenAI**                 | Responses / Chat Completions                      |
+| **Anthropic**              | Anthropic Messages API                            |
+| **xAI Grok**               | Responses API                                     |
+| **Groq**                   | Chat Completions API                              |
+| **OpenRouter**             | Text output / tool filtering                      |
+| **DeepSeek**               | Chat Completions API                              |
+| **Alibaba Qwen**           | DashScope API                                     |
+| **Ollama**                 | Ollama / text tool protocol                       |
+| **사용자 지정 프로바이더** | Chat Completions / Responses / Anthropic Messages |
 
-<details>
-<summary><strong>Commit-Copilot이 기본 지원하는 모델 시리즈 목록 펼치기</strong></summary>
+### 모델 가용성 및 호환성
 
-### Google Gemini
+모델 목록은 제공업체에서 동적으로 가져오며 계정, 키, 지역 및 엔드포인트에 따라 달라집니다. Ollama는 설치된 모델을 표시하며 Ollama와 사용자 지정 제공업체에는 ID를 직접 추가할 수 있습니다.
 
-- Gemini 2.5 Flash-Lite, Flash, Pro
-- Gemini 3 Flash
-- Gemini 3.1 Flash-Lite, Pro
-- Gemini 3.5 Flash-Lite, Flash
-- Gemini 3.6 Flash
-- Gemini 3.7 Flash
-- Gemini 3.8 Flash
+목록에 있다고 호환성이 보장되지는 않습니다. 동영상, 컴퓨터 사용 또는 비텍스트 모델이 포함될 수 있습니다. Direct Diff에는 텍스트 생성이 필요하며 클라우드 및 사용자 지정 Agentic에는 함수 호출이 필요합니다. Ollama는 텍스트 도구 프로토콜을 사용합니다. HTTP 400은 지원하지 않는 모델이나 설정 또는 다른 잘못된 매개변수를 의미할 수 있으므로 다른 모델을 시도하세요.
 
-### OpenAI
-
-- o3-mini, o3
-- o4-mini
-- GPT-4o mini, GPT-4o
-- GPT-4.1 nano, mini, GPT-4.1
-- GPT-5 nano, mini, GPT-5
-- GPT-5.1
-- GPT-5.2
-- GPT-5.4 nano, mini, GPT-5.4
-- GPT-5.5
-- GPT-5.6 Luna, Terra, Sol
-- GPT-6 Luna, Sol, Astra
-- GPT-6.1 Sol
-
-### Anthropic
-
-- Claude Sonnet, Opus 4
-- Claude Opus 4.1
-- Claude Haiku, Sonnet, Opus 4.5
-- Claude Sonnet, Opus 4.6
-- Claude Opus 4.7
-- Claude Opus 4.8
-- Claude Sonnet, Opus, Fable 5
-- Claude Fable 5.1
-- Claude Haiku, Sonnet, Opus 5.5
-
-### xAI Grok
-
-- Grok 4.20 (일반 및 추론 버전)
-- Grok 4.3
-- Grok 4.5
-- Grok 4.6
-- Grok 4.7
-
-### Groq
-
-- gpt-oss-20B
-- gpt-oss-safeguard-20B
-- gpt-oss-120B
-- Qwen 3.8 27b
-
-### DeepSeek
-
-- DeepSeek V4.1 Flash
-
-> [!IMPORTANT]
-> 모델의 실제 사용 가능 여부는 프로바이더 계정 권한, 지역, 엔드포인트 상태에 따라 다릅니다. OpenRouter, Qwen, Ollama, 사용자 지정 프로바이더의 모델 목록은 동적으로 가져올 수 있습니다.
-
-</details>
+[Model discovery](../model-discovery.md)
 
 ---
 
@@ -372,7 +316,7 @@ Agentic 모드에서는 설정에서 "모든 diff 조회 필수" 옵션을 활�
 
 로컬 개발 환경:
 
-- **Node.js** `20+`
+- **Node.js** `22+`
 - **npm**
 
 ---
@@ -400,7 +344,7 @@ Agentic 모드에서는 설정에서 "모든 diff 조회 필수" 옵션을 활�
 6. 검증 완료 후 사용할 모델을 선택합니다.
 
 > [!IMPORTANT]
-> Ollama 모델의 경우, 확장이 생성 전 항상 자동으로 `ollama pull`을 실행하여 모델을 최신 상태로 유지하며 알림 영역에 진행률을 표시합니다. 로컬에 모델이 이미 있더라도 레이어 재다운로드가 발생할 수 있습니다.
+> Ollama는 설치된 모델을 바로 사용하며 없는 모델은 `ollama pull`로 다운로드를 시도하고 진행 상황을 표시합니다.
 
 ### 옵션 구성
 
@@ -688,9 +632,9 @@ Agentic 모드에서는 초기 단계에서 변경 메타데이터와 추적 중
 </details>
 
 <details>
-<summary><strong>왜 Ollama는 생성할 때마다 pull을 실행하나요?</strong></summary>
+<summary><strong>Ollama는 언제 모델을 다운로드하나요?</strong></summary>
 
-선택된 모델이 로컬 환경에서 사용 가능하고 최신 버전인지 확인하기 위해 매 생성 전 `ollama pull`을 실행하도록 설계되었습니다. 로컬 캐시 상태에 따라 레이어 재확인 또는 다운로드가 진행될 수 있습니다.
+로컬에서 가져온 모델을 포함해 설치된 모델은 바로 사용하며 `ollama pull`은 모델이 없을 때만 실행합니다.
 
 </details>
 

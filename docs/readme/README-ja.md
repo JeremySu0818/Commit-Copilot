@@ -16,7 +16,7 @@ Commit-Copilot は、自律型 AI エージェントがマルチステップで�
 [![Open VSX](https://img.shields.io/open-vsx/v/JeremySu0818/commit-copilot?label=Open%20VSX)](https://open-vsx.org/extension/JeremySu0818/commit-copilot)
 [![Open VSX Downloads](https://img.shields.io/open-vsx/dt/JeremySu0818/commit-copilot?label=Open%20VSX%20Downloads)](https://open-vsx.org/extension/JeremySu0818/commit-copilot)
 [![VS Code](https://img.shields.io/badge/VS%20Code-%E2%89%A5%201.101.0-007ACC?logo=visualstudiocode&logoColor=white)](#システム要件)
-[![Node.js](https://img.shields.io/badge/Node.js-20%2B-339933?logo=nodedotjs&logoColor=white)](#開発ガイド)
+[![Node.js](https://img.shields.io/badge/Node.js-22%2B-339933?logo=nodedotjs&logoColor=white)](#開発ガイド)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-FE5196?logo=conventionalcommits&logoColor=white)](#conventional-commits-分類規約)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../../LICENSE)
 
@@ -282,82 +282,26 @@ Agentic モードでは、設定で「すべての差分の取得を必須にす
 
 ## 対応プロバイダー
 
-| プロバイダー             | 主な特徴                                                             |
-| ------------------------ | -------------------------------------------------------------------- |
-| **Google Gemini**        | ネイティブ構造化ツール対応とマルチ世代 Gemini モデル群               |
-| **OpenAI**               | 推論モデル、汎用モデル、軽量モデル、GPT-5/6 シリーズ                 |
-| **Anthropic**            | Claude Haiku、Sonnet、Opus、Fable 各シリーズ                         |
-| **xAI Grok**             | 推論モデルおよび通常版 Grok シリーズ                                 |
-| **Groq**                 | 高速ホスティングされた Qwen、`gpt-oss` モデル                        |
-| **OpenRouter**           | 膨大な互換モデル群へのアクセスと Tool Calling 対応フィルタリング     |
-| **DeepSeek**             | DeepSeek V4.1 Flash                                                  |
-| **Alibaba Qwen**         | DashScope 統合による動的モデル探索（通義千問）                       |
-| **Ollama**               | 動的モデル検出と内蔵テキストツールプロトコルを備えたローカルモデル   |
-| **カスタムプロバイダー** | OpenAI 互換または Anthropic 互換の任意のサードパーティエンドポイント |
+| プロバイダー             | 主な特徴                                          |
+| ------------------------ | ------------------------------------------------- |
+| **Google Gemini**        | Google Gen AI API                                 |
+| **OpenAI**               | Responses / Chat Completions                      |
+| **Anthropic**            | Anthropic Messages API                            |
+| **xAI Grok**             | Responses API                                     |
+| **Groq**                 | Chat Completions API                              |
+| **OpenRouter**           | Text output / tool filtering                      |
+| **DeepSeek**             | Chat Completions API                              |
+| **Alibaba Qwen**         | DashScope API                                     |
+| **Ollama**               | Ollama / text tool protocol                       |
+| **カスタムプロバイダー** | Chat Completions / Responses / Anthropic Messages |
 
-<details>
-<summary><strong>Commit-Copilot が内蔵サポートするモデルシリーズ一覧を展開する</strong></summary>
+### モデルの利用可否と互換性
 
-### Google Gemini
+モデルはプロバイダーから動的に取得され、アカウント、キー、地域、エンドポイントによって異なります。Ollama はインストール済みモデルを表示し、Ollama とカスタムプロバイダーでは ID を手動追加できます。
 
-- Gemini 2.5 Flash-Lite, Flash, Pro
-- Gemini 3 Flash
-- Gemini 3.1 Flash-Lite, Pro
-- Gemini 3.5 Flash-Lite, Flash
-- Gemini 3.6 Flash
-- Gemini 3.7 Flash
-- Gemini 3.8 Flash
+一覧への表示は互換性を保証しません。動画生成、コンピューター操作、その他の非テキストモデルが含まれる場合があります。Direct Diff にはテキスト生成が必要です。クラウドおよびカスタムプロバイダーの Agentic には関数呼び出しが必要ですが、Ollama はテキストツールプロトコルを使います。HTTP 400 はモデルや設定の非対応、または他の無効なパラメーターが原因の可能性があります。別のモデルを試してください。
 
-### OpenAI
-
-- o3-mini, o3
-- o4-mini
-- GPT-4o mini, GPT-4o
-- GPT-4.1 nano, mini, GPT-4.1
-- GPT-5 nano, mini, GPT-5
-- GPT-5.1
-- GPT-5.2
-- GPT-5.4 nano, mini, GPT-5.4
-- GPT-5.5
-- GPT-5.6 Luna, Terra, Sol
-- GPT-6 Luna, Sol, Astra
-- GPT-6.1 Sol
-
-### Anthropic
-
-- Claude Sonnet, Opus 4
-- Claude Opus 4.1
-- Claude Haiku, Sonnet, Opus 4.5
-- Claude Sonnet, Opus 4.6
-- Claude Opus 4.7
-- Claude Opus 4.8
-- Claude Sonnet, Opus, Fable 5
-- Claude Fable 5.1
-- Claude Haiku, Sonnet, Opus 5.5
-
-### xAI Grok
-
-- Grok 4.20（通常版および推論版）
-- Grok 4.3
-- Grok 4.5
-- Grok 4.6
-- Grok 4.7
-
-### Groq
-
-- gpt-oss-20B
-- gpt-oss-safeguard-20B
-- gpt-oss-120B
-- Qwen 3.8 27b
-
-### DeepSeek
-
-- DeepSeek V4.1 Flash
-
-> [!IMPORTANT]
-> 実際に利用可能なモデルはプロバイダーのアカウント権限、リージョン、エンドポイント状況により異なります。OpenRouter、Qwen、Ollama、カスタムプロバイダーの一覧は動的に取得できます。
-
-</details>
+[Model discovery](../model-discovery.md)
 
 ---
 
@@ -372,7 +316,7 @@ Agentic モードでは、設定で「すべての差分の取得を必須にす
 
 開発を行う場合：
 
-- **Node.js** `20+`
+- **Node.js** `22+`
 - **npm**
 
 ---
@@ -400,7 +344,7 @@ Agentic モードでは、設定で「すべての差分の取得を必須にす
 6. 検証成功後、使用するモデルを選択します。
 
 > [!IMPORTANT]
-> Ollama モデルの場合、生成前に拡張機能が自動的に `ollama pull` を実行してモデルを最新状態に保ち、進行状況を通知欄に表示します。モデルが既に存在する場合でもレイヤーの再ダウンロードが発生することがあります。
+> Ollama はインストール済みモデルを直接使用し、存在しない場合は `ollama pull` によるダウンロードを試みて進行状況を表示します。
 
 ### 設定オプション
 
@@ -688,9 +632,9 @@ Agentic モードでは、初期段階で送信されるのは変更メタデー
 </details>
 
 <details>
-<summary><strong>なぜ Ollama は生成のたびに pull を実行するのですか？</strong></summary>
+<summary><strong>Ollama はいつモデルをダウンロードしますか？</strong></summary>
 
-選択されたモデルがローカルで利用可能かつ最新であることを保証するために、生成前に `ollama pull` を実行する設計になっています。ローカルのキャッシュ状態によってはレイヤーの再確認やダウンロードが発生することがあります。
+ローカルでインポートしたものを含むインストール済みモデルは直接使用します。`ollama pull` はモデルがない場合のみ実行します。
 
 </details>
 

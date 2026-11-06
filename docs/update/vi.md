@@ -1,6 +1,7 @@
-# Thông tin cập nhật Commit Copilot
+# Commit Copilot Thông tin cập nhật
 
-## Tính năng mới trong Phiên bản 1.23.0
+## Điểm mới trong phiên bản 1.24.0
 
-- Thêm hỗ trợ cho Claude Haiku 5.5 trong nhà cung cấp Anthropic Claude.
-- Sửa lỗi nhật ký tiến trình diff trong chế độ Agent chỉ hiển thị một tệp khi lời gọi get_diff có cả path và paths.
+- Cập nhật SDK AI và API của các nhà cung cấp, với khả năng khám phá mô hình động. Tính khả dụng và tương thích phụ thuộc vào nhà cung cấp và tài khoản. Tên mô hình không còn được mã hóa cố định trong danh sách.
+- Cải thiện hỗ trợ OpenAI Responses, điểm cuối tùy chỉnh, Qwen và mô hình Ollama cục bộ.
+- Khi yêu cầu tạo nội dung nhận HTTP 400, tiện ích đề nghị thử mô hình khác vì mô hình hoặc thiết lập có thể không được hỗ trợ.

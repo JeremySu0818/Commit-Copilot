@@ -16,7 +16,7 @@ Bezproblémově spolupracuje s předními cloudovými LLM (Gemini, OpenAI, Anthr
 [![Open VSX](https://img.shields.io/open-vsx/v/JeremySu0818/commit-copilot?label=Open%20VSX)](https://open-vsx.org/extension/JeremySu0818/commit-copilot)
 [![Open VSX Downloads](https://img.shields.io/open-vsx/dt/JeremySu0818/commit-copilot?label=Open%20VSX%20Downloads)](https://open-vsx.org/extension/JeremySu0818/commit-copilot)
 [![VS Code](https://img.shields.io/badge/VS%20Code-%E2%89%A5%201.101.0-007ACC?logo=visualstudiocode&logoColor=white)](#požadavky)
-[![Node.js](https://img.shields.io/badge/Node.js-20%2B-339933?logo=nodedotjs&logoColor=white)](#vývoj)
+[![Node.js](https://img.shields.io/badge/Node.js-22%2B-339933?logo=nodedotjs&logoColor=white)](#vývoj)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-FE5196?logo=conventionalcommits&logoColor=white)](#klasifikace-conventional-commits)
 [![Licence: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../../LICENSE)
 
@@ -282,82 +282,26 @@ Vygenerovaná zpráva se vloží do standardního vstupního pole Source Control
 
 ## Podporovaní poskytovatelé
 
-| Poskytovatel             | Hlavní přednosti                                                         |
-| ------------------------ | ------------------------------------------------------------------------ |
-| **Google Gemini**        | Nativní strukturované nástroje a podpora několika generací modelů Gemini |
-| **OpenAI**               | Modely uvažování (reasoning), univerzální, kompaktní i řada GPT-5/6      |
-| **Anthropic**            | Rodiny modelů Claude Haiku, Sonnet, Opus a Fable                         |
-| **xAI Grok**             | Modely Grok s podporou uvažování i standardní varianty                   |
-| **Groq**                 | Vysoce rychlý hosting modelů Qwen a `gpt-oss`                            |
-| **OpenRouter**           | Dynamický přístup k rozsáhlému katalogu s filtrováním podpory nástrojů   |
-| **DeepSeek**             | DeepSeek V4.1 Flash                                                      |
-| **Alibaba Qwen**         | Integrace s DashScope a dynamické objevování modelů                      |
-| **Ollama**               | Lokální modely s dynamickým seznamem a vestavěným protokolem nástrojů    |
-| **Vlastní poskytovatel** | Jakékoli koncové body kompatibilní se standardy OpenAI nebo Anthropic    |
+| Poskytovatel             | Hlavní přednosti                                  |
+| ------------------------ | ------------------------------------------------- |
+| **Google Gemini**        | Google Gen AI API                                 |
+| **OpenAI**               | Responses / Chat Completions                      |
+| **Anthropic**            | Anthropic Messages API                            |
+| **xAI Grok**             | Responses API                                     |
+| **Groq**                 | Chat Completions API                              |
+| **OpenRouter**           | Text output / tool filtering                      |
+| **DeepSeek**             | Chat Completions API                              |
+| **Alibaba Qwen**         | DashScope API                                     |
+| **Ollama**               | Ollama / text tool protocol                       |
+| **Vlastní poskytovatel** | Chat Completions / Responses / Anthropic Messages |
 
-<details>
-<summary><strong>Zobrazit rodiny modelů podporované v Commit-Copilot</strong></summary>
+### Dostupnost a kompatibilita modelů
 
-### Google Gemini
+Modely se načítají dynamicky od poskytovatele a závisí na účtu, klíči, regionu a endpointu. Ollama zobrazuje nainstalované modely; u Ollama a vlastních poskytovatelů lze ID přidat ručně.
 
-- Gemini 2.5 Flash-Lite, Flash a Pro
-- Gemini 3 Flash
-- Gemini 3.1 Flash-Lite a Pro
-- Gemini 3.5 Flash-Lite a Flash
-- Gemini 3.6 Flash
-- Gemini 3.7 Flash
-- Gemini 3.8 Flash
+Zobrazení v seznamu nezaručuje kompatibilitu: mohou obsahovat video, počítačové nebo jiné netextové modely. Direct Diff vyžaduje generování textu, cloudový a vlastní Agentic volání funkcí; Ollama používá textový protokol nástrojů. HTTP 400 může značit nepodporovaný model či nastavení nebo jiné neplatné parametry; zkuste jiný model.
 
-### OpenAI
-
-- o3-mini a o3
-- o4-mini
-- GPT-4o mini a GPT-4o
-- GPT-4.1 nano, mini a GPT-4.1
-- GPT-5 nano, mini a GPT-5
-- GPT-5.1
-- GPT-5.2
-- GPT-5.4 nano, mini a GPT-5.4
-- GPT-5.5
-- GPT-5.6 Luna, Terra a Sol
-- GPT-6 Luna, Sol a Astra
-- GPT-6.1 Sol
-
-### Anthropic
-
-- Claude Sonnet a Opus 4
-- Claude Opus 4.1
-- Claude Haiku, Sonnet a Opus 4.5
-- Claude Sonnet a Opus 4.6
-- Claude Opus 4.7
-- Claude Opus 4.8
-- Claude Sonnet, Opus a Fable 5
-- Claude Fable 5.1
-- Claude Haiku, Sonnet a Opus 5.5
-
-### xAI Grok
-
-- Grok 4.20 (standardní i s uvažováním)
-- Grok 4.3
-- Grok 4.5
-- Grok 4.6
-- Grok 4.7
-
-### Groq
-
-- gpt-oss-20B
-- gpt-oss-safeguard-20B
-- gpt-oss-120B
-- Qwen 3.8 27b
-
-### DeepSeek
-
-- DeepSeek V4.1 Flash
-
-> [!IMPORTANT]
-> Dostupnost modelů závisí na poskytovateli, účtu, regionu a aktuálním katalogu API. Seznamy modelů pro OpenRouter, Qwen, Ollama a vlastní poskytovatele lze zjišťovat dynamicky.
-
-</details>
+[Model discovery](../model-discovery.md)
 
 ---
 
@@ -372,7 +316,7 @@ Vygenerovaná zpráva se vloží do standardního vstupního pole Source Control
 
 Pro vývoj:
 
-- **Node.js** `20+`
+- **Node.js** `22+`
 - **npm**
 
 ---
@@ -400,7 +344,7 @@ Po instalaci otevřete v prostředí VS Code libovolný Git repozitář a klikn�
 6. Vyberte model ze seznamu dostupných modelů.
 
 > [!IMPORTANT]
-> Při použití Ollama rozšíření před každým generováním spustí příkaz `ollama pull` pro vybraný model a zobrazí průběh v oznamovací oblasti. Tím je zajištěna aktuálnost modelu, ale může dojít k opětovnému stažení vrstev, i když model lokálně existuje.
+> Ollama používá nainstalované modely přímo; chybějící model se pokusí stáhnout pomocí `ollama pull` a zobrazí průběh.
 
 ### Možnosti nastavení
 
@@ -688,9 +632,9 @@ Ano. Přidejte jej jako vlastního poskytovatele kompatibilního s OpenAI nebo A
 </details>
 
 <details>
-<summary><strong>Proč Ollama stahuje (pull) model před každým generováním?</strong></summary>
+<summary><strong>Kdy Ollama stahuje model?</strong></summary>
 
-Rozšíření spouští `ollama pull` před každým generováním, aby ověřilo dostupnost a aktuálnost zvoleného modelu v systému. V závislosti na lokálním stavu to může znamenat opětovnou kontrolu nebo dotažení vrstev modelu.
+Nainstalované modely včetně místně importovaných se používají přímo; `ollama pull` se spouští jen při chybějícím modelu.
 
 </details>
 

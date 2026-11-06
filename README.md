@@ -16,7 +16,7 @@ It works seamlessly with major cloud LLMs (Gemini, OpenAI, Anthropic Claude, Dee
 [![Open VSX](https://img.shields.io/open-vsx/v/JeremySu0818/commit-copilot?label=Open%20VSX)](https://open-vsx.org/extension/JeremySu0818/commit-copilot)
 [![Open VSX Downloads](https://img.shields.io/open-vsx/dt/JeremySu0818/commit-copilot?label=Open%20VSX%20Downloads)](https://open-vsx.org/extension/JeremySu0818/commit-copilot)
 [![VS Code](https://img.shields.io/badge/VS%20Code-%E2%89%A5%201.101.0-007ACC?logo=visualstudiocode&logoColor=white)](#requirements)
-[![Node.js](https://img.shields.io/badge/Node.js-20%2B-339933?logo=nodedotjs&logoColor=white)](#development)
+[![Node.js](https://img.shields.io/badge/Node.js-22%2B-339933?logo=nodedotjs&logoColor=white)](#development)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-FE5196?logo=conventionalcommits&logoColor=white)](#conventional-commits-classification)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -274,7 +274,7 @@ Generated messages are inserted into the standard Source Control input box, wher
 
 - API keys are validated against the selected provider's real endpoint before being saved
 - Provider-specific authentication, quota, and connection errors are surfaced with actionable guidance
-- OpenRouter, Alibaba Qwen, Ollama, and custom providers can fetch model lists dynamically
+- Model lists are fetched dynamically from the selected provider; Ollama lists models installed on the configured instance
 - Ollama and custom providers support manually adding or removing model IDs when discovery is incomplete
 - Custom providers support Chat Completions, Responses, and Anthropic Messages APIs
 
@@ -282,82 +282,30 @@ Generated messages are inserted into the standard Source Control input box, wher
 
 ## Supported Providers
 
-| Provider            | Highlights                                                             |
-| ------------------- | ---------------------------------------------------------------------- |
-| **Google Gemini**   | Native structured tools and multiple Gemini generations                |
-| **OpenAI**          | Reasoning, general-purpose, compact, and GPT-5/6-series models         |
-| **Anthropic**       | Claude Haiku, Sonnet, Opus, and Fable families                         |
-| **xAI Grok**        | Reasoning and non-reasoning Grok variants                              |
-| **Groq**            | Fast hosted Qwen and `gpt-oss` models                                  |
-| **OpenRouter**      | Dynamic access to compatible models with tool-support filtering        |
-| **DeepSeek**        | DeepSeek V4.1 Flash                                                    |
-| **Alibaba Qwen**    | DashScope integration with dynamic model discovery                     |
-| **Ollama**          | Local models with dynamic discovery and a built-in agent tool protocol |
-| **Custom Provider** | Chat Completions, Responses, or Anthropic Messages endpoints           |
+| Provider            | Integration                                                     |
+| ------------------- | --------------------------------------------------------------- |
+| **Google Gemini**   | Google Gen AI API with native function calling                  |
+| **OpenAI**          | Responses and Chat Completions APIs                             |
+| **Anthropic**       | Messages API with native tool use                               |
+| **xAI Grok**        | Responses API                                                   |
+| **Groq**            | OpenAI-compatible Chat Completions API                          |
+| **OpenRouter**      | Model routing with text-output and tool-support filtering       |
+| **DeepSeek**        | OpenAI-compatible Chat Completions API                          |
+| **Alibaba Qwen**    | DashScope with streaming generation and dynamic model discovery |
+| **Ollama**          | Local or remote models with a built-in text tool protocol       |
+| **Custom Provider** | Chat Completions, Responses, or Anthropic Messages endpoints    |
 
-<details>
-<summary><strong>View the model families listed by Commit-Copilot</strong></summary>
+### Model availability and compatibility
 
-### Google Gemini
+Commit-Copilot discovers model IDs from the selected provider rather than using a fixed model/version catalogue. Available models depend on your account, API key, region, endpoint, and the provider's current catalogue. Ollama discovers models installed on the configured instance; Ollama and custom providers also allow manually adding model IDs.
 
-- Gemini 2.5 Flash-Lite, Flash, and Pro
-- Gemini 3 Flash
-- Gemini 3.1 Flash-Lite and Pro
-- Gemini 3.5 Flash-Lite and Flash
-- Gemini 3.6 Flash
-- Gemini 3.7 Flash
-- Gemini 3.8 Flash
+Discovery is not a compatibility guarantee. Filtering depends on the metadata each provider exposes, so the list may still include models that cannot handle the selected generation mode or request settings, such as computer-use, video-generation, or other non-text models.
 
-### OpenAI
+- **Direct Diff** requires text generation through the configured API.
+- **Agentic** requires custom function calling for cloud and custom providers. Ollama uses a separate text tool protocol, so native tool-calling support is not required.
+- If a generation request is rejected with HTTP 400, Commit-Copilot suggests trying another model because the model may not support the current mode or request settings. Other invalid request parameters can also cause this error.
 
-- o3-mini and o3
-- o4-mini
-- GPT-4o mini and GPT-4o
-- GPT-4.1 nano, mini, and GPT-4.1
-- GPT-5 nano, mini, and GPT-5
-- GPT-5.1
-- GPT-5.2
-- GPT-5.4 nano, mini, and GPT-5.4
-- GPT-5.5
-- GPT-5.6 Luna, Terra, and Sol
-- GPT-6 Luna, Sol, and Astra
-- GPT-6.1 Sol
-
-### Anthropic
-
-- Claude Sonnet and Opus 4
-- Claude Opus 4.1
-- Claude Haiku, Sonnet, and Opus 4.5
-- Claude Sonnet and Opus 4.6
-- Claude Opus 4.7
-- Claude Opus 4.8
-- Claude Sonnet, Opus, and Fable 5
-- Claude Fable 5.1
-- Claude Haiku, Sonnet, and Opus 5.5
-
-### xAI Grok
-
-- Grok 4.20 (non-reasoning and reasoning)
-- Grok 4.3
-- Grok 4.5
-- Grok 4.6
-- Grok 4.7
-
-### Groq
-
-- gpt-oss-20B
-- gpt-oss-safeguard-20B
-- gpt-oss-120B
-- Qwen 3.8 27b
-
-### DeepSeek
-
-- DeepSeek V4.1 Flash
-
-> [!IMPORTANT]
-> Model availability depends on the provider, account, region, endpoint, and current provider catalog. OpenRouter, Qwen, Ollama, and custom-provider lists may be discovered dynamically.
-
-</details>
+There is no model-by-model support list to maintain in this README. Provider integrations and discovery/filtering rules still need updates when upstream APIs change. See [model discovery details](docs/model-discovery.md).
 
 ---
 
@@ -380,7 +328,7 @@ SDKs are pinned to OpenAI 7.53.0, Anthropic 1.6.0, Google Gen AI 3.0.0 and Ollam
 
 For development:
 
-- **Node.js** `20+`
+- **Node.js** `22+`
 - **npm**
 
 ---
@@ -408,7 +356,7 @@ After installation, open a Git repository in VS Code and select the **Commit Cop
 6. Choose a model when model selection is available.
 
 > [!IMPORTANT]
-> Ollama generation always runs `ollama pull` for the selected model before generation and reports download progress in the notification area. This may re-download model layers even when the model already exists locally.
+> Ollama uses installed models directly. If the selected model is missing, Commit-Copilot attempts to download it with `ollama pull` and reports progress in the notification area.
 
 ### Options
 
@@ -696,9 +644,9 @@ Yes. Add it as an OpenAI-compatible or Anthropic-compatible custom provider, the
 </details>
 
 <details>
-<summary><strong>Why does Ollama pull the model every time?</strong></summary>
+<summary><strong>When does Ollama download a model?</strong></summary>
 
-The extension intentionally runs `ollama pull` before each generation to ensure the selected model is available and current. Depending on the local state, this may download model layers again.
+The extension checks whether the selected model is installed and only runs `ollama pull` if it is missing. Installed models, including locally imported models, are used directly.
 
 </details>
 

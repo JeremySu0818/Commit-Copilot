@@ -16,7 +16,7 @@ Commit-Copilot, çok adımlı otonom bir yapay zeka ajanıyla deponuzu derinleme
 [![Open VSX](https://img.shields.io/open-vsx/v/JeremySu0818/commit-copilot?label=Open%20VSX)](https://open-vsx.org/extension/JeremySu0818/commit-copilot)
 [![Open VSX Downloads](https://img.shields.io/open-vsx/dt/JeremySu0818/commit-copilot?label=Open%20VSX%20Downloads)](https://open-vsx.org/extension/JeremySu0818/commit-copilot)
 [![VS Code](https://img.shields.io/badge/VS%20Code-%E2%89%A5%201.101.0-007ACC?logo=visualstudiocode&logoColor=white)](#gereksinimler)
-[![Node.js](https://img.shields.io/badge/Node.js-20%2B-339933?logo=nodedotjs&logoColor=white)](#geliştirme)
+[![Node.js](https://img.shields.io/badge/Node.js-22%2B-339933?logo=nodedotjs&logoColor=white)](#geliştirme)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-FE5196?logo=conventionalcommits&logoColor=white)](#conventional-commits-sınıflandırması)
 [![Lisans: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../../LICENSE)
 
@@ -282,82 +282,26 @@ Oluşturulan mesajlar, commit öncesinde incelenebilecekleri ve düzenlenebilece
 
 ## Desteklenen Sağlayıcılar
 
-| Sağlayıcı          | Öne Çıkan Özellikler                                                   |
-| ------------------ | ---------------------------------------------------------------------- |
-| **Google Gemini**  | Yerel yapılandırılmış araçlar ve birden çok Gemini nesli desteği       |
-| **OpenAI**         | Muhakeme (reasoning), genel amaçlı, kompakt ve GPT-5/6 serisi modeller |
-| **Anthropic**      | Claude Haiku, Sonnet, Opus ve Fable aileleri                           |
-| **xAI Grok**       | Muhakeme yetenekli ve standart Grok modelleri                          |
-| **Groq**           | Yüksek hızlı Qwen ve `gpt-oss` barındırma                              |
-| **OpenRouter**     | Araç çağırma filtrelemesiyle geniş model kataloğuna dinamik erişim     |
-| **DeepSeek**       | DeepSeek V4.1 Flash                                                    |
-| **Alibaba Qwen**   | DashScope entegrasyonu ve dinamik model keşfi                          |
-| **Ollama**         | Dinamik model listesi ve yerleşik araç protokolüyle yerel modeller     |
-| **Özel Sağlayıcı** | OpenAI veya Anthropic uyumlu herhangi bir özel uç nokta                |
+| Sağlayıcı          | Öne Çıkan Özellikler                              |
+| ------------------ | ------------------------------------------------- |
+| **Google Gemini**  | Google Gen AI API                                 |
+| **OpenAI**         | Responses / Chat Completions                      |
+| **Anthropic**      | Anthropic Messages API                            |
+| **xAI Grok**       | Responses API                                     |
+| **Groq**           | Chat Completions API                              |
+| **OpenRouter**     | Text output / tool filtering                      |
+| **DeepSeek**       | Chat Completions API                              |
+| **Alibaba Qwen**   | DashScope API                                     |
+| **Ollama**         | Ollama / text tool protocol                       |
+| **Özel Sağlayıcı** | Chat Completions / Responses / Anthropic Messages |
 
-<details>
-<summary><strong>Commit-Copilot tarafından listelenen model ailelerini görüntüleyin</strong></summary>
+### Model kullanılabilirliği ve uyumluluğu
 
-### Google Gemini
+Modeller sağlayıcıdan dinamik olarak alınır; hesap, anahtar, bölge ve uç noktaya bağlıdır. Ollama yüklü modelleri listeler; Ollama ve özel sağlayıcılara elle model ID’si eklenebilir.
 
-- Gemini 2.5 Flash-Lite, Flash ve Pro
-- Gemini 3 Flash
-- Gemini 3.1 Flash-Lite ve Pro
-- Gemini 3.5 Flash-Lite ve Flash
-- Gemini 3.6 Flash
-- Gemini 3.7 Flash
-- Gemini 3.8 Flash
+Listede görünmek uyumluluğu garanti etmez: video, bilgisayar kullanımı veya diğer metin dışı modeller bulunabilir. Direct Diff metin üretimi gerektirir; bulut ve özel sağlayıcılarda Agentic işlev çağrısı gerektirirken Ollama metin tabanlı araç protokolü kullanır. HTTP 400 desteklenmeyen model veya ayarları ya da başka geçersiz parametreleri gösterebilir; başka bir model deneyin.
 
-### OpenAI
-
-- o3-mini ve o3
-- o4-mini
-- GPT-4o mini ve GPT-4o
-- GPT-4.1 nano, mini ve GPT-4.1
-- GPT-5 nano, mini ve GPT-5
-- GPT-5.1
-- GPT-5.2
-- GPT-5.4 nano, mini ve GPT-5.4
-- GPT-5.5
-- GPT-5.6 Luna, Terra ve Sol
-- GPT-6 Luna, Sol ve Astra
-- GPT-6.1 Sol
-
-### Anthropic
-
-- Claude Sonnet ve Opus 4
-- Claude Opus 4.1
-- Claude Haiku, Sonnet ve Opus 4.5
-- Claude Sonnet ve Opus 4.6
-- Claude Opus 4.7
-- Claude Opus 4.8
-- Claude Sonnet, Opus ve Fable 5
-- Claude Fable 5.1
-- Claude Haiku, Sonnet ve Opus 5.5
-
-### xAI Grok
-
-- Grok 4.20 (standart ve muhakeme)
-- Grok 4.3
-- Grok 4.5
-- Grok 4.6
-- Grok 4.7
-
-### Groq
-
-- gpt-oss-20B
-- gpt-oss-safeguard-20B
-- gpt-oss-120B
-- Qwen 3.8 27b
-
-### DeepSeek
-
-- DeepSeek V4.1 Flash
-
-> [!IMPORTANT]
-> Model kullanılabilirliği sağlayıcıya, hesabınıza, bölgenize ve geçerli API kataloğuna bağlıdır. OpenRouter, Qwen, Ollama ve özel sağlayıcı model listeleri dinamik olarak keşfedilebilir.
-
-</details>
+[Model discovery](../model-discovery.md)
 
 ---
 
@@ -372,7 +316,7 @@ Oluşturulan mesajlar, commit öncesinde incelenebilecekleri ve düzenlenebilece
 
 Geliştirme için:
 
-- **Node.js** `20+`
+- **Node.js** `22+`
 - **npm**
 
 ---
@@ -400,7 +344,7 @@ Kurulumun ardından VS Code'da bir Git deposu açın ve Etkinlik Çubuğu'ndaki 
 6. Model seçimi kullanılabilir olduğunda bir model seçin.
 
 > [!IMPORTANT]
-> Ollama kullanıldığında, eklenti her oluşturma işleminden önce seçilen model için `ollama pull` çalıştırır ve bildirim alanında ilerlemeyi gösterir. Bu işlem model yerel olarak mevcut olsa bile katmanları yeniden doğrulayabilir.
+> Ollama yüklü modelleri doğrudan kullanır; eksik modeli `ollama pull` ile indirmeyi dener ve ilerlemeyi gösterir.
 
 ### Seçenekler
 
@@ -688,9 +632,9 @@ Evet. OpenAI veya Anthropic uyumlu özel bir sağlayıcı olarak ekleyebilir, ar
 </details>
 
 <details>
-<summary><strong>Ollama neden her oluşturmadan önce modeli çekiyor (pull)?</strong></summary>
+<summary><strong>Ollama modeli ne zaman indirir?</strong></summary>
 
-Eklenti, seçilen modelin sisteminizde mevcut ve güncel olduğundan emin olmak için her oluşturmadan önce `ollama pull` çalıştırır. Yerel duruma bağlı olarak bu durum katmanları yeniden doğrulayabilir veya eksik kısımları indirebilir.
+Yerel olarak içe aktarılanlar dâhil yüklü modeller doğrudan kullanılır; `ollama pull` yalnızca model eksikse çalışır.
 
 </details>
 

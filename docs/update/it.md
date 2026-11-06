@@ -1,6 +1,7 @@
-# Informazioni sull'aggiornamento di Commit Copilot
+# Commit Copilot Informazioni sull’aggiornamento
 
-## Novità della versione 1.23.0
+## Novità della versione 1.24.0
 
-- Aggiunto il supporto per Claude Haiku 5.5 nel provider Anthropic Claude.
-- Corretto un problema per cui i log di avanzamento del diff in modalità Agent mostravano un solo file quando una chiamata get_diff includeva sia path sia paths.
+- Aggiornati gli SDK IA e le API dei provider, con rilevamento dinamico dei modelli. Disponibilità e compatibilità dipendono dal provider e dall’account. I nomi dei modelli non sono più codificati nell’elenco.
+- Migliorato il supporto per OpenAI Responses, endpoint personalizzati, Qwen e modelli Ollama locali.
+- In caso di HTTP 400 durante la generazione viene suggerito di provare un altro modello, poiché il modello o le impostazioni potrebbero non essere supportati.

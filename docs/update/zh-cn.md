@@ -1,6 +1,7 @@
 # Commit Copilot 更新信息
 
-## 版本 1.23.0 的新功能
+## 版本 1.24.0 的新功能
 
-- 新增支持 Anthropic Claude 服务商的 Claude Haiku 5.5。
-- 修复 Agent 模式中 get_diff 同时指定 path 与 paths 时，diff 进度日志只显示单个文件的问题。
+- 更新 AI SDK 和提供商 API，并动态获取模型列表；模型的可用性和兼容性仍取决于提供商与账户。 模型列表不再硬编码模型名称。
+- 改进对 OpenAI Responses、自定义端点、Qwen 和本地 Ollama 模型的支持。
+- 生成请求遇到 HTTP 400 时，如果模型或设置可能不受支持，现在会建议尝试其他模型。

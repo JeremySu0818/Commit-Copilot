@@ -16,7 +16,7 @@ Commit-Copilot — это расширение для VS Code, которое и
 [![Open VSX](https://img.shields.io/open-vsx/v/JeremySu0818/commit-copilot?label=Open%20VSX)](https://open-vsx.org/extension/JeremySu0818/commit-copilot)
 [![Open VSX Downloads](https://img.shields.io/open-vsx/dt/JeremySu0818/commit-copilot?label=Open%20VSX%20Downloads)](https://open-vsx.org/extension/JeremySu0818/commit-copilot)
 [![VS Code](https://img.shields.io/badge/VS%20Code-%E2%89%A5%201.101.0-007ACC?logo=visualstudiocode&logoColor=white)](#требования)
-[![Node.js](https://img.shields.io/badge/Node.js-20%2B-339933?logo=nodedotjs&logoColor=white)](#разработка)
+[![Node.js](https://img.shields.io/badge/Node.js-22%2B-339933?logo=nodedotjs&logoColor=white)](#разработка)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-FE5196?logo=conventionalcommits&logoColor=white)](#классификация-conventional-commits)
 [![Лицензия: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../../LICENSE)
 
@@ -282,82 +282,26 @@ flowchart LR
 
 ## Поддерживаемые провайдеры
 
-| Провайдер               | Особенности                                                                    |
-| ----------------------- | ------------------------------------------------------------------------------ |
-| **Google Gemini**       | Нативные структурированные инструменты и поддержка нескольких поколений Gemini |
-| **OpenAI**              | Модели рассуждения (reasoning), универсальные, компактные и серия GPT-5/6      |
-| **Anthropic**           | Семейства Claude Haiku, Sonnet, Opus и Fable                                   |
-| **xAI Grok**            | Варианты Grok с поддержкой рассуждений и без нее                               |
-| **Groq**                | Высокоскоростной хостинг моделей Qwen и `gpt-oss`                              |
-| **OpenRouter**          | Динамический доступ к моделям с фильтрацией по поддержке инструментов          |
-| **DeepSeek**            | DeepSeek V4.1 Flash                                                            |
-| **Alibaba Qwen**        | Интеграция с DashScope и динамическое обнаружение моделей                      |
-| **Ollama**              | Локальные модели, динамический список и встроенный протокол инструментов       |
-| **Кастомный провайдер** | Любые эндпоинты, совместимые с OpenAI или Anthropic                            |
+| Провайдер               | Особенности                                       |
+| ----------------------- | ------------------------------------------------- |
+| **Google Gemini**       | Google Gen AI API                                 |
+| **OpenAI**              | Responses / Chat Completions                      |
+| **Anthropic**           | Anthropic Messages API                            |
+| **xAI Grok**            | Responses API                                     |
+| **Groq**                | Chat Completions API                              |
+| **OpenRouter**          | Text output / tool filtering                      |
+| **DeepSeek**            | Chat Completions API                              |
+| **Alibaba Qwen**        | DashScope API                                     |
+| **Ollama**              | Ollama / text tool protocol                       |
+| **Кастомный провайдер** | Chat Completions / Responses / Anthropic Messages |
 
-<details>
-<summary><strong>Просмотреть семейства моделей, поддерживаемые в Commit-Copilot</strong></summary>
+### Доступность и совместимость моделей
 
-### Google Gemini
+Модели динамически загружаются у поставщика и зависят от учётной записи, ключа, региона и конечной точки. Ollama показывает установленные модели; для Ollama и пользовательских поставщиков ID можно добавить вручную.
 
-- Gemini 2.5 Flash-Lite, Flash и Pro
-- Gemini 3 Flash
-- Gemini 3.1 Flash-Lite и Pro
-- Gemini 3.5 Flash-Lite и Flash
-- Gemini 3.6 Flash
-- Gemini 3.7 Flash
-- Gemini 3.8 Flash
+Наличие в списке не гарантирует совместимость: в нём могут быть модели видео, управления компьютером или другие нетекстовые модели. Direct Diff требует генерации текста; Agentic для облачных и пользовательских поставщиков требует вызова функций, а Ollama использует текстовый протокол инструментов. HTTP 400 может означать неподдерживаемую модель или настройки либо другие неверные параметры; попробуйте другую модель.
 
-### OpenAI
-
-- o3-mini и o3
-- o4-mini
-- GPT-4o mini и GPT-4o
-- GPT-4.1 nano, mini и GPT-4.1
-- GPT-5 nano, mini и GPT-5
-- GPT-5.1
-- GPT-5.2
-- GPT-5.4 nano, mini и GPT-5.4
-- GPT-5.5
-- GPT-5.6 Luna, Terra и Sol
-- GPT-6 Luna, Sol и Astra
-- GPT-6.1 Sol
-
-### Anthropic
-
-- Claude Sonnet и Opus 4
-- Claude Opus 4.1
-- Claude Haiku, Sonnet и Opus 4.5
-- Claude Sonnet и Opus 4.6
-- Claude Opus 4.7
-- Claude Opus 4.8
-- Claude Sonnet, Opus и Fable 5
-- Claude Fable 5.1
-- Claude Haiku, Sonnet и Opus 5.5
-
-### xAI Grok
-
-- Grok 4.20 (без рассуждений и с)
-- Grok 4.3
-- Grok 4.5
-- Grok 4.6
-- Grok 4.7
-
-### Groq
-
-- gpt-oss-20B
-- gpt-oss-safeguard-20B
-- gpt-oss-120B
-- Qwen 3.8 27b
-
-### DeepSeek
-
-- DeepSeek V4.1 Flash
-
-> [!IMPORTANT]
-> Доступность конкретных моделей зависит от провайдера, вашего аккаунта, региона и каталога API. Списки моделей для OpenRouter, Qwen, Ollama и кастомных провайдеров могут подгружаться динамически.
-
-</details>
+[Model discovery](../model-discovery.md)
 
 ---
 
@@ -372,7 +316,7 @@ flowchart LR
 
 Для разработки:
 
-- **Node.js** `20+`
+- **Node.js** `22+`
 - **npm**
 
 ---
@@ -400,7 +344,7 @@ flowchart LR
 6. Выберите модель из списка доступных.
 
 > [!IMPORTANT]
-> При использовании Ollama расширение перед каждой генерацией выполняет команду `ollama pull` для выбранной модели и отображает прогресс в области уведомлений. Это гарантирует актуальность модели, но может повторно загружать слои, даже если модель уже установлена локально.
+> Ollama использует установленные модели напрямую и пытается загрузить отсутствующие через `ollama pull`, показывая прогресс.
 
 ### Параметры
 
@@ -688,9 +632,9 @@ npm test
 </details>
 
 <details>
-<summary><strong>Почему Ollama выполняет pull модели перед каждой генерацией?</strong></summary>
+<summary><strong>Когда Ollama загружает модель?</strong></summary>
 
-Расширение запускает `ollama pull` перед генерацией, чтобы гарантировать наличие и актуальность выбранной модели в вашей системе. В зависимости от локального состояния это может привести к повторной проверке или докачке слоев модели.
+Установленные модели, включая импортированные локально, используются напрямую; `ollama pull` запускается только при отсутствии модели.
 
 </details>
 

@@ -16,7 +16,7 @@ Commit-Copilot 是一款 VS Code 擴充套件，透過多步驟自主 AI Agent �
 [![Open VSX](https://img.shields.io/open-vsx/v/JeremySu0818/commit-copilot?label=Open%20VSX)](https://open-vsx.org/extension/JeremySu0818/commit-copilot)
 [![Open VSX Downloads](https://img.shields.io/open-vsx/dt/JeremySu0818/commit-copilot?label=Open%20VSX%20Downloads)](https://open-vsx.org/extension/JeremySu0818/commit-copilot)
 [![VS Code](https://img.shields.io/badge/VS%20Code-%E2%89%A5%201.101.0-007ACC?logo=visualstudiocode&logoColor=white)](#系統需求)
-[![Node.js](https://img.shields.io/badge/Node.js-20%2B-339933?logo=nodedotjs&logoColor=white)](#開發指南)
+[![Node.js](https://img.shields.io/badge/Node.js-22%2B-339933?logo=nodedotjs&logoColor=white)](#開發指南)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-FE5196?logo=conventionalcommits&logoColor=white)](#約定式提交分類規範)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../../LICENSE)
 
@@ -274,90 +274,38 @@ Agentic 模式可選用「要求完整檢查所有差異」選項。在設定中
 
 - 儲存前先向供應商真實 API 端點驗證 Key 的有效性
 - 針對認證失效、配額耗盡或連線異常提供清晰具體的操作引導
-- OpenRouter、Alibaba Qwen、Ollama 與自訂供應商支援動態拉取模型清單
+- 模型清單會從所選供應商動態取得；Ollama 列出指定主機已安裝的模型
 - Ollama 與自訂供應商支援手動新增或刪除模型 ID
-- 自訂供應商支援 OpenAI 相容與 Anthropic 相容格式
+- 自訂供應商支援 Chat Completions、Responses 與 Anthropic Messages API
 
 ---
 
 ## 支援的供應商
 
-| 供應商             | 亮點介紹                                              |
-| ------------------ | ----------------------------------------------------- |
-| **Google Gemini**  | 原生結構化工具支援與多代 Gemini 模型                  |
-| **OpenAI**         | 推理模型、通用模型、小型模型與 GPT-5/6 系列           |
-| **Anthropic**      | Claude Haiku、Sonnet、Opus 與 Fable 全系列            |
-| **xAI Grok**       | 包含推理與非推理版本的 Grok 系列                      |
-| **Groq**           | 高速託管之 Qwen 與 `gpt-oss` 開源模型                 |
-| **OpenRouter**     | 動態存取龐大模型目錄，支援 Tool Calling 智慧篩選      |
-| **DeepSeek**       | DeepSeek V4.1 Flash                                   |
-| **Alibaba Qwen**   | 整合通義千問 DashScope 端點，支援動態模型探索         |
-| **Ollama**         | 本機私有模型，支援動態列表與內建文字工具協定          |
-| **自訂相容供應商** | 支援任何相容 OpenAI 或 Anthropic API 規範的第三方端點 |
+| 供應商            | 整合方式                                               |
+| ----------------- | ------------------------------------------------------ |
+| **Google Gemini** | Google Gen AI API，支援原生函式呼叫                    |
+| **OpenAI**        | Responses 與 Chat Completions API                      |
+| **Anthropic**     | Messages API，支援原生工具呼叫                         |
+| **xAI Grok**      | Responses API                                          |
+| **Groq**          | 相容 OpenAI 的 Chat Completions API                    |
+| **OpenRouter**    | 模型路由，篩選文字輸出與工具支援                       |
+| **DeepSeek**      | 相容 OpenAI 的 Chat Completions API                    |
+| **Alibaba Qwen**  | DashScope，支援串流生成與動態探索模型                  |
+| **Ollama**        | 本機或遠端模型，內建文字工具協定                       |
+| **自訂供應商**    | Chat Completions、Responses 或 Anthropic Messages 端點 |
 
-<details>
-<summary><strong>展開檢視 Commit-Copilot 內建支援之模型系列</strong></summary>
+### 模型可用性與相容性
 
-### Google Gemini
+Commit-Copilot 會向所選供應商動態取得模型 ID。可用模型取決於帳號、API Key、地區、端點及供應商目前的目錄。Ollama 會列出指定主機已安裝的模型；Ollama 與自訂供應商也支援手動新增模型 ID。
 
-- Gemini 2.5 Flash-Lite、Flash 與 Pro
-- Gemini 3 Flash
-- Gemini 3.1 Flash-Lite 與 Pro
-- Gemini 3.5 Flash-Lite 與 Flash
-- Gemini 3.6 Flash
-- Gemini 3.7 Flash
-- Gemini 3.8 Flash
+列表中出現模型並不保證相容。篩選能力取決於供應商提供的資訊，列表仍可能包含電腦使用、影片生成或其他非文字模型。
 
-### OpenAI
+- **Direct Diff** 需要模型能透過所選 API 產生文字。
+- 雲端及自訂供應商的 **Agentic** 需要自訂函式呼叫能力。Ollama 使用獨立的文字工具協定，不需要原生工具呼叫支援。
+- 生成請求回傳 HTTP 400 時，擴充套件會建議嘗試其他模型，因為模型可能不支援目前的模式或請求設定；其他無效參數也可能造成此錯誤。
 
-- o3-mini 與 o3
-- o4-mini
-- GPT-4o mini 與 GPT-4o
-- GPT-4.1 nano、mini 與 GPT-4.1
-- GPT-5 nano、mini 與 GPT-5
-- GPT-5.1
-- GPT-5.2
-- GPT-5.4 nano、mini 與 GPT-5.4
-- GPT-5.5
-- GPT-5.6 Luna、Terra 與 Sol
-- GPT-6 Luna、Sol 與 Astra
-- GPT-6.1 Sol
-
-### Anthropic
-
-- Claude Sonnet 與 Opus 4
-- Claude Opus 4.1
-- Claude Haiku、Sonnet 與 Opus 4.5
-- Claude Sonnet 與 Opus 4.6
-- Claude Opus 4.7
-- Claude Opus 4.8
-- Claude Sonnet、Opus 與 Fable 5
-- Claude Fable 5.1
-- Claude Haiku、Sonnet 與 Opus 5.5
-
-### xAI Grok
-
-- Grok 4.20（含非推理與推理版本）
-- Grok 4.3
-- Grok 4.5
-- Grok 4.6
-- Grok 4.7
-
-### Groq
-
-- gpt-oss-20B
-- gpt-oss-safeguard-20B
-- gpt-oss-120B
-- Qwen 3.8 27b
-
-### DeepSeek
-
-- DeepSeek V4.1 Flash
-
-> [!IMPORTANT]
-> 模型的實際可用性取決於供應商、帳號權限、地區與端點狀態。OpenRouter、Qwen、Ollama 與自訂端點的模型清單可動態取得。
-
-</details>
+README 不需要維護逐款模型清單，但供應商整合及篩選規則可能需要隨上游 API 更新。詳見[模型探索說明](../model-discovery.md)。
 
 ---
 
@@ -380,7 +328,7 @@ Qwen 改用串流生成與官方分頁模型目錄。其他區域或 Workspace �
 
 若需進行本機開發：
 
-- **Node.js** `20+`
+- **Node.js** `22+`
 - **npm**
 
 ---
@@ -408,7 +356,7 @@ Qwen 改用串流生成與官方分頁模型目錄。其他區域或 Workspace �
 6. 驗證成功後選擇具體模型。
 
 > [!IMPORTANT]
-> 針對 Ollama 模型，每次生成前套件均會主動執行 `ollama pull` 以確保模型為最新狀態，並在通知區顯示進度。這可能會在模型已存在時重新下載層資料。
+> Ollama 會直接使用已安裝的模型；若所選模型不存在，Commit-Copilot 會嘗試執行 `ollama pull` 並顯示下載進度。
 
 ### 選項配置
 
@@ -696,9 +644,9 @@ npm test
 </details>
 
 <details>
-<summary><strong>為什麼 Ollama 每次生成前都要執行 pull？</strong></summary>
+<summary><strong>Ollama 何時會下載模型？</strong></summary>
 
-擴充套件在每次生成前主動執行 `ollama pull`，是為了確保所選模型於本機端可用且處於最新版本狀態。依據本機快取情況，這可能會重新確認或下載模型層。
+擴充套件會先檢查所選模型是否已安裝，只有缺少時才執行 `ollama pull`。已安裝的模型（包括本機匯入的模型）會直接使用。
 
 </details>
 

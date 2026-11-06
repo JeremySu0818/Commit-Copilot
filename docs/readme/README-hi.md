@@ -16,7 +16,7 @@ Commit-Copilot एक VS Code एक्सटेंशन है जो बह�
 [![Open VSX](https://img.shields.io/open-vsx/v/JeremySu0818/commit-copilot?label=Open%20VSX)](https://open-vsx.org/extension/JeremySu0818/commit-copilot)
 [![Open VSX Downloads](https://img.shields.io/open-vsx/dt/JeremySu0818/commit-copilot?label=Open%20VSX%20Downloads)](https://open-vsx.org/extension/JeremySu0818/commit-copilot)
 [![VS Code](https://img.shields.io/badge/VS%20Code-%E2%89%A5%201.101.0-007ACC?logo=visualstudiocode&logoColor=white)](#आवश्यकताएं)
-[![Node.js](https://img.shields.io/badge/Node.js-20%2B-339933?logo=nodedotjs&logoColor=white)](#विकास-गाइड)
+[![Node.js](https://img.shields.io/badge/Node.js-22%2B-339933?logo=nodedotjs&logoColor=white)](#विकास-गाइड)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-FE5196?logo=conventionalcommits&logoColor=white)](#conventional-commits-वर्गीकरण)
 [![लाइसेंस: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../../LICENSE)
 
@@ -282,82 +282,26 @@ Commit-Copilot को अपनी सुविधानुसार प्र�
 
 ## समर्थित प्रदाता
 
-| प्रदाता           | मुख्य विशेषताएं                                                        |
-| ----------------- | ---------------------------------------------------------------------- |
-| **Google Gemini** | देशी संरचित टूल्स और कई Gemini मॉडल पीढ़ियों का समर्थन                 |
-| **OpenAI**        | रीजनिंग (तर्क), सामान्य प्रयोजन, कॉम्पैक्ट और GPT-5/6 श्रृंखला के मॉडल |
-| **Anthropic**     | Claude Haiku, Sonnet, Opus और Fable मॉडल परिवार                        |
-| **xAI Grok**      | रीजनिंग और मानक Grok मॉडल संस्करण                                      |
-| **Groq**          | उच्च गति होस्टेड Qwen और `gpt-oss` मॉडल                                |
-| **OpenRouter**    | टूल कॉलिंग फ़िल्टरिंग के साथ विशाल मॉडल कैटलॉग तक गतिशील पहुंच         |
-| **DeepSeek**      | DeepSeek V4.1 Flash                                                    |
-| **Alibaba Qwen**  | DashScope एकीकरण और गतिशील मॉडल खोज                                    |
-| **Ollama**        | गतिशील सूची और अंतर्निहित टेक्स्ट टूल प्रोटोकॉल के साथ स्थानीय मॉडल    |
-| **कस्टम प्रदाता** | OpenAI या Anthropic संगत कोई भी कस्टम एंडपॉइंट                         |
+| प्रदाता           | मुख्य विशेषताएं                                   |
+| ----------------- | ------------------------------------------------- |
+| **Google Gemini** | Google Gen AI API                                 |
+| **OpenAI**        | Responses / Chat Completions                      |
+| **Anthropic**     | Anthropic Messages API                            |
+| **xAI Grok**      | Responses API                                     |
+| **Groq**          | Chat Completions API                              |
+| **OpenRouter**    | Text output / tool filtering                      |
+| **DeepSeek**      | Chat Completions API                              |
+| **Alibaba Qwen**  | DashScope API                                     |
+| **Ollama**        | Ollama / text tool protocol                       |
+| **कस्टम प्रदाता** | Chat Completions / Responses / Anthropic Messages |
 
-<details>
-<summary><strong>Commit-Copilot द्वारा समर्थित मॉडल परिवार देखें</strong></summary>
+### मॉडल की उपलब्धता और संगतता
 
-### Google Gemini
+मॉडल प्रदाता से गतिशील रूप से प्राप्त होते हैं और खाता, कुंजी, क्षेत्र और एंडपॉइंट पर निर्भर करते हैं। Ollama स्थापित मॉडल दिखाता है; Ollama और कस्टम प्रदाताओं में ID मैन्युअल जोड़ सकते हैं।
 
-- Gemini 2.5 Flash-Lite, Flash और Pro
-- Gemini 3 Flash
-- Gemini 3.1 Flash-Lite और Pro
-- Gemini 3.5 Flash-Lite और Flash
-- Gemini 3.6 Flash
-- Gemini 3.7 Flash
-- Gemini 3.8 Flash
+सूची में होना संगतता की गारंटी नहीं है; वीडियो, कंप्यूटर उपयोग या गैर-पाठ मॉडल भी आ सकते हैं। Direct Diff को पाठ जनरेशन चाहिए; क्लाउड और कस्टम Agentic को फ़ंक्शन कॉलिंग चाहिए, जबकि Ollama टेक्स्ट टूल प्रोटोकॉल उपयोग करता है। HTTP 400 असंगत मॉडल या सेटिंग अथवा अन्य अमान्य पैरामीटर दर्शा सकता है; दूसरा मॉडल आज़माएँ।
 
-### OpenAI
-
-- o3-mini और o3
-- o4-mini
-- GPT-4o mini और GPT-4o
-- GPT-4.1 nano, mini और GPT-4.1
-- GPT-5 nano, mini और GPT-5
-- GPT-5.1
-- GPT-5.2
-- GPT-5.4 nano, mini और GPT-5.4
-- GPT-5.5
-- GPT-5.6 Luna, Terra और Sol
-- GPT-6 Luna, Sol और Astra
-- GPT-6.1 Sol
-
-### Anthropic
-
-- Claude Sonnet और Opus 4
-- Claude Opus 4.1
-- Claude Haiku, Sonnet और Opus 4.5
-- Claude Sonnet और Opus 4.6
-- Claude Opus 4.7
-- Claude Opus 4.8
-- Claude Sonnet, Opus और Fable 5
-- Claude Fable 5.1
-- Claude Haiku, Sonnet और Opus 5.5
-
-### xAI Grok
-
-- Grok 4.20 (मानक और रीजनिंग)
-- Grok 4.3
-- Grok 4.5
-- Grok 4.6
-- Grok 4.7
-
-### Groq
-
-- gpt-oss-20B
-- gpt-oss-safeguard-20B
-- gpt-oss-120B
-- Qwen 3.8 27b
-
-### DeepSeek
-
-- DeepSeek V4.1 Flash
-
-> [!IMPORTANT]
-> मॉडल की उपलब्धता प्रदाता, खाते, क्षेत्र और वर्तमान API कैटलॉग पर निर्भर करती है। OpenRouter, Qwen, Ollama और कस्टम प्रदाता मॉडल सूचियां गतिशील रूप से खोजी जा सकती हैं।
-
-</details>
+[Model discovery](../model-discovery.md)
 
 ---
 
@@ -372,7 +316,7 @@ Commit-Copilot को अपनी सुविधानुसार प्र�
 
 विकास के लिए:
 
-- **Node.js** `20+`
+- **Node.js** `22+`
 - **npm**
 
 ---
@@ -400,7 +344,7 @@ Commit-Copilot को अपने पसंदीदा मार्केट�
 6. मॉडल सूची उपलब्ध होने पर एक मॉडल चुनें।
 
 > [!IMPORTANT]
-> Ollama का उपयोग करते समय, एक्सटेंशन प्रत्येक उत्पादन से पहले चयनित मॉडल के लिए `ollama pull` चलाता है और अधिसूचना क्षेत्र में प्रगति दिखाता है। यह मॉडल के स्थानीय रूप से मौजूद होने पर भी परतों को फिर से सत्यापित कर सकता है।
+> Ollama स्थापित मॉडल सीधे उपयोग करता है और अनुपस्थित मॉडल को `ollama pull` से डाउनलोड करने का प्रयास कर प्रगति दिखाता है।
 
 ### विकल्प
 
@@ -688,9 +632,9 @@ npm test
 </details>
 
 <details>
-<summary><strong>Ollama हर बार उत्पादन से पहले मॉडल को pull क्यों करता है?</strong></summary>
+<summary><strong>Ollama मॉडल कब डाउनलोड करता है?</strong></summary>
 
-एक्सटेंशन प्रत्येक उत्पादन से पहले `ollama pull` चलाता है ताकि यह सुनिश्चित हो सके कि चयनित मॉडल आपके सिस्टम में उपलब्ध और अद्यतित है। स्थानीय स्थिति के आधार पर यह परतों को फिर से सत्यापित या डाउनलोड कर सकता है।
+स्थानीय रूप से आयातित सहित स्थापित मॉडल सीधे उपयोग होते हैं; `ollama pull` केवल मॉडल अनुपस्थित होने पर चलता है।
 
 </details>
 

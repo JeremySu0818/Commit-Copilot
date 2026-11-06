@@ -16,7 +16,7 @@ Commit-Copilot هي إضافة لـ VS Code تقوم بفحص مستودعك ا�
 [![Open VSX](https://img.shields.io/open-vsx/v/JeremySu0818/commit-copilot?label=Open%20VSX)](https://open-vsx.org/extension/JeremySu0818/commit-copilot)
 [![Open VSX Downloads](https://img.shields.io/open-vsx/dt/JeremySu0818/commit-copilot?label=Open%20VSX%20Downloads)](https://open-vsx.org/extension/JeremySu0818/commit-copilot)
 [![VS Code](https://img.shields.io/badge/VS%20Code-%E2%89%A5%201.101.0-007ACC?logo=visualstudiocode&logoColor=white)](#المتطلبات)
-[![Node.js](https://img.shields.io/badge/Node.js-20%2B-339933?logo=nodedotjs&logoColor=white)](#التطوير)
+[![Node.js](https://img.shields.io/badge/Node.js-22%2B-339933?logo=nodedotjs&logoColor=white)](#التطوير)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-FE5196?logo=conventionalcommits&logoColor=white)](#تصنيف-conventional-commits)
 [![الترخيص: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../../LICENSE)
 
@@ -282,82 +282,26 @@ flowchart LR
 
 ## المزودون المدعومون
 
-| المزود            | أبرز الخصائص                                                         |
-| ----------------- | -------------------------------------------------------------------- |
-| **Google Gemini** | أدوات منظمة أصلية ودعم لأجيال Gemini المتعددة                        |
-| **OpenAI**        | نماذج التفكير (reasoning)، ونماذج عامة، ونماذج مدمجة، وسلسلة GPT-5/6 |
-| **Anthropic**     | عائلات Claude Haiku و Sonnet و Opus و Fable                          |
-| **xAI Grok**      | إصدارات Grok الداعمة للتفكير والإصدارات القياسية                     |
-| **Groq**          | استضافة فائقة السرعة لنماذج Qwen و `gpt-oss`                         |
-| **OpenRouter**    | وصول ديناميكي إلى كتالوج نماذج واسع مع تصفية دعم استدعاء الأدوات     |
-| **DeepSeek**      | DeepSeek V4.1 Flash                                                  |
-| **Alibaba Qwen**  | تكامل DashScope مع استكشاف النماذج ديناميكياً                        |
-| **Ollama**        | نماذج محلية مع قائمة ديناميكية وبروتوكول أدوات نصي مدمج              |
-| **مزود مخصص**     | أي نقطة نهاية متوافقة مع معايير OpenAI أو Anthropic                  |
+| المزود            | أبرز الخصائص                                      |
+| ----------------- | ------------------------------------------------- |
+| **Google Gemini** | Google Gen AI API                                 |
+| **OpenAI**        | Responses / Chat Completions                      |
+| **Anthropic**     | Anthropic Messages API                            |
+| **xAI Grok**      | Responses API                                     |
+| **Groq**          | Chat Completions API                              |
+| **OpenRouter**    | Text output / tool filtering                      |
+| **DeepSeek**      | Chat Completions API                              |
+| **Alibaba Qwen**  | DashScope API                                     |
+| **Ollama**        | Ollama / text tool protocol                       |
+| **مزود مخصص**     | Chat Completions / Responses / Anthropic Messages |
 
-<details>
-<summary><strong>عرض عائلات النماذج المدعومة في Commit-Copilot</strong></summary>
+### توفر النماذج وتوافقها
 
-### Google Gemini
+تُجلب النماذج ديناميكياً من المزود، وقد تختلف حسب الحساب والمفتاح والمنطقة ونقطة الاتصال. يعرض Ollama النماذج المثبتة؛ ويمكن إضافة معرّفات يدوياً في Ollama والمزودين المخصصين.
 
-- Gemini 2.5 Flash-Lite و Flash و Pro
-- Gemini 3 Flash
-- Gemini 3.1 Flash-Lite و Pro
-- Gemini 3.5 Flash-Lite و Flash
-- Gemini 3.6 Flash
-- Gemini 3.7 Flash
-- Gemini 3.8 Flash
+الظهور في القائمة لا يضمن التوافق؛ فقد تشمل نماذج الفيديو أو استخدام الحاسوب أو غير النصية. يتطلب Direct Diff توليد النص، ويتطلب Agentic استدعاء الدوال للمزودين السحابيين والمخصصين، بينما يستخدم Ollama بروتوكول أدوات نصياً. قد يشير خطأ HTTP 400 إلى عدم دعم النموذج للإعدادات أو إلى معلمات طلب غير صالحة؛ جرّب نموذجاً آخر.
 
-### OpenAI
-
-- o3-mini و o3
-- o4-mini
-- GPT-4o mini و GPT-4o
-- GPT-4.1 nano و mini و GPT-4.1
-- GPT-5 nano و mini و GPT-5
-- GPT-5.1
-- GPT-5.2
-- GPT-5.4 nano و mini و GPT-5.4
-- GPT-5.5
-- GPT-5.6 Luna و Terra و Sol
-- GPT-6 Luna و Sol و Astra
-- GPT-6.1 Sol
-
-### Anthropic
-
-- Claude Sonnet و Opus 4
-- Claude Opus 4.1
-- Claude Haiku و Sonnet و Opus 4.5
-- Claude Sonnet و Opus 4.6
-- Claude Opus 4.7
-- Claude Opus 4.8
-- Claude Sonnet و Opus و Fable 5
-- Claude Fable 5.1
-- Claude Haiku و Sonnet و Opus 5.5
-
-### xAI Grok
-
-- Grok 4.20 (بدون تفكير ومع)
-- Grok 4.3
-- Grok 4.5
-- Grok 4.6
-- Grok 4.7
-
-### Groq
-
-- gpt-oss-20B
-- gpt-oss-safeguard-20B
-- gpt-oss-120B
-- Qwen 3.8 27b
-
-### DeepSeek
-
-- DeepSeek V4.1 Flash
-
-> [!IMPORTANT]
-> يعتمد توفر النماذج على المزود وحسابك ومنطقتك وكتالوج واجهة برمجة التطبيقات الحالي. يمكن استكشاف قوائم نماذج OpenRouter و Qwen و Ollama والمزودين المخصصين ديناميكياً.
-
-</details>
+[Model discovery](../model-discovery.md)
 
 ---
 
@@ -400,7 +344,7 @@ flowchart LR
 6. اختر نموذجاً عند توفر قائمة النماذج.
 
 > [!IMPORTANT]
-> عند استخدام Ollama، تقوم الإضافة بتشغيل أمر `ollama pull` للنموذج المحدد قبل كل عملية توليد وتعرض التقدم في منطقة الإشعارات. يضمن ذلك حداثة النموذج، ولكنه قد يعيد تنزيل الطبقات حتى لو كان النموذج موجوداً محلياً.
+> يستخدم Ollama النماذج المثبتة مباشرة، ويحاول تنزيل النموذج المفقود باستخدام `ollama pull` مع عرض التقدم.
 
 ### خيارات التكوين
 
@@ -688,9 +632,9 @@ npm test
 </details>
 
 <details>
-<summary><strong>لماذا يقوم Ollama بسحب (pull) النموذج قبل كل عملية توليد؟</strong></summary>
+<summary><strong>متى ينزّل Ollama نموذجاً؟</strong></summary>
 
-تقوم الإضافة بتشغيل `ollama pull` قبل كل عملية للتأكد من أن النموذج المختار متاح ومحدث في نظامك. وفقاً للحالة المحلية، قد يؤدي هذا إلى إعادة التحقق من الطبقات أو تنزيلها.
+تُستخدم النماذج المثبتة، بما فيها المستوردة محلياً، مباشرة؛ ولا يُشغّل `ollama pull` إلا عند غياب النموذج.
 
 </details>
 

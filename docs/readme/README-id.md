@@ -16,7 +16,7 @@ Bekerja mulus dengan LLM cloud terkemuka (Gemini, OpenAI, Anthropic Claude, Deep
 [![Open VSX](https://img.shields.io/open-vsx/v/JeremySu0818/commit-copilot?label=Open%20VSX)](https://open-vsx.org/extension/JeremySu0818/commit-copilot)
 [![Open VSX Downloads](https://img.shields.io/open-vsx/dt/JeremySu0818/commit-copilot?label=Open%20VSX%20Downloads)](https://open-vsx.org/extension/JeremySu0818/commit-copilot)
 [![VS Code](https://img.shields.io/badge/VS%20Code-%E2%89%A5%201.101.0-007ACC?logo=visualstudiocode&logoColor=white)](#persyaratan-sistem)
-[![Node.js](https://img.shields.io/badge/Node.js-20%2B-339933?logo=nodedotjs&logoColor=white)](#pengembangan)
+[![Node.js](https://img.shields.io/badge/Node.js-22%2B-339933?logo=nodedotjs&logoColor=white)](#pengembangan)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-FE5196?logo=conventionalcommits&logoColor=white)](#klasifikasi-conventional-commits)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../../LICENSE)
 
@@ -282,82 +282,26 @@ Pesan yang dihasilkan otomatis dimasukkan ke dalam kotak input SCM standar VS Co
 
 ## Penyedia yang Didukung
 
-| Penyedia            | Sorotan Utama                                                   |
-| ------------------- | --------------------------------------------------------------- |
-| **Google Gemini**   | Dukungan alat terstruktur native dan berbagai generasi Gemini   |
-| **OpenAI**          | Model penalaran, serbaguna, ringkas, dan seri GPT-5/6           |
-| **Anthropic**       | Lini lengkap Claude Haiku, Sonnet, Opus, dan Fable              |
-| **xAI Grok**        | Varian Grok penalaran dan non-penalaran                         |
-| **Groq**            | Hosting berkecepatan tinggi untuk model Qwen, `gpt-oss`         |
-| **OpenRouter**      | Akses katalog model luas dengan filter dukungan Tool Calling    |
-| **DeepSeek**        | DeepSeek V4.1 Flash                                             |
-| **Alibaba Qwen**    | Integrasi DashScope dengan penemuan model dinamis               |
-| **Ollama**          | Model lokal dengan daftar dinamis dan protokol alat teks bawaan |
-| **Penyedia Kustom** | Mendukung titik akhir pihak ketiga kompatibel OpenAI/Anthropic  |
+| Penyedia            | Sorotan Utama                                     |
+| ------------------- | ------------------------------------------------- |
+| **Google Gemini**   | Google Gen AI API                                 |
+| **OpenAI**          | Responses / Chat Completions                      |
+| **Anthropic**       | Anthropic Messages API                            |
+| **xAI Grok**        | Responses API                                     |
+| **Groq**            | Chat Completions API                              |
+| **OpenRouter**      | Text output / tool filtering                      |
+| **DeepSeek**        | Chat Completions API                              |
+| **Alibaba Qwen**    | DashScope API                                     |
+| **Ollama**          | Ollama / text tool protocol                       |
+| **Penyedia Kustom** | Chat Completions / Responses / Anthropic Messages |
 
-<details>
-<summary><strong>Buka untuk melihat daftar seri model yang didukung Commit-Copilot</strong></summary>
+### Ketersediaan dan kompatibilitas model
 
-### Google Gemini
+Model diambil secara dinamis dari penyedia dan bergantung pada akun, kunci, wilayah, dan endpoint. Ollama menampilkan model terpasang; ID dapat ditambahkan secara manual untuk Ollama dan penyedia kustom.
 
-- Gemini 2.5 Flash-Lite, Flash, Pro
-- Gemini 3 Flash
-- Gemini 3.1 Flash-Lite, Pro
-- Gemini 3.5 Flash-Lite, Flash
-- Gemini 3.6 Flash
-- Gemini 3.7 Flash
-- Gemini 3.8 Flash
+Tercantum dalam daftar tidak menjamin kompatibilitas: model video, penggunaan komputer, atau nonteks dapat muncul. Direct Diff memerlukan generasi teks; Agentic pada penyedia cloud dan kustom memerlukan pemanggilan fungsi, sedangkan Ollama menggunakan protokol alat berbasis teks. HTTP 400 dapat berarti model atau pengaturan tidak didukung maupun parameter lain tidak valid; coba model lain.
 
-### OpenAI
-
-- o3-mini, o3
-- o4-mini
-- GPT-4o mini, GPT-4o
-- GPT-4.1 nano, mini, GPT-4.1
-- GPT-5 nano, mini, GPT-5
-- GPT-5.1
-- GPT-5.2
-- GPT-5.4 nano, mini, GPT-5.4
-- GPT-5.5
-- GPT-5.6 Luna, Terra, Sol
-- GPT-6 Luna, Sol, Astra
-- GPT-6.1 Sol
-
-### Anthropic
-
-- Claude Sonnet, Opus 4
-- Claude Opus 4.1
-- Claude Haiku, Sonnet, Opus 4.5
-- Claude Sonnet, Opus 4.6
-- Claude Opus 4.7
-- Claude Opus 4.8
-- Claude Sonnet, Opus, Fable 5
-- Claude Fable 5.1
-- Claude Haiku, Sonnet, Opus 5.5
-
-### xAI Grok
-
-- Grok 4.20 (non-penalaran dan penalaran)
-- Grok 4.3
-- Grok 4.5
-- Grok 4.6
-- Grok 4.7
-
-### Groq
-
-- gpt-oss-20B
-- gpt-oss-safeguard-20B
-- gpt-oss-120B
-- Qwen 3.8 27b
-
-### DeepSeek
-
-- DeepSeek V4.1 Flash
-
-> [!IMPORTANT]
-> Ketersediaan model sebenarnya bergantung pada penyedia, izin akun, wilayah, dan status titik akhir. Daftar model OpenRouter, Qwen, Ollama, dan penyedia kustom dapat diambil secara dinamis.
-
-</details>
+[Model discovery](../model-discovery.md)
 
 ---
 
@@ -372,7 +316,7 @@ Pesan yang dihasilkan otomatis dimasukkan ke dalam kotak input SCM standar VS Co
 
 Untuk pengembangan:
 
-- **Node.js** `20+`
+- **Node.js** `22+`
 - **npm**
 
 ---
@@ -400,7 +344,7 @@ Setelah instalasi, buka repositori Git di VS Code dan klik ikon **Commit Copilot
 6. Pilih model spesifik setelah validasi berhasil.
 
 > [!IMPORTANT]
-> Untuk model Ollama, ekstensi selalu menjalankan `ollama pull` sebelum pembuatan untuk memastikan model tersedia dan terkini, serta menampilkan progres di area notifikasi. Hal ini dapat mengunduh ulang layer meskipun model sudah ada secara lokal.
+> Ollama langsung menggunakan model terpasang dan mencoba mengunduh model yang hilang dengan `ollama pull` sambil menampilkan progres.
 
 ### Opsi Pengaturan
 
@@ -688,9 +632,9 @@ Ya. Anda dapat menambahkannya sebagai penyedia kustom yang kompatibel dengan Ope
 </details>
 
 <details>
-<summary><strong>Mengapa Ollama selalu menjalankan pull setiap kali pembuatan?</strong></summary>
+<summary><strong>Kapan Ollama mengunduh model?</strong></summary>
 
-Ekstensi sengaja menjalankan `ollama pull` sebelum setiap pembuatan untuk memastikan model yang dipilih tersedia dan merupakan versi terbaru di komputer lokal Anda. Tergantung pada status cache lokal, ini mungkin memeriksa atau mengunduh ulang layer model.
+Model terpasang, termasuk yang diimpor secara lokal, digunakan langsung; `ollama pull` hanya dijalankan jika model belum ada.
 
 </details>
 
