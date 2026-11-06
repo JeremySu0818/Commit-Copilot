@@ -2,12 +2,12 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { createLLMClient } from '../../llm/clients';
-import { DEFAULT_MODELS } from '../../llm/provider-registry';
 import { OLLAMA_DEFAULT_HOST } from '../../models/catalog';
 import { APIRequestError, EXIT_CODES } from '../../shared/errors';
+import { TEST_MODELS as DEFAULT_MODELS } from '../helpers/model-fixtures';
 import { withModuleMock } from '../helpers/module-mock';
 
-const anthropicMaxOutputTokens = 128000;
+const anthropicMaxOutputTokens = 4096;
 
 const customAnthropicMaxTokens = 12288;
 
@@ -66,6 +66,9 @@ void test('Ollama direct diff aborts an active model pull when cancelled', async
   });
 
   class OllamaMock {
+    list() {
+      return Promise.resolve({ models: [] });
+    }
     abort() {
       abortCalls += 1;
       rejectPull?.(new Error('The operation was aborted'));
@@ -134,6 +137,9 @@ void test('Ollama direct diff disables thinking so content is returned', async (
   const chatRequests: Record<string, unknown>[] = [];
 
   class OllamaMock {
+    list() {
+      return Promise.resolve({ models: [] });
+    }
     pull() {
       return Promise.resolve({
         [Symbol.asyncIterator]() {
@@ -288,13 +294,16 @@ void test('custom Anthropic direct diff uses configured base URL and max tokens'
     {
       apiKey: 'custom-key',
       baseURL: 'https://anthropic.example',
+      defaultHeaders: { 'x-api-key': 'custom-key', Authorization: null },
+      maxRetries: 0,
+      timeout: 900000,
     },
   ]);
   assert.equal(streamParams[0]?.model, DEFAULT_MODELS.anthropic);
   assert.equal(streamParams[0]?.max_tokens, customAnthropicMaxTokens);
 });
 
-void test('custom Anthropic direct diff omits max_tokens when custom endpoint leaves it unset', async () => {
+void test('custom Anthropic direct diff supplies a safe max_tokens when unset', async () => {
   const streamParams: Record<string, unknown>[] = [];
 
   class AnthropicMock {
@@ -333,18 +342,14 @@ void test('custom Anthropic direct diff omits max_tokens when custom endpoint le
   );
 
   assert.equal(streamParams[0]?.model, DEFAULT_MODELS.anthropic);
-  assert.equal('max_tokens' in (streamParams[0] ?? {}), false);
+  assert.equal(streamParams[0]?.max_tokens, anthropicMaxOutputTokens);
 });
 
 void test('OpenAI direct diff rethrows existing APIRequestError without wrapping', async () => {
   const originalError = new APIRequestError('upstream failure');
 
   class OpenAIMock {
-    chat = {
-      completions: {
-        create: () => Promise.reject(originalError),
-      },
-    };
+    responses = { create: () => Promise.reject(originalError) };
   }
 
   await withModuleMock(
@@ -492,6 +497,7 @@ void test('createLLMClient creates correct client instances for new built-in pro
     const client = createLLMClient({
       provider: tc.provider,
       apiKey: 'test-key',
+      model: tc.model,
     });
     assert.ok(client);
     const clientRecord = client as unknown as {

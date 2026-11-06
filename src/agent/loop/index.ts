@@ -4,6 +4,7 @@ import {
   APIProvider,
   getOpenAICompatibleBaseUrl,
 } from '../../llm/provider-registry';
+import { isQwenBaseUrl } from '../../llm/sdk-options';
 import type { CustomProviderApiFormat } from '../../models/custom-provider';
 import type { CommitOutputOptions } from '../../models/options';
 import type { CancellationSignal } from '../../shared/cancellation';
@@ -67,6 +68,8 @@ export async function runAgentLoop(
     return runOpenAIAgentLoop({
       ...runnerOptions,
       baseUrl: options.baseUrl,
+      apiFormat: options.apiFormat ?? 'openai',
+      streamChat: isQwenBaseUrl(options.baseUrl),
     });
   }
 
@@ -87,6 +90,8 @@ export async function runAgentLoop(
       return runOpenAIAgentLoop({
         ...runnerOptions,
         baseUrl: getOpenAICompatibleBaseUrl(options.provider),
+        apiFormat: options.provider === 'grok' ? 'responses' : 'openai',
+        streamChat: options.provider === 'qwen',
       });
     default:
       throw new Error(

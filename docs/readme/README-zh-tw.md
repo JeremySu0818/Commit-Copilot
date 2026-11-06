@@ -15,7 +15,7 @@ Commit-Copilot 是一款 VS Code 擴充套件，透過多步驟自主 AI Agent �
 [![VS Marketplace](https://img.shields.io/badge/VS%20Marketplace-Install-007ACC?logo=visualstudiocode&logoColor=white)](https://marketplace.visualstudio.com/items?itemName=JeremySu0818.commit-copilot)
 [![Open VSX](https://img.shields.io/open-vsx/v/JeremySu0818/commit-copilot?label=Open%20VSX)](https://open-vsx.org/extension/JeremySu0818/commit-copilot)
 [![Open VSX Downloads](https://img.shields.io/open-vsx/dt/JeremySu0818/commit-copilot?label=Open%20VSX%20Downloads)](https://open-vsx.org/extension/JeremySu0818/commit-copilot)
-[![VS Code](https://img.shields.io/badge/VS%20Code-%E2%89%A5%201.91.0-007ACC?logo=visualstudiocode&logoColor=white)](#系統需求)
+[![VS Code](https://img.shields.io/badge/VS%20Code-%E2%89%A5%201.101.0-007ACC?logo=visualstudiocode&logoColor=white)](#系統需求)
 [![Node.js](https://img.shields.io/badge/Node.js-20%2B-339933?logo=nodedotjs&logoColor=white)](#開發指南)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-FE5196?logo=conventionalcommits&logoColor=white)](#約定式提交分類規範)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../../LICENSE)
@@ -361,9 +361,17 @@ Agentic 模式可選用「要求完整檢查所有差異」選項。在設定中
 
 ---
 
+## AI SDK 相容性
+
+新版 OpenAI 與 xAI 使用 Responses；舊 GPT-3.5／GPT-4 模型保留 Chat Completions。自訂供應商可選 Chat Completions、Responses 或 Anthropic Messages，既有設定仍可使用。
+
+Qwen 改用串流生成與官方分頁模型目錄。其他區域或 Workspace 專屬端點，請在 VS Code 設定 `commit-copilot.qwen.baseUrl` 填入完整相容 API 基底網址，例如 `https://WORKSPACE_ID.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1`，並使用同區域的 Key。留空會保留原有北京端點。
+
+固定使用 OpenAI 7.53.0、Anthropic 1.6.0、Google Gen AI 3.0.0、Ollama 0.6.4；需 VS Code 1.101 以上所提供的 Node 22 環境。開發時可執行 `npm run test:sdk` 驗證真實 SDK 的離線請求契約。
+
 ## 系統需求
 
-- **VS Code** `1.91.0` 或更高版本
+- **VS Code** `1.101.0` 或更高版本
 - **Git**（可透過 VS Code 內建 Git 擴充套件存取）
 - 以下任一服務的存取權限：
   - 支援之遠端供應商的有效 API Key

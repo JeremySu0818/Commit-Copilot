@@ -3,7 +3,7 @@ import { createRequire } from 'node:module';
 import test from 'node:test';
 import * as path from 'path';
 
-import { DEFAULT_MODELS } from '../../../llm/provider-registry';
+import { TEST_MODELS as DEFAULT_MODELS } from '../../helpers/model-fixtures';
 import { clearRequireCache, withModulesMock } from '../../helpers/module-mock';
 
 const MODULE_PATH = path.resolve(__dirname, '../../../agent/loop/openai');
@@ -134,6 +134,7 @@ void test('runOpenAIAgentLoop continues when one tool call has malformed JSON ar
       async ({ runOpenAIAgentLoop }) =>
         runOpenAIAgentLoop({
           apiKey: 'openai-test-key',
+          apiFormat: 'openai',
           model: DEFAULT_MODELS.deepseek,
           diff: 'diff --git a/a.ts b/a.ts\n+line',
           repoRoot: process.cwd(),
@@ -223,6 +224,7 @@ void test('runOpenAIAgentLoop returns write_commit_message argument without exec
       async ({ runOpenAIAgentLoop }) =>
         runOpenAIAgentLoop({
           apiKey: 'openai-test-key',
+          apiFormat: 'openai',
           model: DEFAULT_MODELS.deepseek,
           diff: [
             'diff --git a/a.ts b/a.ts',
@@ -318,6 +320,7 @@ void test('runOpenAIAgentLoop rejects final submission until every valid diff is
       async ({ runOpenAIAgentLoop }) =>
         runOpenAIAgentLoop({
           apiKey: 'openai-test-key',
+          apiFormat: 'openai',
           model: DEFAULT_MODELS.deepseek,
           diff: validDiff,
           repoRoot: process.cwd(),
@@ -388,7 +391,8 @@ void test('runOpenAIAgentLoop uses Responses API for GPT-5.6 models', async () =
       async ({ runOpenAIAgentLoop }) =>
         runOpenAIAgentLoop({
           apiKey: 'openai-test-key',
-          model: DEFAULT_MODELS.openai,
+          model: 'gpt-5.6-sol',
+          apiFormat: 'responses',
           diff: 'diff --git a/a.ts b/a.ts\n+line',
           repoRoot: process.cwd(),
         }),
@@ -401,7 +405,7 @@ void test('runOpenAIAgentLoop uses Responses API for GPT-5.6 models', async () =
 
   assert.equal(responseRequests.length, 1);
   const request = responseRequests[0] as Record<string, unknown>;
-  assert.equal(request.model, DEFAULT_MODELS.openai);
+  assert.equal(request.model, 'gpt-5.6-sol');
   assert.equal(request.tool_choice, 'auto');
   assert.ok(Array.isArray(request.tools));
   const tools = request.tools as Record<string, unknown>[];

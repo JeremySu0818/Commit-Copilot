@@ -8,7 +8,17 @@ import type {
 import type { GitOperations } from '../../git/git-operations';
 import type { EffectiveDisplayLanguage } from '../../i18n/types';
 import { LOCALES } from '../../i18n/ui';
+import {
+  assertCompleteResponse,
+  getResponseText,
+  requestChatCompletion,
+} from '../../llm/openai-transport';
 import { DEFAULT_MODELS } from '../../llm/provider-registry';
+import {
+  isQwenBaseUrl,
+  openAIClientOptions,
+  usesResponsesApi,
+} from '../../llm/sdk-options';
 import {
   CommitOutputOptions,
   DEFAULT_COMMIT_OUTPUT_OPTIONS,
@@ -120,10 +130,6 @@ function isResponsesFunctionToolCall(
     typeof value.name === 'string' &&
     typeof value.arguments === 'string'
   );
-}
-
-function usesResponsesApi(modelName: string): boolean {
-  return /^gpt-(?:5\.6|6(?:\.\d+)?)(?:-|$)/i.test(modelName);
 }
 
 function getAssistantMessage(completion: unknown): UnknownRecord | null {
@@ -462,15 +468,14 @@ function toOpenAIResponsesTools(language: EffectiveDisplayLanguage): object[] {
 }
 
 function getResponsesOutput(response: unknown): unknown[] {
+  assertCompleteResponse(response);
   return isRecord(response) && isUnknownArray(response.output)
     ? response.output
     : [];
 }
 
 function getResponsesText(response: unknown): string | null {
-  return isRecord(response) && typeof response.output_text === 'string'
-    ? getOpenAIMessageText(response.output_text)
-    : null;
+  return getOpenAIMessageText(getResponseText(response));
 }
 
 async function handleOpenAIResponsesToolCalls(params: {
@@ -563,8 +568,7 @@ async function executeOpenAIResponsesAgentLoop(params: {
   commitOutputOptions: CommitOutputOptions;
   coverage: DiffCoverageTracker;
 }): Promise<string> {
-  let previousResponseId: string | undefined;
-  let input: unknown = params.initialContext;
+  const input: unknown[] = [{ role: 'user', content: params.initialContext }];
   let step = 0;
   let finalToolReminderSent = false;
   const progressState = { nextStep: 1 };
@@ -579,9 +583,8 @@ async function executeOpenAIResponsesAgentLoop(params: {
               model: params.modelName,
               instructions: params.systemPrompt,
               input,
-              ...(previousResponseId
-                ? { previous_response_id: previousResponseId }
-                : {}),
+              store: false,
+              include: ['reasoning.encrypted_content'],
               tools: toOpenAIResponsesTools(params.commitMessageLanguage),
               tool_choice: 'auto',
             },
@@ -593,6 +596,8 @@ async function executeOpenAIResponsesAgentLoop(params: {
     if (!isRecord(response) || typeof response.id !== 'string') {
       throw createEmptyResponseError('OpenAI API');
     }
+
+    input.push(...getResponsesOutput(response));
 
     const toolCalls = getResponsesOutput(response).filter(
       isResponsesFunctionToolCall,
@@ -607,11 +612,13 @@ async function executeOpenAIResponsesAgentLoop(params: {
         return extractCommitMessage(text);
       }
 
-      previousResponseId = response.id;
-      input = buildFinalToolRequiredReminder(
-        params.commitOutputOptions,
-        params.commitMessageLanguage,
-      );
+      input.push({
+        role: 'user',
+        content: buildFinalToolRequiredReminder(
+          params.commitOutputOptions,
+          params.commitMessageLanguage,
+        ),
+      });
       finalToolReminderSent = true;
       step += 1;
       continue;
@@ -633,8 +640,7 @@ async function executeOpenAIResponsesAgentLoop(params: {
       return toolCallResult.finalMessage;
     }
 
-    previousResponseId = response.id;
-    input = toolCallResult.toolOutputs;
+    input.push(...toolCallResult.toolOutputs);
     progressState.nextStep += 1;
     step += 1;
   }
@@ -644,7 +650,7 @@ async function executeOpenAIResponsesAgentLoop(params: {
     createResponse: params.createResponse,
     modelName: params.modelName,
     systemPrompt: params.systemPrompt,
-    previousResponseId,
+    input,
     retryOptions: params.retryOptions,
     commitMessageLanguage: params.commitMessageLanguage,
     commitOutputOptions: params.commitOutputOptions,
@@ -656,7 +662,7 @@ async function requestOpenAIResponsesFinalCommitMessage(params: {
   createResponse: OpenAIResponseCreate;
   modelName: string;
   systemPrompt: string;
-  previousResponseId?: string;
+  input: unknown[];
   retryOptions: RetryOptions;
   commitMessageLanguage: EffectiveDisplayLanguage;
   commitOutputOptions: CommitOutputOptions;
@@ -669,13 +675,18 @@ async function requestOpenAIResponsesFinalCommitMessage(params: {
           {
             model: params.modelName,
             instructions: params.systemPrompt,
-            input: buildFinalOutputReminder(
-              params.commitOutputOptions,
-              params.commitMessageLanguage,
-            ),
-            ...(params.previousResponseId
-              ? { previous_response_id: params.previousResponseId }
-              : {}),
+            input: [
+              ...params.input,
+              {
+                role: 'user',
+                content: buildFinalOutputReminder(
+                  params.commitOutputOptions,
+                  params.commitMessageLanguage,
+                ),
+              },
+            ],
+            store: false,
+            include: ['reasoning.encrypted_content'],
             tools: toOpenAIResponsesTools(params.commitMessageLanguage),
             tool_choice: {
               type: 'function',
@@ -817,6 +828,8 @@ async function runOpenAIAgentLoop(options: AgentLoopOptions): Promise<string> {
     enforceDiffCoverage = false,
     draftCommitMessage,
     baseUrl,
+    apiFormat,
+    streamChat = isQwenBaseUrl(baseUrl),
     language = 'en',
     commitMessageLanguage = 'en',
   } = options;
@@ -831,12 +844,9 @@ async function runOpenAIAgentLoop(options: AgentLoopOptions): Promise<string> {
   try {
     const openaiModule: typeof import('openai') = await import('openai');
     const openAIClientClass = openaiModule.default;
-    const client = new openAIClientClass({
-      apiKey,
-      ...(baseUrl ? { baseURL: baseUrl } : {}),
-    });
+    const client = new openAIClientClass(openAIClientOptions(apiKey, baseUrl));
     const createCompletion: OpenAICompletionCreate = (request, options) =>
-      client.chat.completions.create(request, options);
+      requestChatCompletion(client, request, options ?? {}, streamChat);
     const modelName = pickNonEmpty(model, DEFAULT_MODELS.openai);
     const resolvedCommitOutputOptions =
       normalizeCommitOutputOptions(commitOutputOptions);
@@ -874,9 +884,12 @@ async function runOpenAIAgentLoop(options: AgentLoopOptions): Promise<string> {
       onProgress,
       language,
     });
-    if (usesResponsesApi(modelName)) {
+    if (usesResponsesApi(modelName, baseUrl, apiFormat)) {
       const createResponse: OpenAIResponseCreate = (request, options) =>
-        client.responses.create(request as never, options);
+        client.responses.create(
+          request as unknown as import('openai/resources/responses/responses').ResponseCreateParamsNonStreaming,
+          options,
+        );
       return await executeOpenAIResponsesAgentLoop({
         createResponse,
         modelName,
@@ -955,6 +968,7 @@ async function runOpenAIAgentLoop(options: AgentLoopOptions): Promise<string> {
     ) {
       throw error;
     }
+    throwIfCancellationRequested(cancellationToken);
     throwMappedOpenAIError(error);
   }
 }

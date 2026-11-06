@@ -388,7 +388,7 @@ void test('fetchOllamaModels cleans up manual models present in API tags respons
     ]);
 
     assert.deepEqual(result, [
-      { id: apiModel, alias: apiModel },
+      { id: apiModel, alias: 'Api Model' },
       { id: unlistedModel, alias: unlistedModel },
     ]);
 
@@ -475,7 +475,7 @@ void test('fetchCustomProviderModels cleans up manual models present in API mode
         );
 
         assert.deepEqual(result, [
-          { id: apiModel, alias: apiModel },
+          { id: apiModel, alias: 'Api Model' },
           { id: unlistedModel, alias: unlistedModel },
         ]);
 

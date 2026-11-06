@@ -3,9 +3,9 @@ import { createRequire } from 'node:module';
 import test from 'node:test';
 import * as path from 'path';
 
-import { DEFAULT_MODELS } from '../../../llm/provider-registry';
 import { OLLAMA_DEFAULT_HOST } from '../../../models/catalog';
 import { EXIT_CODES } from '../../../shared/errors';
+import { TEST_MODELS as DEFAULT_MODELS } from '../../helpers/model-fixtures';
 import { clearRequireCache, withModuleMock } from '../../helpers/module-mock';
 
 const MODULE_PATH = path.resolve(__dirname, '../../../agent/loop/ollama');
@@ -75,6 +75,9 @@ void test('runOllamaAgentLoop executes batched text-protocol tools and returns f
     [];
 
   class OllamaMock {
+    list() {
+      return Promise.resolve({ models: [] });
+    }
     private readonly host: string;
 
     constructor(options: { host: string }) {
@@ -211,6 +214,9 @@ void test('runOllamaAgentLoop aborts an active model pull when cancelled', async
   });
 
   class OllamaMock {
+    list() {
+      return Promise.resolve({ models: [] });
+    }
     abort() {
       abortCalls += 1;
       rejectPull?.(new Error('The operation was aborted'));
@@ -286,6 +292,9 @@ void test('runOllamaAgentLoop aborts an active model pull when cancelled', async
 
 void test('runOllamaAgentLoop maps connection failures to friendly host error', async () => {
   class OllamaConnectErrorMock {
+    list() {
+      return Promise.resolve({ models: [] });
+    }
     pull(_params: unknown) {
       return Promise.resolve({
         [Symbol.asyncIterator]() {
@@ -335,6 +344,9 @@ void test('runOllamaAgentLoop sends a localized correction after malformed proto
   const progressMessages: string[] = [];
 
   class OllamaMalformedMock {
+    list() {
+      return Promise.resolve({ models: [] });
+    }
     pull(_params: unknown) {
       return Promise.resolve(createEmptyPullStream());
     }
@@ -400,6 +412,9 @@ void test('runOllamaAgentLoop forces final tool submission after max agent steps
   const progressMessages: string[] = [];
 
   class OllamaStepLimitMock {
+    list() {
+      return Promise.resolve({ models: [] });
+    }
     pull(_params: unknown) {
       return Promise.resolve(createEmptyPullStream());
     }

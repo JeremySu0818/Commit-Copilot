@@ -15,7 +15,7 @@ Commit-Copilot 是一款 VS Code 扩展，通过多步骤自主 AI Agent 深入�
 [![VS Marketplace](https://img.shields.io/badge/VS%20Marketplace-Install-007ACC?logo=visualstudiocode&logoColor=white)](https://marketplace.visualstudio.com/items?itemName=JeremySu0818.commit-copilot)
 [![Open VSX](https://img.shields.io/open-vsx/v/JeremySu0818/commit-copilot?label=Open%20VSX)](https://open-vsx.org/extension/JeremySu0818/commit-copilot)
 [![Open VSX Downloads](https://img.shields.io/open-vsx/dt/JeremySu0818/commit-copilot?label=Open%20VSX%20Downloads)](https://open-vsx.org/extension/JeremySu0818/commit-copilot)
-[![VS Code](https://img.shields.io/badge/VS%20Code-%E2%89%A5%201.91.0-007ACC?logo=visualstudiocode&logoColor=white)](#系统需求)
+[![VS Code](https://img.shields.io/badge/VS%20Code-%E2%89%A5%201.101.0-007ACC?logo=visualstudiocode&logoColor=white)](#系统需求)
 [![Node.js](https://img.shields.io/badge/Node.js-20%2B-339933?logo=nodedotjs&logoColor=white)](#开发指南)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-FE5196?logo=conventionalcommits&logoColor=white)](#约定式提交分类规范)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../../LICENSE)
@@ -363,7 +363,7 @@ Agentic 模式可选用“要求完整检查所有差异”选项。在设置中
 
 ## 系统需求
 
-- **VS Code** `1.91.0` 或更高版本
+- **VS Code** `1.101.0` 或更高版本
 - **Git**（可通过 VS Code 内置 Git 扩展访问）
 - 以下任一服务的访问权限：
   - 支持之远端提供商的有效 API Key

@@ -15,7 +15,7 @@ Commit-Copilot एक VS Code एक्सटेंशन है जो बह�
 [![VS Marketplace](https://img.shields.io/badge/VS%20Marketplace-Install-007ACC?logo=visualstudiocode&logoColor=white)](https://marketplace.visualstudio.com/items?itemName=JeremySu0818.commit-copilot)
 [![Open VSX](https://img.shields.io/open-vsx/v/JeremySu0818/commit-copilot?label=Open%20VSX)](https://open-vsx.org/extension/JeremySu0818/commit-copilot)
 [![Open VSX Downloads](https://img.shields.io/open-vsx/dt/JeremySu0818/commit-copilot?label=Open%20VSX%20Downloads)](https://open-vsx.org/extension/JeremySu0818/commit-copilot)
-[![VS Code](https://img.shields.io/badge/VS%20Code-%E2%89%A5%201.91.0-007ACC?logo=visualstudiocode&logoColor=white)](#आवश्यकताएं)
+[![VS Code](https://img.shields.io/badge/VS%20Code-%E2%89%A5%201.101.0-007ACC?logo=visualstudiocode&logoColor=white)](#आवश्यकताएं)
 [![Node.js](https://img.shields.io/badge/Node.js-20%2B-339933?logo=nodedotjs&logoColor=white)](#विकास-गाइड)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-FE5196?logo=conventionalcommits&logoColor=white)](#conventional-commits-वर्गीकरण)
 [![लाइसेंस: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../../LICENSE)
@@ -363,7 +363,7 @@ Commit-Copilot को अपनी सुविधानुसार प्र�
 
 ## आवश्यकताएं
 
-- **VS Code** `1.91.0` या नया
+- **VS Code** `1.101.0` या नया
 - **Git** (VS Code के अंतर्निहित Git एक्सटेंशन के माध्यम से उपलब्ध)
 - निम्नलिखित में से कोई एक:
   - समर्थित दूरस्थ प्रदाता के लिए एक वैध API कुंजी

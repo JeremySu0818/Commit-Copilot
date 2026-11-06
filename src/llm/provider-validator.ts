@@ -1,9 +1,15 @@
 import { getMainViewText } from '../i18n';
 import type { EffectiveDisplayLanguage } from '../i18n/types';
-import { OLLAMA_DEFAULT_HOST } from '../models/catalog';
+import { OLLAMA_DEFAULT_HOST, fetchQwenModels } from '../models/catalog';
 import type { CustomProviderApiFormat } from '../models/custom-provider';
 
 import { APIProvider, getOpenAICompatibleBaseUrl } from './provider-registry';
+import {
+  anthropicClientOptions,
+  googleClientOptions,
+  isQwenBaseUrl,
+  MODEL_REQUEST_TIMEOUT_MS,
+} from './sdk-options';
 
 const badRequestStatus = 400;
 const unauthorizedStatus = 401;
@@ -79,17 +85,26 @@ export class ProviderValidator {
     apiFormat: CustomProviderApiFormat = 'openai',
   ): Promise<ProviderValidationResult> {
     try {
+      if (apiFormat !== 'anthropic' && isQwenBaseUrl(baseUrl)) {
+        await fetchQwenModels(apiKey, baseUrl);
+        return { valid: true };
+      }
       if (apiFormat === 'anthropic') {
         const anthropicClientClass = (await import('@anthropic-ai/sdk'))
           .default;
         await new anthropicClientClass({
-          apiKey,
-          baseURL: baseUrl,
+          ...anthropicClientOptions(apiKey, baseUrl),
+          timeout: MODEL_REQUEST_TIMEOUT_MS,
         }).models.list({ limit: 1 });
         return { valid: true };
       }
       const openAIClientClass = (await import('openai')).default;
-      const client = new openAIClientClass({ apiKey, baseURL: baseUrl });
+      const client = new openAIClientClass({
+        apiKey,
+        baseURL: baseUrl,
+        timeout: MODEL_REQUEST_TIMEOUT_MS,
+        maxRetries: 0,
+      });
       await client.models.list();
       return { valid: true };
     } catch (error) {
@@ -109,6 +124,16 @@ export class ProviderValidator {
     }
     if (provider === 'openrouter') {
       return this.validateOpenRouter(apiKey);
+    }
+    if (provider === 'qwen') {
+      try {
+        await fetchQwenModels(apiKey);
+        return { valid: true };
+      } catch (error) {
+        return this.mapError(error, {
+          invalidStatusCodes: [unauthorizedStatus, forbiddenStatus],
+        });
+      }
     }
     const compatibleBaseUrl = getOpenAICompatibleBaseUrl(provider);
     if (compatibleBaseUrl) {
@@ -136,7 +161,10 @@ export class ProviderValidator {
     const text = getMainViewText(this.getLanguage());
     const hostUrl = host || OLLAMA_DEFAULT_HOST;
     try {
-      const response = await fetch(`${hostUrl}/api/tags`, { method: 'GET' });
+      const response = await fetch(`${hostUrl}/api/tags`, {
+        method: 'GET',
+        signal: AbortSignal.timeout(MODEL_REQUEST_TIMEOUT_MS),
+      });
       return response.ok
         ? { valid: true }
         : { valid: false, error: text.cannotConnectOllamaAt(hostUrl) };
@@ -161,6 +189,7 @@ export class ProviderValidator {
       const response = await fetch('https://openrouter.ai/api/v1/key', {
         method: 'GET',
         headers: { Authorization: `Bearer ${apiKey}` },
+        signal: AbortSignal.timeout(MODEL_REQUEST_TIMEOUT_MS),
       });
       if (response.ok) {
         return { valid: true };
@@ -183,7 +212,9 @@ export class ProviderValidator {
     try {
       const { GoogleGenAI: googleGenAIClientClass } =
         await import('@google/genai');
-      const client = new googleGenAIClientClass({ apiKey });
+      const client = new googleGenAIClientClass(
+        googleClientOptions(apiKey, MODEL_REQUEST_TIMEOUT_MS),
+      );
       await client.models.list({ config: { pageSize: 1 } });
       return { valid: true };
     } catch (error) {
@@ -204,7 +235,11 @@ export class ProviderValidator {
   ): Promise<ProviderValidationResult> {
     try {
       const openAIClientClass = (await import('openai')).default;
-      await new openAIClientClass({ apiKey }).models.list();
+      await new openAIClientClass({
+        apiKey,
+        timeout: MODEL_REQUEST_TIMEOUT_MS,
+        maxRetries: 0,
+      }).models.list();
       return { valid: true };
     } catch (error) {
       return this.mapError(error, {
@@ -219,7 +254,10 @@ export class ProviderValidator {
   ): Promise<ProviderValidationResult> {
     try {
       const anthropicClientClass = (await import('@anthropic-ai/sdk')).default;
-      await new anthropicClientClass({ apiKey }).models.list({ limit: 1 });
+      await new anthropicClientClass({
+        ...anthropicClientOptions(apiKey),
+        timeout: MODEL_REQUEST_TIMEOUT_MS,
+      }).models.list({ limit: 1 });
       return { valid: true };
     } catch (error) {
       return this.mapError(error, {

@@ -1,4 +1,14 @@
-import { APIProvider, DEFAULT_MODELS } from '../llm/provider-registry';
+import {
+  APIProvider,
+  DEFAULT_MODELS,
+  getOpenAICompatibleBaseUrl,
+} from '../llm/provider-registry';
+import {
+  DEFAULT_ANTHROPIC_MAX_TOKENS,
+  MODEL_REQUEST_TIMEOUT_MS,
+} from '../llm/sdk-options';
+
+import { getModelAlias } from './model-alias';
 
 export interface ModelConfig {
   id: string;
@@ -7,10 +17,6 @@ export interface ModelConfig {
 }
 
 interface OpenRouterModelResponse {
-  data?: unknown[];
-}
-
-interface OpenAICompatibleModelResponse {
   data?: unknown[];
 }
 
@@ -30,8 +36,7 @@ interface OpenAICompatibleModelObject {
 const OPENROUTER_MODELS_ENDPOINT = 'https://openrouter.ai/api/v1/models';
 const OPENROUTER_REQUIRED_OUTPUT_MODALITY = 'text';
 const OPENROUTER_REQUIRED_SUPPORTED_PARAMETER = 'tools';
-const QWEN_MODELS_ENDPOINT =
-  'https://dashscope.aliyuncs.com/compatible-mode/v1/models';
+const QWEN_MODEL_PAGE_SIZE = 100;
 const QWEN_TEXT_GENERATION_MODEL_PATTERN =
   /^qwen(?:\d|[-.]max|[-.]plus|[-.]flash|[-.]turbo|[-.]coder|[-.]long|[-.]mt|[-.]math)/i;
 const QWEN_EXCLUDED_MODEL_PARTS = [
@@ -50,140 +55,17 @@ const QWEN_EXCLUDED_MODEL_PARTS = [
   'sambert',
 ];
 
-export const GEMINI_MODELS: ModelConfig[] = [
-  { id: 'gemini-2.5-flash-lite', alias: 'Gemini 2.5 Flash-Lite' },
-  { id: 'gemini-2.5-flash', alias: 'Gemini 2.5 Flash' },
-  { id: 'gemini-2.5-pro', alias: 'Gemini 2.5 Pro' },
-  { id: 'gemini-3-flash-preview', alias: 'Gemini 3 Flash' },
-  { id: 'gemini-3.1-flash-lite-preview', alias: 'Gemini 3.1 Flash-Lite' },
-  { id: 'gemini-3.1-pro-preview', alias: 'Gemini 3.1 Pro' },
-  { id: 'gemini-3.5-flash-lite', alias: 'Gemini 3.5 Flash-Lite' },
-  { id: 'gemini-3.5-flash', alias: 'Gemini 3.5 Flash' },
-  { id: 'gemini-3.6-flash', alias: 'Gemini 3.6 Flash' },
-  { id: 'gemini-3.7-flash', alias: 'Gemini 3.7 Flash' },
-  { id: 'gemini-3.8-flash', alias: 'Gemini 3.8 Flash' },
-];
+export const GEMINI_MODELS: ModelConfig[] = [];
 
-export const OPENAI_MODELS: ModelConfig[] = [
-  { id: 'o3', alias: 'o3' },
-  { id: 'o3-mini', alias: 'o3-mini' },
-  { id: 'o4-mini', alias: 'o4-mini' },
-  { id: 'gpt-4o-mini', alias: 'GPT-4o mini' },
-  { id: 'gpt-4o', alias: 'GPT-4o' },
-  { id: 'gpt-4.1-nano', alias: 'GPT-4.1 nano' },
-  { id: 'gpt-4.1-mini', alias: 'GPT-4.1 mini' },
-  { id: 'gpt-4.1', alias: 'GPT-4.1' },
-  { id: 'gpt-5-nano', alias: 'GPT-5 nano' },
-  { id: 'gpt-5-mini', alias: 'GPT-5 mini' },
-  { id: 'gpt-5', alias: 'GPT-5' },
-  { id: 'gpt-5.1', alias: 'GPT-5.1' },
-  { id: 'gpt-5.2', alias: 'GPT-5.2' },
-  { id: 'gpt-5.4-nano', alias: 'GPT-5.4 nano' },
-  { id: 'gpt-5.4-mini', alias: 'GPT-5.4 mini' },
-  { id: 'gpt-5.4', alias: 'GPT-5.4' },
-  { id: 'gpt-5.5', alias: 'GPT-5.5' },
-  { id: 'gpt-5.6-luna', alias: 'GPT-5.6 Luna' },
-  { id: 'gpt-5.6-terra', alias: 'GPT-5.6 Terra' },
-  { id: 'gpt-5.6-sol', alias: 'GPT-5.6 Sol' },
-  { id: 'gpt-6-luna', alias: 'GPT-6 Luna' },
-  { id: 'gpt-6-sol', alias: 'GPT-6 Sol' },
-  { id: 'gpt-6-astra', alias: 'GPT-6 Astra' },
-  { id: 'gpt-6.1-sol', alias: 'GPT-6.1 Sol' },
-];
+export const OPENAI_MODELS: ModelConfig[] = [];
 
-export const ANTHROPIC_MODELS: ModelConfig[] = [
-  {
-    id: 'claude-sonnet-4-20250514',
-    alias: 'Claude Sonnet 4',
-    max_tokens: 64000,
-  },
-  {
-    id: 'claude-opus-4-20250514',
-    alias: 'Claude Opus 4',
-    max_tokens: 32000,
-  },
-  {
-    id: 'claude-opus-4-1-20250805',
-    alias: 'Claude Opus 4.1',
-    max_tokens: 32000,
-  },
-  {
-    id: 'claude-haiku-4-5-20251001',
-    alias: 'Claude Haiku 4.5',
-    max_tokens: 64000,
-  },
-  {
-    id: 'claude-sonnet-4-5-20250929',
-    alias: 'Claude Sonnet 4.5',
-    max_tokens: 64000,
-  },
-  {
-    id: 'claude-opus-4-5-20251101',
-    alias: 'Claude Opus 4.5',
-    max_tokens: 64000,
-  },
-  {
-    id: 'claude-sonnet-4-6',
-    alias: 'Claude Sonnet 4.6',
-    max_tokens: 128000,
-  },
-  {
-    id: 'claude-opus-4-6',
-    alias: 'Claude Opus 4.6',
-    max_tokens: 128000,
-  },
-  {
-    id: 'claude-opus-4-7',
-    alias: 'Claude Opus 4.7',
-    max_tokens: 128000,
-  },
-  {
-    id: 'claude-opus-4-8',
-    alias: 'Claude Opus 4.8',
-    max_tokens: 128000,
-  },
-  {
-    id: 'claude-sonnet-5',
-    alias: 'Claude Sonnet 5',
-    max_tokens: 128000,
-  },
-  {
-    id: 'claude-opus-5',
-    alias: 'Claude Opus 5',
-    max_tokens: 128000,
-  },
-  {
-    id: 'claude-fable-5',
-    alias: 'Claude Fable 5',
-    max_tokens: 128000,
-  },
-  {
-    id: 'claude-fable-5-1',
-    alias: 'Claude Fable 5.1',
-    max_tokens: 128000,
-  },
-  { id: 'claude-sonnet-5-5', alias: 'Claude Sonnet 5.5', max_tokens: 128000 },
-  { id: 'claude-opus-5-5', alias: 'Claude Opus 5.5', max_tokens: 128000 },
-  { id: 'claude-haiku-5-5', alias: 'Claude Haiku 5.5', max_tokens: 128000 },
-];
+export const ANTHROPIC_MODELS: ModelConfig[] = [];
 
 export const OLLAMA_MODELS: ModelConfig[] = [];
 
-export const GROK_MODELS: ModelConfig[] = [
-  { id: 'grok-4.20-0309-non-reasoning', alias: 'Grok 4.20 (non-reasoning)' },
-  { id: 'grok-4.20-0309-reasoning', alias: 'Grok 4.20 (reasoning)' },
-  { id: 'grok-4.3', alias: 'Grok 4.3' },
-  { id: 'grok-4.5', alias: 'Grok 4.5' },
-  { id: 'grok-4.6', alias: 'Grok 4.6' },
-  { id: 'grok-4.7', alias: 'Grok 4.7' },
-];
+export const GROK_MODELS: ModelConfig[] = [];
 
-export const GROQ_MODELS: ModelConfig[] = [
-  { id: 'openai/gpt-oss-20b', alias: 'gpt-oss-20B' },
-  { id: 'openai/gpt-oss-120b', alias: 'gpt-oss-120B' },
-  { id: 'openai/gpt-oss-safeguard-20b', alias: 'Safety GPT OSS 20B' },
-  { id: 'qwen/qwen3.8-27b', alias: 'Qwen 3.8 27b' },
-];
+export const GROQ_MODELS: ModelConfig[] = [];
 
 export const OPENROUTER_MODELS: ModelConfig[] = [];
 
@@ -237,8 +119,7 @@ function isSupportedOpenRouterModel(model: OpenRouterModelObject): boolean {
 
 function toOpenRouterModelConfig(model: OpenRouterModelObject): ModelConfig {
   const id = String(model.id);
-  const alias =
-    typeof model.name === 'string' && model.name.length > 0 ? model.name : id;
+  const alias = getModelAlias(id, model.name);
   const maxTokens = getOpenRouterMaxTokens(model);
   return {
     id,
@@ -265,7 +146,10 @@ export async function fetchOpenRouterModels(
     headers.Authorization = `Bearer ${apiKey}`;
   }
 
-  const response = await fetch(url, { headers });
+  const response = await fetch(url, {
+    headers,
+    signal: AbortSignal.timeout(MODEL_REQUEST_TIMEOUT_MS),
+  });
   if (!response.ok) {
     throw new Error(
       `OpenRouter models request failed (${String(response.status)})`,
@@ -293,8 +177,7 @@ function toOpenAICompatibleModelConfig(
   const id = String(model.id);
   return {
     id,
-    alias:
-      typeof model.name === 'string' && model.name.length > 0 ? model.name : id,
+    alias: getModelAlias(id, model.name),
   };
 }
 
@@ -306,30 +189,93 @@ function isSupportedQwenTextToolModel(model: ModelConfig): boolean {
   );
 }
 
-export async function fetchQwenModels(apiKey?: string): Promise<ModelConfig[]> {
-  const headers: Record<string, string> = {};
-  if (apiKey && apiKey.length > 0) {
-    headers.Authorization = `Bearer ${apiKey}`;
-  }
+interface QwenModelPage {
+  models: unknown[];
+  total: number;
+}
 
-  const response = await fetch(QWEN_MODELS_ENDPOINT, { headers });
-  if (!response.ok) {
-    throw new Error(`Qwen models request failed (${String(response.status)})`);
+function parseQwenModelPage(value: unknown): QwenModelPage {
+  const output =
+    typeof value === 'object' && value !== null
+      ? (value as Record<string, unknown>).output
+      : undefined;
+  if (typeof output !== 'object' || output === null) {
+    throw new Error('Qwen returned an invalid model list');
   }
+  const { models, total } = output as Record<string, unknown>;
+  if (
+    !Array.isArray(models) ||
+    typeof total !== 'number' ||
+    !Number.isSafeInteger(total) ||
+    total < 0
+  ) {
+    throw new Error('Qwen returned an invalid model list');
+  }
+  return { models, total };
+}
 
-  const payload = (await response.json()) as OpenAICompatibleModelResponse;
-  const models = (payload.data ?? [])
-    .filter(isOpenAICompatibleModelObject)
-    .filter((model) => typeof model.id === 'string' && model.id.length > 0)
-    .map(toOpenAICompatibleModelConfig)
-    .filter(isSupportedQwenTextToolModel);
+function appendQwenModels(
+  items: unknown[],
+  seenIds: Set<string>,
+  models: ModelConfig[],
+): void {
+  for (const item of items) {
+    if (!isOpenAICompatibleModelObject(item)) {
+      continue;
+    }
+    const raw = item as Record<string, unknown>;
+    if (typeof raw.model !== 'string' || !raw.model || seenIds.has(raw.model)) {
+      continue;
+    }
+    seenIds.add(raw.model);
+    const model = toOpenAICompatibleModelConfig({
+      id: raw.model,
+      name: item.name,
+    });
+    if (isSupportedQwenTextToolModel(model)) {
+      models.push(model);
+    }
+  }
+}
+
+export async function fetchQwenModels(
+  apiKey?: string,
+  baseUrl = getOpenAICompatibleBaseUrl('qwen'),
+): Promise<ModelConfig[]> {
+  const headers: Record<string, string> = apiKey
+    ? { Authorization: `Bearer ${apiKey}` }
+    : {};
+  const url = new URL('/api/v1/models', baseUrl);
+  url.searchParams.set('page_size', String(QWEN_MODEL_PAGE_SIZE));
+  url.searchParams.set('capabilities', 'TG');
+  const signal = AbortSignal.timeout(MODEL_REQUEST_TIMEOUT_MS);
+  const models: ModelConfig[] = [];
+  const seenIds = new Set<string>();
+  let page = 1;
+  let total = Infinity;
+  while (seenIds.size < total) {
+    url.searchParams.set('page_no', String(page));
+    const response = await fetch(url, { headers, signal });
+    if (!response.ok) {
+      throw Object.assign(
+        new Error(`Qwen models request failed (${String(response.status)})`),
+        { status: response.status },
+      );
+    }
+    const result = parseQwenModelPage(await response.json());
+    total = result.total;
+    const previousCount = seenIds.size;
+    appendQwenModels(result.models, seenIds, models);
+    if (seenIds.size < total && seenIds.size === previousCount) {
+      throw new Error('Qwen returned an empty or repeated model page');
+    }
+    page += 1;
+  }
   models.sort((a, b) => a.alias.localeCompare(b.alias));
   return models;
 }
 
-export const DEEPSEEK_MODELS: ModelConfig[] = [
-  { id: 'deepseek-flash', alias: 'DeepSeek V4.1 Flash' },
-];
+export const DEEPSEEK_MODELS: ModelConfig[] = [];
 
 export const QWEN_MODELS: ModelConfig[] = [];
 
@@ -350,7 +296,10 @@ export function getAnthropicModelMaxTokens(
 ): number | undefined {
   const resolvedModelId =
     modelId && modelId.length > 0 ? modelId : DEFAULT_MODELS.anthropic;
-  return ANTHROPIC_MODELS.find(({ id }) => id === resolvedModelId)?.max_tokens;
+  return (
+    ANTHROPIC_MODELS.find(({ id }) => id === resolvedModelId)?.max_tokens ??
+    DEFAULT_ANTHROPIC_MAX_TOKENS
+  );
 }
 export function resolveDefaultModel(
   provider: APIProvider,

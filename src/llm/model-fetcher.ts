@@ -1,7 +1,6 @@
 import type * as vscode from 'vscode';
 
 import {
-  MODELS_BY_PROVIDER,
   ModelConfig,
   OLLAMA_DEFAULT_HOST,
   fetchOpenRouterModels,
@@ -13,8 +12,15 @@ import {
   CustomProviderConfig,
   getCustomProviderModelsStorageKey,
 } from '../models/custom-provider';
+import { fetchProviderModels } from '../models/discovery';
+import { getModelAlias } from '../models/model-alias';
 
 import type { APIProvider } from './provider-registry';
+import {
+  anthropicClientOptions,
+  isQwenBaseUrl,
+  MODEL_REQUEST_TIMEOUT_MS,
+} from './sdk-options';
 
 const LEGACY_OLLAMA_BUILTIN_MODEL_IDS = new Set([
   'gemma3:1b',
@@ -50,7 +56,45 @@ function toOllamaModelConfig(value: unknown): ModelConfig | null {
   const name = asString(value.name);
   const model = asString(value.model);
   const id = name && name.length > 0 ? name : model;
-  return id ? { id, alias: id } : null;
+  return id ? { id, alias: getModelAlias(id) } : null;
+}
+
+async function populateCustomProviderModels(
+  apiModels: ModelConfig[],
+  apiKey: string,
+  resolvedBaseUrl: string,
+  resolvedApiFormat: CustomProviderApiFormat,
+): Promise<void> {
+  if (resolvedApiFormat !== 'anthropic' && isQwenBaseUrl(resolvedBaseUrl)) {
+    apiModels.push(...(await fetchQwenModels(apiKey, resolvedBaseUrl)));
+  } else if (resolvedApiFormat === 'anthropic') {
+    const anthropicClientClass = (await import('@anthropic-ai/sdk')).default;
+    const response = await new anthropicClientClass({
+      ...anthropicClientOptions(apiKey, resolvedBaseUrl),
+      timeout: MODEL_REQUEST_TIMEOUT_MS,
+    }).models.list();
+    for await (const model of response) {
+      if (model.id) {
+        apiModels.push({
+          id: model.id,
+          alias: getModelAlias(model.id, model.display_name),
+        });
+      }
+    }
+  } else {
+    const openAIClientClass = (await import('openai')).default;
+    const response = await new openAIClientClass({
+      apiKey,
+      baseURL: resolvedBaseUrl,
+      timeout: MODEL_REQUEST_TIMEOUT_MS,
+      maxRetries: 0,
+    }).models.list();
+    for await (const model of response) {
+      if (model.id) {
+        apiModels.push({ id: model.id, alias: getModelAlias(model.id) });
+      }
+    }
+  }
 }
 
 export class ModelFetcher {
@@ -127,33 +171,12 @@ export class ModelFetcher {
     const apiModels: ModelConfig[] = [];
     let fetchSuccess = false;
     try {
-      if (resolvedApiFormat === 'anthropic') {
-        const anthropicClientClass = (await import('@anthropic-ai/sdk'))
-          .default;
-        const response = await new anthropicClientClass({
-          apiKey,
-          baseURL: resolvedBaseUrl,
-        }).models.list();
-        for await (const model of response) {
-          if (model.id) {
-            apiModels.push({
-              id: model.id,
-              alias: model.display_name || model.id,
-            });
-          }
-        }
-      } else {
-        const openAIClientClass = (await import('openai')).default;
-        const response = await new openAIClientClass({
-          apiKey,
-          baseURL: resolvedBaseUrl,
-        }).models.list();
-        for await (const model of response) {
-          if (model.id) {
-            apiModels.push({ id: model.id, alias: model.id });
-          }
-        }
-      }
+      await populateCustomProviderModels(
+        apiModels,
+        apiKey,
+        resolvedBaseUrl,
+        resolvedApiFormat,
+      );
       apiModels.sort((a, b) => a.id.localeCompare(b.id));
       fetchSuccess = true;
     } catch (error) {
@@ -247,7 +270,16 @@ export class ModelFetcher {
     if (provider === 'ollama') {
       return this.fetchOllamaModels(apiKey);
     }
-    return MODELS_BY_PROVIDER[provider];
+    const cacheKey = `${provider.toUpperCase()}_FETCHED_MODELS`;
+    try {
+      const models = await fetchProviderModels(provider, apiKey);
+      if (apiKey) {
+        await this.context.globalState.update(cacheKey, models);
+      }
+      return models;
+    } catch {
+      return this.context.globalState.get<ModelConfig[]>(cacheKey) ?? [];
+    }
   }
 
   includeBuiltInModelIfMissing(

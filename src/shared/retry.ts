@@ -185,6 +185,12 @@ function isRetryableError(error: unknown): boolean {
   }
 
   const candidate = toErrorLike(error);
+  if (
+    candidate.name === 'APIConnectionError' ||
+    candidate.name === 'APIConnectionTimeoutError'
+  ) {
+    return true;
+  }
   const code = toText(candidate.code ?? candidate.errno).toUpperCase();
   if (
     code.includes('ECONNRESET') ||

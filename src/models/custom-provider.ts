@@ -1,4 +1,4 @@
-export type CustomProviderApiFormat = 'openai' | 'anthropic';
+export type CustomProviderApiFormat = 'openai' | 'responses' | 'anthropic';
 
 export interface CustomProviderConfig {
   id: string;
@@ -16,7 +16,7 @@ export const DEFAULT_CUSTOM_PROVIDER_API_FORMAT: CustomProviderApiFormat =
 export function normalizeCustomProviderApiFormat(
   value: unknown,
 ): CustomProviderApiFormat {
-  return value === 'anthropic' ? 'anthropic' : 'openai';
+  return value === 'anthropic' || value === 'responses' ? value : 'openai';
 }
 
 export function normalizeCustomProviderConfig(

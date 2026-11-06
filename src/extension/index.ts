@@ -18,6 +18,7 @@ import {
   APIProvider,
   API_KEY_STORAGE_KEYS,
   DEFAULT_PROVIDER,
+  configureQwenBaseUrl,
   PROVIDER_DISPLAY_NAMES,
 } from '../llm/provider-registry';
 import {
@@ -1027,6 +1028,21 @@ async function executeGenerateCommand(
 }
 
 export function activate(context: vscode.ExtensionContext) {
+  const configureEndpoints = () => {
+    configureQwenBaseUrl(
+      vscode.workspace
+        .getConfiguration('commit-copilot')
+        .get<string>('qwen.baseUrl'),
+    );
+  };
+  configureEndpoints();
+  context.subscriptions.push(
+    vscode.workspace.onDidChangeConfiguration((event) => {
+      if (event.affectsConfiguration('commit-copilot.qwen.baseUrl')) {
+        configureEndpoints();
+      }
+    }),
+  );
   const outputChannel = vscode.window.createOutputChannel(
     'Commit-Copilot Debug',
   );

@@ -17,7 +17,6 @@ import {
 import {
   CancellationSignal,
   runWithCancellationAbort,
-  subscribeToCancellation,
   throwIfCancellationRequested,
 } from '../shared/cancellation';
 import {
@@ -31,15 +30,26 @@ import {
   createOllamaConnectionError,
   createOllamaModelNotFoundError,
   createUnknownAnthropicModelError,
+  createTruncatedResponseError,
 } from '../shared/errors';
 import type { ProgressCallback } from '../shared/progress';
 import { DEFAULT_RETRY_OPTIONS, withRetry } from '../shared/retry';
 
+import { createOllamaClient, isOllamaModelInstalled } from './ollama-model';
+import { getResponseText, requestChatCompletion } from './openai-transport';
 import {
   APIProvider,
   DEFAULT_MODELS,
   getOpenAICompatibleBaseUrl,
 } from './provider-registry';
+import {
+  anthropicClientOptions,
+  DEFAULT_ANTHROPIC_MAX_TOKENS,
+  googleClientOptions,
+  isQwenBaseUrl,
+  openAIClientOptions,
+  usesResponsesApi,
+} from './sdk-options';
 
 export type { ProgressCallback } from '../shared/progress';
 
@@ -336,7 +346,9 @@ export class GeminiClient implements ILLMClient {
     try {
       const { GoogleGenAI: googleGenAIClientClass } =
         await import('@google/genai');
-      const client = new googleGenAIClientClass({ apiKey: this.apiKey });
+      const client = new googleGenAIClientClass(
+        googleClientOptions(this.apiKey),
+      );
       const retryOptions = {
         ...DEFAULT_RETRY_OPTIONS,
         checkAbort: () => {
@@ -375,6 +387,16 @@ export class GeminiClient implements ILLMClient {
         retryOptions,
       );
 
+      if (
+        result.candidates?.some(
+          (candidate) => String(candidate.finishReason) === 'MAX_TOKENS',
+        )
+      ) {
+        throw createTruncatedResponseError(
+          'Gemini API',
+          'finishReason=MAX_TOKENS',
+        );
+      }
       const text = result.text;
       throwIfCancellationRequested(cancellationToken);
 
@@ -384,6 +406,7 @@ export class GeminiClient implements ILLMClient {
 
       return text.trim();
     } catch (error: unknown) {
+      throwIfCancellationRequested(cancellationToken);
       if (
         error instanceof NoChangesError ||
         error instanceof APIKeyMissingError ||
@@ -421,6 +444,8 @@ export class OpenAIClient implements ILLMClient {
     commitOutputOptions: CommitOutputOptions = DEFAULT_COMMIT_OUTPUT_OPTIONS,
     baseURL?: string,
     commitMessageLanguage: EffectiveDisplayLanguage = 'en',
+    private readonly apiFormat?: CustomProviderApiFormat,
+    private readonly streamChat = isQwenBaseUrl(baseURL),
   ) {
     if (!apiKey) {
       throw new APIKeyMissingError();
@@ -452,41 +477,56 @@ export class OpenAIClient implements ILLMClient {
 
     try {
       const openAIClientClass = (await import('openai')).default;
-      const client = new openAIClientClass({
-        apiKey: this.apiKey,
-        ...(this.baseURL ? { baseURL: this.baseURL } : {}),
-      });
+      const client = new openAIClientClass(
+        openAIClientOptions(this.apiKey, this.baseURL),
+      );
       const retryOptions = {
         ...DEFAULT_RETRY_OPTIONS,
         checkAbort: () => {
           throwIfCancellationRequested(cancellationToken);
         },
       };
-      const completion = await withRetry(
+      const text = await withRetry(
         () =>
-          runWithCancellationAbort(cancellationToken, (signal) =>
-            client.chat.completions.create(
+          runWithCancellationAbort(cancellationToken, async (signal) => {
+            const input = buildDirectDiffUserPrompt(
+              diff,
+              draftCommitMessage,
+              this.commitMessageLanguage,
+            );
+            if (usesResponsesApi(this.model, this.baseURL, this.apiFormat)) {
+              return getResponseText(
+                await client.responses.create(
+                  {
+                    model: this.model,
+                    instructions: this.systemPrompt,
+                    input,
+                    store: false,
+                  },
+                  { signal },
+                ),
+              );
+            }
+            const completion = await requestChatCompletion(
+              client,
               {
                 model: this.model,
                 messages: [
                   { role: 'system', content: this.systemPrompt },
                   {
                     role: 'user',
-                    content: buildDirectDiffUserPrompt(
-                      diff,
-                      draftCommitMessage,
-                      this.commitMessageLanguage,
-                    ),
+                    content: input,
                   },
                 ],
               },
               { signal },
-            ),
-          ),
+              this.streamChat,
+            );
+            return completion.choices[0]?.message?.content;
+          }),
         retryOptions,
       );
 
-      const text = completion.choices[0]?.message?.content;
       throwIfCancellationRequested(cancellationToken);
 
       if (!text) {
@@ -495,6 +535,7 @@ export class OpenAIClient implements ILLMClient {
 
       return text.trim();
     } catch (error: unknown) {
+      throwIfCancellationRequested(cancellationToken);
       if (
         error instanceof NoChangesError ||
         error instanceof APIKeyMissingError ||
@@ -558,6 +599,8 @@ export class AnthropicClient implements ILLMClient {
         throw createUnknownAnthropicModelError(this.model);
       }
       this.maxTokens = resolvedMaxTokens;
+    } else {
+      this.maxTokens = DEFAULT_ANTHROPIC_MAX_TOKENS;
     }
     this.systemPrompt = buildAgentSystemPrompt({
       includeFindReferences: false,
@@ -580,10 +623,9 @@ export class AnthropicClient implements ILLMClient {
 
     try {
       const anthropicClientClass = (await import('@anthropic-ai/sdk')).default;
-      const client = new anthropicClientClass({
-        apiKey: this.apiKey,
-        ...(this.baseURL ? { baseURL: this.baseURL } : {}),
-      });
+      const client = new anthropicClientClass(
+        anthropicClientOptions(this.apiKey, this.baseURL),
+      );
       const retryOptions = {
         ...DEFAULT_RETRY_OPTIONS,
         checkAbort: () => {
@@ -626,6 +668,12 @@ export class AnthropicClient implements ILLMClient {
         )
         .join('');
       throwIfCancellationRequested(cancellationToken);
+      if (message.stop_reason === 'max_tokens') {
+        throw createTruncatedResponseError(
+          'Anthropic API',
+          'stop_reason=max_tokens',
+        );
+      }
 
       if (!text) {
         throw createEmptyResponseError('Anthropic API');
@@ -633,6 +681,7 @@ export class AnthropicClient implements ILLMClient {
 
       return text.trim();
     } catch (error: unknown) {
+      throwIfCancellationRequested(cancellationToken);
       if (
         error instanceof NoChangesError ||
         error instanceof APIKeyMissingError ||
@@ -704,27 +753,28 @@ export class OllamaClient implements ILLMClient {
 
     try {
       const { Ollama: ollamaClientClass } = await import('ollama');
-      const client = new ollamaClientClass({ host: this.host });
-      const cancellationSubscription = subscribeToCancellation(
+      const { client, dispose } = createOllamaClient(
+        ollamaClientClass,
+        this.host,
         cancellationToken,
-        () => {
-          client.abort();
-        },
       );
+      const cancellationSubscription = { dispose };
 
       try {
         throwIfCancellationRequested(cancellationToken);
-        const pullStream = await client.pull({
-          model: this.model,
-          stream: true,
-        });
-        await reportOllamaPullProgress(
-          pullStream,
-          this.model,
-          onProgress,
-          cancellationToken,
-          this.language,
-        );
+        if (!(await isOllamaModelInstalled(client, this.model))) {
+          const pullStream = await client.pull({
+            model: this.model,
+            stream: true,
+          });
+          await reportOllamaPullProgress(
+            pullStream,
+            this.model,
+            onProgress,
+            cancellationToken,
+            this.language,
+          );
+        }
 
         if (onProgress) {
           onProgress(
@@ -810,6 +860,8 @@ export function createLLMClient(options: LLMClientOptions): ILLMClient {
       resolvedCommitOutputOptions,
       baseUrl,
       options.commitMessageLanguage,
+      apiFormat ?? 'openai',
+      provider === 'qwen' || isQwenBaseUrl(baseUrl),
     );
   }
 
@@ -821,6 +873,8 @@ export function createLLMClient(options: LLMClientOptions): ILLMClient {
       resolvedCommitOutputOptions,
       compatibleBaseUrl,
       options.commitMessageLanguage,
+      provider === 'grok' ? 'responses' : 'openai',
+      provider === 'qwen',
     );
   }
 

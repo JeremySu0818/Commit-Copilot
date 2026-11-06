@@ -3,8 +3,9 @@ import type { GitOperations } from '../git/git-operations';
 import type { GitRepository } from '../git/types';
 import type { EffectiveDisplayLanguage } from '../i18n/types';
 import { createLLMClient } from '../llm/clients';
-import { APIProvider, DEFAULT_MODELS } from '../llm/provider-registry';
+import { APIProvider } from '../llm/provider-registry';
 import type { CustomProviderApiFormat } from '../models/custom-provider';
+import { fetchProviderModels } from '../models/discovery';
 import {
   AgenticGenerationOptions,
   CommitOutputOptions,
@@ -12,6 +13,7 @@ import {
   normalizeAgenticGenerationOptions,
   normalizeCommitOutputOptions,
 } from '../models/options';
+import { APIRequestError } from '../shared/errors';
 import type { ProgressCallback } from '../shared/progress';
 
 export async function generateMessageWithProvider(params: {
@@ -35,10 +37,17 @@ export async function generateMessageWithProvider(params: {
   isStaged: boolean;
   gitOps: GitOperations;
 }): Promise<string> {
-  const resolvedModel =
-    params.model && params.model.length > 0
-      ? params.model
-      : DEFAULT_MODELS[params.provider];
+  let resolvedModel = params.model;
+  if (!resolvedModel && !params.baseUrl) {
+    resolvedModel = (
+      await fetchProviderModels(params.provider, params.apiKey)
+    )[0]?.id;
+  }
+  if (!resolvedModel) {
+    throw new APIRequestError(
+      'No model available. Select a model in provider settings.',
+    );
+  }
   const resolvedCommitOutputOptions = normalizeCommitOutputOptions(
     params.commitOutputOptions,
   );

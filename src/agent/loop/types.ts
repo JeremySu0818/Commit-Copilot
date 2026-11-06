@@ -20,6 +20,7 @@ export interface AgentLoopOptions {
   draftCommitMessage?: string;
   baseUrl?: string;
   apiFormat?: CustomProviderApiFormat;
+  streamChat?: boolean;
   maxTokens?: number;
   language?: EffectiveDisplayLanguage;
   commitMessageLanguage?: EffectiveDisplayLanguage;

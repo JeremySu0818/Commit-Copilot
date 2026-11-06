@@ -15,7 +15,7 @@ Commit-Copilot, çok adımlı otonom bir yapay zeka ajanıyla deponuzu derinleme
 [![VS Marketplace](https://img.shields.io/badge/VS%20Marketplace-Install-007ACC?logo=visualstudiocode&logoColor=white)](https://marketplace.visualstudio.com/items?itemName=JeremySu0818.commit-copilot)
 [![Open VSX](https://img.shields.io/open-vsx/v/JeremySu0818/commit-copilot?label=Open%20VSX)](https://open-vsx.org/extension/JeremySu0818/commit-copilot)
 [![Open VSX Downloads](https://img.shields.io/open-vsx/dt/JeremySu0818/commit-copilot?label=Open%20VSX%20Downloads)](https://open-vsx.org/extension/JeremySu0818/commit-copilot)
-[![VS Code](https://img.shields.io/badge/VS%20Code-%E2%89%A5%201.91.0-007ACC?logo=visualstudiocode&logoColor=white)](#gereksinimler)
+[![VS Code](https://img.shields.io/badge/VS%20Code-%E2%89%A5%201.101.0-007ACC?logo=visualstudiocode&logoColor=white)](#gereksinimler)
 [![Node.js](https://img.shields.io/badge/Node.js-20%2B-339933?logo=nodedotjs&logoColor=white)](#geliştirme)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-FE5196?logo=conventionalcommits&logoColor=white)](#conventional-commits-sınıflandırması)
 [![Lisans: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../../LICENSE)
@@ -363,7 +363,7 @@ Oluşturulan mesajlar, commit öncesinde incelenebilecekleri ve düzenlenebilece
 
 ## Gereksinimler
 
-- **VS Code** `1.91.0` veya daha yeni bir sürüm
+- **VS Code** `1.101.0` veya daha yeni bir sürüm
 - **Git** (VS Code'un yerleşik Git eklentisi aracılığıyla erişilebilir)
 - Aşağıdakilerden biri:
   - Desteklenen bir uzak sağlayıcı için geçerli bir API anahtarı

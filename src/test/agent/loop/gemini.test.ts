@@ -3,7 +3,7 @@ import { createRequire } from 'node:module';
 import test from 'node:test';
 import * as path from 'path';
 
-import { DEFAULT_MODELS } from '../../../llm/provider-registry';
+import { TEST_MODELS as DEFAULT_MODELS } from '../../helpers/model-fixtures';
 import { clearRequireCache, withModulesMock } from '../../helpers/module-mock';
 
 const MODULE_PATH = path.resolve(__dirname, '../../../agent/loop/gemini');

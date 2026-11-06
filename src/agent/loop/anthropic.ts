@@ -7,6 +7,10 @@ import type { GitOperations } from '../../git/git-operations';
 import type { EffectiveDisplayLanguage } from '../../i18n/types';
 import { LOCALES } from '../../i18n/ui';
 import { DEFAULT_MODELS } from '../../llm/provider-registry';
+import {
+  anthropicClientOptions,
+  DEFAULT_ANTHROPIC_MAX_TOKENS,
+} from '../../llm/sdk-options';
 import { getAnthropicModelMaxTokens } from '../../models/catalog';
 import {
   CommitOutputOptions,
@@ -510,16 +514,15 @@ async function runAnthropicAgentLoop(
 
   try {
     const anthropicClientClass = (await import('@anthropic-ai/sdk')).default;
-    const client = new anthropicClientClass({
-      apiKey,
-      ...(baseUrl ? { baseURL: baseUrl } : {}),
-    });
+    const client = new anthropicClientClass(
+      anthropicClientOptions(apiKey, baseUrl),
+    );
     const modelName = pickNonEmpty(model, DEFAULT_MODELS.anthropic);
     let maxTokens: number | undefined;
     if (typeof configuredMaxTokens === 'number') {
       maxTokens = configuredMaxTokens;
     } else if (baseUrl) {
-      maxTokens = undefined;
+      maxTokens = DEFAULT_ANTHROPIC_MAX_TOKENS;
     } else {
       maxTokens = getAnthropicModelMaxTokens(modelName);
     }
@@ -636,6 +639,7 @@ async function runAnthropicAgentLoop(
       progressStep: progressState.nextStep,
     });
   } catch (error: unknown) {
+    throwIfCancellationRequested(cancellationToken);
     if (
       error instanceof NoChangesError ||
       error instanceof APIKeyMissingError ||

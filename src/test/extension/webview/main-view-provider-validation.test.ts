@@ -17,6 +17,7 @@ const MODULE_PATH = path.resolve(
   'main-view-provider',
 );
 const expectedOpenRouterSaveFetchCalls = 2;
+const expectedAnthropicSaveFetchCalls = 2;
 
 type ProviderModule =
   typeof import('../../../extension/webview/main-view-provider');
@@ -406,7 +407,7 @@ void test('Anthropic API key validation uses SDK models.list and avoids fetch to
       value: 'test-anthropic-key',
     });
 
-    assert.equal(fetchCalls.length, 1);
+    assert.equal(fetchCalls.length, expectedAnthropicSaveFetchCalls);
     const firstFetchCall = fetchCalls[0];
     const requestUrl = toRequestUrl(firstFetchCall.input);
     assert.match(requestUrl, /\/v1\/models/);
@@ -519,7 +520,9 @@ void test('OpenRouter API key validation uses authenticated key endpoint', async
       headers: {
         Authorization: 'Bearer bad-openrouter-key',
       },
+      signal: firstFetchCall.init?.signal,
     });
+    assert.ok(firstFetchCall.init.signal instanceof AbortSignal);
     assert.equal(harness.storedSecrets.length, 0);
     assert.equal(harness.warningMessages.length, 1);
     assert.match(harness.warningMessages[0] ?? '', /Invalid API Key/i);

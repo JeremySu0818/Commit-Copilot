@@ -109,15 +109,18 @@ void test('fetchQwenModels fetches endpoint models and keeps Qwen text generatio
     return Promise.resolve(
       new Response(
         JSON.stringify({
-          data: [
-            { id: 'qwen-plus' },
-            { id: 'qwen3.7-plus', name: 'Qwen 3.7 Plus' },
-            { id: 'qwen3-coder-plus' },
-            { id: 'qwen-vl-plus' },
-            { id: 'text-embedding-v4' },
-            { id: 'wan2.6-t2i' },
-            { id: 'deepseek-v4-flash' },
-          ],
+          output: {
+            total: 7,
+            models: [
+              { model: 'qwen-plus' },
+              { model: 'qwen3.7-plus', name: 'Qwen 3.7 Plus' },
+              { model: 'qwen3-coder-plus' },
+              { model: 'qwen-vl-plus' },
+              { model: 'text-embedding-v4' },
+              { model: 'wan2.6-t2i' },
+              { model: 'deepseek-v4-flash' },
+            ],
+          },
         }),
         {
           status: 200,
@@ -133,16 +136,16 @@ void test('fetchQwenModels fetches endpoint models and keeps Qwen text generatio
 
     assert.equal(fetchCalls.length, 1);
     assert.equal(
-      toRequestUrl(fetchCalls[0].input),
-      'https://dashscope.aliyuncs.com/compatible-mode/v1/models',
+      new URL(toRequestUrl(fetchCalls[0].input)).pathname,
+      '/api/v1/models',
     );
     assert.deepEqual(fetchCalls[0].init?.headers, {
       Authorization: 'Bearer qwen-test-key',
     });
     assert.deepEqual(models, [
+      { id: 'qwen3-coder-plus', alias: 'Qwen 3 Coder Plus' },
       { id: 'qwen3.7-plus', alias: 'Qwen 3.7 Plus' },
-      { id: 'qwen-plus', alias: 'qwen-plus' },
-      { id: 'qwen3-coder-plus', alias: 'qwen3-coder-plus' },
+      { id: 'qwen-plus', alias: 'Qwen Plus' },
     ]);
   } finally {
     global.fetch = originalFetch;
@@ -159,7 +162,7 @@ void test('resolveDefaultModel keeps saved model when it is available', () => {
   assert.equal(resolveDefaultModel('openai', models, savedModel), savedModel);
 });
 
-void test('resolveDefaultModel falls back to provider default when saved model is unavailable', () => {
+void test('resolveDefaultModel falls back to first fetched model when saved model is unavailable', () => {
   const models = [
     { id: 'other-model', alias: 'Other Model' },
     { id: DEFAULT_MODELS.openai, alias: 'OpenAI Default' },
@@ -167,7 +170,7 @@ void test('resolveDefaultModel falls back to provider default when saved model i
 
   assert.equal(
     resolveDefaultModel('openai', models, 'missing-model'),
-    DEFAULT_MODELS.openai,
+    'other-model',
   );
 });
 

@@ -15,7 +15,7 @@ Bekerja mulus dengan LLM cloud terkemuka (Gemini, OpenAI, Anthropic Claude, Deep
 [![VS Marketplace](https://img.shields.io/badge/VS%20Marketplace-Install-007ACC?logo=visualstudiocode&logoColor=white)](https://marketplace.visualstudio.com/items?itemName=JeremySu0818.commit-copilot)
 [![Open VSX](https://img.shields.io/open-vsx/v/JeremySu0818/commit-copilot?label=Open%20VSX)](https://open-vsx.org/extension/JeremySu0818/commit-copilot)
 [![Open VSX Downloads](https://img.shields.io/open-vsx/dt/JeremySu0818/commit-copilot?label=Open%20VSX%20Downloads)](https://open-vsx.org/extension/JeremySu0818/commit-copilot)
-[![VS Code](https://img.shields.io/badge/VS%20Code-%E2%89%A5%201.91.0-007ACC?logo=visualstudiocode&logoColor=white)](#persyaratan-sistem)
+[![VS Code](https://img.shields.io/badge/VS%20Code-%E2%89%A5%201.101.0-007ACC?logo=visualstudiocode&logoColor=white)](#persyaratan-sistem)
 [![Node.js](https://img.shields.io/badge/Node.js-20%2B-339933?logo=nodedotjs&logoColor=white)](#pengembangan)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-FE5196?logo=conventionalcommits&logoColor=white)](#klasifikasi-conventional-commits)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../../LICENSE)
@@ -363,7 +363,7 @@ Pesan yang dihasilkan otomatis dimasukkan ke dalam kotak input SCM standar VS Co
 
 ## Persyaratan Sistem
 
-- **VS Code** `1.91.0` atau yang lebih baru
+- **VS Code** `1.101.0` atau yang lebih baru
 - **Git** (tersedia melalui ekstensi Git bawaan VS Code)
 - Salah satu dari akses berikut:
   - API Key yang valid untuk penyedia jarak jauh yang didukung

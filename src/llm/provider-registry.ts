@@ -22,14 +22,14 @@ export const PROVIDER_DISPLAY_NAMES: Record<APIProvider, string> = {
 };
 
 export const DEFAULT_MODELS: Record<APIProvider, string> = {
-  google: 'gemini-3.8-flash',
-  openai: 'gpt-6.1-sol',
-  anthropic: 'claude-sonnet-5-5',
+  google: '',
+  openai: '',
+  anthropic: '',
   ollama: '',
-  grok: 'grok-4.7',
-  groq: 'openai/gpt-oss-120b',
+  grok: '',
+  groq: '',
   openrouter: '',
-  deepseek: 'deepseek-flash',
+  deepseek: '',
   qwen: '',
 };
 
@@ -57,9 +57,29 @@ export const OPENAI_COMPATIBLE_BASE_URLS: Partial<Record<APIProvider, string>> =
     qwen: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
   };
 
+let qwenBaseUrl: string | undefined;
+
+export function configureQwenBaseUrl(value?: string): void {
+  const trimmed = value?.trim();
+  qwenBaseUrl = trimmed === '' ? undefined : trimmed;
+}
+
 export function getOpenAICompatibleBaseUrl(
   provider: APIProvider,
 ): string | undefined {
+  if (provider === 'qwen' && qwenBaseUrl) {
+    const url = new URL(qwenBaseUrl);
+    if (
+      !['http:', 'https:'].includes(url.protocol) ||
+      url.username ||
+      url.password ||
+      url.search ||
+      url.hash
+    ) {
+      throw new Error('Invalid Qwen base URL');
+    }
+    return url.toString().replace(/\/$/, '');
+  }
   return OPENAI_COMPATIBLE_BASE_URLS[provider];
 }
 

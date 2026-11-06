@@ -2,8 +2,8 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
 import { getLocalizedCommitCopilotErrorMessage } from '../../i18n';
-import { DEFAULT_MODELS } from '../../llm/provider-registry';
 import { CommitCopilotError, EXIT_CODES } from '../../shared/errors';
+import { TEST_MODELS as DEFAULT_MODELS } from '../helpers/model-fixtures';
 
 void test('getLocalizedCommitCopilotErrorMessage localizes structured API errors', () => {
   const error = new CommitCopilotError(

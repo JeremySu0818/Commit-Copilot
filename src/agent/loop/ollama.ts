@@ -2,6 +2,10 @@ import type { GitOperations } from '../../git/git-operations';
 import { LOCALIZED_PROMPTS } from '../../i18n/prompts/index';
 import type { EffectiveDisplayLanguage } from '../../i18n/types';
 import { LOCALES } from '../../i18n/ui';
+import {
+  createOllamaClient,
+  isOllamaModelInstalled,
+} from '../../llm/ollama-model';
 import { DEFAULT_MODELS } from '../../llm/provider-registry';
 import { OLLAMA_DEFAULT_HOST } from '../../models/catalog';
 import {
@@ -10,7 +14,6 @@ import {
 } from '../../models/options';
 import {
   CancellationSignal,
-  subscribeToCancellation,
   throwIfCancellationRequested,
 } from '../../shared/cancellation';
 import {
@@ -446,28 +449,32 @@ async function runOllamaAgentLoop(options: AgentLoopOptions): Promise<string> {
 
   try {
     const { Ollama: ollamaClientClass } = await import('ollama');
-    const client = new ollamaClientClass({ host: resolvedHost });
+    const { client, dispose } = createOllamaClient(
+      ollamaClientClass,
+      resolvedHost,
+      cancellationToken,
+    );
     const modelName = pickNonEmpty(model, DEFAULT_MODELS.ollama);
     const resolvedCommitOutputOptions =
       normalizeCommitOutputOptions(commitOutputOptions);
     const coverage = new DiffCoverageTracker(diff, enforceDiffCoverage);
-    const cancellationSubscription = subscribeToCancellation(
-      cancellationToken,
-      () => {
-        client.abort();
-      },
-    );
+    const cancellationSubscription = { dispose };
 
     try {
       throwIfCancellationRequested(cancellationToken);
-      const pullStream = await client.pull({ model: modelName, stream: true });
-      await reportPullProgress(
-        pullStream,
-        modelName,
-        onProgress,
-        cancellationToken,
-        language,
-      );
+      if (!(await isOllamaModelInstalled(client, modelName))) {
+        const pullStream = await client.pull({
+          model: modelName,
+          stream: true,
+        });
+        await reportPullProgress(
+          pullStream,
+          modelName,
+          onProgress,
+          cancellationToken,
+          language,
+        );
+      }
 
       if (onProgress) {
         onProgress(LOCALES[language].progressMessages.generatingMessage, 0);

@@ -706,6 +706,12 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
         resolvedApiValue,
       );
       const currentModel = resolveDefaultModel(builtIn, models, savedModel);
+      if (currentModel) {
+        await this._context.globalState.update(
+          this.getBuiltInProviderModelStorageKey(builtIn),
+          currentModel,
+        );
+      }
       postValidationResult(provider, true, {
         models: this.modelFetcher.includeBuiltInModelIfMissing(
           builtIn,
@@ -1075,6 +1081,12 @@ export class MainViewProvider implements vscode.WebviewViewProvider {
             key,
           );
           const currentModel = resolveDefaultModel(builtIn, models, savedModel);
+          if (currentModel) {
+            await this._context.globalState.update(
+              this.getBuiltInProviderModelStorageKey(builtIn),
+              currentModel,
+            );
+          }
           this._view?.webview.postMessage({
             type: 'modelsList',
             models: this.modelFetcher.includeBuiltInModelIfMissing(

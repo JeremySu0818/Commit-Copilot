@@ -5,7 +5,7 @@ import test from 'node:test';
 import * as path from 'path';
 
 import type { GitRepository } from '../../git/types';
-import { APIProvider, DEFAULT_MODELS } from '../../llm/provider-registry';
+import { APIProvider } from '../../llm/provider-registry';
 import {
   AgenticGenerationOptions,
   CommitOutputOptions,
@@ -196,6 +196,7 @@ async function loadGenerateCommitMessage(options: {
 
 async function runGenerate(options: {
   provider: APIProvider;
+  model?: string;
   generateMode?: GenerateMode;
   commitOutputOptions?: CommitOutputOptions;
   agenticGenerationOptions?: AgenticGenerationOptions;
@@ -222,6 +223,7 @@ async function runGenerate(options: {
     repository,
     provider: options.provider,
     apiKey: 'token',
+    model: options.model ?? 'test-model',
     generateMode: options.generateMode,
     commitOutputOptions: options.commitOutputOptions,
     agenticGenerationOptions: options.agenticGenerationOptions,
@@ -275,7 +277,7 @@ void test('generateCommitMessage uses agent loop in agentic mode', async () => {
       throw new Error('capturedAgentInput not set');
     }
     assert.equal(agentInput.provider, 'openai');
-    assert.equal(agentInput.model, DEFAULT_MODELS.openai);
+    assert.equal(agentInput.model, 'test-model');
     assert.equal(agentInput.repoRoot, repoRoot);
     assert.deepEqual(agentInput.commitOutputOptions, {
       includeScope: false,
@@ -367,7 +369,7 @@ void test('generateCommitMessage uses direct diff client in direct-diff mode', a
       throw new Error('capturedClientOptions not set');
     }
     assert.equal(clientOptions.provider, 'openai');
-    assert.equal(clientOptions.model, DEFAULT_MODELS.openai);
+    assert.equal(clientOptions.model, 'test-model');
     assert.deepEqual(clientOptions.commitOutputOptions, {
       includeScope: true,
       includeBody: false,
@@ -408,7 +410,7 @@ void test('generateCommitMessage uses agent loop for ollama in agentic mode', as
       throw new Error('capturedAgentInput not set');
     }
     assert.equal(agentInput.provider, 'ollama');
-    assert.equal(agentInput.model, DEFAULT_MODELS.ollama);
+    assert.equal(agentInput.model, 'test-model');
     assert.deepEqual(
       agentInput.commitOutputOptions,
       DEFAULT_COMMIT_OUTPUT_OPTIONS,
@@ -444,6 +446,31 @@ void test('generateCommitMessage returns cancelled when cancellation is already 
     assert.equal(result.error?.exitCode, EXIT_CODES.CANCELLED);
     assert.equal(agentCallCount, 0);
     assert.equal(directCallCount, 0);
+  } finally {
+    cleanupTempDir(repoRoot);
+  }
+});
+
+void test('generation discovers a model when no selection is saved', async (t) => {
+  t.mock.method(global, 'fetch', () =>
+    Promise.resolve(Response.json({ data: [{ id: 'gpt-future' }] })),
+  );
+  let selectedModel: unknown;
+  const { result, repoRoot } = await runGenerate({
+    provider: 'openai',
+    model: '',
+    generateMode: 'agentic',
+    runAgentLoop: (input) => {
+      selectedModel = input.model;
+      return Promise.resolve('feat: discover model');
+    },
+    createLLMClient: () => ({
+      generateCommitMessage: () => Promise.resolve('unused'),
+    }),
+  });
+  try {
+    assert.equal(result.success, true);
+    assert.equal(selectedModel, 'gpt-future');
   } finally {
     cleanupTempDir(repoRoot);
   }

@@ -15,7 +15,7 @@ It works seamlessly with major cloud LLMs (Gemini, OpenAI, Anthropic Claude, Dee
 [![VS Marketplace](https://img.shields.io/badge/VS%20Marketplace-Install-007ACC?logo=visualstudiocode&logoColor=white)](https://marketplace.visualstudio.com/items?itemName=JeremySu0818.commit-copilot)
 [![Open VSX](https://img.shields.io/open-vsx/v/JeremySu0818/commit-copilot?label=Open%20VSX)](https://open-vsx.org/extension/JeremySu0818/commit-copilot)
 [![Open VSX Downloads](https://img.shields.io/open-vsx/dt/JeremySu0818/commit-copilot?label=Open%20VSX%20Downloads)](https://open-vsx.org/extension/JeremySu0818/commit-copilot)
-[![VS Code](https://img.shields.io/badge/VS%20Code-%E2%89%A5%201.91.0-007ACC?logo=visualstudiocode&logoColor=white)](#requirements)
+[![VS Code](https://img.shields.io/badge/VS%20Code-%E2%89%A5%201.101.0-007ACC?logo=visualstudiocode&logoColor=white)](#requirements)
 [![Node.js](https://img.shields.io/badge/Node.js-20%2B-339933?logo=nodedotjs&logoColor=white)](#development)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-FE5196?logo=conventionalcommits&logoColor=white)](#conventional-commits-classification)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -276,7 +276,7 @@ Generated messages are inserted into the standard Source Control input box, wher
 - Provider-specific authentication, quota, and connection errors are surfaced with actionable guidance
 - OpenRouter, Alibaba Qwen, Ollama, and custom providers can fetch model lists dynamically
 - Ollama and custom providers support manually adding or removing model IDs when discovery is incomplete
-- Custom providers support OpenAI-compatible and Anthropic-compatible APIs
+- Custom providers support Chat Completions, Responses, and Anthropic Messages APIs
 
 ---
 
@@ -293,7 +293,7 @@ Generated messages are inserted into the standard Source Control input box, wher
 | **DeepSeek**        | DeepSeek V4.1 Flash                                                    |
 | **Alibaba Qwen**    | DashScope integration with dynamic model discovery                     |
 | **Ollama**          | Local models with dynamic discovery and a built-in agent tool protocol |
-| **Custom Provider** | OpenAI-compatible or Anthropic-compatible endpoints                    |
+| **Custom Provider** | Chat Completions, Responses, or Anthropic Messages endpoints           |
 
 <details>
 <summary><strong>View the model families listed by Commit-Copilot</strong></summary>
@@ -361,9 +361,17 @@ Generated messages are inserted into the standard Source Control input box, wher
 
 ---
 
+## AI SDK compatibility
+
+OpenAI and xAI use Responses for current models; older GPT-3.5/GPT-4 models keep Chat Completions. Custom providers can select either protocol or Anthropic Messages. Existing custom provider settings remain valid.
+
+Qwen uses streamed generation and the native paginated model catalogue. For a different region or a Workspace-specific endpoint, set `commit-copilot.qwen.baseUrl` in VS Code settings to your full compatible base URL (for example `https://WORKSPACE_ID.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1`). The region must match your API key. Leaving it empty retains the existing Beijing endpoint.
+
+SDKs are pinned to OpenAI 7.53.0, Anthropic 1.6.0, Google Gen AI 3.0.0 and Ollama 0.6.4. VS Code 1.101+ supplies the required Node 22 runtime. Run `npm run test:sdk` for the offline tests using the real SDKs. See [migration and validation notes](docs/ai-sdk-migration.md).
+
 ## Requirements
 
-- **VS Code** `1.91.0` or newer
+- **VS Code** `1.101.0` or newer
 - **Git**, available through VS Code's built-in Git extension
 - One of the following:
   - A valid API key for a supported remote provider
@@ -418,7 +426,7 @@ After installation, open a Git repository in VS Code and select the **Commit Cop
 
 ### Custom provider
 
-To add an OpenAI-compatible or Anthropic-compatible endpoint:
+To add a Chat Completions, Responses, or Anthropic Messages endpoint:
 
 1. Open provider settings.
 2. Select **Add Custom Provider**.

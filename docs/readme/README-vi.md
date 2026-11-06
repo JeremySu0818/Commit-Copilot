@@ -15,7 +15,7 @@ Nó hoạt động liền mạch với các LLM đám mây hàng đầu (Gemini,
 [![VS Marketplace](https://img.shields.io/badge/VS%20Marketplace-Install-007ACC?logo=visualstudiocode&logoColor=white)](https://marketplace.visualstudio.com/items?itemName=JeremySu0818.commit-copilot)
 [![Open VSX](https://img.shields.io/open-vsx/v/JeremySu0818/commit-copilot?label=Open%20VSX)](https://open-vsx.org/extension/JeremySu0818/commit-copilot)
 [![Open VSX Downloads](https://img.shields.io/open-vsx/dt/JeremySu0818/commit-copilot?label=Open%20VSX%20Downloads)](https://open-vsx.org/extension/JeremySu0818/commit-copilot)
-[![VS Code](https://img.shields.io/badge/VS%20Code-%E2%89%A5%201.91.0-007ACC?logo=visualstudiocode&logoColor=white)](#yêu-cầu-hệ-thống)
+[![VS Code](https://img.shields.io/badge/VS%20Code-%E2%89%A5%201.101.0-007ACC?logo=visualstudiocode&logoColor=white)](#yêu-cầu-hệ-thống)
 [![Node.js](https://img.shields.io/badge/Node.js-20%2B-339933?logo=nodedotjs&logoColor=white)](#phát-triển)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-FE5196?logo=conventionalcommits&logoColor=white)](#phân-loại-conventional-commits)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../../LICENSE)
@@ -363,7 +363,7 @@ Thông điệp tạo ra sẽ tự động điền vào hộp nhập SCM tiêu ch
 
 ## Yêu cầu hệ thống
 
-- **VS Code** `1.91.0` trở lên
+- **VS Code** `1.101.0` trở lên
 - **Git** (khả dụng thông qua tiện ích mở rộng Git tích hợp của VS Code)
 - Một trong các quyền truy cập sau:
   - API Key hợp lệ cho một nhà cung cấp từ xa được hỗ trợ

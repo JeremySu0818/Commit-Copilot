@@ -2,6 +2,7 @@ import type { GitOperations } from '../../git/git-operations';
 import type { EffectiveDisplayLanguage } from '../../i18n/types';
 import { LOCALES } from '../../i18n/ui';
 import { DEFAULT_MODELS } from '../../llm/provider-registry';
+import { googleClientOptions } from '../../llm/sdk-options';
 import {
   CommitOutputOptions,
   DEFAULT_COMMIT_OUTPUT_OPTIONS,
@@ -591,11 +592,21 @@ function createGeminiResponseRequester(params: {
     withRetry(
       () =>
         runWithCancellationAbort(params.cancellationToken, (signal) =>
-          params.client.models.generateContent({
-            model: params.modelName,
-            contents,
-            config: { ...config, abortSignal: signal },
-          }),
+          params.client.models
+            .generateContent({
+              model: params.modelName,
+              contents,
+              config: { ...config, abortSignal: signal },
+            })
+            .then((response) => {
+              const candidate = getGeminiFirstCandidate(response);
+              if (candidate?.finishReason === 'MAX_TOKENS') {
+                throw new APIRequestError(
+                  'Gemini API response was truncated (MAX_TOKENS)',
+                );
+              }
+              return response;
+            }),
         ),
       params.retryOptions,
     );
@@ -689,7 +700,7 @@ async function runGeminiAgentLoop(options: AgentLoopOptions): Promise<string> {
   try {
     const { GoogleGenAI: googleGenAIClientClass } =
       await import('@google/genai');
-    const client = new googleGenAIClientClass({ apiKey });
+    const client = new googleGenAIClientClass(googleClientOptions(apiKey));
     const modelName = pickNonEmpty(model, DEFAULT_MODELS.google).replace(
       /^models\//,
       '',
@@ -787,6 +798,7 @@ async function runGeminiAgentLoop(options: AgentLoopOptions): Promise<string> {
       commitMessageLanguage,
     });
   } catch (error: unknown) {
+    throwIfCancellationRequested(cancellationToken);
     if (
       error instanceof NoChangesError ||
       error instanceof APIKeyMissingError ||

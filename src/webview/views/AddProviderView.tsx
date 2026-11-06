@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo } from 'react';
 
+import { normalizeCustomProviderApiFormat } from '../../models/custom-provider';
 import { BackIcon } from '../components/BackIcon';
 import { useMainViewContext } from '../main-view-context';
 import { renderStatusHtml } from '../utils';
@@ -139,13 +140,13 @@ export function AddProviderView() {
               dispatch({
                 type: 'UPDATE_ADD_PROVIDER_DRAFT',
                 partial: {
-                  apiFormat:
-                    e.target.value === 'anthropic' ? 'anthropic' : 'openai',
+                  apiFormat: normalizeCustomProviderApiFormat(e.target.value),
                 },
               });
             }}
           >
             <option value="openai">{pack.options.openaiCompatible}</option>
+            <option value="responses">OpenAI Responses API</option>
             <option value="anthropic">
               {pack.options.anthropicCompatible}
             </option>
