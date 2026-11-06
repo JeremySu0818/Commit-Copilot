@@ -26,7 +26,7 @@ import {
   APIKeyMissingError,
   APIKeyInvalidError,
   APIQuotaExceededError,
-  APIRequestError,
+  createGenerationRequestError,
   GenerationCancelledError,
   NoChangesError,
   createEmptyFinalResponseError,
@@ -395,7 +395,7 @@ function throwMappedAnthropicError(error: unknown): never {
   if (status === tooManyRequestsStatus || message.includes('rate_limit')) {
     throw new APIQuotaExceededError(message);
   }
-  throw new APIRequestError(message);
+  throw createGenerationRequestError(error);
 }
 
 function createAnthropicRetryOptions(params: {

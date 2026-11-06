@@ -13,6 +13,8 @@ export const hiLocale: LocaleTextBundle = {
       args.details?.trim()
         ? 'API कोटा समाप्त: {details}'.replace('{details}', args.details)
         : 'API कोटा समाप्त हो गया है।',
+    'api.modelCompatibility': () =>
+      'चुना गया मॉडल मौजूदा जनरेशन मोड या अनुरोध सेटिंग का समर्थन नहीं करता हो सकता है। कृपया कोई दूसरा मॉडल आज़माएँ।',
     'api.requestFailed': (args) =>
       args.details?.trim()
         ? 'API अनुरोध विफल: {details}'.replace('{details}', args.details)

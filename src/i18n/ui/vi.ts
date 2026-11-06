@@ -16,6 +16,8 @@ export const viLocale: LocaleTextBundle = {
             args.details,
           )
         : 'Hạn mức API đã vượt quá.',
+    'api.modelCompatibility': () =>
+      'Mô hình đã chọn có thể không hỗ trợ chế độ tạo hoặc thiết lập yêu cầu hiện tại. Vui lòng thử mô hình khác.',
     'api.requestFailed': (args) =>
       args.details?.trim()
         ? 'Yêu cầu API thất bại: {details}'.replace('{details}', args.details)

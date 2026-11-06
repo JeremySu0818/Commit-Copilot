@@ -13,6 +13,8 @@ export const huLocale: LocaleTextBundle = {
       args.details?.trim()
         ? 'API kvóta túllépve: {details}'.replace('{details}', args.details)
         : 'API kvóta túllépve.',
+    'api.modelCompatibility': () =>
+      'A kiválasztott modell esetleg nem támogatja a jelenlegi generálási módot vagy kérésbeállításokat. Próbáljon ki egy másik modellt.',
     'api.requestFailed': (args) =>
       args.details?.trim()
         ? 'API kérés sikertelen: {details}'.replace('{details}', args.details)

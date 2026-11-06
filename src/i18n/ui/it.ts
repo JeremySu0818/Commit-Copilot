@@ -13,6 +13,8 @@ export const itLocale: LocaleTextBundle = {
       args.details?.trim()
         ? 'Quota API superata: {details}'.replace('{details}', args.details)
         : 'Quota API superata.',
+    'api.modelCompatibility': () =>
+      'Il modello selezionato potrebbe non supportare la modalità di generazione o le impostazioni della richiesta attuali. Prova un altro modello.',
     'api.requestFailed': (args) =>
       args.details?.trim()
         ? 'Richiesta API fallita: {details}'.replace('{details}', args.details)

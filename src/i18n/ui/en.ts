@@ -13,6 +13,8 @@ export const enLocale: LocaleTextBundle = {
       args.details?.trim()
         ? 'API quota exceeded: {details}'.replace('{details}', args.details)
         : 'API quota exceeded.',
+    'api.modelCompatibility': () =>
+      'The selected model may not support the current generation mode or request settings. Please try another model.',
     'api.requestFailed': (args) =>
       args.details?.trim()
         ? 'API request failed: {details}'.replace('{details}', args.details)

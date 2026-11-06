@@ -13,6 +13,8 @@ export const trLocale: LocaleTextBundle = {
       args.details?.trim()
         ? 'API kotası aşıldı: {details}'.replace('{details}', args.details)
         : 'API kotası aşıldı.',
+    'api.modelCompatibility': () =>
+      'Seçilen model mevcut üretim modunu veya istek ayarlarını desteklemiyor olabilir. Lütfen başka bir model deneyin.',
     'api.requestFailed': (args) =>
       args.details?.trim()
         ? 'API isteği başarısız oldu: {details}'.replace(

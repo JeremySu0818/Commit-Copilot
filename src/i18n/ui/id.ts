@@ -13,6 +13,8 @@ export const idLocale: LocaleTextBundle = {
       args.details?.trim()
         ? 'Kuota API habis: {details}'.replace('{details}', args.details)
         : 'Kuota API telah terlampaui.',
+    'api.modelCompatibility': () =>
+      'Model yang dipilih mungkin tidak mendukung mode pembuatan atau pengaturan permintaan saat ini. Coba model lain.',
     'api.requestFailed': (args) =>
       args.details?.trim()
         ? 'Permintaan API gagal: {details}'.replace('{details}', args.details)

@@ -16,6 +16,8 @@ export const plLocale: LocaleTextBundle = {
       args.details?.trim()
         ? 'Przekroczono limit API: {details}'.replace('{details}', args.details)
         : 'Przekroczono limit API.',
+    'api.modelCompatibility': () =>
+      'Wybrany model może nie obsługiwać bieżącego trybu generowania lub ustawień żądania. Spróbuj użyć innego modelu.',
     'api.requestFailed': (args) =>
       args.details?.trim()
         ? 'Żądanie API nie powiodło się: {details}'.replace(

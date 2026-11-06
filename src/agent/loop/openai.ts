@@ -33,7 +33,7 @@ import {
   APIKeyMissingError,
   APIKeyInvalidError,
   APIQuotaExceededError,
-  APIRequestError,
+  createGenerationRequestError,
   GenerationCancelledError,
   NoChangesError,
   createEmptyFinalResponseError,
@@ -419,7 +419,7 @@ function throwMappedOpenAIError(error: unknown): never {
   if (status === tooManyRequestsStatus || message.includes('rate limit')) {
     throw new APIQuotaExceededError(message);
   }
-  throw new APIRequestError(message);
+  throw createGenerationRequestError(error);
 }
 
 function createOpenAIRetryOptions(params: {

@@ -16,6 +16,8 @@ export const jaLocale: LocaleTextBundle = {
             args.details,
           )
         : 'APIクォータを超過しました。',
+    'api.modelCompatibility': () =>
+      '選択したモデルは、現在の生成モードまたはリクエスト設定に対応していない可能性があります。別のモデルをお試しください。',
     'api.requestFailed': (args) =>
       args.details?.trim()
         ? 'APIリクエストが失敗しました: {details}'.replace(

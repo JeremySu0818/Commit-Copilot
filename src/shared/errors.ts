@@ -72,6 +72,7 @@ export type CommitCopilotErrorMessageKey =
   | 'api.keyInvalid'
   | 'api.quotaExceeded'
   | 'api.requestFailed'
+  | 'api.modelCompatibility'
   | 'api.emptyResponse'
   | 'api.emptyTextResponse'
   | 'api.emptyFinalResponse'
@@ -167,6 +168,37 @@ export class APIRequestError extends CommitCopilotError {
     );
     this.name = 'APIRequestError';
   }
+}
+
+/** A rejected generation request is not proof that the model itself is unsupported. */
+export function createGenerationRequestError(error: unknown): APIRequestError {
+  if (error instanceof APIRequestError) {
+    return error;
+  }
+  const record =
+    typeof error === 'object' && error !== null
+      ? (error as Record<string, unknown>)
+      : {};
+  const response =
+    typeof record.response === 'object' && record.response !== null
+      ? (record.response as Record<string, unknown>)
+      : {};
+  const status =
+    record.status ??
+    record.statusCode ??
+    record.status_code ??
+    response.status ??
+    response.statusCode ??
+    record.code;
+  const details =
+    typeof record.message === 'string' ? record.message : String(error);
+  const badRequestStatus = 400;
+  return new APIRequestError(
+    details,
+    Number(status) === badRequestStatus
+      ? { messageKey: 'api.modelCompatibility' }
+      : {},
+  );
 }
 
 export class NoChangesError extends CommitCopilotError {

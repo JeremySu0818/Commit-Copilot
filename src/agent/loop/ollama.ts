@@ -17,7 +17,7 @@ import {
   throwIfCancellationRequested,
 } from '../../shared/cancellation';
 import {
-  APIRequestError,
+  createGenerationRequestError,
   GenerationCancelledError,
   NoChangesError,
   createEmptyFinalResponseError,
@@ -130,6 +130,7 @@ function rethrowMappedOllamaError(
   message: string,
   resolvedHost: string,
   modelName: string,
+  error: unknown,
 ): never {
   if (message.includes('ECONNREFUSED') || message.includes('connect')) {
     throw createOllamaConnectionError(resolvedHost);
@@ -137,7 +138,7 @@ function rethrowMappedOllamaError(
   if (message.includes('model') && message.includes('not found')) {
     throw createOllamaModelNotFoundError(modelName);
   }
-  throw new APIRequestError(message);
+  throw createGenerationRequestError(error);
 }
 
 function resolveStepLimit(maxAgentSteps: number | undefined): number {
@@ -553,6 +554,7 @@ async function runOllamaAgentLoop(options: AgentLoopOptions): Promise<string> {
       message,
       resolvedHost,
       pickNonEmpty(model, DEFAULT_MODELS.ollama),
+      error,
     );
   }
 }

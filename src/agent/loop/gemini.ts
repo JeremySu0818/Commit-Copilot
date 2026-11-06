@@ -18,6 +18,7 @@ import {
   APIKeyInvalidError,
   APIQuotaExceededError,
   APIRequestError,
+  createGenerationRequestError,
   GenerationCancelledError,
   NoChangesError,
   createEmptyFinalResponseError,
@@ -92,6 +93,8 @@ const geminiAuthMessagePatterns = [
   'unauthorized',
   'forbidden',
   'api key invalid',
+  'api key not valid',
+  'api_key_invalid',
   'invalid api key',
   'unauthenticated',
   'permission denied',
@@ -544,7 +547,7 @@ function throwMappedGeminiError(error: unknown): never {
   if (isGeminiQuotaError(error, message)) {
     throw new APIQuotaExceededError(message);
   }
-  throw new APIRequestError(message);
+  throw createGenerationRequestError(error);
 }
 
 interface GeminiClientLike {

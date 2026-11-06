@@ -13,6 +13,8 @@ export const koLocale: LocaleTextBundle = {
       args.details?.trim()
         ? 'API 할당량 초과: {details}'.replace('{details}', args.details)
         : 'API 할당량이 초과되었습니다.',
+    'api.modelCompatibility': () =>
+      '선택한 모델이 현재 생성 모드 또는 요청 설정을 지원하지 않을 수 있습니다. 다른 모델을 사용해 보세요.',
     'api.requestFailed': (args) =>
       args.details?.trim()
         ? 'API 요청 실패: {details}'.replace('{details}', args.details)

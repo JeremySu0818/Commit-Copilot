@@ -13,6 +13,8 @@ export const ptBRLocale: LocaleTextBundle = {
       args.details?.trim()
         ? 'Cota de API excedida: {details}'.replace('{details}', args.details)
         : 'Cota de API excedida.',
+    'api.modelCompatibility': () =>
+      'O modelo selecionado pode não ser compatível com o modo de geração ou as configurações atuais da solicitação. Tente outro modelo.',
     'api.requestFailed': (args) =>
       args.details?.trim()
         ? 'Falha na requisição da API: {details}'.replace(

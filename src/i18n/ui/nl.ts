@@ -16,6 +16,8 @@ export const nlLocale: LocaleTextBundle = {
             args.details,
           )
         : 'API-quotum overschreden.',
+    'api.modelCompatibility': () =>
+      'Het geselecteerde model ondersteunt mogelijk de huidige generatiemodus of aanvraaginstellingen niet. Probeer een ander model.',
     'api.requestFailed': (args) =>
       args.details?.trim()
         ? 'API-verzoek mislukt: {details}'.replace('{details}', args.details)

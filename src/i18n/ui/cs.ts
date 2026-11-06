@@ -13,6 +13,8 @@ export const csLocale: LocaleTextBundle = {
       args.details?.trim()
         ? 'Překročen limit API: {details}'.replace('{details}', args.details)
         : 'Překročen limit API.',
+    'api.modelCompatibility': () =>
+      'Vybraný model nemusí podporovat aktuální režim generování nebo nastavení požadavku. Zkuste jiný model.',
     'api.requestFailed': (args) =>
       args.details?.trim()
         ? 'Požadavek API selhal: {details}'.replace('{details}', args.details)

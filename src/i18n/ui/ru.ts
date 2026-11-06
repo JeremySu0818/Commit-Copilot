@@ -16,6 +16,8 @@ export const ruLocale: LocaleTextBundle = {
       args.details?.trim()
         ? 'Лимит API исчерпан: {details}'.replace('{details}', args.details)
         : 'Лимит API исчерпан.',
+    'api.modelCompatibility': () =>
+      'Выбранная модель может не поддерживать текущий режим генерации или параметры запроса. Попробуйте другую модель.',
     'api.requestFailed': (args) =>
       args.details?.trim()
         ? 'Ошибка запроса к API: {details}'.replace('{details}', args.details)

@@ -13,6 +13,8 @@ export const arLocale: LocaleTextBundle = {
       args.details?.trim()
         ? 'تم تجاوز حصة API: {details}'.replace('{details}', args.details)
         : 'تم تجاوز حصة API.',
+    'api.modelCompatibility': () =>
+      'قد لا يدعم النموذج المحدد وضع التوليد أو إعدادات الطلب الحالية. يُرجى تجربة نموذج آخر.',
     'api.requestFailed': (args) =>
       args.details?.trim()
         ? 'فشل طلب API: {details}'.replace('{details}', args.details)

@@ -13,6 +13,8 @@ export const zhTWLocale: LocaleTextBundle = {
       args.details?.trim()
         ? 'API 配額已用盡：{details}'.replace('{details}', args.details)
         : 'API 配額已用盡。',
+    'api.modelCompatibility': () =>
+      '所選模型可能不支援目前的生成模式或請求設定。請嘗試其他模型。',
     'api.requestFailed': (args) =>
       args.details?.trim()
         ? 'API 請求失敗：{details}'.replace('{details}', args.details)

@@ -24,6 +24,7 @@ import {
   APIKeyInvalidError,
   APIQuotaExceededError,
   APIRequestError,
+  createGenerationRequestError,
   GenerationCancelledError,
   NoChangesError,
   createEmptyResponseError,
@@ -74,6 +75,8 @@ const geminiAuthMessagePatterns = [
   'unauthorized',
   'forbidden',
   'api key invalid',
+  'api key not valid',
+  'api_key_invalid',
   'invalid api key',
   'unauthenticated',
   'permission denied',
@@ -238,6 +241,7 @@ function rethrowMappedOllamaClientError(
   message: string,
   host: string,
   modelName: string,
+  error: unknown,
 ): never {
   if (message.includes('ECONNREFUSED') || message.includes('connect')) {
     throw createOllamaConnectionError(host);
@@ -245,7 +249,7 @@ function rethrowMappedOllamaClientError(
   if (message.includes('model') && message.includes('not found')) {
     throw createOllamaModelNotFoundError(modelName);
   }
-  throw new APIRequestError(message);
+  throw createGenerationRequestError(error);
 }
 
 function isGeminiAuthError(error: unknown, message: string): boolean {
@@ -426,7 +430,7 @@ export class GeminiClient implements ILLMClient {
         throw new APIQuotaExceededError(message);
       }
 
-      throw new APIRequestError(message);
+      throw createGenerationRequestError(error);
     }
   }
 }
@@ -563,7 +567,7 @@ export class OpenAIClient implements ILLMClient {
         throw new APIQuotaExceededError(message);
       }
 
-      throw new APIRequestError(message);
+      throw createGenerationRequestError(error);
     }
   }
 }
@@ -709,7 +713,7 @@ export class AnthropicClient implements ILLMClient {
         throw new APIQuotaExceededError(message);
       }
 
-      throw new APIRequestError(message);
+      throw createGenerationRequestError(error);
     }
   }
 }
@@ -824,7 +828,7 @@ export class OllamaClient implements ILLMClient {
       }
 
       const message = getErrorMessage(error);
-      rethrowMappedOllamaClientError(message, this.host, this.model);
+      rethrowMappedOllamaClientError(message, this.host, this.model, error);
     }
   }
 }

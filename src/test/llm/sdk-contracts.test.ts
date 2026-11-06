@@ -96,6 +96,46 @@ function textStream(): Response {
 }
 
 for (const provider of providers) {
+  void test(`real ${provider} HTTP 400 shows model compatibility guidance`, async (t) => {
+    const badRequestStatus = 400;
+    captureSdkRequests(t, (request) => {
+      if (request.url.pathname === '/api/tags') {
+        return Response.json({
+          models: [{ name: 'contract-model', model: 'contract-model' }],
+        });
+      }
+      const message = 'Unsupported generation setting';
+      return Response.json(
+        provider === 'ollama'
+          ? { error: message }
+          : {
+              error: {
+                code: badRequestStatus,
+                message,
+                status: 'INVALID_ARGUMENT',
+                type: 'invalid_request_error',
+              },
+            },
+        { status: badRequestStatus },
+      );
+    });
+    await assert.rejects(
+      createLLMClient({
+        provider,
+        apiKey: provider === 'ollama' ? 'http://localhost:11434' : KEY,
+        model: provider === 'google' ? 'gemini-contract' : 'contract-model',
+      }).generateCommitMessage(DIFF),
+      (error: unknown) => {
+        assert.ok(error instanceof APIRequestError);
+        assert.equal(error.messageKey, 'api.modelCompatibility');
+        assert.match(error.message, /Unsupported generation setting/);
+        return true;
+      },
+    );
+  });
+}
+
+for (const provider of providers) {
   void test(`real ${provider} SDK direct generation uses its documented protocol`, async (t) => {
     const calls = captureSdkRequests(t, (request) => {
       if (request.url.pathname === '/api/tags') {

@@ -19,6 +19,8 @@ export const deLocale: LocaleTextBundle = {
             args.details,
           )
         : 'API-Kontingent überschritten.',
+    'api.modelCompatibility': () =>
+      'Das ausgewählte Modell unterstützt möglicherweise den aktuellen Generierungsmodus oder die Anfrageeinstellungen nicht. Bitte versuchen Sie ein anderes Modell.',
     'api.requestFailed': (args) =>
       args.details?.trim()
         ? 'API-Anfrage fehlgeschlagen: {details}'.replace(

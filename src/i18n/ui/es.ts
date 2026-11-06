@@ -13,6 +13,8 @@ export const esLocale: LocaleTextBundle = {
       args.details?.trim()
         ? 'Cuota de API excedida: {details}'.replace('{details}', args.details)
         : 'Cuota de API excedida.',
+    'api.modelCompatibility': () =>
+      'Es posible que el modelo seleccionado no admita el modo de generación o la configuración de solicitud actuales. Prueba con otro modelo.',
     'api.requestFailed': (args) =>
       args.details?.trim()
         ? 'Error en la solicitud de API: {details}'.replace(
