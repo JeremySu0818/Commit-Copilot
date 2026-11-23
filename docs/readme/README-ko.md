@@ -267,6 +267,7 @@ Agentic 모드에서는 설정에서 "모든 diff 조회 필수" 옵션을 활�
 - **액티비티 바(Activity Bar)** 전용 아이콘
 - **소스 제어(SCM) 내비게이션 바** 마법봉 아이콘
 - **명령 팔레트(Command Palette)**
+- **키보드 단축키** `Ctrl+Alt+G`(macOS는 `Cmd+Option+G`)
 
 생성된 메시지는 표준 SCM 입력창에 자동 입력되어 커밋 전 자유롭게 검토하고 수정할 수 있습니다.
 
@@ -396,6 +397,15 @@ Anthropic 호환 엔드포인트의 경우 최대 출력 토큰 수(max_tokens)�
    - Windows/Linux: `Ctrl+Shift+P`
    - macOS: `Cmd+Shift+P`
 2. **Commit-Copilot: Generate Commit Message**를 실행합니다.
+
+### 방법 D: 키보드 단축키
+
+`Ctrl+Alt+G`(macOS는 `Cmd+Option+G`)를 누르면 **Commit-Copilot: Generate Commit Message** 명령이 실행되며, 소스 제어(SCM) 내비게이션 바의 마법봉 아이콘을 클릭한 것과 동일한 동작입니다.
+
+- 에디터나 임의의 사이드 패널에서도 바로 실행할 수 있어 현재 파일을 떠나지 않아도 됩니다.
+- 통합 터미널에서는 VS Code 고유의 `Ctrl+Alt+G` 동작이 그대로 유지됩니다.
+- 생성 중인 상태에서 다시 누르면 무시됩니다. **생성 취소**로 멈출 수 있습니다.
+- 키를 변경하려면 **키보드 단축키**(`Ctrl+K Ctrl+S`, macOS는 `Cmd+K Cmd+S`)를 열고 **Commit-Copilot: Generate Commit Message**를 검색하세요.
 
 ### 검토 및 커밋
 

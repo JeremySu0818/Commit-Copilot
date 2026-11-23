@@ -267,6 +267,7 @@ Uruchamiaj Commit-Copilot za pomocą:
 - Paska bocznego (**Activity Bar**)
 - Paska nawigacji w widoku **Source Control** (ikona różdżki)
 - Palety poleceń (**Command Palette**)
+- Skrótu klawiaturowego **`Ctrl+Alt+G`** (na macOS: `Cmd+Option+G`)
 
 Wygenerowana wiadomość jest wstawiana do standardowego pola tekstowego Source Control, gdzie można ją przejrzeć i zmodyfikować przed zatwierdzeniem.
 
@@ -396,6 +397,15 @@ Dla punktów końcowych zgodnych z Anthropic można również skonfigurować mak
    - Windows/Linux: `Ctrl+Shift+P`
    - macOS: `Cmd+Shift+P`
 2. Uruchom polecenie **Commit-Copilot: Generate Commit Message**.
+
+### Sposób D: skrót klawiaturowy
+
+Naciśnij `Ctrl+Alt+G` (na macOS: `Cmd+Option+G`), aby uruchomić **Commit-Copilot: Generate Commit Message** – tę samą akcję co ikona różdżki na pasku nawigacyjnym Source Control.
+
+- Skrót działa w edytorze i w każdym panelu bocznym, bez opuszczania bieżącego pliku.
+- W terminalu integrowanym zachowane zostaje własne zachowanie `Ctrl+Alt+G` w VS Code.
+- Naciśnięcie podczas trwającego generowania jest ignorowane; użyj **Anuluj generowanie**, aby je zatrzymać.
+- Aby zmienić klawisz, otwórz **Skróty klawiaturowe** (`Ctrl+K Ctrl+S`, na macOS: `Cmd+K Cmd+S`) i wyszukaj **Commit-Copilot: Generate Commit Message**.
 
 ### Przegląd i zatwierdzanie
 

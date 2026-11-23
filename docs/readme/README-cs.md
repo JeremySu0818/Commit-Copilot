@@ -267,6 +267,7 @@ Spusťte Commit-Copilot odkudkoli:
 - Ikona na **Panelu aktivit (Activity Bar)**
 - Ikona kouzelné hůlky v záhlaví **Správy zdrojového kódu (Source Control)**
 - Příkaz v **Paletě příkazů (Command Palette)**
+- Klávesová zkratka `Ctrl+Alt+G` (na macOS: `Cmd+Option+G`)
 
 Vygenerovaná zpráva se vloží do standardního vstupního pole Source Control, kde ji lze před potvrzením zkontrolovat a upravit.
 
@@ -396,6 +397,15 @@ U koncových bodů kompatibilních s Anthropic lze rovněž nastavit maximální
    - Windows/Linux: `Ctrl+Shift+P`
    - macOS: `Cmd+Shift+P`
 2. Spusťte příkaz **Commit-Copilot: Generate Commit Message**.
+
+### Metoda D: klávesová zkratka
+
+Stisknutím `Ctrl+Alt+G` (na macOS: `Cmd+Option+G`) spustíte příkaz **Commit-Copilot: Generate Commit Message**, tedy stejnou akcihu jako kliknutí na ikonu kouzelné hůlky v záhlaví Source Control.
+
+- Zkratka funguje z editoru i jakéhokoli bočního panelu, bez toho, abyste opustili aktuální soubor.
+- Integrovaný terminál si zachovává vlastní chování `Ctrl+Alt+G` ve VS Code.
+- Během generování se další stisknutí ignoruje; zastav ho příkazem **Zrušit generování**.
+- Klávesu změníte tak, že otevřete **Klávesové zkratky** (`Ctrl+K Ctrl+S`, na macOS: `Cmd+K Cmd+S`) a vyhledáte **Commit-Copilot: Generate Commit Message**.
 
 ### Kontrola a potvrzení
 

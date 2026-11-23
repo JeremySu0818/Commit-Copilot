@@ -267,6 +267,7 @@ Starten Sie Commit-Copilot über:
 - Das Symbol in der **Aktivitätsleiste (Activity Bar)**
 - Die Zauberstab-Schaltfläche in der **Navigationsleiste der Quellcodeverwaltung (SCM)**
 - Die **Befehlspalette (Command Palette)**
+- Das Tastenkürzel `Strg+Alt+G` (macOS: `Cmd+Option+G`)
 
 Generierte Nachrichten werden direkt in das Standard-Eingabefeld der Quellcodeverwaltung eingefügt, wo sie vor dem Commit geprüft und frei angepasst werden können.
 
@@ -396,6 +397,15 @@ Für Anthropic-kompatible Endpunkte kann zusätzlich das Token-Limit über `max_
    - Windows/Linux: `Strg+Umschalt+P`
    - macOS: `Cmd+Umschalt+P`
 2. Führen Sie den Befehl **Commit-Copilot: Commit-Nachricht generieren** aus.
+
+### Methode D: Tastenkürzel
+
+Drücken Sie `Strg+Alt+G` (macOS: `Cmd+Option+G`), um **Commit-Copilot: Commit-Nachricht generieren** auszuführen – dieselbe Aktion wie die Zauberstab-Schaltfläche in der Navigationsleiste der Quellcodeverwaltung.
+
+- Das Kürzel funktioniert im Editor und in jedem Seitenpanel, ohne dass Sie die aktuelle Datei verlassen müssen.
+- Im integrierten Terminal bleibt VS Codes eigene `Strg+Alt+G`-Funktion erhalten.
+- Während einer laufenden Generierung wird das Kürzel ignoriert; beenden Sie sie mit **Generierung abbrechen**.
+- Zum Ändern des Kürzels öffnen Sie **Tastenkürzel** (`Strg+K Strg+S`, macOS: `Cmd+K Cmd+S`) und suchen nach **Commit-Copilot: Commit-Nachricht generieren**.
 
 ### Prüfen und committen
 

@@ -267,6 +267,7 @@ Khởi chạy Commit-Copilot thuận tiện từ:
 - Biểu tượng chuyên dụng trên **Thanh hoạt động (Activity Bar)**
 - Nút cây đũa thần trên **Thanh điều hướng Kiểm soát nguồn (SCM)**
 - **Bảng lệnh (Command Palette)**
+- **Phím tắt** `Ctrl+Alt+G` (macOS: `Cmd+Option+G`)
 
 Thông điệp tạo ra sẽ tự động điền vào hộp nhập SCM tiêu chuẩn của VS Code để bạn xem lại và chỉnh sửa trước khi commit.
 
@@ -396,6 +397,15 @@ Sau khi cài đặt, mở một kho lưu trữ Git trong VS Code và nhấp vào
    - Windows/Linux: `Ctrl+Shift+P`
    - macOS: `Cmd+Shift+P`
 2. Chạy lệnh **Commit-Copilot: Generate Commit Message**.
+
+### Cách D: Phím tắt
+
+Nhấn `Ctrl+Alt+G` (macOS: `Cmd+Option+G`) để chạy lệnh **Commit-Copilot: Generate Commit Message**, cùng chức năng với nút cây đũa thần trên thanh điều hướng Source Control.
+
+- Phím tắt hoạt động trong editor hoặc bất kỳ panel bên nào, không cần rời khỏi file hiện tại.
+- Terminal tích hợp vẫn giữ hành vi `Ctrl+Alt+G` riêng của VS Code.
+- Khi đang tạo thông điệp, nhấn lại sẽ bị bỏ qua; dùng **Hủy tạo** để dừng.
+- Để đổi phím, mở **Phím tắt** (`Ctrl+K Ctrl+S`, macOS: `Cmd+K Cmd+S`) và tìm **Commit-Copilot: Generate Commit Message**.
 
 ### Xem lại và commit
 

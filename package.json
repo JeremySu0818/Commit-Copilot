@@ -2,7 +2,7 @@
   "name": "commit-copilot",
   "displayName": "%extension.displayName%",
   "description": "%extension.description%",
-  "version": "1.24.0",
+  "version": "1.25.0",
   "publisher": "JeremySu0818",
   "icon": "assets/icon.png",
   "repository": {
@@ -53,6 +53,14 @@
         "title": "%command.openAbout.title%",
         "category": "Commit-Copilot",
         "icon": "$(info)"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "commit-copilot.generate",
+        "key": "ctrl+alt+g",
+        "mac": "cmd+alt+g",
+        "when": "!terminalFocus"
       }
     ],
     "menus": {

@@ -267,6 +267,7 @@ Lancez Commit-Copilot depuis :
 - La **Barre d'activité (Activity Bar)**
 - L'icône de baguette magique dans la **barre de navigation du contrôle de code source (SCM)**
 - La **Palette de commandes (Command Palette)**
+- Le **raccourci clavier** `Ctrl+Alt+G` (macOS : `Cmd+Option+G`)
 
 Les messages générés sont directement insérés dans le champ de saisie standard du SCM, où ils peuvent être révisés et ajustés avant d'être validés.
 
@@ -396,6 +397,15 @@ Pour les points de terminaison compatibles Anthropic, la limite de jetons de sor
    - Windows/Linux : `Ctrl+Shift+P`
    - macOS : `Cmd+Shift+P`
 2. Exécutez la commande **Commit-Copilot: Générer le message de commit**.
+
+### Méthode D : raccourci clavier
+
+Appuyez sur `Ctrl+Alt+G` (macOS : `Cmd+Option+G`) pour exécuter **Commit-Copilot: Générer le message de commit**, la même action que le bouton baguette magique de la barre de navigation du SCM.
+
+- Le raccourci fonctionne depuis l'éditeur ou tout panneau latéral, sans quitter le fichier courant.
+- Le terminal intégré conserve le comportement de `Ctrl+Alt+G` propre à VS Code.
+- Une nouvelle pression pendant une génération en cours est ignorée ; utilisez **Annuler la génération** pour l'arrêter.
+- Pour changer la touche, ouvrez **Raccourcis clavier** (`Ctrl+K Ctrl+S`, macOS : `Cmd+K Cmd+S`) et recherchez **Commit-Copilot: Générer le message de commit**.
 
 ### Révision et commit
 

@@ -267,6 +267,7 @@ Commit-Copilot'u dilediğiniz yerden başlatın:
 - **Etkinlik Çubuğu (Activity Bar)** simgesi
 - **Kaynak Denetimi (Source Control)** gezinti çubuğundaki sihirli değnek simgesi
 - **Komut Paleti (Command Palette)**
+- **`Ctrl+Alt+G` klavye kısayolu** (macOS: `Cmd+Option+G`)
 
 Oluşturulan mesajlar, commit öncesinde incelenebilecekleri ve düzenlenebilecekleri standart Kaynak Denetimi kutusuna otomatik yazılır.
 
@@ -396,6 +397,15 @@ Anthropic uyumlu uç noktalar için maksimum çıktı token sınırı (`max_toke
    - Windows/Linux: `Ctrl+Shift+P`
    - macOS: `Cmd+Shift+P`
 2. **Commit-Copilot: Generate Commit Message** komutunu çalıştırın.
+
+### Yöntem D: Klavye Kısayolu
+
+**Commit-Copilot: Generate Commit Message** komutunu çalıştırmak için `Ctrl+Alt+G` (macOS: `Cmd+Option+G`) tuşlarına basın; Kaynak Denetimi gezinti çubuğundaki sihirli değnek simgesine tıklamakla aynı işlemdir.
+
+- Kısayol, editörden veya herhangi bir yan panelden çalışır; mevcut dosyadan ayrılmanıza gerek kalmaz.
+- Entegre terminalde VS Code'un kendi `Ctrl+Alt+G` davranışı korunur.
+- Bir oluşturma sürerken tekrar basmak göz ardı edilir; durdurmak için **Oluşturmayı İptal Et** komutunu kullanın.
+- Tuşu değiştirmek için **Klavye Kısayolları** (`Ctrl+K Ctrl+S`, macOS: `Cmd+K Cmd+S`) penceresini açın ve **Commit-Copilot: Generate Commit Message** yazarak arayın.
 
 ### İnceleme ve Commit
 

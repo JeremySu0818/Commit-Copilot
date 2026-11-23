@@ -267,6 +267,7 @@ Agentic 模式可選用「要求完整檢查所有差異」選項。在設定中
 - **活動列（Activity Bar）** 專屬圖示
 - **原始檔控制（SCM）導覽列** 快捷魔棒按鈕
 - **命令選擇區（Command Palette）**
+- **鍵盤快捷鍵** `Ctrl+Alt+G`（macOS 為 `Cmd+Option+G`）
 
 產生的訊息會自動填入 VS Code 標準 SCM 輸入框中，供提交前審閱與自由修改。
 
@@ -408,6 +409,15 @@ Qwen 改用串流生成與官方分頁模型目錄。其他區域或 Workspace �
    - Windows/Linux：`Ctrl+Shift+P`
    - macOS：`Cmd+Shift+P`
 2. 執行 **Commit-Copilot: Generate Commit Message**。
+
+### 方式 D：鍵盤快捷鍵
+
+按下 `Ctrl+Alt+G`（macOS 為 `Cmd+Option+G`）即可執行 **Commit-Copilot: Generate Commit Message**，效果與點擊原始檔控制導覽列中的魔棒按鈕完全相同。
+
+- 在編輯器或任意側邊面板中皆可直接觸發，無需先切換到原始檔控制視圖。
+- 整合終端機仍保留 VS Code 原有的 `Ctrl+Alt+G` 行為。
+- 正在產生時再次按下將被忽略，可使用 **取消產生** 停止。
+- 如需修改按鍵，開啟 **鍵盤快捷鍵**（`Ctrl+K Ctrl+S`，macOS 為 `Cmd+K Cmd+S`），搜尋 **Commit-Copilot: Generate Commit Message** 即可重新綁定。
 
 ### 審閱與提交
 

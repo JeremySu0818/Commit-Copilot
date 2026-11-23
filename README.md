@@ -267,6 +267,7 @@ Launch Commit-Copilot from:
 - The **Activity Bar**
 - The **Source Control navigation bar**
 - The **Command Palette**
+- The **keyboard shortcut** `Ctrl+Alt+G` (macOS: `Cmd+Option+G`)
 
 Generated messages are inserted into the standard Source Control input box, where they can be reviewed and edited before committing.
 
@@ -408,6 +409,15 @@ For Anthropic-compatible endpoints, the maximum output token value can also be c
    - Windows/Linux: `Ctrl+Shift+P`
    - macOS: `Cmd+Shift+P`
 2. Run **Commit-Copilot: Generate Commit Message**.
+
+### Method D: Keyboard Shortcut
+
+Press `Ctrl+Alt+G` (macOS: `Cmd+Option+G`) to run **Commit-Copilot: Generate Commit Message**, the same action as the wand button in the Source Control navigation bar.
+
+- Works from the editor or any side panel, so you can generate a message without leaving your current file.
+- The integrated terminal keeps VS Code's own `Ctrl+Alt+G` behaviour.
+- Pressing it again while a generation is running is ignored; use **Cancel Generation** to stop it.
+- To reassign the key, open **Keyboard Shortcuts** (`Ctrl+K Ctrl+S`, macOS: `Cmd+K Cmd+S`) and search for **Commit-Copilot: Generate Commit Message**.
 
 ### Review and commit
 

@@ -267,6 +267,7 @@ Start Commit-Copilot vanuit:
 - De **Activiteitenbalk (Activity Bar)**
 - Het toverstaf-icoon in de **navigatiebalk van Source Control (SCM)**
 - Het **Opdrachtenpalet (Command Palette)**
+- De **sneltoets** `Ctrl+Alt+G` (macOS: `Cmd+Option+G`)
 
 Gegenereerde berichten worden rechtstreeks in het standaard invoerveld van Source Control geplaatst, waar ze vóór het committen kunnen worden beoordeeld en bewerkt.
 
@@ -396,6 +397,15 @@ Voor Anthropic-compatibele eindpunten kan ook de maximale uitvoertokenlimiet (`m
    - Windows/Linux: `Ctrl+Shift+P`
    - macOS: `Cmd+Shift+P`
 2. Voer de opdracht **Commit-Copilot: Genereer Commitbericht** uit.
+
+### Methode D: sneltoets
+
+Druk op `Ctrl+Alt+G` (macOS: `Cmd+Option+G`) om **Commit-Copilot: Genereer Commitbericht** uit te voeren, dezelfde actie als het toverstaf-icoon in de navigatiebalk van Source Control.
+
+- De sneltoets werkt vanaf de editor of elk sidepaneel, zonder dat u uw huidige bestand hoeft te verlaten.
+- De geïntegreerde terminal behoudt het eigen `Ctrl+Alt+G`-gedrag van VS Code.
+- Tijdens een laufende generatie wordt een nieuwe toetsaanslag genegeerd; gebruik **Annuleer Generatie** om te stoppen.
+- Om de toets te wijzigen opent u **Sneltoetsen** (`Ctrl+K Ctrl+S`, macOS: `Cmd+K Cmd+S`) en zoekt u op **Commit-Copilot: Genereer Commitbericht**.
 
 ### Beoordelen en committen
 

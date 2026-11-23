@@ -1,7 +1,5 @@
 # Commit Copilot Informações da atualização
 
-## Novidades da versão 1.24.0
+## Novidades da versão 1.25.0
 
-- SDKs de IA e APIs dos provedores atualizados, com descoberta dinâmica de modelos. A disponibilidade e a compatibilidade dependem do provedor e da conta. Os nomes dos modelos não são mais definidos diretamente na lista.
-- Melhorado o suporte a OpenAI Responses, endpoints personalizados, Qwen e modelos Ollama locais.
-- Quando uma solicitação de geração recebe HTTP 400, é sugerido tentar outro modelo, pois o modelo ou as configurações podem não ser compatíveis.
+- Adicionado um atalho de teclado para gerar mensagens de commit: `Ctrl+Alt+G` (`Cmd+Option+G` no macOS), a mesma ação do ícone de varinha mágica do Source Control. Ele pode ser alterado nos Atalhos de Teclado.

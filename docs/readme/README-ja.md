@@ -267,6 +267,7 @@ Agentic モードでは、設定で「すべての差分の取得を必須にす
 - **アクティビティバー（Activity Bar）** の専用アイコン
 - **ソース管理（SCM）ナビゲーションバー** の魔法の杖アイコン
 - **コマンドパレット（Command Palette）**
+- **キーボードショートカット** `Ctrl+Alt+G`（macOS は `Cmd+Option+G`）
 
 生成されたメッセージは標準の SCM 入力欄に自動入力され、コミット前に自由に確認・編集できます。
 
@@ -396,6 +397,15 @@ Anthropic 互換エンドポイントでは、最大出力トークン数（max_
    - Windows/Linux: `Ctrl+Shift+P`
    - macOS: `Cmd+Shift+P`
 2. **Commit-Copilot: Generate Commit Message** を実行します。
+
+### 方法 D：キーボードショートカット
+
+`Ctrl+Alt+G`（macOS は `Cmd+Option+G`）を押すと **Commit-Copilot: Generate Commit Message** が実行され、ソース管理（SCM）ナビゲーションバーの魔法の杖アイコンをクリックしたときと同じ動作になります。
+
+- エディタや任意のサイドパネルから実行でき、現在のファイルから離れる必要はありません。
+- VS Code のターミナルでは `Ctrl+Alt+G` の標準動作が維持されます。
+- 生成中の再実行は無視されます。**生成をキャンセル** で停止できます。
+- キーを変更するには **キーボードショートカット**（`Ctrl+K Ctrl+S`、macOS は `Cmd+K Cmd+S`）を開き、**Commit-Copilot: Generate Commit Message** で検索してください。
 
 ### レビューとコミット
 
