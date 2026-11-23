@@ -400,12 +400,12 @@ Anthropic uyumlu uç noktalar için maksimum çıktı token sınırı (`max_toke
 
 ### Yöntem D: Klavye Kısayolu
 
-**Commit-Copilot: Generate Commit Message** komutunu çalıştırmak için `Ctrl+Alt+G` (macOS: `Cmd+Option+G`) tuşlarına basın; Kaynak Denetimi gezinti çubuğundaki sihirli değnek simgesine tıklamakla aynı işlemdir.
+**Commit-Copilot: Commit Mesajı Oluştur** komutunu çalıştırmak için `Ctrl+Alt+G` (macOS: `Cmd+Option+G`) tuşlarına basın; Kaynak Denetimi gezinti çubuğundaki sihirli değnek simgesine tıklamakla aynı işlemdir.
 
 - Kısayol, editörden veya herhangi bir yan panelden çalışır; mevcut dosyadan ayrılmanıza gerek kalmaz.
 - Entegre terminalde VS Code'un kendi `Ctrl+Alt+G` davranışı korunur.
 - Bir oluşturma sürerken tekrar basmak göz ardı edilir; durdurmak için **Oluşturmayı İptal Et** komutunu kullanın.
-- Tuşu değiştirmek için **Klavye Kısayolları** (`Ctrl+K Ctrl+S`, macOS: `Cmd+K Cmd+S`) penceresini açın ve **Commit-Copilot: Generate Commit Message** yazarak arayın.
+- Tuşu değiştirmek için **Klavye Kısayolları** (`Ctrl+K Ctrl+S`, macOS: `Cmd+K Cmd+S`) penceresini açın ve **Commit-Copilot: Commit Mesajı Oluştur** yazarak arayın.
 
 ### İnceleme ve Commit
 

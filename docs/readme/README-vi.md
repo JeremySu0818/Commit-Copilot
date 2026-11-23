@@ -400,12 +400,12 @@ Sau khi cài đặt, mở một kho lưu trữ Git trong VS Code và nhấp vào
 
 ### Cách D: Phím tắt
 
-Nhấn `Ctrl+Alt+G` (macOS: `Cmd+Option+G`) để chạy lệnh **Commit-Copilot: Generate Commit Message**, cùng chức năng với nút cây đũa thần trên thanh điều hướng Source Control.
+Nhấn `Ctrl+Alt+G` (macOS: `Cmd+Option+G`) để chạy lệnh **Commit-Copilot: Tạo thông báo commit**, cùng chức năng với nút cây đũa thần trên thanh điều hướng Source Control.
 
-- Phím tắt hoạt động trong editor hoặc bất kỳ panel bên nào, không cần rời khỏi file hiện tại.
+- Phím tắt hoạt động trong trình chỉnh sửa hoặc bất kỳ bảng điều khiển bên nào, không cần rời khỏi tệp hiện tại.
 - Terminal tích hợp vẫn giữ hành vi `Ctrl+Alt+G` riêng của VS Code.
 - Khi đang tạo thông điệp, nhấn lại sẽ bị bỏ qua; dùng **Hủy tạo** để dừng.
-- Để đổi phím, mở **Phím tắt** (`Ctrl+K Ctrl+S`, macOS: `Cmd+K Cmd+S`) và tìm **Commit-Copilot: Generate Commit Message**.
+- Để đổi phím, mở **Phím tắt** (`Ctrl+K Ctrl+S`, macOS: `Cmd+K Cmd+S`) và tìm **Commit-Copilot: Tạo thông báo commit**.
 
 ### Xem lại và commit
 

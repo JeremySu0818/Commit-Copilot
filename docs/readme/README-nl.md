@@ -402,9 +402,9 @@ Voor Anthropic-compatibele eindpunten kan ook de maximale uitvoertokenlimiet (`m
 
 Druk op `Ctrl+Alt+G` (macOS: `Cmd+Option+G`) om **Commit-Copilot: Genereer Commitbericht** uit te voeren, dezelfde actie als het toverstaf-icoon in de navigatiebalk van Source Control.
 
-- De sneltoets werkt vanaf de editor of elk sidepaneel, zonder dat u uw huidige bestand hoeft te verlaten.
+- De sneltoets werkt vanaf de editor of elk zijpaneel, zonder dat u uw huidige bestand hoeft te verlaten.
 - De geïntegreerde terminal behoudt het eigen `Ctrl+Alt+G`-gedrag van VS Code.
-- Tijdens een laufende generatie wordt een nieuwe toetsaanslag genegeerd; gebruik **Annuleer Generatie** om te stoppen.
+- Tijdens een lopende generatie wordt een nieuwe toetsaanslag genegeerd; gebruik **Annuleer Generatie** om te stoppen.
 - Om de toets te wijzigen opent u **Sneltoetsen** (`Ctrl+K Ctrl+S`, macOS: `Cmd+K Cmd+S`) en zoekt u op **Commit-Copilot: Genereer Commitbericht**.
 
 ### Beoordelen en committen

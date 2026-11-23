@@ -400,12 +400,12 @@ Agentic 模式可选用“要求完整检查所有差异”选项。在设置中
 
 ### 方式 D：键盘快捷键
 
-按下 `Ctrl+Alt+G`（macOS 为 `Cmd+Option+G`）即可执行 **Commit-Copilot: Generate Commit Message**，效果与点击源代码管理导航栏中的魔棒按钮完全相同。
+按下 `Ctrl+Alt+G`（macOS 为 `Cmd+Option+G`）即可执行 **Commit-Copilot: 生成 Commit 信息**，效果与点击源代码管理导航栏中的魔棒按钮完全相同。
 
 - 在编辑器或任意侧边面板中都能直接触发，无需先切换到源代码管理视图。
 - 集成终端仍保留 VS Code 原有的 `Ctrl+Alt+G` 行为。
 - 正在生成时再次按下会被忽略，可使用 **取消生成** 停止。
-- 如需修改按键，打开 **键盘快捷键**（`Ctrl+K Ctrl+S`，macOS 为 `Cmd+K Cmd+S`），搜索 **Commit-Copilot: Generate Commit Message** 即可重新绑定。
+- 如需修改按键，打开 **键盘快捷键**（`Ctrl+K Ctrl+S`，macOS 为 `Cmd+K Cmd+S`），搜索 **Commit-Copilot: 生成 Commit 信息** 即可重新绑定。
 
 ### 审阅与提交
 

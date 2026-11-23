@@ -400,12 +400,12 @@ Anthropic-kompatibilis végpontoknál a kimeneti tokenek felső határa (`max_to
 
 ### D módszer: billentyűkombináció
 
-A `Ctrl+Alt+G` (macOS-en: `Cmd+Option+G`) billentyűkombinációval indíthod el a **Commit-Copilot: Generate Commit Message** parancsot – ez ugyanaz a művelet, mint a Forrásvezérlés navigációs sávjában lévő varázspálca ikonra kattintás.
+A `Ctrl+Alt+G` (macOS-en: `Cmd+Option+G`) billentyűkombinációval indíthatja el a **Commit-Copilot: Commit üzenet generálása** parancsot – ez ugyanaz a művelet, mint a Forrásvezérlés navigációs sávjában lévő varázspálca ikonjára kattintás.
 
-- A kombináció a szerkesztőből vagy bármely oldalpanelről is működik, az aktuális fájlt elhagyás nélkül.
+- A kombináció a szerkesztőből vagy bármely oldalpanelről is működik, anélkül, hogy el kellene hagynia az aktuális fájlt.
 - Az integrált terminál megőrzi a VS Code saját `Ctrl+Alt+G` viselkedését.
-- Ha a generálás már fut, az újabb nyomás nem hat ki; a leállításhoz használd a **Generálás megszakítása** parancsot.
-- A billentyű átrendezéséhez nyitd meg a **Billentyűkombinációk** (`Ctrl+K Ctrl+S`, macOS-en: `Cmd+K Cmd+S`) ablakot, és keresd meg a **Commit-Copilot: Generate Commit Message** parancsot.
+- Ha a generálás már fut, a billentyűkombináció ismételt lenyomását a program figyelmen kívül hagyja; a leállításhoz használja a **Generálás megszakítása** parancsot.
+- A billentyűkombináció módosításához nyissa meg a **Billentyűkombinációk** (`Ctrl+K Ctrl+S`, macOS-en: `Cmd+K Cmd+S`) ablakot, és keresse meg a **Commit-Copilot: Commit üzenet generálása** parancsot.
 
 ### Áttekintés és véglegesítés
 

@@ -267,7 +267,7 @@ Jalankan Commit-Copilot dengan mudah melalui:
 - Ikon khusus di **Activity Bar**
 - Tombol tongkat sihir di bilah navigasi **Source Control (SCM)**
 - **Command Palette**
-- **Shortcut keyboard** `Ctrl+Alt+G` (macOS: `Cmd+Option+G`)
+- **Pintasan keyboard** `Ctrl+Alt+G` (macOS: `Cmd+Option+G`)
 
 Pesan yang dihasilkan otomatis dimasukkan ke dalam kotak input SCM standar VS Code agar dapat ditinjau dan disunting sebelum di-commit.
 
@@ -398,14 +398,14 @@ Untuk titik akhir yang kompatibel dengan Anthropic, nilai token output maksimum 
    - macOS: `Cmd+Shift+P`
 2. Jalankan **Commit-Copilot: Generate Commit Message**.
 
-### Metode D: Shortcut Keyboard
+### Metode D: Pintasan Keyboard
 
-Tekan `Ctrl+Alt+G` (macOS: `Cmd+Option+G`) untuk menjalankan **Commit-Copilot: Generate Commit Message**, sama seperti menekan tombol tongkat sihir di bilah navigasi Source Control.
+Tekan `Ctrl+Alt+G` (macOS: `Cmd+Option+G`) untuk menjalankan **Commit-Copilot: Hasilkan Pesan Komit**, sama seperti menekan tombol tongkat sihir di bilah navigasi Source Control.
 
-- Shortcut dapat digunakan dari editor atau panel samping mana pun tanpa meninggalkan file yang sedang dibuka.
+- Pintasan dapat digunakan dari editor atau panel samping mana pun tanpa meninggalkan file yang sedang dibuka.
 - Terminal terintegrasi tetap menggunakan perilaku `Ctrl+Alt+G` bawaan VS Code.
-- Tekan ulang saat proses pembuatan sedang berjalan akan diabaikan; gunakan **Batalkan Pembuatan** untuk menghentikannya.
-- Untuk mengganti tombol, buka **Shortcut Keyboard** (`Ctrl+K Ctrl+S`, macOS: `Cmd+K Cmd+S`) lalu cari **Commit-Copilot: Generate Commit Message**.
+- Penekanan ulang saat proses pembuatan sedang berjalan akan diabaikan; gunakan **Batalkan Pembuatan** untuk menghentikannya.
+- Untuk mengganti tombol, buka **Pintasan Keyboard** (`Ctrl+K Ctrl+S`, macOS: `Cmd+K Cmd+S`) lalu cari **Commit-Copilot: Hasilkan Pesan Komit**.
 
 ### Meninjau dan Commit
 

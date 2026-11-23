@@ -400,12 +400,12 @@ Dla punktów końcowych zgodnych z Anthropic można również skonfigurować mak
 
 ### Sposób D: skrót klawiaturowy
 
-Naciśnij `Ctrl+Alt+G` (na macOS: `Cmd+Option+G`), aby uruchomić **Commit-Copilot: Generate Commit Message** – tę samą akcję co ikona różdżki na pasku nawigacyjnym Source Control.
+Naciśnij `Ctrl+Alt+G` (na macOS: `Cmd+Option+G`), aby uruchomić **Commit-Copilot: Generuj komunikat commita** – tę samą akcję co ikona różdżki na pasku nawigacyjnym Source Control.
 
 - Skrót działa w edytorze i w każdym panelu bocznym, bez opuszczania bieżącego pliku.
 - W terminalu integrowanym zachowane zostaje własne zachowanie `Ctrl+Alt+G` w VS Code.
 - Naciśnięcie podczas trwającego generowania jest ignorowane; użyj **Anuluj generowanie**, aby je zatrzymać.
-- Aby zmienić klawisz, otwórz **Skróty klawiaturowe** (`Ctrl+K Ctrl+S`, na macOS: `Cmd+K Cmd+S`) i wyszukaj **Commit-Copilot: Generate Commit Message**.
+- Aby zmienić klawisz, otwórz **Skróty klawiaturowe** (`Ctrl+K Ctrl+S`, na macOS: `Cmd+K Cmd+S`) i wyszukaj **Commit-Copilot: Generuj komunikat commita**.
 
 ### Przegląd i zatwierdzanie
 

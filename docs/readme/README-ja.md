@@ -400,12 +400,12 @@ Anthropic 互換エンドポイントでは、最大出力トークン数（max_
 
 ### 方法 D：キーボードショートカット
 
-`Ctrl+Alt+G`（macOS は `Cmd+Option+G`）を押すと **Commit-Copilot: Generate Commit Message** が実行され、ソース管理（SCM）ナビゲーションバーの魔法の杖アイコンをクリックしたときと同じ動作になります。
+`Ctrl+Alt+G`（macOS は `Cmd+Option+G`）を押すと **Commit-Copilot: コミットメッセージを生成** が実行され、ソース管理（SCM）ナビゲーションバーの魔法の杖アイコンをクリックしたときと同じ動作になります。
 
 - エディタや任意のサイドパネルから実行でき、現在のファイルから離れる必要はありません。
 - VS Code のターミナルでは `Ctrl+Alt+G` の標準動作が維持されます。
 - 生成中の再実行は無視されます。**生成をキャンセル** で停止できます。
-- キーを変更するには **キーボードショートカット**（`Ctrl+K Ctrl+S`、macOS は `Cmd+K Cmd+S`）を開き、**Commit-Copilot: Generate Commit Message** で検索してください。
+- キーを変更するには **キーボードショートカット**（`Ctrl+K Ctrl+S`、macOS は `Cmd+K Cmd+S`）を開き、**Commit-Copilot: コミットメッセージを生成** で検索してください。
 
 ### レビューとコミット
 

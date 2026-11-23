@@ -400,12 +400,12 @@ Pour les points de terminaison compatibles Anthropic, la limite de jetons de sor
 
 ### Méthode D : raccourci clavier
 
-Appuyez sur `Ctrl+Alt+G` (macOS : `Cmd+Option+G`) pour exécuter **Commit-Copilot: Générer le message de commit**, la même action que le bouton baguette magique de la barre de navigation du SCM.
+Appuyez sur `Ctrl+Alt+G` (macOS : `Cmd+Option+G`) pour exécuter **Commit-Copilot: Générer un message de commit**, la même action que le bouton baguette magique de la barre de navigation du SCM.
 
 - Le raccourci fonctionne depuis l'éditeur ou tout panneau latéral, sans quitter le fichier courant.
 - Le terminal intégré conserve le comportement de `Ctrl+Alt+G` propre à VS Code.
 - Une nouvelle pression pendant une génération en cours est ignorée ; utilisez **Annuler la génération** pour l'arrêter.
-- Pour changer la touche, ouvrez **Raccourcis clavier** (`Ctrl+K Ctrl+S`, macOS : `Cmd+K Cmd+S`) et recherchez **Commit-Copilot: Générer le message de commit**.
+- Pour changer la touche, ouvrez **Raccourcis clavier** (`Ctrl+K Ctrl+S`, macOS : `Cmd+K Cmd+S`) et recherchez **Commit-Copilot: Générer un message de commit**.
 
 ### Révision et commit
 
